@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Taxi End Ride Screen</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;700;800&amp;family=Noto+Sans:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Theme Configuration -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                        "surface-dark": "#233648",
+                        "brand-yellow": "#FCD34D",
+                        "brand-green": "#10B981",
+                        "brand-red": "#EF4444",
+                    },
+                    fontFamily: {
+                        "display": ["Plus Jakarta Sans", "sans-serif"],
+                        "body": ["Noto Sans", "sans-serif"],
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark min-h-screen w-full flex flex-col font-display text-slate-900 dark:text-white overflow-x-hidden antialiased selection:bg-primary selection:text-white">
+<!-- Top App Bar -->
+<div class="flex items-center justify-between px-4 py-3 sticky top-0 z-20 bg-background-light dark:bg-background-dark/95 backdrop-blur-sm border-b dark:border-white/5">
+<div class="flex size-10 shrink-0 items-center justify-center rounded-full bg-brand-green/10 text-brand-green">
+<span class="material-symbols-outlined text-2xl font-bold">check_circle</span>
+</div>
+<h2 class="text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center">Ride Completed</h2>
+<div class="flex w-10 items-center justify-end">
+<button class="text-slate-500 dark:text-[#92adc9] text-sm font-bold leading-normal tracking-[0.015em] hover:text-primary transition-colors">Help</button>
+</div>
+</div>
+<!-- Main Scrollable Content -->
+<div class="flex-1 flex flex-col gap-6 px-4 py-4 pb-32">
+<!-- Map Section -->
+<div class="w-full relative rounded-xl overflow-hidden shadow-lg group">
+<div class="w-full h-48 bg-center bg-cover bg-no-repeat bg-slate-200 dark:bg-gray-800" data-alt="Dark map view of city streets with a route line" data-location="Dakar, Senegal" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuD6woRrZkHhDfH8sAFgvJxv92Fwzpt9CXavI1jpE5B9BNZdX41gK_zNd5EADvz85qAbViYOjcjc_WUCC35qHARl_q6rHZ_mf9asdY9pytt4RmNWPGrpUYFalJVYA2EzEx5BWAkZrhLVI-UaDzXgjfE11BzM85KsuYOeKWS-tU3xGZabbtuHcWc_4ut6S7g9l1jncKH1JX2g0fXwuPN63bRDGcuxfFWXr-McX-J437lPANlyOObwpTRrQN6gsYN-2KDkqyj-Zyjp");'>
+<!-- Map Overlay Gradient -->
+<div class="absolute inset-0 bg-gradient-to-b from-transparent to-background-dark/80 dark:to-background-dark/90"></div>
+<!-- Route Details Overlay -->
+<div class="absolute bottom-3 left-4 right-4 flex justify-between items-end">
+<div class="flex gap-2 items-center text-white/90">
+<span class="material-symbols-outlined text-primary">trip_origin</span>
+<div class="h-1 w-8 bg-white/20 rounded-full overflow-hidden">
+<div class="h-full w-2/3 bg-primary"></div>
+</div>
+<span class="material-symbols-outlined text-brand-green">location_on</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Stats Grid -->
+<div class="flex flex-wrap gap-3">
+<div class="flex min-w-[100px] flex-1 flex-col gap-1 rounded-xl p-4 bg-white dark:bg-surface-dark shadow-sm border border-slate-100 dark:border-white/5">
+<div class="flex items-center gap-2 text-slate-500 dark:text-[#92adc9]">
+<span class="material-symbols-outlined text-[18px]">schedule</span>
+<p class="text-xs font-medium uppercase tracking-wider">Duration</p>
+</div>
+<p class="tracking-tight text-xl font-bold">18 min</p>
+</div>
+<div class="flex min-w-[100px] flex-1 flex-col gap-1 rounded-xl p-4 bg-white dark:bg-surface-dark shadow-sm border border-slate-100 dark:border-white/5">
+<div class="flex items-center gap-2 text-slate-500 dark:text-[#92adc9]">
+<span class="material-symbols-outlined text-[18px]">straighten</span>
+<p class="text-xs font-medium uppercase tracking-wider">Distance</p>
+</div>
+<p class="tracking-tight text-xl font-bold">5.2 km</p>
+</div>
+<div class="flex min-w-[100px] flex-1 flex-col gap-1 rounded-xl p-4 bg-white dark:bg-surface-dark shadow-sm border border-slate-100 dark:border-white/5">
+<div class="flex items-center gap-2 text-slate-500 dark:text-[#92adc9]">
+<span class="material-symbols-outlined text-[18px]">schedule</span>
+<p class="text-xs font-medium uppercase tracking-wider">Time</p>
+</div>
+<p class="tracking-tight text-xl font-bold">10:45 AM</p>
+</div>
+</div>
+<!-- Driver & Rating Section -->
+<div class="flex flex-col gap-4 bg-white dark:bg-surface-dark rounded-xl p-5 shadow-sm border border-slate-100 dark:border-white/5">
+<div class="flex items-center gap-4">
+<div class="relative">
+<img alt="Portrait of the driver smiling" class="size-14 rounded-full object-cover border-2 border-primary" data-alt="Portrait of the driver smiling" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB6dpAMi5t8AvSjLdVWA28GoJeKUrDGGUIpJO5Y5CFZlyrAjTlyC7kZBnxB4UYigkMvJCsF1G_RPpORd0N1D77BxL6OGEFl9HWIUr3pOgPzuESrFB2KCshVrTkUAF9qy8dy7iJyndv35ATVDG42F5kv4Sv8zALREdzQfPuQ2cl961JXaRUZELOOMSotWQakm-fgmucO90yS1jebh5zHYlJxWhkEDmH6y6hEEsye5qUg2reXJNl5At5OWnS3utb2CjfmT1zjFp37"/>
+<div class="absolute -bottom-1 -right-1 bg-white dark:bg-background-dark rounded-full p-0.5">
+<span class="material-symbols-outlined text-brand-yellow text-sm bg-brand-yellow/10 rounded-full p-0.5">verified</span>
+</div>
+</div>
+<div class="flex-1">
+<h3 class="text-base font-bold dark:text-white">Amadou Diallo</h3>
+<p class="text-sm text-slate-500 dark:text-slate-400">Toyota Corolla • DK-239-AB</p>
+</div>
+<div class="flex flex-col items-end">
+<div class="flex items-center gap-1 bg-slate-100 dark:bg-white/5 px-2 py-1 rounded-md">
+<span class="text-sm font-bold">4.9</span>
+<span class="material-symbols-outlined text-brand-yellow text-sm fill-current">star</span>
+</div>
+</div>
+</div>
+<!-- Interactive Rating Stars -->
+<div class="flex flex-col items-center gap-2 pt-2 border-t border-slate-100 dark:border-white/5">
+<p class="text-xs font-medium text-slate-500 dark:text-[#92adc9]">How was your ride?</p>
+<div class="flex gap-3">
+<button class="text-brand-yellow hover:scale-110 transition-transform"><span class="material-symbols-outlined text-3xl fill-current">star</span></button>
+<button class="text-brand-yellow hover:scale-110 transition-transform"><span class="material-symbols-outlined text-3xl fill-current">star</span></button>
+<button class="text-brand-yellow hover:scale-110 transition-transform"><span class="material-symbols-outlined text-3xl fill-current">star</span></button>
+<button class="text-brand-yellow hover:scale-110 transition-transform"><span class="material-symbols-outlined text-3xl fill-current">star</span></button>
+<button class="text-slate-300 dark:text-slate-600 hover:text-brand-yellow hover:scale-110 transition-transform"><span class="material-symbols-outlined text-3xl">star</span></button>
+</div>
+</div>
+</div>
+<!-- Payment Method Selection -->
+<div class="flex flex-col gap-3">
+<h3 class="text-sm font-bold text-slate-500 dark:text-[#92adc9] px-1">Payment Method</h3>
+<label class="relative flex items-center justify-between p-4 rounded-xl bg-primary/10 border-2 border-primary cursor-pointer transition-all">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded-full bg-primary flex items-center justify-center text-white">
+<span class="material-symbols-outlined">account_balance_wallet</span>
+</div>
+<div>
+<p class="font-bold text-slate-900 dark:text-white">Yabisso Wallet</p>
+<p class="text-xs text-primary font-medium">Balance: CFA 15,000</p>
+</div>
+</div>
+<div class="relative flex items-center">
+<input checked="" class="peer h-5 w-5 border-gray-300 text-primary focus:ring-primary" name="payment" type="radio"/>
+</div>
+</label>
+<label class="relative flex items-center justify-between p-4 rounded-xl bg-white dark:bg-surface-dark border border-slate-100 dark:border-white/5 cursor-pointer hover:bg-slate-50 dark:hover:bg-white/5 transition-all">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded-full bg-slate-100 dark:bg-white/10 flex items-center justify-center text-slate-600 dark:text-slate-300">
+<span class="material-symbols-outlined">payments</span>
+</div>
+<div>
+<p class="font-bold text-slate-900 dark:text-white">Cash / Offline SMS</p>
+<p class="text-xs text-slate-500 dark:text-slate-400">Pay directly to driver</p>
+</div>
+</div>
+<div class="relative flex items-center">
+<input class="peer h-5 w-5 border-gray-300 text-primary focus:ring-primary bg-transparent" name="payment" type="radio"/>
+</div>
+</label>
+</div>
+<!-- Total Fare Display (Visual Spacer) -->
+<div class="flex flex-col items-center justify-center pt-2 pb-6">
+<p class="text-slate-500 dark:text-[#92adc9] text-sm font-medium">Total Fare</p>
+<h2 class="text-4xl font-extrabold text-slate-900 dark:text-white mt-1">CFA 2,500</h2>
+<div class="flex items-center gap-1 mt-2">
+<span class="material-symbols-outlined text-green-500 text-sm">trending_down</span>
+<p class="text-xs text-green-500 font-medium">Base fare included</p>
+</div>
+</div>
+</div>
+<!-- Fixed Bottom Actions -->
+<div class="fixed bottom-0 left-0 right-0 p-4 bg-background-light dark:bg-background-dark border-t border-slate-200 dark:border-white/10 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] z-30">
+<div class="flex flex-col gap-3 w-full max-w-md mx-auto">
+<button class="w-full bg-slate-900 dark:bg-white text-white dark:text-slate-900 h-14 rounded-xl font-bold text-lg flex items-center justify-center gap-2 hover:opacity-90 transition-opacity shadow-lg shadow-primary/20">
+<span>Pay &amp; Rate Driver</span>
+<span class="material-symbols-outlined">arrow_forward</span>
+</button>
+<div class="flex justify-center">
+<button class="text-xs text-slate-400 dark:text-slate-500 font-medium flex items-center gap-1 hover:text-brand-red transition-colors">
+<span class="material-symbols-outlined text-sm">report_problem</span>
+                    Report an issue
+                 </button>
+</div>
+</div>
+</div>
+</body></html>

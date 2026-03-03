@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Main Admin Users Page</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Theme Config -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#46ec13",
+                        "background-light": "#f6f8f6",
+                        "background-dark": "#142210", // Deep dark green/black
+                        "surface-dark": "#1c2e17", // Slightly lighter for cards
+                        "surface-dark-highlight": "#253b1f", // Hover/Active states
+                        "text-secondary": "#a0bba5", // Muted green-gray text
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "2xl": "2rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom scrollbar hiding for horizontal scroll areas */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-black font-display antialiased selection:bg-primary selection:text-black">
+<!-- Mobile Container Wrapper -->
+<div class="relative flex h-full min-h-screen w-full max-w-[480px] mx-auto flex-col bg-background-light dark:bg-background-dark overflow-hidden shadow-2xl border-x border-[#2c4823]">
+<!-- Top App Bar -->
+<header class="sticky top-0 z-30 flex items-center justify-between bg-background-light/95 dark:bg-background-dark/95 px-4 py-3 backdrop-blur-md border-b border-[#2c4823]">
+<button class="text-black dark:text-white flex size-10 shrink-0 items-center justify-center rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition">
+<span class="material-symbols-outlined text-[24px]">arrow_back</span>
+</button>
+<h1 class="text-black dark:text-white text-lg font-bold leading-tight tracking-tight flex-1 text-center">User Management</h1>
+<button class="relative flex size-10 shrink-0 items-center justify-center rounded-full overflow-hidden bg-surface-dark border border-[#2c4823]">
+<img class="h-full w-full object-cover opacity-90" data-alt="Profile avatar of the admin user showing a man in business attire" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCZWm0z_3_NcrWmwmjx4ozBf2msWwtblI8YSLeflEo5cLi-8EvUIFVebIyFjAdwjSBcLpSujLE6ih4_D6nWCzUzWwu0_mTKjpGsJEH9sg7OPhWJyMbsOAQ-ZJHXytlRVJWnFvveKMrjlQ1mqR6IAKfYyY0lsnn-weSqA6JKSxDvhAVPj5qgTzqSXIoXdUksODhg4dTCZUJDdBckI3G_ZF372z6NA8LCSCgtLEVFCgcwPePOjZWHelTnr1EBUVRZDQI7n2W08Mf4"/>
+</button>
+</header>
+<!-- Main Content Scroll Area -->
+<div class="flex-1 overflow-y-auto pb-32">
+<!-- Search Section -->
+<div class="px-4 py-4">
+<div class="flex w-full items-center rounded-xl bg-surface-dark border border-[#2c4823] px-3 h-12 shadow-sm focus-within:border-primary/50 transition-colors">
+<span class="material-symbols-outlined text-text-secondary text-[22px]">search</span>
+<input class="flex-1 bg-transparent px-3 text-base text-black dark:text-white placeholder:text-text-secondary focus:outline-none" placeholder="Name, Phone, or ID..."/>
+<button class="flex items-center justify-center rounded-lg p-1 hover:bg-white/10">
+<span class="material-symbols-outlined text-primary text-[22px]">tune</span>
+</button>
+</div>
+</div>
+<!-- Stats Carousel -->
+<div class="flex gap-3 overflow-x-auto px-4 pb-2 no-scrollbar snap-x snap-mandatory">
+<!-- Stat 1 -->
+<div class="flex min-w-[140px] snap-center flex-col justify-between rounded-xl bg-surface-dark border border-[#2c4823] p-4 shadow-sm">
+<div class="flex items-center gap-2">
+<span class="flex items-center justify-center size-6 rounded-full bg-primary/20 text-primary">
+<span class="material-symbols-outlined text-[14px]">group</span>
+</span>
+<p class="text-xs font-medium text-text-secondary">Total Users</p>
+</div>
+<div>
+<p class="text-xl font-bold text-white mt-2">12,450</p>
+<p class="text-[10px] font-semibold text-primary mt-1 flex items-center gap-0.5">
+<span class="material-symbols-outlined text-[10px]">trending_up</span> 12%
+                        </p>
+</div>
+</div>
+<!-- Stat 2 -->
+<div class="flex min-w-[140px] snap-center flex-col justify-between rounded-xl bg-surface-dark border border-[#2c4823] p-4 shadow-sm">
+<div class="flex items-center gap-2">
+<span class="flex items-center justify-center size-6 rounded-full bg-primary/20 text-primary">
+<span class="material-symbols-outlined text-[14px]">bolt</span>
+</span>
+<p class="text-xs font-medium text-text-secondary">Active Today</p>
+</div>
+<div>
+<p class="text-xl font-bold text-white mt-2">8,920</p>
+<p class="text-[10px] font-semibold text-primary mt-1 flex items-center gap-0.5">
+<span class="material-symbols-outlined text-[10px]">trending_up</span> 5%
+                        </p>
+</div>
+</div>
+<!-- Stat 3 -->
+<div class="flex min-w-[140px] snap-center flex-col justify-between rounded-xl bg-surface-dark border border-[#2c4823] p-4 shadow-sm">
+<div class="flex items-center gap-2">
+<span class="flex items-center justify-center size-6 rounded-full bg-red-500/20 text-red-500">
+<span class="material-symbols-outlined text-[14px]">block</span>
+</span>
+<p class="text-xs font-medium text-text-secondary">Suspended</p>
+</div>
+<div>
+<p class="text-xl font-bold text-white mt-2">145</p>
+<p class="text-[10px] font-semibold text-red-500 mt-1 flex items-center gap-0.5">
+<span class="material-symbols-outlined text-[10px]">trending_down</span> 2%
+                        </p>
+</div>
+</div>
+</div>
+<!-- Chips Filter -->
+<div class="sticky top-[69px] z-20 flex gap-2 overflow-x-auto px-4 py-3 bg-background-dark/95 backdrop-blur-sm no-scrollbar border-b border-[#2c4823]/50">
+<button class="flex h-8 shrink-0 items-center justify-center gap-x-1.5 rounded-full bg-primary px-4 shadow-lg shadow-primary/20 transition-transform active:scale-95">
+<p class="text-black text-sm font-semibold">All Users</p>
+</button>
+<button class="flex h-8 shrink-0 items-center justify-center gap-x-1.5 rounded-full bg-surface-dark border border-[#2c4823] px-4 transition-transform active:scale-95">
+<p class="text-text-secondary text-sm font-medium">Active</p>
+</button>
+<button class="flex h-8 shrink-0 items-center justify-center gap-x-1.5 rounded-full bg-surface-dark border border-[#2c4823] px-4 transition-transform active:scale-95">
+<p class="text-text-secondary text-sm font-medium">Suspended</p>
+</button>
+<button class="flex h-8 shrink-0 items-center justify-center gap-x-1.5 rounded-full bg-surface-dark border border-[#2c4823] px-4 transition-transform active:scale-95">
+<p class="text-text-secondary text-sm font-medium">Pending</p>
+</button>
+</div>
+<!-- User List -->
+<div class="flex flex-col gap-3 px-4 pt-2">
+<!-- List Item 1 -->
+<div class="group relative flex w-full items-center gap-4 rounded-2xl bg-surface-dark p-4 border border-[#2c4823] active:bg-surface-dark-highlight transition-colors cursor-pointer">
+<div class="relative shrink-0">
+<img class="size-12 rounded-full object-cover" data-alt="Portrait of Fatima Al-Fayed" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBnSlngZLyAsZesMuACG2I5j9Hgt9psaGbPdiCpy5CWryXrnXhO5WHg0ab2aHG5SwVKsOS9Pv-rQl46DBOuhdvaMuB8wxgSV5fyO2flrIkZXsa5nZJCalMXABoqOMaKdZX72xP2yP2xARmCAwaSK4cjskrqZ_kXccH_hjkWfM8jLVk332lkyQr4KclFvRpjX2LYcnJZsSEDhZFrYwI0iuIkIPe4Mh4a_6D-VWTnfhhXuAmNQgiOswK-fTpueqzGH7zvOaRZFsyt"/>
+<div class="absolute bottom-0 right-0 size-3 rounded-full bg-primary ring-2 ring-surface-dark"></div>
+</div>
+<div class="flex flex-1 flex-col justify-center">
+<div class="flex items-center justify-between">
+<p class="text-base font-semibold text-white">Fatima Al-Fayed</p>
+<span class="text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full">Active</span>
+</div>
+<p class="text-sm text-text-secondary">ID: #99281 • +212 6...459</p>
+</div>
+<span class="material-symbols-outlined text-text-secondary">chevron_right</span>
+</div>
+<!-- List Item 2 (Suspended) -->
+<div class="group relative flex w-full items-center gap-4 rounded-2xl bg-surface-dark p-4 border border-[#2c4823] opacity-75 active:bg-surface-dark-highlight transition-colors cursor-pointer">
+<div class="relative shrink-0">
+<img class="size-12 rounded-full object-cover grayscale" data-alt="Portrait of Karim Benjelloun" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAGiDABHyVonBYcAZQCShFByZT2zG5-RJ5IQGaIabzVjQmF0MRQT9eHm3o8H-NR520PWjQ-Bmxo4mA7hUc906a32y-sEDzpnu6i2aS_MiMS9_yfAnXdsMguRpdGvtT76vex2bH0BIEVVY48yJLy4A9McwlP6DfbqzvAMmos2ukxNp1_8fXlYbEWbBZL3kI3rS41BImE19eQI15Avk3P8R1ZXJ-AkEEleTteZQ6wJ18PYvb5fK-7ZMJQtyTOnj4zhU7dAstmkell"/>
+<div class="absolute bottom-0 right-0 size-3 rounded-full bg-red-500 ring-2 ring-surface-dark"></div>
+</div>
+<div class="flex flex-1 flex-col justify-center">
+<div class="flex items-center justify-between">
+<p class="text-base font-semibold text-white">Karim Benjelloun</p>
+<span class="text-[10px] font-bold text-red-400 bg-red-500/10 px-2 py-0.5 rounded-full">Suspended</span>
+</div>
+<p class="text-sm text-text-secondary">ID: #88120 • +212 6...112</p>
+</div>
+<span class="material-symbols-outlined text-text-secondary">chevron_right</span>
+</div>
+<!-- List Item 3 -->
+<div class="group relative flex w-full items-center gap-4 rounded-2xl bg-surface-dark p-4 border border-[#2c4823] active:bg-surface-dark-highlight transition-colors cursor-pointer">
+<div class="relative shrink-0">
+<img class="size-12 rounded-full object-cover" data-alt="Portrait of Layla Morris" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDs_bGa8yL4lIk8f95iadAm3wLZT2PbLzYi8vD6MfPmxAW90GjH98Pvq5w6yrn9yh6KLvJFv-IRPLTaeggnJu1YUoaR3xj59So1l8JodGgtkuXGJrRp0L7rq6JPreQnsbcv2t9C0ECrv2WmHMgIofgurgHx65H8oH9yXgXMWiwROW-3GCt_CcFIg32VKK0CgVozdPQsIFGyRQpTr0wpL01ObpAfhM93w5MZMShGk-0Y6aflFpBCqL9JitmMY0TN0sKw8bBTAlN5"/>
+<div class="absolute bottom-0 right-0 size-3 rounded-full bg-primary ring-2 ring-surface-dark"></div>
+</div>
+<div class="flex flex-1 flex-col justify-center">
+<div class="flex items-center justify-between">
+<p class="text-base font-semibold text-white">Layla Morris</p>
+<span class="text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full">Active</span>
+</div>
+<p class="text-sm text-text-secondary">ID: #45101 • +212 6...998</p>
+</div>
+<span class="material-symbols-outlined text-text-secondary">chevron_right</span>
+</div>
+<!-- List Item 4 -->
+<div class="group relative flex w-full items-center gap-4 rounded-2xl bg-surface-dark p-4 border border-[#2c4823] active:bg-surface-dark-highlight transition-colors cursor-pointer">
+<div class="relative shrink-0">
+<img class="size-12 rounded-full object-cover" data-alt="Portrait of Ahmed Zaki" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCbM15cWXzcYnC8Dwed0x2mO5tDW-Q3DVTci41ST4tBnEfV2TMN-fjChmUzW1aUS3-0gmZqLvk0u-k5UMwzI0vyP4T9QxOQknC_ndh2mIXWqnHrB853vyyeSv_KzZA0KvkZfwlZJU6G4HTYZN_9qX1vIywWPEpCrmtEh1xOXTpwQeicXt2OtVrN4DVTo_e35RRB6zAo8nkcCAt7yldkwua6e29BGYbnMJSkcPVk3n-vlbgrayq9qwr-rDv8PgiZROWCtOSzQdHG"/>
+<div class="absolute bottom-0 right-0 size-3 rounded-full bg-primary ring-2 ring-surface-dark"></div>
+</div>
+<div class="flex flex-1 flex-col justify-center">
+<div class="flex items-center justify-between">
+<p class="text-base font-semibold text-white">Ahmed Zaki</p>
+<span class="text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full">Active</span>
+</div>
+<p class="text-sm text-text-secondary">ID: #77210 • +212 6...334</p>
+</div>
+<span class="material-symbols-outlined text-text-secondary">chevron_right</span>
+</div>
+<!-- List Item 5 -->
+<div class="group relative flex w-full items-center gap-4 rounded-2xl bg-surface-dark p-4 border border-[#2c4823] active:bg-surface-dark-highlight transition-colors cursor-pointer">
+<div class="relative shrink-0">
+<div class="size-12 rounded-full bg-surface-dark-highlight flex items-center justify-center text-white font-bold border border-[#2c4823]">OM</div>
+<div class="absolute bottom-0 right-0 size-3 rounded-full bg-yellow-500 ring-2 ring-surface-dark"></div>
+</div>
+<div class="flex flex-1 flex-col justify-center">
+<div class="flex items-center justify-between">
+<p class="text-base font-semibold text-white">Omar M.</p>
+<span class="text-[10px] font-bold text-yellow-500 bg-yellow-500/10 px-2 py-0.5 rounded-full">Pending</span>
+</div>
+<p class="text-sm text-text-secondary">ID: #11029 • +212 6...001</p>
+</div>
+<span class="material-symbols-outlined text-text-secondary">chevron_right</span>
+</div>
+</div>
+</div>
+<!-- Simulated Bottom Sheet (Detail View) -->
+<!-- In a real app, this would be triggered. Here it is visible to show the "Detail View" requirement -->
+<div class="absolute inset-x-0 bottom-0 z-40 flex flex-col rounded-t-[32px] bg-[#1a2618] shadow-[0_-8px_30px_rgba(0,0,0,0.5)] border-t border-[#3f6732] max-h-[85vh] animate-in slide-in-from-bottom duration-300">
+<!-- Handle -->
+<div class="flex w-full justify-center pt-3 pb-1">
+<div class="h-1.5 w-12 rounded-full bg-[#3f6732]/50"></div>
+</div>
+<!-- Detail Header -->
+<div class="flex flex-col items-center px-6 pt-2 pb-6 border-b border-[#2c4823]">
+<div class="relative mb-3">
+<img class="size-20 rounded-full object-cover ring-4 ring-background-dark" data-alt="Large portrait of Fatima Al-Fayed in detail view" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDbTx14Gl7ApXy7VqJm_fUudqUMn5FARYE58Xrc_t1UWhg8eLDNH3wBwXTs3aXevA6d7VM3ZDxmJxVI6VLmQAA_rXVhgk2hQROwpK6q2ofLYAj0obJ_wkE6KyD24uv4RXiT5EKK-fFXpSdmHaMMWlulqOy1b1es7JhCNwt1c_zxqMQYjus7gRA4gA4mfHUFVMt1rUjXA4PlzThI0cCvCX6uv5kY237Fd8TBhQhn9beQI3JTGCqbZgHGCKWtIGPJzSiv9dFjUe5V"/>
+<div class="absolute bottom-1 right-1 size-5 rounded-full bg-primary ring-4 ring-background-dark flex items-center justify-center">
+<span class="material-symbols-outlined text-[12px] text-black font-bold">check</span>
+</div>
+</div>
+<h2 class="text-xl font-bold text-white">Fatima Al-Fayed</h2>
+<p class="text-sm text-text-secondary mt-1">Joined 12 Aug, 2023 • ID #99281</p>
+</div>
+<!-- Wallet & Actions -->
+<div class="overflow-y-auto px-6 py-6 space-y-6 bg-gradient-to-b from-[#1a2618] to-background-dark">
+<!-- Wallet Card -->
+<div class="relative overflow-hidden rounded-2xl bg-surface-dark border border-[#3f6732] p-5">
+<div class="absolute top-0 right-0 -mt-4 -mr-4 size-24 rounded-full bg-primary/5 blur-2xl"></div>
+<div class="flex items-center justify-between mb-2">
+<p class="text-sm font-medium text-text-secondary">Wallet Balance</p>
+<span class="material-symbols-outlined text-primary/50">account_balance_wallet</span>
+</div>
+<div class="flex items-baseline gap-1">
+<span class="text-3xl font-bold text-white tracking-tight">2,450</span>
+<span class="text-sm font-medium text-primary">pts</span>
+</div>
+<div class="mt-4 flex gap-2">
+<button class="flex-1 rounded-lg bg-surface-dark-highlight py-2 text-xs font-medium text-white hover:bg-[#3f6732] transition">Add Points</button>
+<button class="flex-1 rounded-lg bg-surface-dark-highlight py-2 text-xs font-medium text-white hover:bg-[#3f6732] transition">History</button>
+</div>
+</div>
+<!-- Action Toggles -->
+<div class="space-y-4">
+<div class="flex items-center justify-between p-3 rounded-xl bg-surface-dark border border-[#2c4823]">
+<div class="flex items-center gap-3">
+<div class="flex size-10 items-center justify-center rounded-full bg-primary/10 text-primary">
+<span class="material-symbols-outlined text-[20px]">verified_user</span>
+</div>
+<div class="flex flex-col">
+<span class="text-sm font-medium text-white">Account Status</span>
+<span class="text-xs text-text-secondary">User can access services</span>
+</div>
+</div>
+<!-- Toggle Switch (Active) -->
+<div class="relative h-7 w-12 cursor-pointer rounded-full bg-primary transition-colors">
+<div class="absolute left-[calc(100%-1.5rem)] top-1 size-5 rounded-full bg-white shadow-sm transition-all"></div>
+</div>
+</div>
+<div class="flex items-center justify-between p-3 rounded-xl bg-surface-dark border border-[#2c4823]">
+<div class="flex items-center gap-3">
+<div class="flex size-10 items-center justify-center rounded-full bg-blue-500/10 text-blue-500">
+<span class="material-symbols-outlined text-[20px]">phonelink_lock</span>
+</div>
+<div class="flex flex-col">
+<span class="text-sm font-medium text-white">Account Recovery</span>
+<span class="text-xs text-text-secondary">Reset Password / 2FA</span>
+</div>
+</div>
+<button class="text-sm font-semibold text-blue-400 hover:text-blue-300">Assist</button>
+</div>
+</div>
+<!-- Recent Activity Mini List -->
+<div>
+<div class="flex items-center justify-between mb-3">
+<h3 class="text-sm font-bold text-white">Recent Transactions</h3>
+<a class="text-xs text-primary hover:underline" href="#">View All</a>
+</div>
+<div class="space-y-2">
+<div class="flex items-center justify-between py-2 border-b border-[#2c4823]/50 last:border-0">
+<div class="flex items-center gap-3">
+<div class="size-8 rounded-full bg-surface-dark-highlight flex items-center justify-center">
+<span class="material-symbols-outlined text-[16px] text-white">shopping_cart</span>
+</div>
+<div>
+<p class="text-xs font-medium text-white">Kiosque Purchase</p>
+<p class="text-[10px] text-text-secondary">Today, 10:23 AM</p>
+</div>
+</div>
+<span class="text-sm font-bold text-white">-120 pts</span>
+</div>
+<div class="flex items-center justify-between py-2 border-b border-[#2c4823]/50 last:border-0">
+<div class="flex items-center gap-3">
+<div class="size-8 rounded-full bg-surface-dark-highlight flex items-center justify-center">
+<span class="material-symbols-outlined text-[16px] text-primary">add</span>
+</div>
+<div>
+<p class="text-xs font-medium text-white">Top Up</p>
+<p class="text-[10px] text-text-secondary">Yesterday, 4:15 PM</p>
+</div>
+</div>
+<span class="text-sm font-bold text-primary">+500 pts</span>
+</div>
+</div>
+</div>
+<!-- Close Button for Mockup -->
+<button class="w-full py-4 text-center text-sm font-medium text-text-secondary hover:text-white">
+                    Close Details
+                </button>
+</div>
+</div>
+</div>
+</body></html>

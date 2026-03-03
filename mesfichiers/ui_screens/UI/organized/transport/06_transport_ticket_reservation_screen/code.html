@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Transport Ticket Reservation</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Noto+Sans:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Theme Configuration -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                        "surface-dark": "#192633",
+                        "brand-red": "#ef4444",
+                        "brand-yellow": "#eab308",
+                        "brand-green": "#22c55e",
+                    },
+                    fontFamily: {
+                        "display": ["Plus Jakarta Sans", "sans-serif"],
+                        "body": ["Noto Sans", "sans-serif"],
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "2xl": "1rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        .yabisso-gradient-border {
+            position: relative;
+            overflow: hidden;
+        }
+        .yabisso-gradient-border::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: linear-gradient(to bottom, #137fec, #ef4444, #eab308, #22c55e);
+            border-top-left-radius: 0.5rem;
+            border-bottom-left-radius: 0.5rem;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark min-h-screen font-display antialiased selection:bg-primary selection:text-white">
+<div class="relative flex h-full min-h-screen w-full flex-col max-w-md mx-auto bg-background-light dark:bg-background-dark shadow-2xl overflow-hidden pb-24">
+<!-- Top App Bar -->
+<header class="flex items-center bg-background-light dark:bg-background-dark p-4 pb-2 justify-between sticky top-0 z-20 border-b border-gray-200 dark:border-gray-800">
+<button class="text-gray-900 dark:text-white flex size-10 shrink-0 items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-white/10 transition-colors">
+<span class="material-symbols-outlined text-[24px]">arrow_back_ios_new</span>
+</button>
+<h2 class="text-gray-900 dark:text-white text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center pr-10">Review Booking</h2>
+</header>
+<!-- Offline Status -->
+<div class="bg-background-light dark:bg-background-dark pt-2">
+<div class="flex justify-center items-center gap-2">
+<span class="material-symbols-outlined text-green-500 text-[16px]">cloud_done</span>
+<p class="text-gray-500 dark:text-[#92adc9] text-xs font-medium uppercase tracking-wide">Draft saved • Offline ready</p>
+</div>
+</div>
+<!-- Main Content -->
+<main class="flex-1 overflow-y-auto p-4 space-y-6">
+<!-- Trip Summary Card -->
+<section class="relative">
+<h3 class="text-gray-900 dark:text-white text-sm font-semibold mb-3 px-1 flex justify-between items-center">
+                    Trip Details
+                    <button class="text-primary text-xs font-bold hover:underline">Edit</button>
+</h3>
+<div class="bg-white dark:bg-surface-dark rounded-xl shadow-sm p-0 yabisso-gradient-border">
+<!-- Airline & Date Header -->
+<div class="flex items-center justify-between p-4 border-b border-gray-100 dark:border-gray-700/50 pl-6">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-white flex items-center justify-center overflow-hidden border border-gray-100">
+<img class="w-full h-full object-cover" data-alt="Airline logo abstract red and blue shapes" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDmxi-HtQDamIz0ei7z2HaJROj1zOdlPPMoWWXFgqRq4nAeEo5yPTwru02fXQLJerkz_ET9B8wFmDAdNAirovNf3Hl2yQmGyEvoJamNuHff8gnaJysNtlhT9ukc4pmnnCSKmdTjD5oZVQrfS_maZoovhUZJNl54U8k1GsNYetzLS3asuZyDUhZlbAsYVMpF2kOfTX31rwWnL0IJzrDLpcqRMQaa7TVvC55xKTD4FvoUVj6AcHf_yoM-OstHV8h7pWdJCKry05aN"/>
+</div>
+<div>
+<p class="text-gray-900 dark:text-white text-sm font-bold">Air Peace</p>
+<p class="text-gray-500 dark:text-[#92adc9] text-xs">Flight 712 • Economy</p>
+</div>
+</div>
+<div class="bg-gray-100 dark:bg-white/5 px-3 py-1 rounded-full">
+<p class="text-gray-900 dark:text-white text-xs font-medium">Fri, 12 Oct</p>
+</div>
+</div>
+<!-- Timeline Route -->
+<div class="p-4 pl-6">
+<div class="grid grid-cols-[32px_1fr] gap-x-3">
+<!-- Timeline Visual -->
+<div class="flex flex-col items-center pt-1 h-full">
+<div class="text-gray-400 dark:text-gray-500">
+<span class="material-symbols-outlined text-[20px]">flight_takeoff</span>
+</div>
+<div class="w-[2px] border-l-2 border-dashed border-gray-300 dark:border-gray-600 grow my-1"></div>
+<div class="text-gray-400 dark:text-gray-500">
+<span class="material-symbols-outlined text-[20px]">flight_land</span>
+</div>
+</div>
+<!-- Timeline Content -->
+<div class="flex flex-col h-full justify-between gap-6">
+<div>
+<div class="flex justify-between items-baseline">
+<p class="text-gray-900 dark:text-white text-xl font-bold">14:00</p>
+<p class="text-gray-500 dark:text-gray-400 text-sm font-medium">Lagos (LOS)</p>
+</div>
+<p class="text-gray-400 dark:text-gray-500 text-xs">Murtala Muhammed Int.</p>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-gray-400 text-[14px]">schedule</span>
+<p class="text-gray-500 dark:text-gray-400 text-xs">1h 15m duration</p>
+</div>
+<div>
+<div class="flex justify-between items-baseline">
+<p class="text-gray-900 dark:text-white text-xl font-bold">15:15</p>
+<p class="text-gray-500 dark:text-gray-400 text-sm font-medium">Accra (ACC)</p>
+</div>
+<p class="text-gray-400 dark:text-gray-500 text-xs">Kotoka International</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Extras -->
+<div class="flex gap-4 p-4 pl-6 border-t border-gray-100 dark:border-gray-700/50">
+<div class="flex items-center gap-2 bg-gray-50 dark:bg-white/5 px-3 py-2 rounded-lg">
+<span class="material-symbols-outlined text-gray-500 dark:text-gray-400 text-[18px]">luggage</span>
+<span class="text-gray-700 dark:text-gray-300 text-xs font-medium">23kg Check-in</span>
+</div>
+<div class="flex items-center gap-2 bg-gray-50 dark:bg-white/5 px-3 py-2 rounded-lg">
+<span class="material-symbols-outlined text-gray-500 dark:text-gray-400 text-[18px]">restaurant</span>
+<span class="text-gray-700 dark:text-gray-300 text-xs font-medium">Meal included</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Passenger Details -->
+<section>
+<h3 class="text-gray-900 dark:text-white text-sm font-semibold mb-3 px-1 flex justify-between items-center">
+                    Passengers
+                    <button class="text-primary text-xs font-bold hover:underline">Edit</button>
+</h3>
+<div class="bg-white dark:bg-surface-dark rounded-xl shadow-sm p-4 flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">person</span>
+</div>
+<div>
+<p class="text-gray-900 dark:text-white text-base font-bold">John Doe</p>
+<p class="text-gray-500 dark:text-[#92adc9] text-xs">Adult • Male</p>
+</div>
+</div>
+<div class="flex flex-col items-end">
+<span class="text-gray-400 dark:text-gray-500 text-[10px] uppercase font-bold tracking-wider">Seat</span>
+<span class="text-gray-900 dark:text-white text-lg font-bold font-mono">12A</span>
+</div>
+</div>
+</section>
+<!-- Price Breakdown -->
+<section>
+<h3 class="text-gray-900 dark:text-white text-sm font-semibold mb-3 px-1">Payment Summary</h3>
+<div class="bg-white dark:bg-surface-dark rounded-xl shadow-sm p-5 space-y-3">
+<div class="flex justify-between items-center text-sm">
+<span class="text-gray-600 dark:text-[#92adc9]">Ticket Price (1x Adult)</span>
+<span class="text-gray-900 dark:text-white font-medium">₦ 85,000</span>
+</div>
+<div class="flex justify-between items-center text-sm">
+<span class="text-gray-600 dark:text-[#92adc9]">Taxes &amp; Fees</span>
+<span class="text-gray-900 dark:text-white font-medium">₦ 2,500</span>
+</div>
+<div class="flex justify-between items-center text-sm">
+<span class="text-gray-600 dark:text-[#92adc9]">Baggage (Extra)</span>
+<span class="text-gray-900 dark:text-white font-medium">Free</span>
+</div>
+<div class="h-px w-full bg-gray-100 dark:bg-gray-700 my-2"></div>
+<div class="flex justify-between items-center">
+<span class="text-gray-900 dark:text-white font-bold text-base">Total Amount</span>
+<span class="text-primary font-display font-bold text-xl">₦ 87,500</span>
+</div>
+</div>
+</section>
+<!-- Safe Space for Footer -->
+<div class="h-6"></div>
+</main>
+<!-- Sticky Footer -->
+<footer class="absolute bottom-0 left-0 w-full bg-white dark:bg-surface-dark border-t border-gray-200 dark:border-gray-800 p-4 pb-8 flex items-center justify-between gap-4 z-30 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
+<div class="flex flex-col">
+<span class="text-gray-500 dark:text-gray-400 text-xs font-medium">Total to pay</span>
+<span class="text-gray-900 dark:text-white text-2xl font-bold tracking-tight">₦ 87,500</span>
+</div>
+<button class="flex-1 bg-white hover:bg-gray-50 text-black dark:text-black border border-gray-200 h-14 rounded-xl font-bold text-base flex items-center justify-center gap-2 shadow-lg transition-transform active:scale-95">
+<span>Proceed to Payment</span>
+<span class="material-symbols-outlined text-[20px]">arrow_forward</span>
+</button>
+</footer>
+</div>
+</body></html>

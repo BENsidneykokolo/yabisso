@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="fr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Yabisso - Créer une adresse</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "yabisso-red": "#ef4444",
+                        "yabisso-yellow": "#fbbf24",
+                        "yabisso-green": "#22c55e",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .brand-gradient {
+            background: linear-gradient(90deg, #137fec 0%, #ef4444 25%, #fbbf24 50%, #22c55e 75%, #137fec 100%);
+            height: 3px;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white transition-colors duration-300">
+<!-- Top Brand Accent -->
+<div class="brand-gradient w-full fixed top-0 z-50"></div>
+<div class="relative flex min-h-screen w-full flex-col bg-background-light dark:bg-background-dark overflow-x-hidden pt-1">
+<!-- Header -->
+<header class="flex items-center p-4 justify-between sticky top-1 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md z-40">
+<button class="text-slate-900 dark:text-white p-2 rounded-full hover:bg-slate-200 dark:hover:bg-white/10 transition-colors">
+<span class="material-symbols-outlined text-[28px]">arrow_back</span>
+</button>
+<h2 class="text-slate-900 dark:text-white text-lg font-bold leading-tight tracking-tight flex-1 ml-2">Créer une adresse</h2>
+<div class="w-10"></div> <!-- Spacer for centering -->
+</header>
+<main class="flex-1 px-4 py-2 max-w-lg mx-auto w-full">
+<!-- GPS Section -->
+<div class="mb-6 mt-2">
+<button class="w-full flex cursor-pointer items-center justify-center rounded-xl h-16 px-6 bg-primary text-white gap-3 shadow-lg shadow-primary/20 active:scale-[0.98] transition-all">
+<span class="material-symbols-outlined text-[24px]">my_location</span>
+<span class="text-lg font-bold tracking-wide">Me géolocaliser</span>
+</button>
+<p class="text-slate-500 dark:text-slate-400 text-sm mt-3 flex items-center gap-1 px-1">
+<span class="material-symbols-outlined text-yabisso-green text-[16px] fill-1">check_circle</span>
+                    Utilisez le GPS pour une précision optimale
+                </p>
+</div>
+<!-- Map Preview (Placeholder) -->
+<div class="mb-6 relative group">
+<div class="w-full aspect-video bg-slate-200 dark:bg-slate-800 rounded-xl overflow-hidden border border-slate-300 dark:border-slate-700">
+<div class="w-full h-full bg-center bg-no-repeat bg-cover opacity-80" data-alt="Map view showing the current detected location in Kinshasa" data-location="Kinshasa" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuD6xpQeb9UXgIl0kiqr4erZJHX3Ia24mC1Zy-K8P7SCCeUoGCzPWLcqZAM8J5zJLc_dMxbBH1vYkuevUX9OKpmPE9Vk5vnFozWZTcNacjnMob7DPAGJw62d6pHuVRHTPEGQ2xq3qCE02-Y4ZW89GgvgvYdIInxULoo6JzoS2ElqtpnvGLdQH-8wUMnZNo7r4lJ46JiXIy0R-A0T7CeW7V46oaQuQN1qd-9Yd5E7ihp0UpRNlDdKjGK5yDAYIpHppnGnRL3XXj_g");'>
+</div>
+<div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+<div class="w-8 h-8 bg-yabisso-red rounded-full flex items-center justify-center border-4 border-white shadow-xl">
+<div class="w-2 h-2 bg-white rounded-full"></div>
+</div>
+</div>
+<div class="absolute bottom-3 left-3 right-3 bg-white/90 dark:bg-background-dark/90 backdrop-blur px-3 py-2 rounded-lg border border-white/20">
+<p class="text-[11px] uppercase tracking-wider font-bold text-primary mb-0.5">Position détectée</p>
+<p class="text-sm font-medium truncate">Avenue du Port, Gombe, Kinshasa</p>
+</div>
+</div>
+</div>
+<!-- Place Naming Input -->
+<div class="space-y-4 mb-8">
+<div class="flex flex-col w-full">
+<label class="text-slate-700 dark:text-slate-200 text-base font-semibold leading-normal pb-2 px-1">Nom de l'endroit
+<input class="w-full rounded-xl text-slate-900 dark:text-white focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800/50 h-14 placeholder:text-slate-400 dark:placeholder:text-slate-500 px-4 text-base font-medium" placeholder="Ex: Maison, Bureau, Chez Papa..."/>
+</label></div>
+</div>
+<!-- Photo Upload Section -->
+<div class="mb-10">
+<h3 class="text-slate-900 dark:text-white text-base font-semibold px-1 mb-3">Photo de l'emplacement <span class="text-slate-500 font-normal text-sm ml-1">(optionnel)</span></h3>
+<div class="grid grid-cols-2 gap-4">
+<button class="flex flex-col items-center justify-center aspect-square border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800/30 hover:bg-slate-100 dark:hover:bg-slate-800/50 transition-colors group">
+<span class="material-symbols-outlined text-[32px] text-slate-400 dark:text-slate-500 group-hover:text-primary transition-colors">add_a_photo</span>
+<span class="text-xs font-medium text-slate-500 dark:text-slate-400 mt-2">Prendre une photo</span>
+</button>
+<div class="relative group aspect-square rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700">
+<div class="w-full h-full bg-center bg-cover" data-alt="Thumbnail of a modern house exterior for location photo" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCDXaMdn7b26wWStJvWzO9cIgvVHqbEAGxwRD51GYMHNTUhWsSdukw9GSGhGsf5v7twAYwST3iPhiloh4WR8PwhR0GZ89PZLEz-_B-b40ArejGfRLFuc-xmTKtpzbIQKhiooCyw-KLwRGh4BLXxQE5Q-d811tmORXsRVfwhZid22hhgucokRfSri-VIIprAmNFHRwbWC2naoI-ObIV9z2cKulGjskgTe18PGPUsUF9xoETE9JKTcMZX0AD24c6Z1lX-5qKD0pL5');">
+</div>
+<button class="absolute top-2 right-2 size-7 bg-black/50 text-white rounded-full flex items-center justify-center backdrop-blur-sm">
+<span class="material-symbols-outlined text-[18px]">close</span>
+</button>
+</div>
+</div>
+<p class="text-xs text-slate-500 dark:text-slate-400 mt-3 px-1">
+                    Une photo aide nos coursiers à identifier rapidement l'entrée du bâtiment.
+                </p>
+</div>
+</main>
+<!-- Fixed Footer Action -->
+<footer class="sticky bottom-0 w-full p-4 pb-8 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-xl border-t border-slate-200 dark:border-white/5">
+<div class="max-w-lg mx-auto">
+<button class="w-full bg-white text-slate-900 dark:bg-white dark:text-background-dark h-14 rounded-xl font-bold text-lg flex items-center justify-center gap-2 shadow-xl hover:bg-slate-100 active:scale-[0.98] transition-all">
+<span>Continuer</span>
+<span class="material-symbols-outlined">arrow_forward</span>
+</button>
+<div class="flex justify-center gap-1.5 mt-4">
+<div class="h-1 w-12 rounded-full bg-primary/20"></div>
+<div class="h-1 w-12 rounded-full bg-primary"></div>
+<div class="h-1 w-12 rounded-full bg-primary/20"></div>
+</div>
+</div>
+</footer>
+</div>
+</body></html>

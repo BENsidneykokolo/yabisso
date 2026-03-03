@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Offline Sync Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#46ec13",
+                        "background-light": "#f6f8f6",
+                        "background-dark": "#142210",
+                        "surface-light": "#ffffff",
+                        "surface-dark": "#1c2e17",
+                        "text-secondary-light": "#6b7280",
+                        "text-secondary-dark": "#9ca3af",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white font-display antialiased min-h-screen pb-24">
+<!-- Top App Bar -->
+<header class="sticky top-0 z-50 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-md border-b border-gray-200 dark:border-white/10 px-4 py-3 flex items-center justify-between">
+<div class="flex items-center gap-3">
+<button class="p-2 -ml-2 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 transition-colors">
+<span class="material-symbols-outlined text-slate-900 dark:text-white">arrow_back</span>
+</button>
+<h1 class="text-xl font-bold tracking-tight">Offline Sync</h1>
+</div>
+<div class="flex items-center gap-2">
+<span class="hidden sm:inline-block text-xs font-medium text-primary bg-primary/10 px-2 py-1 rounded-full">Online</span>
+<button class="flex items-center justify-center size-10 rounded-full bg-primary/10 hover:bg-primary/20 text-primary transition-colors relative">
+<span class="material-symbols-outlined filled">cloud_sync</span>
+<span class="absolute top-2 right-2 size-2 bg-primary rounded-full ring-2 ring-background-light dark:ring-background-dark animate-pulse"></span>
+</button>
+</div>
+</header>
+<!-- Main Content -->
+<main class="w-full max-w-md mx-auto sm:max-w-xl md:max-w-2xl lg:max-w-4xl px-4 pt-6 space-y-6">
+<!-- Sync Status Widget -->
+<section class="bg-surface-light dark:bg-surface-dark rounded-2xl p-5 shadow-sm border border-gray-100 dark:border-white/5 relative overflow-hidden">
+<!-- Background decoration -->
+<div class="absolute -right-10 -top-10 size-40 bg-primary/5 rounded-full blur-3xl"></div>
+<div class="flex justify-between items-start relative z-10 mb-4">
+<div>
+<h2 class="text-sm font-medium text-text-secondary-light dark:text-text-secondary-dark uppercase tracking-wider">Sync Status</h2>
+<div class="flex items-center gap-2 mt-1">
+<span class="size-2.5 rounded-full bg-primary shadow-[0_0_8px_rgba(70,236,19,0.6)]"></span>
+<p class="text-2xl font-bold">Connected</p>
+</div>
+</div>
+<button class="bg-primary hover:bg-green-400 text-black font-semibold text-sm px-4 py-2 rounded-xl transition-transform active:scale-95 shadow-lg shadow-primary/20 flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">sync</span>
+                    Sync Now
+                </button>
+</div>
+<div class="h-px bg-gray-100 dark:bg-white/10 w-full mb-4"></div>
+<div class="grid grid-cols-3 gap-2">
+<div class="flex flex-col gap-1">
+<span class="text-xs text-text-secondary-light dark:text-text-secondary-dark">Last Sync</span>
+<span class="text-sm font-semibold">2m ago</span>
+</div>
+<div class="flex flex-col gap-1 border-l border-gray-100 dark:border-white/10 pl-4">
+<span class="text-xs text-text-secondary-light dark:text-text-secondary-dark">Data Usage</span>
+<span class="text-sm font-semibold">1.2 MB</span>
+</div>
+<div class="flex flex-col gap-1 border-l border-gray-100 dark:border-white/10 pl-4">
+<span class="text-xs text-text-secondary-light dark:text-text-secondary-dark">Device ID</span>
+<span class="text-sm font-semibold truncate">IPh-92X</span>
+</div>
+</div>
+</section>
+<!-- Stats Overview (Horizontal Scroll) -->
+<section class="flex gap-3 overflow-x-auto hide-scrollbar pb-1 -mx-4 px-4 snap-x">
+<div class="snap-start min-w-[140px] flex-1 bg-surface-light dark:bg-surface-dark rounded-xl p-4 border border-gray-100 dark:border-white/5 shadow-sm flex flex-col justify-between h-28">
+<div class="p-2 bg-orange-500/10 w-fit rounded-lg text-orange-500 dark:text-orange-400">
+<span class="material-symbols-outlined text-xl">pending_actions</span>
+</div>
+<div>
+<p class="text-2xl font-bold">14</p>
+<p class="text-xs font-medium text-text-secondary-light dark:text-text-secondary-dark">Pending Uploads</p>
+</div>
+</div>
+<div class="snap-start min-w-[140px] flex-1 bg-surface-light dark:bg-surface-dark rounded-xl p-4 border border-gray-100 dark:border-white/5 shadow-sm flex flex-col justify-between h-28 ring-1 ring-red-500/30 dark:ring-red-500/20 bg-red-50/50 dark:bg-red-900/10">
+<div class="p-2 bg-red-500/10 w-fit rounded-lg text-red-600 dark:text-red-400">
+<span class="material-symbols-outlined text-xl">error</span>
+</div>
+<div>
+<p class="text-2xl font-bold text-red-600 dark:text-red-400">3</p>
+<p class="text-xs font-medium text-red-600/70 dark:text-red-400/70">Conflicts Found</p>
+</div>
+</div>
+<div class="snap-start min-w-[140px] flex-1 bg-surface-light dark:bg-surface-dark rounded-xl p-4 border border-gray-100 dark:border-white/5 shadow-sm flex flex-col justify-between h-28">
+<div class="p-2 bg-blue-500/10 w-fit rounded-lg text-blue-500 dark:text-blue-400">
+<span class="material-symbols-outlined text-xl">cloud_done</span>
+</div>
+<div>
+<p class="text-2xl font-bold">842</p>
+<p class="text-xs font-medium text-text-secondary-light dark:text-text-secondary-dark">Synced Today</p>
+</div>
+</div>
+</section>
+<!-- Filters / Segmented Control -->
+<div class="bg-surface-light dark:bg-surface-dark p-1 rounded-xl flex gap-1 shadow-sm border border-gray-100 dark:border-white/5">
+<button class="flex-1 py-2 px-3 rounded-lg text-sm font-medium bg-background-light dark:bg-white/10 text-slate-900 dark:text-white shadow-sm transition-all text-center">
+                Pending (14)
+            </button>
+<button class="flex-1 py-2 px-3 rounded-lg text-sm font-medium text-text-secondary-light dark:text-text-secondary-dark hover:bg-gray-50 dark:hover:bg-white/5 transition-all text-center">
+                Conflicts (3)
+            </button>
+<button class="flex-1 py-2 px-3 rounded-lg text-sm font-medium text-text-secondary-light dark:text-text-secondary-dark hover:bg-gray-50 dark:hover:bg-white/5 transition-all text-center">
+                History
+            </button>
+</div>
+<!-- Section Header -->
+<div class="flex items-center justify-between pt-2">
+<h3 class="text-lg font-bold">Action Required</h3>
+<button class="text-sm text-primary font-medium flex items-center gap-0.5">
+                Resolve All <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+</button>
+</div>
+<!-- Conflict List (High Priority) -->
+<div class="space-y-3">
+<!-- Conflict Item 1 -->
+<div class="group bg-surface-light dark:bg-surface-dark rounded-xl p-4 shadow-sm border border-l-4 border-gray-100 dark:border-white/5 border-l-red-500 relative overflow-hidden">
+<div class="flex justify-between items-start mb-2">
+<div class="flex items-center gap-2">
+<span class="bg-red-500/10 text-red-600 dark:text-red-400 p-1.5 rounded-lg">
+<span class="material-symbols-outlined text-[20px]">warning</span>
+</span>
+<div>
+<p class="font-semibold text-sm">User Reg #9921</p>
+<p class="text-xs text-text-secondary-light dark:text-text-secondary-dark">10 mins ago</p>
+</div>
+</div>
+<button class="bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors">
+                        Resolve
+                    </button>
+</div>
+<p class="text-sm text-text-secondary-light dark:text-text-secondary-dark pl-[42px]">
+                    Data mismatch: Local email differs from server version.
+                </p>
+</div>
+<!-- Conflict Item 2 -->
+<div class="group bg-surface-light dark:bg-surface-dark rounded-xl p-4 shadow-sm border border-l-4 border-gray-100 dark:border-white/5 border-l-red-500 relative overflow-hidden">
+<div class="flex justify-between items-start mb-2">
+<div class="flex items-center gap-2">
+<span class="bg-red-500/10 text-red-600 dark:text-red-400 p-1.5 rounded-lg">
+<span class="material-symbols-outlined text-[20px]">warning</span>
+</span>
+<div>
+<p class="font-semibold text-sm">Kiosk Payment #402</p>
+<p class="text-xs text-text-secondary-light dark:text-text-secondary-dark">45 mins ago</p>
+</div>
+</div>
+<button class="bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors">
+                        Resolve
+                    </button>
+</div>
+<p class="text-sm text-text-secondary-light dark:text-text-secondary-dark pl-[42px]">
+                    Transaction ID duplication detected.
+                </p>
+</div>
+</div>
+<!-- Pending Section Header -->
+<h3 class="text-lg font-bold pt-4">Pending Uploads</h3>
+<!-- Pending List -->
+<div class="space-y-3 pb-20">
+<!-- Pending Item 1 -->
+<div class="bg-surface-light dark:bg-surface-dark rounded-xl p-4 shadow-sm border border-gray-100 dark:border-white/5 flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="bg-background-light dark:bg-white/5 p-2 rounded-xl flex items-center justify-center text-text-secondary-light dark:text-text-secondary-dark">
+<span class="material-symbols-outlined text-[24px]">payments</span>
+</div>
+<div>
+<p class="font-semibold text-sm">Cash Deposit</p>
+<div class="flex items-center gap-2 text-xs text-text-secondary-light dark:text-text-secondary-dark">
+<span>Kiosk #12A</span>
+<span class="size-1 bg-gray-300 dark:bg-white/20 rounded-full"></span>
+<span>$1,250.00</span>
+</div>
+</div>
+</div>
+<div class="flex flex-col items-end gap-1">
+<span class="bg-orange-500/10 text-orange-500 dark:text-orange-400 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide">
+                        Waiting
+                    </span>
+<span class="text-xs text-text-secondary-light dark:text-text-secondary-dark">12:42 PM</span>
+</div>
+</div>
+<!-- Pending Item 2 -->
+<div class="bg-surface-light dark:bg-surface-dark rounded-xl p-4 shadow-sm border border-gray-100 dark:border-white/5 flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="bg-background-light dark:bg-white/5 p-2 rounded-xl flex items-center justify-center text-text-secondary-light dark:text-text-secondary-dark">
+<span class="material-symbols-outlined text-[24px]">person_add</span>
+</div>
+<div>
+<p class="font-semibold text-sm">New User Registration</p>
+<div class="flex items-center gap-2 text-xs text-text-secondary-light dark:text-text-secondary-dark">
+<span>ID: 88219</span>
+<span class="size-1 bg-gray-300 dark:bg-white/20 rounded-full"></span>
+<span>Agent: Sarah</span>
+</div>
+</div>
+</div>
+<div class="flex flex-col items-end gap-1">
+<span class="bg-orange-500/10 text-orange-500 dark:text-orange-400 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide">
+                        Waiting
+                    </span>
+<span class="text-xs text-text-secondary-light dark:text-text-secondary-dark">12:38 PM</span>
+</div>
+</div>
+<!-- Pending Item 3 -->
+<div class="bg-surface-light dark:bg-surface-dark rounded-xl p-4 shadow-sm border border-gray-100 dark:border-white/5 flex items-center justify-between opacity-70">
+<div class="flex items-center gap-3">
+<div class="bg-background-light dark:bg-white/5 p-2 rounded-xl flex items-center justify-center text-text-secondary-light dark:text-text-secondary-dark">
+<span class="material-symbols-outlined text-[24px]">inventory_2</span>
+</div>
+<div>
+<p class="font-semibold text-sm">Stock Update</p>
+<div class="flex items-center gap-2 text-xs text-text-secondary-light dark:text-text-secondary-dark">
+<span>SKU-992</span>
+<span class="size-1 bg-gray-300 dark:bg-white/20 rounded-full"></span>
+<span>-5 Units</span>
+</div>
+</div>
+</div>
+<div class="flex flex-col items-end gap-1">
+<span class="bg-gray-500/10 text-gray-500 dark:text-gray-400 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide">
+                        Queued
+                    </span>
+<span class="text-xs text-text-secondary-light dark:text-text-secondary-dark">11:15 AM</span>
+</div>
+</div>
+<!-- Pending Item 4 -->
+<div class="bg-surface-light dark:bg-surface-dark rounded-xl p-4 shadow-sm border border-gray-100 dark:border-white/5 flex items-center justify-between opacity-70">
+<div class="flex items-center gap-3">
+<div class="bg-background-light dark:bg-white/5 p-2 rounded-xl flex items-center justify-center text-text-secondary-light dark:text-text-secondary-dark">
+<span class="material-symbols-outlined text-[24px]">receipt_long</span>
+</div>
+<div>
+<p class="font-semibold text-sm">Service Log</p>
+<div class="flex items-center gap-2 text-xs text-text-secondary-light dark:text-text-secondary-dark">
+<span>Repair #22</span>
+<span class="size-1 bg-gray-300 dark:bg-white/20 rounded-full"></span>
+<span>Completed</span>
+</div>
+</div>
+</div>
+<div class="flex flex-col items-end gap-1">
+<span class="bg-gray-500/10 text-gray-500 dark:text-gray-400 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide">
+                        Queued
+                    </span>
+<span class="text-xs text-text-secondary-light dark:text-text-secondary-dark">10:45 AM</span>
+</div>
+</div>
+</div>
+</main>
+<!-- Floating Action Button Area (Bottom Sticky) -->
+<div class="fixed bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-background-light via-background-light/95 to-transparent dark:from-background-dark dark:via-background-dark/95 dark:to-transparent z-40 pointer-events-none flex justify-center">
+<button class="pointer-events-auto shadow-[0_8px_30px_rgb(70,236,19,0.2)] bg-surface-dark dark:bg-surface-light text-white dark:text-black font-bold h-12 px-6 rounded-full flex items-center gap-3 transform transition hover:scale-105 active:scale-95">
+<span class="material-symbols-outlined filled">cloud_upload</span>
+            Sync 14 Pending Items
+        </button>
+</div>
+<!-- Conflict Resolution Modal (Simulated) -->
+<div class="hidden fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm p-0 sm:p-4">
+<div class="w-full max-w-lg bg-surface-light dark:bg-surface-dark rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl transform transition-all animate-in slide-in-from-bottom duration-300">
+<div class="w-12 h-1.5 bg-gray-200 dark:bg-white/10 rounded-full mx-auto mb-6 sm:hidden"></div>
+<div class="flex items-center justify-between mb-6">
+<h3 class="text-xl font-bold">Resolve Conflict</h3>
+<button class="p-2 -mr-2 text-text-secondary-light dark:text-text-secondary-dark hover:bg-gray-100 dark:hover:bg-white/5 rounded-full">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<div class="bg-red-50 dark:bg-red-900/10 border border-red-100 dark:border-red-900/20 rounded-xl p-4 mb-6 flex gap-3">
+<span class="material-symbols-outlined text-red-500 mt-0.5">info</span>
+<div class="text-sm">
+<p class="font-semibold text-red-700 dark:text-red-400">Data Mismatch Detected</p>
+<p class="text-red-600/80 dark:text-red-400/80 mt-1">The user email on the server is different from the version you are trying to upload.</p>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-4 mb-8">
+<!-- Local Version -->
+<div class="p-4 rounded-xl border-2 border-primary bg-primary/5 relative">
+<div class="absolute -top-3 left-3 bg-primary text-black text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">Your Version</div>
+<p class="text-xs text-text-secondary-light dark:text-text-secondary-dark mb-1">Email Address</p>
+<p class="font-semibold break-words">john.d@yabisso.local</p>
+<p class="text-xs text-text-secondary-light dark:text-text-secondary-dark mt-3 mb-1">Last Modified</p>
+<p class="font-medium text-sm">10:42 AM</p>
+</div>
+<!-- Server Version -->
+<div class="p-4 rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5">
+<div class="inline-block bg-gray-200 dark:bg-white/20 text-text-secondary-light dark:text-text-secondary-dark text-[10px] font-bold px-2 py-0.5 rounded-full uppercase mb-2">Server Version</div>
+<p class="text-xs text-text-secondary-light dark:text-text-secondary-dark mb-1">Email Address</p>
+<p class="font-semibold break-words text-text-secondary-light dark:text-text-secondary-dark line-through decoration-red-500">j.doe@gmail.com</p>
+<p class="text-xs text-text-secondary-light dark:text-text-secondary-dark mt-3 mb-1">Last Modified</p>
+<p class="font-medium text-sm text-text-secondary-light dark:text-text-secondary-dark">Yesterday</p>
+</div>
+</div>
+<div class="flex gap-3">
+<button class="flex-1 py-3.5 rounded-xl border border-gray-200 dark:border-white/10 font-semibold hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
+                    Keep Server
+                </button>
+<button class="flex-1 py-3.5 rounded-xl bg-primary hover:bg-green-400 text-black font-bold shadow-lg shadow-primary/20 transition-colors">
+                    Keep Local
+                </button>
+</div>
+</div>
+</div>
+</body></html>

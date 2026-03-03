@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Services List - Yabisso</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;700;800&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "secondary": "#22c55e", // Green for price/availability
+                        "accent": "#fbbf24",    // Yellow for ratings
+                        "alert": "#ef4444",     // Red for alerts
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#111a22",
+                        "surface-dark": "#192633",
+                        "surface-highlight": "#233648",
+                        "text-muted": "#92adc9"
+                    },
+                    fontFamily: {
+                        "display": ["Plus Jakarta Sans", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "2xl": "1rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        /* Hide scrollbar for Chrome, Safari and Opera */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        /* Hide scrollbar for IE, Edge and Firefox */
+        .no-scrollbar {
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-dark text-white font-display antialiased selection:bg-primary selection:text-white">
+<div class="relative flex h-full min-h-screen w-full flex-col overflow-hidden pb-[80px]">
+<!-- Top App Bar -->
+<header class="sticky top-0 z-20 bg-background-dark/95 backdrop-blur-md border-b border-surface-highlight/30">
+<div class="flex items-center justify-between p-4 pb-2">
+<h2 class="text-white text-xl font-bold leading-tight tracking-[-0.015em] flex-1">Find Services</h2>
+<div class="flex items-center justify-end gap-3">
+<!-- Location Indicator (Optional Context) -->
+<div class="hidden xs:flex items-center gap-1 text-primary bg-primary/10 px-2 py-1 rounded-full">
+<span class="material-symbols-outlined text-[16px]">location_on</span>
+<span class="text-xs font-bold">Lagos</span>
+</div>
+<button class="relative flex cursor-pointer items-center justify-center rounded-lg h-10 w-10 bg-surface-highlight text-white transition hover:bg-surface-highlight/80">
+<span class="material-symbols-outlined" style="font-size: 24px;">notifications</span>
+<!-- Notification Dot -->
+<span class="absolute top-2 right-2 h-2 w-2 rounded-full bg-alert border-2 border-surface-highlight"></span>
+</button>
+</div>
+</div>
+<!-- Search Bar -->
+<div class="px-4 pb-4 pt-1">
+<label class="flex flex-col h-12 w-full">
+<div class="flex w-full flex-1 items-center rounded-xl bg-surface-highlight border border-transparent focus-within:border-primary/50 transition-all overflow-hidden shadow-sm">
+<div class="text-text-muted flex items-center justify-center pl-4 pr-2">
+<span class="material-symbols-outlined">search</span>
+</div>
+<input class="flex w-full min-w-0 flex-1 bg-transparent text-white placeholder:text-text-muted focus:outline-none h-full px-2 text-base font-normal" placeholder="Search mechanics, cleaners..." value=""/>
+<button class="flex items-center justify-center h-full px-4 text-primary hover:text-white transition-colors">
+<span class="material-symbols-outlined">mic</span>
+</button>
+</div>
+</label>
+</div>
+</header>
+<!-- Main Scrollable Content -->
+<main class="flex-1 flex flex-col w-full">
+<!-- Filters & Categories -->
+<div class="flex items-center gap-3 px-4 py-3 overflow-x-auto no-scrollbar">
+<!-- Filter Button -->
+<button class="flex shrink-0 items-center justify-center h-10 w-10 rounded-xl bg-surface-highlight border border-surface-highlight text-white hover:border-primary/50 transition-colors">
+<span class="material-symbols-outlined">tune</span>
+</button>
+<!-- Chips -->
+<div class="flex h-10 shrink-0 items-center justify-center px-5 rounded-xl bg-primary text-white shadow-[0_4px_10px_rgba(19,127,236,0.3)] cursor-pointer">
+<p class="text-sm font-bold leading-normal">All</p>
+</div>
+<div class="flex h-10 shrink-0 items-center justify-center px-5 rounded-xl bg-surface-highlight border border-transparent hover:border-text-muted/30 text-text-muted hover:text-white transition-colors cursor-pointer">
+<p class="text-sm font-medium leading-normal">Mechanic</p>
+</div>
+<div class="flex h-10 shrink-0 items-center justify-center px-5 rounded-xl bg-surface-highlight border border-transparent hover:border-text-muted/30 text-text-muted hover:text-white transition-colors cursor-pointer">
+<p class="text-sm font-medium leading-normal">Beauty</p>
+</div>
+<div class="flex h-10 shrink-0 items-center justify-center px-5 rounded-xl bg-surface-highlight border border-transparent hover:border-text-muted/30 text-text-muted hover:text-white transition-colors cursor-pointer">
+<p class="text-sm font-medium leading-normal">Plumbing</p>
+</div>
+<div class="flex h-10 shrink-0 items-center justify-center px-5 rounded-xl bg-surface-highlight border border-transparent hover:border-text-muted/30 text-text-muted hover:text-white transition-colors cursor-pointer">
+<p class="text-sm font-medium leading-normal">Cleaning</p>
+</div>
+<div class="flex h-10 shrink-0 items-center justify-center px-5 rounded-xl bg-surface-highlight border border-transparent hover:border-text-muted/30 text-text-muted hover:text-white transition-colors cursor-pointer">
+<p class="text-sm font-medium leading-normal">Tech</p>
+</div>
+</div>
+<!-- Promo Banner (Vibrant) -->
+<div class="px-4 py-3">
+<div class="relative w-full overflow-hidden rounded-2xl bg-gradient-to-r from-[#137fec] via-[#6366f1] to-[#ec4899] shadow-lg">
+<div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-20"></div>
+<div class="relative z-10 p-5 flex flex-col items-start gap-1">
+<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-white text-primary uppercase tracking-wider">Deal of the Day</span>
+<h3 class="text-white text-xl font-extrabold mt-1">20% Off Home Cleaning</h3>
+<p class="text-white/90 text-sm font-medium mb-3 max-w-[80%]">Get your space sparkling clean this weekend.</p>
+<button class="bg-black/30 backdrop-blur-md hover:bg-black/40 text-white text-xs font-bold py-2 px-4 rounded-lg transition">
+                            Claim Offer
+                        </button>
+</div>
+<!-- Decorative Circle -->
+<div class="absolute -right-6 -bottom-10 w-32 h-32 bg-white/10 rounded-full blur-2xl"></div>
+</div>
+</div>
+<!-- Section Title -->
+<div class="px-4 pt-2 pb-1 flex justify-between items-end">
+<h3 class="text-white text-lg font-bold">Nearby Pros</h3>
+<a class="text-primary text-sm font-medium" href="#">See all</a>
+</div>
+<!-- Service List -->
+<div class="flex flex-col gap-4 p-4">
+<!-- Card 1: Mechanic -->
+<div class="group flex flex-col sm:flex-row bg-surface-dark rounded-2xl overflow-hidden shadow-md border border-surface-highlight/50 hover:border-primary/30 transition-all duration-300">
+<!-- Image -->
+<div class="h-40 sm:h-auto sm:w-40 w-full bg-cover bg-center shrink-0 relative" data-alt="Mechanic working under a car hood" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCAD5cbVTi-l7omTnm8bpLguQ4h2a-eYdBk_5-pKFQUIaTC_v9-tGQdUM4WWbvqc9eGzBr3cLdt6tbs263Ab22mWltUyWo_D-0D0ldAsIJLvIKMoCRrm7_qr0WTd7cT_NnGTAVLe8jmKyVA2sYrWmWSqXvBcX6ZJgGjNa04HgUtMnboj_y8AZ5LjJVAxaF0vSPmWXnyYtI5Z15k92yaeP1k2GWA89utROft_SBBr2VXhEXVD0wRZT9HsJvQkaoFEp5WiYIfj8lp');">
+<div class="absolute top-2 left-2 bg-black/60 backdrop-blur-sm px-2 py-1 rounded-md flex items-center gap-1">
+<span class="material-symbols-outlined text-accent text-[14px] fill-1">star</span>
+<span class="text-white text-xs font-bold">4.8</span>
+</div>
+</div>
+<!-- Content -->
+<div class="flex flex-1 flex-col p-4 justify-between">
+<div>
+<div class="flex justify-between items-start">
+<h4 class="text-white text-lg font-bold leading-tight group-hover:text-primary transition-colors">Kojo's Auto Repair</h4>
+<span class="bg-surface-highlight text-text-muted text-[10px] font-bold px-2 py-1 rounded">2.5km</span>
+</div>
+<p class="text-text-muted text-sm mt-1 line-clamp-2">Expert engine diagnostics, oil changes, and brake repairs. Certified specialists.</p>
+</div>
+<div class="flex items-center justify-between mt-4">
+<div class="flex flex-col">
+<span class="text-xs text-text-muted">Starting from</span>
+<span class="text-white font-bold">5,000 XAF</span>
+</div>
+<button class="bg-primary hover:bg-primary/90 text-white text-sm font-bold py-2 px-4 rounded-lg shadow-lg shadow-primary/20 transition-all">
+                                Book
+                            </button>
+</div>
+</div>
+</div>
+<!-- Card 2: Beauty -->
+<div class="group flex flex-col sm:flex-row bg-surface-dark rounded-2xl overflow-hidden shadow-md border border-surface-highlight/50 hover:border-primary/30 transition-all duration-300">
+<!-- Image -->
+<div class="h-40 sm:h-auto sm:w-40 w-full bg-cover bg-center shrink-0 relative" data-alt="Close up of makeup artist applying makeup" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuB6Ql8wplo48W4UOnIiHiiFUeEfGYxEHqPiR866ixkv82hRrT_B6o8VIf6Bp7_0ukei34XqQb5JwpRQB7YVFIK4Mer1XY-cBW2Avmw9XVJPxDsr7ReHTJNkDCvp4lI90vFUwe7vlB8bWW7tq-ZKxLjaV62cWWgMUS9g4yWqtsQUIn0X8n3_wcHURssMHAe-dlb_8F1IVrbW4wB6mxSB2uaMkSCqen_JKDG4tnrEf8k-hB8vrbUBuRuOYVsz9OxEzlO9TYOZjDsU');">
+<div class="absolute top-2 left-2 bg-black/60 backdrop-blur-sm px-2 py-1 rounded-md flex items-center gap-1">
+<span class="material-symbols-outlined text-accent text-[14px] fill-1">star</span>
+<span class="text-white text-xs font-bold">4.9</span>
+</div>
+<!-- Vibe/Tag -->
+<div class="absolute bottom-2 left-2 bg-secondary/90 px-2 py-0.5 rounded text-[10px] font-bold text-white uppercase">
+                            Available Now
+                        </div>
+</div>
+<!-- Content -->
+<div class="flex flex-1 flex-col p-4 justify-between">
+<div>
+<div class="flex justify-between items-start">
+<h4 class="text-white text-lg font-bold leading-tight group-hover:text-primary transition-colors">Lagos Glam Squad</h4>
+<span class="bg-surface-highlight text-text-muted text-[10px] font-bold px-2 py-1 rounded">1.2km</span>
+</div>
+<p class="text-text-muted text-sm mt-1 line-clamp-2">Professional makeup and hair styling at home. Wedding and event specials.</p>
+</div>
+<div class="flex items-center justify-between mt-4">
+<div class="flex flex-col">
+<span class="text-xs text-text-muted">Starting from</span>
+<span class="text-white font-bold">12,000 NGN</span>
+</div>
+<button class="bg-surface-highlight hover:bg-surface-highlight/80 text-white text-sm font-bold py-2 px-4 rounded-lg border border-surface-highlight transition-all">
+                                View Profile
+                            </button>
+</div>
+</div>
+</div>
+<!-- Card 3: Plumbing -->
+<div class="group flex flex-col sm:flex-row bg-surface-dark rounded-2xl overflow-hidden shadow-md border border-surface-highlight/50 hover:border-primary/30 transition-all duration-300">
+<!-- Image -->
+<div class="h-40 sm:h-auto sm:w-40 w-full bg-cover bg-center shrink-0 relative" data-alt="Plumber fixing a sink pipe" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDefAjWwFulVDrvvN0WJ27pnm03MAPBFImv54OVz0ikoZJqJucDtOQqIE0WgfgD6MCaCKd840uu7M6ijvqxPRop73s8BwelFQqRHYmlutZGhBDoQDW9LjDOFwupimp_CysuEPvnuU1TvwPtJw1jtzcQazJYUcD0Y1wmuDEf5qmYv8nvPiqpGEscL2TWTUn3qBanUel7Y4IMHuL1XmaQ24GVuqmusvDPp9zD8TiyQbYct4bhCeRFDaCeFhIs5Boly8JJ8sk4r1Av');">
+<div class="absolute top-2 left-2 bg-black/60 backdrop-blur-sm px-2 py-1 rounded-md flex items-center gap-1">
+<span class="material-symbols-outlined text-accent text-[14px] fill-1">star</span>
+<span class="text-white text-xs font-bold">4.5</span>
+</div>
+</div>
+<!-- Content -->
+<div class="flex flex-1 flex-col p-4 justify-between">
+<div>
+<div class="flex justify-between items-start">
+<h4 class="text-white text-lg font-bold leading-tight group-hover:text-primary transition-colors">QuickFix Plumbers</h4>
+<span class="bg-surface-highlight text-text-muted text-[10px] font-bold px-2 py-1 rounded">4.0km</span>
+</div>
+<p class="text-text-muted text-sm mt-1 line-clamp-2">24/7 emergency pipe repair and installation services. Fast response time.</p>
+</div>
+<div class="flex items-center justify-between mt-4">
+<div class="flex flex-col">
+<span class="text-xs text-text-muted">Price</span>
+<span class="text-white font-bold">On Quote</span>
+</div>
+<button class="bg-primary hover:bg-primary/90 text-white text-sm font-bold py-2 px-4 rounded-lg shadow-lg shadow-primary/20 transition-all">
+                                Book
+                            </button>
+</div>
+</div>
+</div>
+<!-- Card 4: Cleaning -->
+<div class="group flex flex-col sm:flex-row bg-surface-dark rounded-2xl overflow-hidden shadow-md border border-surface-highlight/50 hover:border-primary/30 transition-all duration-300">
+<!-- Image -->
+<div class="h-40 sm:h-auto sm:w-40 w-full bg-cover bg-center shrink-0 relative" data-alt="Person cleaning a window with spray" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAo-accLOIyxEpw5pUhCJHck3u_6o4l-9RpVPV-WAK8-LaQqH38O5ECkuG7GiIHiaKpPFTYJmCZ3dv_P3xHhuoapKYEKEtqKEc8N04av6b177zf5MIIqUl04EUPViD5cRBBIaO_s08Gxg-SCVWf06YGye4fVK1cK-BkiVXbytmmdtDwavNeMTpCHP7gwxf9c1MLo_macoeT9ToDOZXfC0dcj2c3Z84PlhRrG9Jkuk2I2lbNH5eSJqhPZbJPCnrw6ZYieqFLL1oA');">
+<div class="absolute top-2 left-2 bg-black/60 backdrop-blur-sm px-2 py-1 rounded-md flex items-center gap-1">
+<span class="material-symbols-outlined text-accent text-[14px] fill-1">star</span>
+<span class="text-white text-xs font-bold">4.7</span>
+</div>
+</div>
+<!-- Content -->
+<div class="flex flex-1 flex-col p-4 justify-between">
+<div>
+<div class="flex justify-between items-start">
+<h4 class="text-white text-lg font-bold leading-tight group-hover:text-primary transition-colors">Mama T Cleaners</h4>
+<span class="bg-surface-highlight text-text-muted text-[10px] font-bold px-2 py-1 rounded">0.5km</span>
+</div>
+<p class="text-text-muted text-sm mt-1 line-clamp-2">Deep cleaning for homes and offices. Trusted staff, eco-friendly products.</p>
+</div>
+<div class="flex items-center justify-between mt-4">
+<div class="flex flex-col">
+<span class="text-xs text-text-muted">Hourly</span>
+<span class="text-white font-bold">3,000 XAF</span>
+</div>
+<button class="bg-primary hover:bg-primary/90 text-white text-sm font-bold py-2 px-4 rounded-lg shadow-lg shadow-primary/20 transition-all">
+                                Book
+                            </button>
+</div>
+</div>
+</div>
+</div>
+<!-- Bottom Spacer for nav -->
+<div class="h-6"></div>
+</main>
+<!-- Bottom Navigation Bar -->
+<nav class="fixed bottom-0 z-30 w-full bg-surface-dark border-t border-surface-highlight pb-safe">
+<div class="flex items-center justify-between px-2 h-[80px]"> <!-- Taller for modern feel -->
+<!-- Home -->
+<a class="flex flex-1 flex-col items-center justify-center gap-1 text-text-muted hover:text-white transition-colors" href="#">
+<span class="material-symbols-outlined text-2xl">home</span>
+<span class="text-[10px] font-medium">Home</span>
+</a>
+<!-- Wallet -->
+<a class="flex flex-1 flex-col items-center justify-center gap-1 text-text-muted hover:text-white transition-colors" href="#">
+<span class="material-symbols-outlined text-2xl">account_balance_wallet</span>
+<span class="text-[10px] font-medium">Wallet</span>
+</a>
+<!-- Services (Active) -->
+<a class="flex flex-1 flex-col items-center justify-center gap-1 text-primary" href="#">
+<div class="bg-primary/20 rounded-2xl px-5 py-1 mb-0.5">
+<span class="material-symbols-outlined text-2xl fill-1">grid_view</span>
+</div>
+<span class="text-[10px] font-bold">Services</span>
+</a>
+<!-- Cart -->
+<a class="flex flex-1 flex-col items-center justify-center gap-1 text-text-muted hover:text-white transition-colors relative" href="#">
+<span class="material-symbols-outlined text-2xl">shopping_cart</span>
+<span class="text-[10px] font-medium">Cart</span>
+<!-- Badge -->
+<span class="absolute top-3 right-5 h-2 w-2 rounded-full bg-alert"></span>
+</a>
+<!-- Profile -->
+<a class="flex flex-1 flex-col items-center justify-center gap-1 text-text-muted hover:text-white transition-colors" href="#">
+<span class="material-symbols-outlined text-2xl">person</span>
+<span class="text-[10px] font-medium">Profile</span>
+</a>
+</div>
+</nav>
+</div>
+</body></html>

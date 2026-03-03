@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Yabisso Betting Home</title>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Fonts and Icons -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                        "yabisso-red": "#ef4444",
+                        "yabisso-yellow": "#eab308",
+                        "yabisso-green": "#22c55e",
+                        "card-dark": "#192633",
+                        "border-dark": "#324d67",
+                        "text-secondary": "#92adc9",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.375rem", // rounded-md approx
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "2xl": "1rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom scrollbar hiding for horizontal scrolls */
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-white antialiased selection:bg-primary/30">
+<div class="relative flex h-full min-h-screen w-full flex-col overflow-x-hidden max-w-md mx-auto shadow-2xl bg-background-light dark:bg-background-dark">
+<!-- Header -->
+<header class="sticky top-0 z-30 flex flex-col gap-2 bg-background-light dark:bg-background-dark p-4 pb-2 border-b border-border-dark/30 backdrop-blur-md bg-opacity-95 dark:bg-opacity-95">
+<div class="flex items-center h-12 justify-between">
+<div class="flex items-center gap-3">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 border-2 border-primary" data-alt="User profile picture" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAHA1RDx4kbaCTLIvHxrFPP1lgz6BAj3t176InUxFosTBtTes5jiV3mpUVn-srps5qVz5jV5YMuUxgPkqES2T23FXQObjWfjJ_kPfsjijW7C_kS-5wH3EFQy3sMxFdRtTehIUOPL6a4YfM8_c_14nb0LB8T0tutZ9I7inMz6mrMwE20HSgDdBYFXwXqSvVk45c8Hm73JFHkEgv_LKRhnTzGA90MT_LkqC8pwKqs0BAszgYP2y1Aw3XeOe9XJxnFzfS1swHNsNRe");'></div>
+<div class="flex flex-col">
+<span class="text-xs text-text-secondary font-medium uppercase tracking-wider">Balance</span>
+<div class="flex items-center gap-1">
+<span class="text-primary material-symbols-outlined" style="font-size: 16px;">account_balance_wallet</span>
+<span class="text-slate-900 dark:text-white text-lg font-bold leading-none tracking-tight">$ 2,450.00</span>
+</div>
+</div>
+</div>
+<!-- Connectivity Toggle -->
+<div class="flex items-center gap-2 bg-card-dark border border-border-dark rounded-full px-3 py-1.5 shadow-sm">
+<div class="size-2 rounded-full bg-yabisso-green animate-pulse"></div>
+<span class="text-xs font-semibold text-white tracking-wide uppercase">Online</span>
+</div>
+</div>
+<!-- Search Bar -->
+<div class="mt-2">
+<label class="flex flex-col h-11 w-full relative">
+<div class="flex w-full flex-1 items-stretch rounded-lg h-full bg-slate-200 dark:bg-card-dark border border-slate-300 dark:border-border-dark focus-within:border-primary focus-within:ring-1 focus-within:ring-primary transition-all">
+<div class="text-text-secondary flex items-center justify-center pl-3">
+<span class="material-symbols-outlined">search</span>
+</div>
+<input class="flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg bg-transparent border-none text-slate-900 dark:text-white placeholder:text-text-secondary px-3 text-sm font-medium focus:ring-0" placeholder="Search events, teams or leagues"/>
+</div>
+</label>
+</div>
+</header>
+<!-- Main Content Scroll Area -->
+<main class="flex-1 overflow-y-auto pb-24">
+<!-- Live Ticker -->
+<div class="bg-primary/10 border-y border-primary/20 py-2 overflow-hidden whitespace-nowrap">
+<div class="inline-flex animate-marquee items-center gap-8 px-4">
+<div class="flex items-center gap-2 text-xs font-bold text-primary">
+<span class="material-symbols-outlined text-[16px] animate-pulse">fiber_manual_record</span>
+                        LIVE: MAN UTD 2 - 1 CHELSEA (78')
+                    </div>
+<div class="flex items-center gap-2 text-xs font-bold text-white/80">
+<span class="w-1 h-1 rounded-full bg-text-secondary"></span>
+                        LAKERS 110 - 102 WARRIORS (Q4)
+                    </div>
+<div class="flex items-center gap-2 text-xs font-bold text-white/80">
+<span class="w-1 h-1 rounded-full bg-text-secondary"></span>
+                        BARCELONA vs REAL MADRID STARTS IN 15M
+                    </div>
+</div>
+</div>
+<!-- Hero Carousel -->
+<div class="mt-4 px-4">
+<div class="flex overflow-x-auto hide-scrollbar gap-4 snap-x snap-mandatory">
+<!-- Slide 1 -->
+<div class="snap-center shrink-0 w-full relative rounded-xl overflow-hidden aspect-[21/9] group shadow-lg">
+<div class="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105" data-alt="Football stadium stadium lights at night" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDHcNo9oY2NeYvneRtdiWe6UxXGQH_snarseLne8zXF5aj5g-ytbCylPtVsYEvoPcBZc6EpRwaHLrIxSpmQqsFc3QEXC65lwjAdXC_sKJgSVZquRB_zEf2JrbDjDMN0PXotuAyAtJQ3Yl9Y34EiuEWy1HIyilRUq7jfIoOFYI4cDYGWhABjlqrC8qP4tFSrSaDvdjIQIorqPkS018coyW1PGOTJ3vEJt2oCbzurWSAaJflafZHwKy5HiYX5eSyhPwzuZEzY2Ibj");'></div>
+<div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent"></div>
+<div class="absolute bottom-0 left-0 p-4 w-full">
+<span class="inline-block px-2 py-0.5 rounded bg-yabisso-red text-[10px] font-bold text-white uppercase mb-2">Live Now</span>
+<h3 class="text-white text-lg font-bold leading-tight">Premier League</h3>
+<div class="flex justify-between items-end mt-1">
+<p class="text-gray-200 text-sm font-medium">Man City vs. Arsenal</p>
+<button class="bg-primary text-white text-xs font-bold py-1.5 px-3 rounded hover:bg-blue-600 transition-colors">Bet Now</button>
+</div>
+</div>
+</div>
+<!-- Slide 2 -->
+<div class="snap-center shrink-0 w-full relative rounded-xl overflow-hidden aspect-[21/9] group shadow-lg">
+<div class="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105" data-alt="Casino chips and cards abstract" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCQa3Y5kDz6WjSjHDDM4YBjkpy1q6sX0046nvQDc31uOb9dItmwOQJP4i0M2oMgm3PZrJc0GoRkvplVVRR1Fo66oS7EFiyFiC-DCMWY64aEL1HyLlxCHXQU4KHOwDqOdgVe-TvSj5o7jDmafMO19IYsKEwkTu-Htk4jHr8bdVNUukkdGwGU4WZH8T3QyRNicgmHhl4F9V-Hbxebz9bVK4GEp8xiS2ob_nRbCaY1svreJzJCfhS_8wpZz4D3QDpc-RXXMmR3PmmQ");'></div>
+<div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent"></div>
+<div class="absolute bottom-0 left-0 p-4 w-full">
+<span class="inline-block px-2 py-0.5 rounded bg-yabisso-yellow text-[10px] font-bold text-black uppercase mb-2">Jackpot</span>
+<h3 class="text-white text-lg font-bold leading-tight">Super Jackpot</h3>
+<div class="flex justify-between items-end mt-1">
+<p class="text-gray-200 text-sm font-medium">Win up to $50,000 today</p>
+<button class="bg-white/10 backdrop-blur-sm border border-white/30 text-white text-xs font-bold py-1.5 px-3 rounded hover:bg-white/20 transition-colors">Play</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Quick Actions Grid -->
+<div class="grid grid-cols-4 gap-3 px-4 mt-6">
+<button class="flex flex-col items-center gap-2 group">
+<div class="size-12 rounded-xl bg-card-dark border border-border-dark flex items-center justify-center text-primary group-hover:border-primary transition-colors shadow-sm">
+<span class="material-symbols-outlined">account_balance_wallet</span>
+</div>
+<span class="text-[11px] font-medium text-text-secondary group-hover:text-white">Top Up</span>
+</button>
+<button class="flex flex-col items-center gap-2 group">
+<div class="size-12 rounded-xl bg-card-dark border border-border-dark flex items-center justify-center text-yabisso-green group-hover:border-yabisso-green transition-colors shadow-sm">
+<span class="material-symbols-outlined">qr_code_scanner</span>
+</div>
+<span class="text-[11px] font-medium text-text-secondary group-hover:text-white">Scan Ticket</span>
+</button>
+<button class="flex flex-col items-center gap-2 group">
+<div class="size-12 rounded-xl bg-card-dark border border-border-dark flex items-center justify-center text-yabisso-yellow group-hover:border-yabisso-yellow transition-colors shadow-sm">
+<span class="material-symbols-outlined">emoji_events</span>
+</div>
+<span class="text-[11px] font-medium text-text-secondary group-hover:text-white">Results</span>
+</button>
+<button class="flex flex-col items-center gap-2 group">
+<div class="size-12 rounded-xl bg-card-dark border border-border-dark flex items-center justify-center text-yabisso-red group-hover:border-yabisso-red transition-colors shadow-sm">
+<span class="material-symbols-outlined">videogame_asset</span>
+</div>
+<span class="text-[11px] font-medium text-text-secondary group-hover:text-white">How to</span>
+</button>
+</div>
+<!-- Offline Hub (Unique Selling Point) -->
+<div class="mt-8 px-4">
+<div class="flex items-center justify-between mb-3">
+<h2 class="text-white text-lg font-bold flex items-center gap-2">
+<span class="material-symbols-outlined text-yabisso-green">wifi_off</span>
+                        Offline Ready
+                    </h2>
+<span class="text-xs font-semibold text-primary">View All</span>
+</div>
+<div class="bg-gradient-to-br from-card-dark to-[#0f161d] rounded-xl border border-border-dark/60 p-1">
+<div class="flex flex-col gap-1">
+<!-- Offline Item 1 -->
+<div class="flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 transition-colors cursor-pointer border border-transparent hover:border-white/5">
+<div class="bg-yabisso-yellow/10 p-2 rounded-lg text-yabisso-yellow">
+<span class="material-symbols-outlined">sms</span>
+</div>
+<div class="flex-1">
+<h3 class="text-white text-sm font-bold">SMS Betting</h3>
+<p class="text-text-secondary text-xs">Bet via text message, no data needed.</p>
+</div>
+<span class="material-symbols-outlined text-text-secondary text-sm">chevron_right</span>
+</div>
+<div class="h-px bg-border-dark/50 mx-3"></div>
+<!-- Offline Item 2 -->
+<div class="flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 transition-colors cursor-pointer border border-transparent hover:border-white/5">
+<div class="bg-primary/10 p-2 rounded-lg text-primary">
+<span class="material-symbols-outlined">dialpad</span>
+</div>
+<div class="flex-1">
+<h3 class="text-white text-sm font-bold">USSD Codes</h3>
+<p class="text-text-secondary text-xs">Dial *123# to play instantly.</p>
+</div>
+<span class="material-symbols-outlined text-text-secondary text-sm">chevron_right</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Categories -->
+<div class="mt-8 px-4">
+<h2 class="text-white text-lg font-bold mb-3">Categories</h2>
+<div class="grid grid-cols-2 gap-3">
+<!-- Sports -->
+<div class="bg-card-dark border border-border-dark p-4 rounded-xl flex flex-col justify-between h-32 relative overflow-hidden group cursor-pointer">
+<div class="absolute right-[-10px] top-[-10px] opacity-10 group-hover:opacity-20 transition-opacity">
+<span class="material-symbols-outlined text-9xl">sports_soccer</span>
+</div>
+<div class="z-10 bg-primary/20 w-10 h-10 rounded-full flex items-center justify-center text-primary mb-2">
+<span class="material-symbols-outlined">sports_soccer</span>
+</div>
+<div class="z-10">
+<h3 class="text-white font-bold text-base">Sports</h3>
+<p class="text-text-secondary text-xs">240+ Live Events</p>
+</div>
+</div>
+<!-- Casino -->
+<div class="bg-card-dark border border-border-dark p-4 rounded-xl flex flex-col justify-between h-32 relative overflow-hidden group cursor-pointer">
+<div class="absolute right-[-10px] top-[-10px] opacity-10 group-hover:opacity-20 transition-opacity">
+<span class="material-symbols-outlined text-9xl">casino</span>
+</div>
+<div class="z-10 bg-yabisso-red/20 w-10 h-10 rounded-full flex items-center justify-center text-yabisso-red mb-2">
+<span class="material-symbols-outlined">casino</span>
+</div>
+<div class="z-10">
+<h3 class="text-white font-bold text-base">Games</h3>
+<p class="text-text-secondary text-xs">Slots &amp; Poker</p>
+</div>
+</div>
+<!-- Virtuals -->
+<div class="bg-card-dark border border-border-dark p-4 rounded-xl flex flex-col justify-between h-32 relative overflow-hidden group cursor-pointer">
+<div class="absolute right-[-10px] top-[-10px] opacity-10 group-hover:opacity-20 transition-opacity">
+<span class="material-symbols-outlined text-9xl">sports_esports</span>
+</div>
+<div class="z-10 bg-yabisso-green/20 w-10 h-10 rounded-full flex items-center justify-center text-yabisso-green mb-2">
+<span class="material-symbols-outlined">sports_esports</span>
+</div>
+<div class="z-10">
+<h3 class="text-white font-bold text-base">Virtuals</h3>
+<p class="text-text-secondary text-xs">Instant Results</p>
+</div>
+</div>
+<!-- Community -->
+<div class="bg-card-dark border border-border-dark p-4 rounded-xl flex flex-col justify-between h-32 relative overflow-hidden group cursor-pointer">
+<div class="absolute right-[-10px] top-[-10px] opacity-10 group-hover:opacity-20 transition-opacity">
+<span class="material-symbols-outlined text-9xl">groups</span>
+</div>
+<div class="z-10 bg-yabisso-yellow/20 w-10 h-10 rounded-full flex items-center justify-center text-yabisso-yellow mb-2">
+<span class="material-symbols-outlined">groups</span>
+</div>
+<div class="z-10">
+<h3 class="text-white font-bold text-base">Community</h3>
+<p class="text-text-secondary text-xs">P2P Betting</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Featured Live Match -->
+<div class="mt-8 px-4 mb-6">
+<div class="flex items-center justify-between mb-3">
+<h2 class="text-white text-lg font-bold flex items-center gap-2">
+<span class="animate-pulse w-2 h-2 rounded-full bg-yabisso-red"></span>
+                        Live Top Match
+                    </h2>
+</div>
+<div class="bg-card-dark rounded-xl border border-border-dark p-4 shadow-lg">
+<div class="flex justify-between items-center text-xs text-text-secondary mb-4">
+<span>Premier League</span>
+<span class="text-yabisso-red font-bold">LIVE 34'</span>
+</div>
+<div class="flex justify-between items-center mb-5">
+<div class="flex flex-col items-center gap-2 w-1/3">
+<div class="size-10 rounded-full bg-white/10 p-1" data-alt="Team logo placeholder" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDDtkS8gRJM_9N6L5RAr-7Irvu2ZKfv5HWzy19blaxg7iOK79OK2Ovo9tT6prT62VHrY6UNxVcud-bcm0rcBQJcdiu7hmd7diDg_nsDAjIs-lKuojYgLCpsEmNapY-HiVM2MDvwvzaLsT2yrjCrV8nbQ37ZfHo7N24t-d5Q3P4S37kRTvvEqsEA19HA6evT_PlpLuP-CdNYQQtjjAJwfzgrCkS9TFLR6JLkcSFJf8F06pJn6gzjs49UIr9MtjAE1U1Q-iFQYTzH"); background-size: cover;'></div>
+<span class="text-white font-bold text-sm text-center">Man City</span>
+</div>
+<div class="flex flex-col items-center w-1/3">
+<span class="text-3xl font-black text-white">1 - 0</span>
+</div>
+<div class="flex flex-col items-center gap-2 w-1/3">
+<div class="size-10 rounded-full bg-white/10 p-1" data-alt="Team logo placeholder" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDGzCV7iEg-lL_f-GhnKEEb9QVt5_jN399C9Cx2mRijXsxwFd-satW2XUMV7I1ZE1k9szoKj104KELvEmGDsk5KU1E-j5pASE3NvZzwn-a6-HWSBCU8jkaHVc08iRV9MQ60LNuCahVkVlsJWSK9GvJC1l81rEdQP9WEv2mvW7WU3jypJ_PHZJkCOC4BiHl0ZlpUWGH8XK3gblhPd1PPCclGxc-2hKElJVN0uZX5p4RTyEXRXQgad-s7SsfUWAcHeZBa-XX9wdBY"); background-size: cover;'></div>
+<span class="text-white font-bold text-sm text-center">Arsenal</span>
+</div>
+</div>
+<div class="grid grid-cols-3 gap-2">
+<button class="flex flex-col items-center justify-center bg-[#233648] hover:bg-[#2c4257] py-2 rounded-lg transition-colors border border-transparent hover:border-primary/50">
+<span class="text-text-secondary text-[10px] font-bold">1</span>
+<span class="text-primary font-bold">1.85</span>
+</button>
+<button class="flex flex-col items-center justify-center bg-[#233648] hover:bg-[#2c4257] py-2 rounded-lg transition-colors border border-transparent hover:border-primary/50">
+<span class="text-text-secondary text-[10px] font-bold">X</span>
+<span class="text-white font-bold">3.40</span>
+</button>
+<button class="flex flex-col items-center justify-center bg-[#233648] hover:bg-[#2c4257] py-2 rounded-lg transition-colors border border-transparent hover:border-primary/50">
+<span class="text-text-secondary text-[10px] font-bold">2</span>
+<span class="text-yabisso-green font-bold">4.20</span>
+</button>
+</div>
+</div>
+</div>
+</main>
+<!-- Bottom Navigation -->
+<nav class="fixed bottom-0 w-full max-w-md z-40 bg-card-dark border-t border-border-dark/50 pb-safe">
+<div class="flex justify-around items-center h-16 px-2 relative">
+<a class="flex flex-col items-center justify-center w-12 gap-1 text-primary" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="text-[10px] font-medium">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center w-12 gap-1 text-text-secondary hover:text-white transition-colors" href="#">
+<span class="material-symbols-outlined">receipt_long</span>
+<span class="text-[10px] font-medium">My Bets</span>
+</a>
+<!-- Floating Action Button for Bet Slip -->
+<div class="relative -top-6">
+<button class="flex items-center justify-center size-14 rounded-full bg-primary text-white shadow-lg shadow-primary/40 border-4 border-card-dark">
+<span class="material-symbols-outlined">receipt</span>
+<span class="absolute top-3 right-3 flex h-3 w-3">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-yabisso-yellow opacity-75"></span>
+<span class="relative inline-flex rounded-full h-3 w-3 bg-yabisso-yellow"></span>
+</span>
+</button>
+</div>
+<a class="flex flex-col items-center justify-center w-12 gap-1 text-text-secondary hover:text-white transition-colors" href="#">
+<span class="material-symbols-outlined">account_balance_wallet</span>
+<span class="text-[10px] font-medium">Wallet</span>
+</a>
+<a class="flex flex-col items-center justify-center w-12 gap-1 text-text-secondary hover:text-white transition-colors" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="text-[10px] font-medium">Profile</span>
+</a>
+</div>
+</nav>
+<!-- Safe area spacing for iOS home indicator -->
+<div class="h-6 w-full bg-card-dark fixed bottom-0 z-30 pointer-events-none"></div>
+</div>
+</body></html>

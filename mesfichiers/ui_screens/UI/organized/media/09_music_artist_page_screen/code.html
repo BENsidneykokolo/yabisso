@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Yabisso Music - Artist Page</title>
+<!-- Required Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Spline+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#111a22",
+                        "yabisso-red": "#ef4444",
+                        "yabisso-yellow": "#eab308",
+                        "yabisso-green": "#22c55e",
+                        "surface": "#1e2a36",
+                    },
+                    fontFamily: {
+                        "display": ["Spline Sans", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        /* Hide scrollbar for clean UI */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-white overflow-x-hidden antialiased">
+<!-- Main Container -->
+<div class="relative min-h-screen pb-28">
+<!-- Hero Section -->
+<!-- Utilizing HeaderImage concept but expanded for full immersive effect -->
+<div class="relative w-full h-[50vh] min-h-[420px] max-h-[600px] group/design-root">
+<!-- Top App Bar (Absolute) -->
+<div class="absolute top-0 left-0 w-full z-20 px-4 py-4 pt-12 flex justify-between items-center bg-gradient-to-b from-background-dark/80 to-transparent">
+<button class="flex items-center justify-center size-10 rounded-full bg-background-dark/40 backdrop-blur-md border border-white/10 text-white transition hover:bg-background-dark/60">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<div class="flex gap-3">
+<button class="flex items-center justify-center size-10 rounded-full bg-background-dark/40 backdrop-blur-md border border-white/10 text-white transition hover:bg-background-dark/60">
+<span class="material-symbols-outlined">search</span>
+</button>
+<button class="flex items-center justify-center size-10 rounded-full bg-background-dark/40 backdrop-blur-md border border-white/10 text-white transition hover:bg-background-dark/60">
+<span class="material-symbols-outlined">more_horiz</span>
+</button>
+</div>
+</div>
+<!-- Background Image -->
+<div class="absolute inset-0 bg-cover bg-center bg-no-repeat" data-alt="Artist performing on stage with atmospheric lighting" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuD-37AdRjae3wA4lhHe_Oi4LGc0SxR-zod_1fd2KSKl1PhtyHCNTqR9GOmAP-bd_iNUCrZ15B84dGUdxR-nz-x1W1VQzmh0_AhMGsrOGXbXOLwQohSmO4DVc6vQpaAkUmVSDFoRkFLrFBIBw1pm5-_yd4pdcrDioLcuGWHP69dhIHwJEk_kOiqOMItqXAYJJRBfQtn3WmaNBVeE8yLIjYouDLn77pMoRNhl4izlDYVyNQd0-GQkBWreZA0do0Sy8gQmUC4_82SB');">
+<!-- Gradient Overlay for readability -->
+<div class="absolute inset-0 bg-gradient-to-t from-background-dark via-background-dark/40 to-transparent"></div>
+</div>
+<!-- Artist Identity Overlay -->
+<div class="absolute bottom-0 left-0 w-full p-6 flex flex-col items-start gap-1 z-10">
+<div class="flex items-center gap-2 mb-2 animate-fade-in">
+<span class="bg-surface/50 text-white text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-widest backdrop-blur-sm border border-white/10 flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px] text-yabisso-green filled">verified</span>
+                        Verified Artist
+                     </span>
+</div>
+<h1 class="text-5xl font-extrabold tracking-tight text-white mb-2 leading-none drop-shadow-xl">Burna Boy</h1>
+<!-- Profile Stats inline -->
+<p class="text-slate-300 text-sm font-medium flex items-center gap-2">
+<span class="text-white font-bold">15M</span> Followers 
+                    <span class="size-1 rounded-full bg-slate-500"></span>
+<span class="text-white font-bold">50M</span> Monthly Listeners
+                </p>
+</div>
+</div>
+<!-- Scrollable Content Body -->
+<div class="px-4 -mt-2 relative z-10 flex flex-col gap-8">
+<!-- Action Buttons (ButtonGroup) -->
+<div class="flex gap-4 items-center">
+<button class="flex-1 h-12 bg-primary rounded-full flex items-center justify-center gap-2 text-white font-bold text-base shadow-lg shadow-primary/25 hover:scale-[1.02] transition-transform active:scale-95 group">
+<span class="material-symbols-outlined filled group-hover:scale-110 transition-transform">play_circle</span>
+                    Play All
+                </button>
+<button class="flex-1 h-12 bg-white/5 border border-white/20 rounded-full flex items-center justify-center gap-2 text-white font-bold text-base hover:bg-white/10 transition-colors active:scale-95">
+<span class="material-symbols-outlined">person_add</span>
+                    Follow
+                </button>
+</div>
+<!-- Bio (Accordions) -->
+<details class="group border-b border-white/5 pb-4">
+<summary class="list-none flex justify-between items-center cursor-pointer text-slate-300 font-medium py-1">
+<span class="text-sm font-semibold text-white/90">Biography</span>
+<span class="material-symbols-outlined text-slate-400 transition-transform group-open:rotate-180 text-[20px]">expand_more</span>
+</summary>
+<div class="mt-3 text-slate-400 text-sm leading-relaxed font-normal">
+                    Nigerian singer-songwriter and record producer known for his fusion of dancehall, reggae, Afrobeat, and pop. He rose to prominence in 2012 after releasing "Like to Party", the lead single from his debut studio album L.I.F.E.
+                </div>
+</details>
+<!-- Popular Songs Section -->
+<div class="flex flex-col gap-4">
+<div class="flex justify-between items-end px-1">
+<h2 class="text-lg font-bold text-white tracking-wide">Popular Releases</h2>
+<span class="text-xs text-primary font-bold cursor-pointer hover:text-primary/80">View All</span>
+</div>
+<div class="flex flex-col gap-1">
+<!-- Song Item 1 -->
+<div class="flex items-center gap-4 p-2 rounded-xl hover:bg-surface transition-colors group cursor-pointer">
+<span class="text-slate-500 font-medium w-4 text-center text-sm">1</span>
+<div class="size-12 rounded-lg bg-cover bg-center shrink-0 shadow-md" data-alt="Abstract colorful album cover art" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCp9z0-nKrMmQgq-FpnwgzIgOu17QeXSGXfqvkMlYeKsHRqW8Wnkh6xegPl3EjdY3Hbn9s2H6eE3P4TuTEF6DHikwbAAJgpUNSqNaFVxmNsLjCInAli_st6llxe__6aq8OZFzvRip1awaXikYN0xQDeZgeYlRDL6QljBNRv2gyI6BqjaVT_abxwblimPGpXXxu1FVZsRDMJtfs-UEEVMhx6RyGHPe3ZxvhnKxx4rd4HKTVDGKkWgIp7e8UD-7H7_MDpLN6NCZB2')"></div>
+<div class="flex-1 min-w-0 flex flex-col gap-0.5">
+<h3 class="text-white text-sm font-bold truncate group-hover:text-primary transition-colors">Last Last</h3>
+<div class="flex items-center gap-1.5">
+<span class="bg-gray-700/50 text-[10px] text-gray-300 px-1 rounded">E</span>
+<p class="text-slate-500 text-xs truncate">Love, Damini • 230M Plays</p>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<!-- Offline/Download Indicator -->
+<span class="material-symbols-outlined text-yabisso-green text-[18px]" title="Downloaded">download_done</span>
+<span class="material-symbols-outlined text-slate-400 hover:text-white transition-colors">more_vert</span>
+</div>
+</div>
+<!-- Song Item 2 -->
+<div class="flex items-center gap-4 p-2 rounded-xl hover:bg-surface transition-colors group cursor-pointer">
+<span class="text-slate-500 font-medium w-4 text-center text-sm">2</span>
+<div class="size-12 rounded-lg bg-cover bg-center shrink-0 shadow-md" data-alt="Dark moody album cover" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuArJKX3YcToo8T_93i3-D3X1LUH7qbGylsgFzyVOPGQfvzftg5ChdIXdhU1r5kf1YCnHcqubajmozfCLgy4Vx6sCVPRIh4IU0prYszj7uIFxxG0KsuYz7fJ4GoHHLyEsebYIP2zOK019GClYVqOzMuXmfxH5xGX1LKbQJcpT0M2f_qSJsUpj5b_Y71s400TygThRSCLdb-QyE2THOWU8viVZThdkAdoR98w7EVg3pbWfIk7UzbZ0UVQapZGPZvQOasIHkmX38JV')"></div>
+<div class="flex-1 min-w-0 flex flex-col gap-0.5">
+<h3 class="text-white text-sm font-bold truncate group-hover:text-primary transition-colors">On The Low</h3>
+<p class="text-slate-500 text-xs truncate">African Giant • 180M Plays</p>
+</div>
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-yabisso-green text-[18px]" title="Downloaded">download_done</span>
+<span class="material-symbols-outlined text-slate-400 hover:text-white transition-colors">more_vert</span>
+</div>
+</div>
+<!-- Song Item 3 -->
+<div class="flex items-center gap-4 p-2 rounded-xl hover:bg-surface transition-colors group cursor-pointer">
+<span class="text-slate-500 font-medium w-4 text-center text-sm">3</span>
+<div class="size-12 rounded-lg bg-cover bg-center shrink-0 shadow-md" data-alt="Vibrant red and orange abstract album artwork" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDDzgwzz8xznOlACgl5avbhQA_iH3SreG8qu6rLfiHz18WCeYJffgPGebrjJLUPiIs1y9VLiJwSEz8l2WsRkRu6sWkxFhuuWLYJ8i1F5IeuqsnmsWMpasL5ktmRPWv6BEwdyT-9jN-xHsPIvAHpO3xQvM5jO79mG8WFfHFu2GFxTmVEMAHPecrG1FVuBivuVfNiM5rDI_vcQgQpWiLqYEEopiDM7KWN-UkMH7lNhLKKngKZwlVIfwUQxULAZbRZc5lWZR8KbInZ')"></div>
+<div class="flex-1 min-w-0 flex flex-col gap-0.5">
+<h3 class="text-white text-sm font-bold truncate group-hover:text-primary transition-colors">Ye</h3>
+<p class="text-slate-500 text-xs truncate">Outside • 150M Plays</p>
+</div>
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-slate-600 text-[18px]" title="Download">download</span>
+<span class="material-symbols-outlined text-slate-400 hover:text-white transition-colors">more_vert</span>
+</div>
+</div>
+<!-- Song Item 4 -->
+<div class="flex items-center gap-4 p-2 rounded-xl hover:bg-surface transition-colors group cursor-pointer">
+<span class="text-slate-500 font-medium w-4 text-center text-sm">4</span>
+<div class="size-12 rounded-lg bg-cover bg-center shrink-0 shadow-md" data-alt="Abstract dark pattern album cover" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBNbk-CbMIhD9RDCMhKzvHBdPKflv2Jgd7UAastRRwrChTwT2B_y1T4qd03PYmiJqp-Pb-wgbyOnQ_lEAVWeL7kP3shc6kAOIVBmW16XXQgx7Pg9_QVUKjo6l52rLWgLSw8E7MzQyPkntHNA0-3zOkoWhsWnrf3QHv6eILNjUTcHmd42cMmwnpQ8eGVW2Hb-S8mHaIgDKPE23Kw5CcdADuzpJp12CIcEwqR8D5voWu18JAQbhzCy5s046NINiqZ0ZbZcm7dV8EP')"></div>
+<div class="flex-1 min-w-0 flex flex-col gap-0.5">
+<h3 class="text-white text-sm font-bold truncate group-hover:text-primary transition-colors">Gbona</h3>
+<p class="text-slate-500 text-xs truncate">African Giant • 120M Plays</p>
+</div>
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-yabisso-green text-[18px]" title="Downloaded">download_done</span>
+<span class="material-symbols-outlined text-slate-400 hover:text-white transition-colors">more_vert</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Albums Scroll Section -->
+<div class="flex flex-col gap-4">
+<div class="flex justify-between items-end px-1">
+<h2 class="text-lg font-bold text-white tracking-wide">Albums</h2>
+<span class="text-xs text-primary font-bold cursor-pointer hover:text-primary/80">View Discography</span>
+</div>
+<div class="flex overflow-x-auto gap-4 no-scrollbar pb-2 -mx-4 px-4">
+<!-- Album 1 -->
+<div class="flex flex-col gap-2 min-w-[150px] w-[150px] group cursor-pointer">
+<div class="w-full aspect-square rounded-2xl bg-surface overflow-hidden relative shadow-lg">
+<img class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" data-alt="Cover art for Love, Damini album" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA1PJ-tnl_-74hzWByFVyWAyZsQPbBAlLWwMSKHSDFoQpZKgAemSJY5hTcH5d9Z69qgZm8mgMVaarJltr5PePz6_QCMHpfSHN20DdLE6CqSWeMM7HXte-ajXYnWtGAt4CWAq6UgJQfh3c1ceWRMbPl6jmbTmyZtiT58yQbY8c1PzCj-37YeC_B-KdPyltF3QPDD_2-AnWZoUGxOdlI-7aUKEYayBD9wPC7EnhJIZbnWRUcAkm5Pf29DKG93ZXYHi7qtkN1HEyXZ"/>
+<div class="absolute inset-0 bg-black/20 group-hover:bg-black/0 transition-colors"></div>
+</div>
+<div>
+<h3 class="text-white text-sm font-bold truncate leading-tight">Love, Damini</h3>
+<p class="text-slate-500 text-xs mt-1">2022 • Album</p>
+</div>
+</div>
+<!-- Album 2 -->
+<div class="flex flex-col gap-2 min-w-[150px] w-[150px] group cursor-pointer">
+<div class="w-full aspect-square rounded-2xl bg-surface overflow-hidden relative shadow-lg">
+<img class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" data-alt="Cover art for African Giant album" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDV27PCTPHGPll0wg7ydrLT0g3IIuQz4hbhWYxbpvQktzwCMYirJRwT-rmLrwKWSzNqaykmf8HBQIkqKUaVa_xG5u3J-PjRJkipM7kq6AxmgCeU-Ic9ZlvqPdcwmT81vWw9KM05yklNWukdRgosYX2LVg265zsEeAfROFBTNVHPc43nfcm36_pssJBlaybKd8DmbU-pYpdSpWealYJCjXL0Zp69D2KP5f-T8S-ftmIWU1U6_ivQAWLvQzAW4PAW7yKGpLagphRm"/>
+<div class="absolute inset-0 bg-black/20 group-hover:bg-black/0 transition-colors"></div>
+</div>
+<div>
+<h3 class="text-white text-sm font-bold truncate leading-tight">African Giant</h3>
+<p class="text-slate-500 text-xs mt-1">2019 • Album</p>
+</div>
+</div>
+<!-- Album 3 -->
+<div class="flex flex-col gap-2 min-w-[150px] w-[150px] group cursor-pointer">
+<div class="w-full aspect-square rounded-2xl bg-surface overflow-hidden relative shadow-lg">
+<img class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" data-alt="Cover art for Outside album" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAQ5G85SAWtH7GmqOc1UnMrC9kLhiilPNkr7qkit5YnvxiqvexnnqYXpqKoC-_WYiGK_CXHKfDRxFEJOCpjN3vnRlxT0c1_kDhqqJA9AhHBmVLtu1EnluLnEY7YDmlUcrm5HOdU0AAjxQqOcn5mKoEgK1p6QYPGFHqSVLlbFFcC1Ee3X5yrsuiwYO3V74EKgancmv1GyVjC81AYPf6e-80eWQZ7dZRe0Fd7JRPgKctqvdKvvlMiElwKH-34zhZ2Kw57cXpmgNWZ"/>
+<div class="absolute inset-0 bg-black/20 group-hover:bg-black/0 transition-colors"></div>
+</div>
+<div>
+<h3 class="text-white text-sm font-bold truncate leading-tight">Outside</h3>
+<p class="text-slate-500 text-xs mt-1">2018 • Album</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Appears On / Playlists -->
+<div class="flex flex-col gap-4">
+<div class="flex justify-between items-end px-1">
+<h2 class="text-lg font-bold text-white tracking-wide">Appears On</h2>
+</div>
+<div class="flex overflow-x-auto gap-4 no-scrollbar pb-2 -mx-4 px-4">
+<!-- Playlist 1 -->
+<div class="flex flex-col gap-2 min-w-[150px] w-[150px] group cursor-pointer">
+<div class="w-full aspect-square rounded-2xl bg-surface overflow-hidden relative shadow-lg border border-white/5">
+<img class="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all duration-500" data-alt="Afro Beats playlist cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC1U-68e1GAI4rAZdTbFCX2vV7CO0ej1J-cJSWdCEalykcdg8FglbBf5pbwuPpXQHsTlZcLVQmuDxj_ZaSfab-aTYyLyl8_04sVK5nkK6U1rfQ1fc3ivDzfRXZFcWNfRPbzqknC8metJKTrZfsgyOmdHpnptVNzjC3r4y5vytVVmRzYlvUVdsfJFRosVvDUUcJ0KU6TS05zVczhTGydIBAFXJ0U7cAjtjnanWq4eXAiT7VWtoFXMXc8XRVhZ8nZx7KYvtMRKsgd"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent flex flex-col justify-end p-3">
+<span class="text-yabisso-yellow text-[10px] font-bold uppercase tracking-wider mb-0.5">Yabisso</span>
+<span class="text-white text-xs font-bold uppercase tracking-wider">Afro Beats</span>
+</div>
+</div>
+</div>
+<!-- Playlist 2 -->
+<div class="flex flex-col gap-2 min-w-[150px] w-[150px] group cursor-pointer">
+<div class="w-full aspect-square rounded-2xl bg-surface overflow-hidden relative shadow-lg border border-white/5">
+<img class="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all duration-500" data-alt="Summer Vibes playlist cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDhyAq7h2A98mi-vUJ9tC8UTo05CiYuZqi2vQgesmINETEN8bjV3rgg84rm9BrxPI1PBP0vjoY0NpUBP-2jmCyTx9iv7NreCTrTZBqgZBAq4OHUFsegoP8IC5L88C1msWzcMyQw0FMIN0hGMzY8tTwEXU_itPoAq_Gb5hpu1safIKPzISqZDWaKD5pU7FQHrF1YJHkYr8dz3J3Udbdm4oeXVdsl4u32eB-JhRdZdktayzSyh4AXj4Lvy5oa0jW5dMMbMwYmn8_G"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent flex flex-col justify-end p-3">
+<span class="text-yabisso-yellow text-[10px] font-bold uppercase tracking-wider mb-0.5">Yabisso</span>
+<span class="text-white text-xs font-bold uppercase tracking-wider">Summer Mix</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Floating Mini Player (Sticky Bottom) -->
+<div class="fixed bottom-0 left-0 w-full z-50 px-2 pb-2">
+<div class="bg-surface/90 backdrop-blur-xl border border-white/10 p-2 pr-4 rounded-xl shadow-[0_8px_32px_rgba(0,0,0,0.5)] flex items-center gap-3 w-full max-w-lg mx-auto">
+<div class="size-10 rounded-lg bg-cover bg-center shrink-0 shadow-sm" data-alt="Small thumbnail of current song" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBo-E6AOz5UFq1untIiAkLybhjZxAcTfiUh77WUTw4ZOM8hkUvx6RJNPeLBa9BwszbkerZQHlTG6oQg9D1UvjSyVFNF7Oxybj-HIOcvdqZuWa-wyS_WA25KMBluwlzQNg48x87WlKke5d7VNzuSbqQB-ruGg-t4ZPcXXR_wfUqI_qmQQ3_Sz4aieEHWxsjrNsl-rm2PSglu64HQjOZNkFRBV93jpDH6eO7jf9W9TC3bJN5Ck5wDwqse_FCOHOEny42pg3WLfFg1')"></div>
+<div class="flex-1 min-w-0 flex flex-col">
+<h4 class="text-white text-sm font-bold truncate">Last Last</h4>
+<p class="text-primary text-xs truncate font-medium">Burna Boy</p>
+</div>
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-white text-[28px] cursor-pointer hover:text-primary transition-colors">play_arrow</span>
+<span class="material-symbols-outlined text-slate-400 text-[28px] cursor-pointer hover:text-white transition-colors">skip_next</span>
+</div>
+<!-- Simple Progress Bar at bottom of mini player -->
+<div class="absolute bottom-0 left-3 right-3 h-[2px] bg-white/5 overflow-hidden rounded-full">
+<div class="h-full w-[35%] bg-primary"></div>
+</div>
+</div>
+</div>
+</div>
+</body></html>

@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Yabisso Offline Signup</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                        "yabisso-red": "#ef4444",
+                        "yabisso-yellow": "#fbbf24",
+                        "yabisso-green": "#22c55e",
+                        "surface-dark": "#192633",
+                        "border-dark": "#324d67",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-white transition-colors duration-200">
+<div class="relative flex min-h-screen w-full flex-col overflow-hidden max-w-md mx-auto shadow-2xl">
+<!-- Colorful Accent Line for African Tech Vibe -->
+<div class="h-1.5 w-full flex">
+<div class="h-full w-1/4 bg-primary"></div>
+<div class="h-full w-1/4 bg-yabisso-red"></div>
+<div class="h-full w-1/4 bg-yabisso-yellow"></div>
+<div class="h-full w-1/4 bg-yabisso-green"></div>
+</div>
+<!-- Top App Bar -->
+<div class="flex items-center px-4 py-3 justify-between">
+<button class="text-slate-900 dark:text-white flex size-10 shrink-0 items-center justify-center rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors">
+<span class="material-symbols-outlined text-[24px]">arrow_back</span>
+</button>
+<h2 class="text-slate-900 dark:text-white text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center">Yabisso</h2>
+<div class="flex size-10 items-center justify-center">
+<div class="flex items-center justify-center rounded-full bg-surface-dark border border-border-dark size-10 text-gray-400" title="Offline Mode">
+<span class="material-symbols-outlined text-[20px]">cloud_off</span>
+</div>
+</div>
+</div>
+<!-- Scrollable Content -->
+<div class="flex-1 flex flex-col px-5 pb-8 overflow-y-auto">
+<!-- Headline -->
+<div class="pt-4 pb-2">
+<div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-surface-dark border border-border-dark mb-4">
+<div class="size-2 rounded-full bg-yabisso-yellow animate-pulse"></div>
+<span class="text-xs font-medium text-gray-300 uppercase tracking-wider">Offline Mode Active</span>
+</div>
+<h1 class="text-slate-900 dark:text-white tracking-tight text-[32px] font-bold leading-tight text-left">Create Account</h1>
+<p class="text-slate-500 dark:text-gray-400 text-base font-normal leading-normal pt-2">
+                    Fill in your details to generate your activation key securely on your device.
+                </p>
+</div>
+<!-- Form Fields -->
+<div class="flex flex-col gap-5 py-6">
+<!-- Full Name -->
+<label class="flex flex-col gap-2">
+<span class="text-slate-900 dark:text-white text-sm font-medium">Full Name</span>
+<div class="relative">
+<input class="w-full rounded-xl border border-gray-300 dark:border-border-dark bg-white dark:bg-surface-dark text-slate-900 dark:text-white focus:outline-0 focus:ring-2 focus:ring-primary/50 focus:border-primary h-14 placeholder:text-gray-400 dark:placeholder:text-[#92adc9] px-4 text-base transition-all" placeholder="Enter your full name" type="text"/>
+<span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">person</span>
+</div>
+</label>
+<!-- Phone/Email -->
+<label class="flex flex-col gap-2">
+<span class="text-slate-900 dark:text-white text-sm font-medium">Phone Number or Email</span>
+<div class="relative">
+<input class="w-full rounded-xl border border-gray-300 dark:border-border-dark bg-white dark:bg-surface-dark text-slate-900 dark:text-white focus:outline-0 focus:ring-2 focus:ring-primary/50 focus:border-primary h-14 placeholder:text-gray-400 dark:placeholder:text-[#92adc9] px-4 text-base transition-all" placeholder="+234 800 000 0000" type="text"/>
+<span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">call</span>
+</div>
+</label>
+<!-- Password -->
+<label class="flex flex-col gap-2">
+<span class="text-slate-900 dark:text-white text-sm font-medium">Password</span>
+<div class="relative">
+<input class="w-full rounded-xl border border-gray-300 dark:border-border-dark bg-white dark:bg-surface-dark text-slate-900 dark:text-white focus:outline-0 focus:ring-2 focus:ring-primary/50 focus:border-primary h-14 placeholder:text-gray-400 dark:placeholder:text-[#92adc9] px-4 text-base transition-all" placeholder="Create a password" type="password"/>
+<button class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white">
+<span class="material-symbols-outlined">visibility_off</span>
+</button>
+</div>
+</label>
+<!-- Confirm Password -->
+<label class="flex flex-col gap-2">
+<span class="text-slate-900 dark:text-white text-sm font-medium">Confirm Password</span>
+<div class="relative">
+<input class="w-full rounded-xl border border-gray-300 dark:border-border-dark bg-white dark:bg-surface-dark text-slate-900 dark:text-white focus:outline-0 focus:ring-2 focus:ring-primary/50 focus:border-primary h-14 placeholder:text-gray-400 dark:placeholder:text-[#92adc9] px-4 text-base transition-all" placeholder="Re-enter password" type="password"/>
+<button class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white">
+<span class="material-symbols-outlined">visibility_off</span>
+</button>
+</div>
+</label>
+</div>
+<div class="flex-1"></div>
+<!-- Action Buttons -->
+<div class="flex flex-col gap-3 pt-4">
+<button class="group flex w-full cursor-pointer items-center justify-center rounded-xl h-14 bg-white text-background-dark gap-3 text-base font-bold leading-normal tracking-[0.015em] hover:bg-gray-100 active:scale-[0.98] transition-all shadow-lg shadow-black/20">
+<span class="material-symbols-outlined">qr_code_2</span>
+                    Generate QR Code
+                </button>
+<button class="group flex w-full cursor-pointer items-center justify-center rounded-xl h-14 bg-white/10 dark:bg-surface-dark border border-gray-300 dark:border-border-dark text-slate-900 dark:text-white gap-3 text-base font-bold leading-normal tracking-[0.015em] hover:bg-white/20 active:scale-[0.98] transition-all">
+<span class="material-symbols-outlined">sms</span>
+                    Validate via SMS
+                </button>
+</div>
+<!-- Footer -->
+<p class="text-center text-slate-500 dark:text-gray-400 text-sm mt-6">
+                Already have an account? <a class="text-primary font-bold hover:underline" href="#">Login</a>
+</p>
+</div>
+</div>
+</body></html>

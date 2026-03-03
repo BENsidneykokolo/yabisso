@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Yabisso Chat</title>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Configuration -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "primary-dark": "#0e62b8",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#111a22", /* Matched to example component style */
+                        "surface-dark": "#233648",
+                        "text-secondary": "#92adc9",
+                    },
+                    fontFamily: {
+                        "display": ["Plus Jakarta Sans", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom scrollbar for webkit browsers to keep it clean */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #233648; 
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #344a61; 
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display overflow-hidden h-screen flex flex-col antialiased selection:bg-primary selection:text-white">
+<!-- Top App Bar -->
+<header class="flex-none flex items-center bg-background-dark/95 backdrop-blur-md p-4 pb-3 justify-between border-b border-[#233648] z-20">
+<!-- Back Button -->
+<button class="text-white flex size-10 shrink-0 items-center justify-center hover:bg-white/10 rounded-full transition-colors">
+<span class="material-symbols-outlined" style="font-size: 24px;">arrow_back_ios_new</span>
+</button>
+<!-- Contact Info -->
+<div class="flex flex-1 items-center gap-3 ml-2">
+<div class="relative">
+<div class="bg-center bg-no-repeat bg-cover rounded-full size-10 shrink-0 border border-[#233648]" data-alt="Portrait of a young smiling African woman with braided hair" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAqp5feNeBU80DTugjHCeOmeCGReyQILilwG8aWNJLQYAUu8mpZDFQovj0CxkG-sD2SSsh05xyqTizMOK2x86hFV6KVTY7oxczfY3v9DaeL_uT_SJuZwVPFAHT_v21JMnO7i0_2hAAHt8TgilVWOh18dw1AIn1euyr9LiRVK6wDOjR0mVfylqu7AUBmkCOxdN2itoKPyrT5HKVEn-yxagEcQW0_99IYnRs_qG8DuHgKpc2FI-6nnwtBIW9UXqPyOIbGBdAo-PhG");'>
+</div>
+<!-- Online Status Dot -->
+<div class="absolute bottom-0 right-0 size-2.5 bg-green-500 rounded-full border-2 border-background-dark"></div>
+</div>
+<div class="flex flex-col justify-center">
+<h2 class="text-white text-base font-bold leading-tight tracking-[-0.015em]">Amina Bello</h2>
+<span class="text-primary text-xs font-medium">Online</span>
+</div>
+</div>
+<!-- Call Actions -->
+<div class="flex items-center gap-1">
+<button class="flex items-center justify-center size-10 rounded-full hover:bg-white/10 text-white transition-colors">
+<span class="material-symbols-outlined text-[24px]">videocam</span>
+</button>
+<button class="flex items-center justify-center size-10 rounded-full hover:bg-white/10 text-white transition-colors">
+<span class="material-symbols-outlined text-[22px]">call</span>
+</button>
+</div>
+</header>
+<!-- Chat Area -->
+<main class="flex-1 overflow-y-auto w-full flex flex-col bg-background-dark p-4 gap-6 relative">
+<!-- Date Separator -->
+<div class="flex justify-center w-full sticky top-0 z-10 pointer-events-none">
+<span class="bg-[#233648]/80 backdrop-blur-sm text-text-secondary text-xs font-medium px-4 py-1.5 rounded-full shadow-sm">
+                Today
+            </span>
+</div>
+<!-- Receiver Message (Left) -->
+<div class="flex items-end gap-3 w-full group">
+<div class="bg-center bg-no-repeat bg-cover rounded-full size-8 shrink-0 mb-1" data-alt="Small thumbnail of Amina Bello" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCGXujr6UGAFtR8-p-D0cUD7bGS_bSCpjRsN1VJs9RNgiTl9lw24XLZzP9A6s2kL-lhlU9zvfe-3z-ru5NW5_VEF_oh5IP8xg_lvIP7NtOdZr2_6aiAYrvTtSapAMIO4EkpurJbHijqs71bn-pwzwf_AT-kvs7Z411Uf1w3vbKsUcejc7enF6zQVIMyh6nFDH4jghSg-ZbhX-3vAH8otWIqjBgDSNYEOfiDO7z7bbleEQND8zPrmXNIMHpzb1Pbo6dsdPSvZRlC");'>
+</div>
+<div class="flex flex-col gap-1 items-start max-w-[80%]">
+<div class="bg-surface-dark text-white text-[15px] font-normal leading-relaxed px-5 py-3 rounded-2xl rounded-bl-sm shadow-sm">
+                    Hello! Did you receive the payment for the delivery?
+                </div>
+<span class="text-[#5a718a] text-[11px] font-medium pl-1">10:42 AM</span>
+</div>
+</div>
+<!-- Sender Message (Right - Pending Sync) -->
+<div class="flex items-end gap-3 w-full justify-end group">
+<div class="flex flex-col gap-1 items-end max-w-[80%]">
+<!-- Pending State: Opacity reduced slightly, dotted border effect optional for offline vibe -->
+<div class="bg-primary/80 backdrop-blur-sm text-white text-[15px] font-normal leading-relaxed px-5 py-3 rounded-2xl rounded-br-sm flex gap-3 items-end shadow-sm">
+<span>Yes, I just checked my wallet. It's pending sync because I was offline.</span>
+</div>
+<div class="flex items-center gap-1 pr-1">
+<span class="text-text-secondary text-[11px] font-medium">10:45 AM</span>
+<span class="material-symbols-outlined text-text-secondary text-[14px]" title="Pending Sync">schedule</span>
+</div>
+</div>
+</div>
+<!-- Sender Message (Right - Sent) -->
+<div class="flex items-end gap-3 w-full justify-end group">
+<div class="flex flex-col gap-1 items-end max-w-[80%]">
+<div class="bg-primary text-white text-[15px] font-normal leading-relaxed px-5 py-3 rounded-2xl rounded-br-sm shadow-md transition-transform active:scale-[0.98]">
+                    Wait, it just went through now!
+                </div>
+<div class="flex items-center gap-1 pr-1">
+<span class="text-text-secondary text-[11px] font-medium">10:46 AM</span>
+<!-- Double Check for Read/Delivered -->
+<span class="material-symbols-outlined text-primary text-[16px]" title="Read">done_all</span>
+</div>
+</div>
+</div>
+<!-- Space filler for scrolling -->
+<div class="h-2"></div>
+</main>
+<!-- Input Area (Bottom Sticky) -->
+<footer class="flex-none w-full bg-background-dark border-t border-[#233648] p-3 pb-6 md:pb-4">
+<div class="flex items-end gap-2 w-full max-w-[600px] mx-auto">
+<!-- Attachment Button -->
+<button class="flex items-center justify-center size-12 shrink-0 rounded-full text-text-secondary hover:bg-[#233648] hover:text-white transition-colors">
+<span class="material-symbols-outlined text-[28px] transform rotate-45">attach_file</span>
+</button>
+<!-- Text Input -->
+<div class="flex-1 bg-[#233648] rounded-[24px] min-h-[48px] flex items-center px-2 py-1 focus-within:ring-1 focus-within:ring-primary/50 transition-all">
+<button class="p-2 text-text-secondary hover:text-white transition-colors rounded-full">
+<span class="material-symbols-outlined text-[24px]">sentiment_satisfied</span>
+</button>
+<input class="w-full bg-transparent border-none text-white placeholder-[#5a718a] focus:ring-0 px-2 text-[15px]" placeholder="Type a message..." type="text"/>
+<button class="p-2 text-text-secondary hover:text-white transition-colors rounded-full">
+<span class="material-symbols-outlined text-[24px]">camera_alt</span>
+</button>
+</div>
+<!-- Send Button -->
+<!-- Using white button as requested for high contrast/brand consistency on dark mode -->
+<button class="flex items-center justify-center size-12 shrink-0 rounded-full bg-white text-background-dark shadow-lg shadow-primary/10 hover:scale-105 active:scale-95 transition-all">
+<span class="material-symbols-outlined text-[24px] ml-0.5">send</span>
+</button>
+</div>
+</footer>
+</body></html>

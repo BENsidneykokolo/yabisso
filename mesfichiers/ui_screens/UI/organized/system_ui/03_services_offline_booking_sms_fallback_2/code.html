@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Services Offline Booking SMS Fallback</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                        "surface-dark": "#192633",
+                        "brand-red": "#ef4444",
+                        "brand-yellow": "#eab308",
+                        "brand-green": "#22c55e",
+                    },
+                    fontFamily: {
+                        "display": ["Plus Jakarta Sans", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom scrollbar for clean look */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #101922; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #324d67; 
+            border-radius: 3px;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-dark text-white font-display antialiased selection:bg-primary/30">
+<div class="relative flex h-full min-h-screen w-full flex-col bg-background-dark overflow-x-hidden max-w-md mx-auto shadow-2xl shadow-black border-x border-[#1e2a36]">
+<!-- Top App Bar -->
+<div class="sticky top-0 z-10 bg-background-dark/95 backdrop-blur-sm border-b border-[#1e2a36]">
+<div class="flex items-center p-4 pb-3 justify-between">
+<button class="text-white flex size-10 shrink-0 items-center justify-center rounded-full hover:bg-white/10 transition-colors">
+<span class="material-symbols-outlined text-[24px]">arrow_back</span>
+</button>
+<h2 class="text-white text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center pr-10">Offline Booking</h2>
+</div>
+<!-- Yabisso Brand Strip -->
+<div class="flex h-1 w-full">
+<div class="w-1/4 bg-primary"></div>
+<div class="w-1/4 bg-brand-red"></div>
+<div class="w-1/4 bg-brand-yellow"></div>
+<div class="w-1/4 bg-brand-green"></div>
+</div>
+</div>
+<!-- Offline Status Banner -->
+<div class="p-4">
+<div class="flex items-center gap-4 bg-surface-dark border border-brand-red/20 rounded-xl px-4 py-3 shadow-lg">
+<div class="text-brand-red flex items-center justify-center rounded-lg bg-brand-red/10 shrink-0 size-12">
+<span class="material-symbols-outlined text-[24px]">wifi_off</span>
+</div>
+<div class="flex flex-col justify-center">
+<p class="text-white text-base font-bold leading-normal">Offline Mode Active</p>
+<p class="text-[#92adc9] text-sm font-normal leading-normal">No internet connection. Using SMS fallback protocol.</p>
+</div>
+</div>
+</div>
+<!-- Headline & Description -->
+<div class="px-4 pt-2 pb-4">
+<h2 class="text-white tracking-tight text-[26px] font-bold leading-tight pb-2">Book Service via SMS</h2>
+<p class="text-[#92adc9] text-sm font-normal leading-relaxed">
+                Fill out the details below. We will generate a structured SMS code that acts as a booking request. Carrier SMS charges may apply.
+            </p>
+</div>
+<!-- Form Section -->
+<form class="flex flex-col gap-5 px-4 pb-24" onsubmit="event.preventDefault()">
+<!-- Service Type -->
+<label class="flex flex-col gap-1.5">
+<span class="text-white text-sm font-semibold ml-1">Service Type</span>
+<div class="relative">
+<select class="w-full appearance-none rounded-xl border border-[#324d67] bg-surface-dark text-white placeholder:text-[#92adc9] focus:border-primary focus:ring-1 focus:ring-primary h-14 px-4 pr-10 text-base font-normal transition-colors">
+<option disabled="" selected="" value="">Select a service category</option>
+<option value="plumbing">Home Repair &amp; Plumbing</option>
+<option value="electrician">Electrical Services</option>
+<option value="delivery">Express Delivery</option>
+<option value="ride">Ride Hailing</option>
+</select>
+<div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-[#92adc9]">
+<span class="material-symbols-outlined">expand_more</span>
+</div>
+</div>
+</label>
+<!-- Date & Time Row -->
+<div class="flex gap-4">
+<label class="flex flex-col gap-1.5 flex-1">
+<span class="text-white text-sm font-semibold ml-1">Date</span>
+<div class="relative">
+<input class="w-full rounded-xl border border-[#324d67] bg-surface-dark text-white focus:border-primary focus:ring-1 focus:ring-primary h-14 px-4 text-base font-normal [color-scheme:dark]" type="date"/>
+</div>
+</label>
+<label class="flex flex-col gap-1.5 w-1/3">
+<span class="text-white text-sm font-semibold ml-1">Time</span>
+<div class="relative">
+<input class="w-full rounded-xl border border-[#324d67] bg-surface-dark text-white focus:border-primary focus:ring-1 focus:ring-primary h-14 px-4 text-base font-normal [color-scheme:dark]" type="time"/>
+</div>
+</label>
+</div>
+<!-- Description -->
+<label class="flex flex-col gap-1.5">
+<span class="text-white text-sm font-semibold ml-1">Request Details</span>
+<textarea class="w-full resize-none rounded-xl border border-[#324d67] bg-surface-dark text-white placeholder:text-[#92adc9] focus:border-primary focus:ring-1 focus:ring-primary p-4 text-base font-normal" placeholder="Briefly describe what you need..." rows="3"></textarea>
+</label>
+<!-- Optional Provider -->
+<label class="flex flex-col gap-1.5">
+<div class="flex justify-between items-center ml-1">
+<span class="text-white text-sm font-semibold">Preferred Provider</span>
+<span class="text-[#92adc9] text-xs uppercase tracking-wider font-medium">Optional</span>
+</div>
+<div class="relative">
+<input class="w-full rounded-xl border border-[#324d67] bg-surface-dark text-white placeholder:text-[#92adc9] focus:border-primary focus:ring-1 focus:ring-primary h-14 px-4 pl-11 text-base font-normal" placeholder="Enter provider ID or name" type="text"/>
+<div class="pointer-events-none absolute inset-y-0 left-0 flex items-center px-3 text-[#92adc9]">
+<span class="material-symbols-outlined text-[20px]">badge</span>
+</div>
+</div>
+</label>
+<!-- SMS Preview -->
+<div class="mt-2">
+<div class="flex items-center gap-2 mb-2 ml-1">
+<span class="material-symbols-outlined text-brand-yellow text-[18px]">visibility</span>
+<span class="text-[#92adc9] text-xs font-bold uppercase tracking-wider">SMS Preview</span>
+</div>
+<div class="bg-[#0b1219] rounded-xl p-4 border border-[#324d67] border-dashed relative overflow-hidden group">
+<!-- Abstract pattern background for "tech" feel -->
+<div class="absolute top-0 right-0 -mt-4 -mr-4 w-16 h-16 bg-gradient-to-br from-primary/20 to-transparent rounded-full blur-xl"></div>
+<p class="font-mono text-sm text-[#92adc9] break-all relative z-10">
+<span class="text-primary font-bold">YBS-BOOK</span>:PLUMBING:20241028:1430:LEAKY_SINK_KITCHEN
+                    </p>
+</div>
+</div>
+</form>
+<!-- Sticky Bottom Action -->
+<div class="fixed bottom-0 max-w-md w-full bg-background-dark/95 backdrop-blur-md border-t border-[#1e2a36] p-4 z-20">
+<button class="w-full h-14 flex items-center justify-center gap-2.5 rounded-full bg-white text-background-dark text-base font-bold hover:bg-gray-100 active:scale-[0.98] transition-all shadow-lg shadow-white/5">
+<span class="material-symbols-outlined">sms</span>
+                Generate Offline Booking SMS
+            </button>
+<p class="text-center text-xs text-[#586e84] mt-3">
+                Action will open your default messaging app.
+            </p>
+</div>
+</div>
+</body></html>

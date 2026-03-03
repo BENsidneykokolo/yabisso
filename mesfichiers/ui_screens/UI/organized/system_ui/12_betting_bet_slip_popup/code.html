@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Yabisso Bet Slip</title>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Theme Configuration -->
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#137fec", // Yabisso Blue
+              "brand-red": "#ef4444",
+              "brand-yellow": "#facc15",
+              "brand-green": "#22c55e",
+              "background-light": "#f6f7f8",
+              "background-dark": "#101922",
+              "surface-dark": "#192633",
+              "surface-highlight": "#23303E",
+            },
+            fontFamily: {
+              "display": ["Inter", "sans-serif"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "2xl": "1rem", "3xl": "1.5rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        /* Custom scrollbar hiding for clean UI */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="font-display bg-black text-white h-screen w-full flex flex-col items-center justify-end relative overflow-hidden bg-[url('https://placeholder.pics/svg/600x1200/101922/101922')] bg-cover" data-alt="Dark abstract background pattern">
+<!-- Overlay simulation (dimming background) -->
+<div class="absolute inset-0 bg-black/60 backdrop-blur-sm z-0"></div>
+<!-- Bottom Sheet -->
+<div class="w-full max-w-md bg-background-dark rounded-t-3xl shadow-[0_-8px_30px_rgba(0,0,0,0.5)] z-10 relative flex flex-col max-h-[90vh] border-t border-white/5 animate-slide-up">
+<!-- Handle -->
+<div class="flex items-center justify-center pt-3 pb-2 w-full cursor-grab active:cursor-grabbing">
+<div class="h-1.5 w-12 rounded-full bg-surface-highlight"></div>
+</div>
+<!-- Header -->
+<div class="flex items-center justify-between px-6 py-2">
+<h3 class="text-white text-xl font-bold leading-tight tracking-[-0.015em]">Place Your Bet</h3>
+<button class="flex items-center justify-center w-8 h-8 rounded-full bg-surface-highlight text-gray-400 hover:text-white hover:bg-surface-highlight/80 transition-colors">
+<span class="material-symbols-outlined" style="font-size: 20px;">close</span>
+</button>
+</div>
+<!-- Scrollable Content -->
+<div class="flex-1 overflow-y-auto px-6 pt-4 pb-8 space-y-6">
+<!-- Match Summary Card -->
+<div class="relative overflow-hidden rounded-2xl bg-surface-dark border border-white/5 group">
+<!-- Brand Accent Line -->
+<div class="absolute top-0 left-0 bottom-0 w-1.5 bg-gradient-to-b from-primary via-brand-yellow to-brand-red"></div>
+<div class="p-4 pl-6 relative z-10">
+<div class="flex justify-between items-start">
+<div class="flex flex-col gap-1">
+<div class="flex items-center gap-2 mb-1">
+<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-brand-green/20 text-brand-green uppercase tracking-wider flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-brand-green animate-pulse"></span> Live
+                                </span>
+<span class="text-gray-400 text-xs">Africa Cup of Nations</span>
+</div>
+<p class="text-white text-lg font-bold leading-tight">Nigeria vs Ivory Coast</p>
+<p class="text-[#92adc9] text-sm font-normal leading-normal mt-1">Selection: Nigeria to Win (1X2)</p>
+</div>
+<!-- Sport Icon/Indicator -->
+<div class="w-10 h-10 rounded-full bg-surface-highlight flex items-center justify-center text-primary/80">
+<span class="material-symbols-outlined">sports_soccer</span>
+</div>
+</div>
+<div class="mt-4 pt-3 border-t border-white/5 flex items-center justify-between">
+<span class="text-xs text-gray-500 font-medium">MARKET ODDS</span>
+<span class="text-2xl font-bold text-white tracking-tight">2.45</span>
+</div>
+</div>
+<!-- Background decoration image -->
+<div class="absolute right-0 top-0 bottom-0 w-1/3 opacity-5 bg-gradient-to-l from-black/0 to-background-dark pointer-events-none" data-alt="Abstract soccer pattern overlay" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuC_FHUF1wrBM8sVo_1a6wcULEDVyXyFJTU0gis-ml6HWm0pdLrp9Lb-lpbf_ceiCunxY3Bsqu57W4alfkOzyU69sHX7rfPz3SdP_M4dht4DgHCZWA4_YLxiqO4G6gRWKFaHs4dVxUdxXovlQh_gsFtweU0zuLUlXWRijz263CPCdf2d7wiaKQPPxwGWQt8EhyMkVaI9PLxY5DEuyCgJhzdL02mA0K5W5P6Q5_KMvxMmaGneAx1TxfEWlPFPdBkvN4jNi191fPGa'); background-size: cover; mix-blend-mode: overlay;"></div>
+</div>
+<!-- Wallet & Input Section -->
+<div class="space-y-4">
+<!-- Wallet Info -->
+<div class="flex items-center justify-between px-1">
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined" style="font-size: 14px;">account_balance_wallet</span>
+</div>
+<p class="text-sm text-gray-400">Balance: <span class="text-white font-semibold">50,000 XAF</span></p>
+</div>
+<button class="text-primary text-xs font-bold uppercase tracking-wide hover:underline">Top Up</button>
+</div>
+<!-- Input Field -->
+<div class="relative group/input">
+<label class="sr-only">Stake Amount</label>
+<div class="flex w-full items-center rounded-xl bg-surface-dark border-2 border-surface-highlight focus-within:border-primary transition-colors overflow-hidden h-16">
+<input class="flex-1 bg-transparent border-none text-white text-2xl font-bold placeholder:text-gray-600 focus:ring-0 p-4 h-full" placeholder="0" type="number" value="5000"/>
+<div class="px-4 text-gray-400 font-medium text-lg border-l border-white/5 h-full flex items-center bg-surface-highlight/30">
+                            XAF
+                        </div>
+</div>
+<!-- Error/Warning simulation (hidden by default) -->
+<!-- <p class="text-brand-red text-xs mt-1 absolute -bottom-5 left-1">Insufficient balance</p> -->
+</div>
+<!-- Quick Add Chips -->
+<div class="flex gap-2 overflow-x-auto no-scrollbar pb-1">
+<button class="flex h-9 shrink-0 items-center justify-center rounded-lg bg-surface-highlight border border-white/5 hover:bg-surface-highlight/80 hover:border-primary/50 active:scale-95 transition-all px-4">
+<p class="text-white text-sm font-medium leading-normal">+100</p>
+</button>
+<button class="flex h-9 shrink-0 items-center justify-center rounded-lg bg-surface-highlight border border-white/5 hover:bg-surface-highlight/80 hover:border-primary/50 active:scale-95 transition-all px-4">
+<p class="text-white text-sm font-medium leading-normal">+500</p>
+</button>
+<button class="flex h-9 shrink-0 items-center justify-center rounded-lg bg-surface-highlight border border-white/5 hover:bg-surface-highlight/80 hover:border-primary/50 active:scale-95 transition-all px-4">
+<p class="text-white text-sm font-medium leading-normal">+1,000</p>
+</button>
+<button class="flex h-9 shrink-0 items-center justify-center rounded-lg bg-primary/20 border border-primary/30 hover:bg-primary/30 active:scale-95 transition-all px-4">
+<p class="text-primary text-sm font-bold leading-normal">Max</p>
+</button>
+</div>
+</div>
+<!-- Calculation Summary -->
+<div class="bg-black/20 rounded-xl p-4 border border-white/5 flex flex-col gap-2">
+<div class="flex justify-between items-center text-sm">
+<span class="text-gray-400">Total Odds</span>
+<span class="text-white font-medium">2.45</span>
+</div>
+<div class="h-px bg-white/5 w-full"></div>
+<div class="flex justify-between items-center">
+<span class="text-gray-300 font-medium">Potential Return</span>
+<span class="text-brand-green text-xl font-bold tracking-tight">12,250 XAF</span>
+</div>
+</div>
+<!-- Action Button -->
+<button class="group relative w-full overflow-hidden rounded-xl bg-white p-4 text-center transition-all hover:bg-gray-100 active:scale-[0.98] shadow-[0_0_20px_rgba(255,255,255,0.1)]">
+<div class="flex items-center justify-center gap-2">
+<span class="text-background-dark text-lg font-bold">Confirm Bet</span>
+<span class="material-symbols-outlined text-background-dark group-hover:translate-x-1 transition-transform">arrow_forward</span>
+</div>
+<!-- Shimmer effect -->
+<div class="absolute inset-0 -translate-x-full group-hover:animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-black/5 to-transparent z-10"></div>
+</button>
+<!-- Offline Badge (Subtle) -->
+<div class="flex justify-center">
+<div class="hidden flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/5 border border-white/5">
+<span class="material-symbols-outlined text-gray-500 text-[14px]">wifi_off</span>
+<span class="text-[10px] text-gray-400 font-medium">Offline Mode • Bet will sync when online</span>
+</div>
+</div>
+</div>
+<!-- iOS Home Indicator Spacer -->
+<div class="h-6 w-full bg-background-dark"></div>
+</div>
+</body></html>

@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Yabisso Food Delivery Cart</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Noto+Sans:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Theme Configuration -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                        "surface-dark": "#1c2936",
+                        "border-dark": "#233648",
+                    },
+                    fontFamily: {
+                        "display": ["Plus Jakarta Sans", "sans-serif"],
+                        "body": ["Noto Sans", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem", 
+                        "lg": "0.5rem", 
+                        "xl": "0.75rem", 
+                        "2xl": "1rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom scrollbar hiding for cleaner mobile look */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-white font-display overflow-hidden h-screen flex flex-col">
+<div class="relative flex h-full w-full flex-col bg-[#111a22] dark group/design-root">
+<!-- Header -->
+<div class="flex items-center bg-[#111a22] p-4 pt-6 pb-2 justify-between z-10 shrink-0">
+<button class="text-white flex size-10 items-center justify-center rounded-full hover:bg-surface-dark transition-colors">
+<span class="material-symbols-outlined">arrow_back_ios_new</span>
+</button>
+<h2 class="text-white text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center">Mon Panier</h2>
+<button class="flex items-center justify-end px-2 py-1 rounded-lg hover:bg-surface-dark transition-colors">
+<p class="text-[#92adc9] text-sm font-bold leading-normal tracking-[0.015em] shrink-0">Clear All</p>
+</button>
+</div>
+<!-- Address Bar -->
+<div class="px-4 pb-2 shrink-0">
+<div class="bg-surface-dark rounded-xl p-3 flex items-center justify-between border border-border-dark shadow-sm">
+<div class="flex items-center gap-3 overflow-hidden">
+<div class="bg-primary/20 p-2 rounded-full shrink-0">
+<span class="material-symbols-outlined text-primary text-sm">location_on</span>
+</div>
+<div class="flex flex-col">
+<p class="text-[10px] text-[#92adc9] font-semibold uppercase tracking-wider">Delivering to</p>
+<p class="text-white text-sm font-medium leading-tight truncate">Maison • 123 Lagos St, VI</p>
+</div>
+</div>
+<button class="text-primary text-sm font-bold px-2">Modifier</button>
+</div>
+</div>
+<!-- Main Scrollable Content -->
+<div class="flex-1 overflow-y-auto no-scrollbar pb-32">
+<!-- Items List -->
+<div class="flex flex-col">
+<!-- Item 1 -->
+<div class="relative flex gap-4 bg-[#111a22] px-4 py-5 border-b border-border-dark last:border-0 group">
+<div class="shrink-0">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-xl size-[88px] shadow-md relative" data-alt="Spicy Jollof Rice with grilled chicken leg" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuC7d0iKRWMiGUil-8X07C5X84WyWzZEoLJ0M-5yfh14cNYXZLuHEbmCRsJu4Le27R1okxBMq3HPvtR1UxxjPSGCPqDSMQzwNkAfhCTld7tE3_jgkr9QQHM3pDP-SK1xpkAfKf4eYwlLp5J0oXHht9HskYFN4KbU6gsaM04NM_cEe1ZahVw5YXhJ6OPJdWgMXdB3nmwHomOGOb-Fw-Ylap7695yxmr79TVqTe2XVJNu13uoA_JiYSZeMgIwJd6ZOOT2hZIniKBTJ");'>
+</div>
+</div>
+<div class="flex flex-1 flex-col justify-between py-1">
+<div>
+<div class="flex justify-between items-start">
+<p class="text-white text-base font-bold leading-tight pr-4">Jollof Rice &amp; Chicken</p>
+<button class="text-[#ef4444] opacity-100 p-1 rounded hover:bg-[#ef4444]/10 transition-colors">
+<span class="material-symbols-outlined text-[20px]">delete</span>
+</button>
+</div>
+<p class="text-[#92adc9] text-xs font-medium leading-normal mt-1">Extra spicy, no onions</p>
+</div>
+<div class="flex justify-between items-end mt-2">
+<p class="text-white text-lg font-bold leading-normal">₦5,500</p>
+<!-- Quantity Stepper -->
+<div class="flex items-center bg-surface-dark rounded-lg p-1 border border-border-dark">
+<button class="size-7 flex items-center justify-center rounded-md bg-[#233648] hover:bg-primary transition-colors text-white">
+<span class="material-symbols-outlined text-[16px]">remove</span>
+</button>
+<span class="w-8 text-center text-sm font-bold">1</span>
+<button class="size-7 flex items-center justify-center rounded-md bg-primary hover:bg-primary/90 text-white shadow-[0_2px_8px_rgba(19,127,236,0.4)]">
+<span class="material-symbols-outlined text-[16px]">add</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Item 2 -->
+<div class="relative flex gap-4 bg-[#111a22] px-4 py-5 border-b border-border-dark last:border-0 group">
+<div class="shrink-0">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-xl size-[88px] shadow-md" data-alt="Golden brown fried plantain slices" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuARTaPExJNhmbrQ310IwB0kLPxUko2n2wxE07_zs2JRr5ZnfVzbKHbM14Mcvr2kWvnUAIi-S5M3IyH9LCrpvxEolWZYYQPKZcUqFKn05QK2-9KNeyIVtnsC3NfmENThvdX6itVdRNnpcQl-rde4Vl9zY9eLzpUlCTymQPendLhjZgF5obskr9kHYqvX2m8Qq9MVLw0KCLSWb7l3CF-mzgNATsaxuv0t-1SqVmHUBWR7QfyY1t5jSPppUyh6jXJ89UvDx8IYtvGY");'></div>
+</div>
+<div class="flex flex-1 flex-col justify-between py-1">
+<div>
+<div class="flex justify-between items-start">
+<p class="text-white text-base font-bold leading-tight pr-4">Fried Plantain</p>
+<button class="text-[#ef4444] opacity-100 p-1 rounded hover:bg-[#ef4444]/10 transition-colors">
+<span class="material-symbols-outlined text-[20px]">delete</span>
+</button>
+</div>
+<p class="text-[#92adc9] text-xs font-medium leading-normal mt-1">Side portion</p>
+</div>
+<div class="flex justify-between items-end mt-2">
+<p class="text-white text-lg font-bold leading-normal">₦1,200</p>
+<div class="flex items-center bg-surface-dark rounded-lg p-1 border border-border-dark">
+<button class="size-7 flex items-center justify-center rounded-md bg-[#233648] hover:bg-primary transition-colors text-white">
+<span class="material-symbols-outlined text-[16px]">remove</span>
+</button>
+<span class="w-8 text-center text-sm font-bold">2</span>
+<button class="size-7 flex items-center justify-center rounded-md bg-primary hover:bg-primary/90 text-white shadow-[0_2px_8px_rgba(19,127,236,0.4)]">
+<span class="material-symbols-outlined text-[16px]">add</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Item 3 -->
+<div class="relative flex gap-4 bg-[#111a22] px-4 py-5 border-b border-border-dark last:border-0 group">
+<div class="shrink-0">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-xl size-[88px] shadow-md" data-alt="Grilled beef skewers with spices" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDObqFa1EDRaobNnPmOmnuJoOvIEsuKxjM9JZyX3BCmM95Il3XSh2c1zu5tj_Rpx5n98fH_0o5qfSEGzyr6Dw0qbTJjTMt-ga6lXh0UHDryokQC3te4oftQpT86MFQm2-UgNZTBC9qvjOLCc3v0_uREnxY4Og7o53IlOiHq9ufPB_BqvUa3g-wDtAuXwTbq8AXTH2T2E4Ebye9v6A9c8MrvsXsctYU2iAUrxhQFq00D6b583UO9mQCPBi0coc6mxCcpQA2jQ9Pz");'></div>
+</div>
+<div class="flex flex-1 flex-col justify-between py-1">
+<div>
+<div class="flex justify-between items-start">
+<p class="text-white text-base font-bold leading-tight pr-4">Suya Skewers</p>
+<button class="text-[#ef4444] opacity-100 p-1 rounded hover:bg-[#ef4444]/10 transition-colors">
+<span class="material-symbols-outlined text-[20px]">delete</span>
+</button>
+</div>
+<p class="text-[#92adc9] text-xs font-medium leading-normal mt-1">Beef, spicy pepper</p>
+</div>
+<div class="flex justify-between items-end mt-2">
+<p class="text-white text-lg font-bold leading-normal">₦3,000</p>
+<div class="flex items-center bg-surface-dark rounded-lg p-1 border border-border-dark">
+<button class="size-7 flex items-center justify-center rounded-md bg-[#233648] hover:bg-primary transition-colors text-white">
+<span class="material-symbols-outlined text-[16px]">remove</span>
+</button>
+<span class="w-8 text-center text-sm font-bold">3</span>
+<button class="size-7 flex items-center justify-center rounded-md bg-primary hover:bg-primary/90 text-white shadow-[0_2px_8px_rgba(19,127,236,0.4)]">
+<span class="material-symbols-outlined text-[16px]">add</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Upsell Section -->
+<div class="mt-4 px-4">
+<div class="flex justify-between items-center mb-3">
+<h3 class="text-white font-bold text-sm">Parfait avec votre commande</h3>
+</div>
+<div class="flex gap-3 overflow-x-auto no-scrollbar pb-2">
+<!-- Upsell Item 1 -->
+<div class="min-w-[140px] bg-surface-dark rounded-xl p-2 border border-border-dark">
+<div class="h-24 w-full bg-cover bg-center rounded-lg mb-2 relative" data-alt="Cold refreshing cola drink" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuA9aHdl8FMzf-UY-_9iAHwXuqw35lS_e4ITjkZA_X6XMCfz2vTs_2ndKgjbFhGl42Mx07sm5dmXq3a-9gDPqCTeqeaTcimS8_MlWgP82xsk8BRxtXwPyVSNJa9J19f3mTvkhswi4nTdB5FPaidZERfRiwB7Wq04GE_zDlqrGyUU3uW3y30lzPOTNe2TZAa2wP5TsOEewhGoioidsUxcsvZ0UGsYkTZYvPY7ieLIAAxom9ehKmKu8WeLZZ_Y65qgMYz3SLb8XODv');">
+<button class="absolute bottom-1 right-1 bg-white rounded-full p-1 shadow-sm">
+<span class="material-symbols-outlined text-black text-xs font-bold block">add</span>
+</button>
+</div>
+<p class="text-xs text-white font-bold truncate">Cold Soda</p>
+<p class="text-[10px] text-[#92adc9] mt-0.5">₦500</p>
+</div>
+<!-- Upsell Item 2 -->
+<div class="min-w-[140px] bg-surface-dark rounded-xl p-2 border border-border-dark">
+<div class="h-24 w-full bg-cover bg-center rounded-lg mb-2 relative" data-alt="Fresh vegetable coleslaw salad" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDpDbviaa3MGT7mIUiCtfFbgo7f0GituSvRfXqd4TEWcxZazjxJpCZUJlQmycur6sMwVC7UW6-H1SMCxfBBafQ1ttCDmytYjXOSMSc_QRKyKPKGsPMQdN7iQ1vbDqK8VGBmgUTz1S0XFY19sv9m7aYrVmsazZexmomMuNAqrQnNgzRzrhn1Lty7MsnqFGr6i3lYM4WmslbuvJW2GRknF5jBFMk3qvEgY2FiUA2l3HPmTPkoX_0XT063gt4FZ0Q4Z5c2U8nEXECV');">
+<button class="absolute bottom-1 right-1 bg-white rounded-full p-1 shadow-sm">
+<span class="material-symbols-outlined text-black text-xs font-bold block">add</span>
+</button>
+</div>
+<p class="text-xs text-white font-bold truncate">Coleslaw</p>
+<p class="text-[10px] text-[#92adc9] mt-0.5">₦800</p>
+</div>
+</div>
+</div>
+<!-- Summary Card -->
+<div class="px-4 mt-2 mb-6">
+<div class="bg-surface-dark rounded-2xl p-5 border border-border-dark shadow-sm">
+<!-- Promo Input -->
+<div class="flex gap-2 mb-4">
+<div class="relative w-full">
+<span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-[#92adc9] text-[18px]">local_offer</span>
+</span>
+<input class="w-full bg-[#111a22] text-sm text-white rounded-lg border-border-dark pl-9 pr-20 py-2.5 focus:ring-1 focus:ring-primary focus:border-primary placeholder-[#5c728a]" placeholder="Code Promo" type="text"/>
+<button class="absolute inset-y-1 right-1 bg-[#233648] text-white text-xs font-bold px-3 rounded hover:bg-primary transition-colors">Appliquer</button>
+</div>
+</div>
+<!-- Breakdown -->
+<div class="space-y-3 mb-4">
+<div class="flex justify-between text-[#92adc9] text-sm">
+<span>Sous-total</span>
+<span class="text-white font-medium">₦16,900</span>
+</div>
+<div class="flex justify-between text-[#92adc9] text-sm">
+<span class="flex items-center gap-1">Frais de livraison</span>
+<span class="text-white font-medium">₦500</span>
+</div>
+<div class="flex justify-between text-[#92adc9] text-sm">
+<span>Frais de service</span>
+<span class="text-white font-medium">₦200</span>
+</div>
+</div>
+<div class="h-px bg-[#233648] w-full mb-3"></div>
+<div class="flex justify-between items-center text-white">
+<span class="text-base font-bold">Total</span>
+<span class="text-2xl font-extrabold tracking-tight">₦17,600</span>
+</div>
+</div>
+</div>
+<!-- Extra space to ensure content isn't hidden by fixed footer -->
+<div class="h-8"></div>
+</div>
+<!-- Sticky Footer -->
+<div class="bg-[#111a22]/80 backdrop-blur-xl border-t border-border-dark p-4 pb-8 shrink-0 safe-area-bottom">
+<button class="w-full bg-white active:bg-gray-200 transition-colors text-black font-bold text-lg rounded-xl h-14 flex items-center justify-between px-6 shadow-lg shadow-white/5 relative overflow-hidden group">
+<span class="flex items-center gap-2 relative z-10">
+                    Payer via SMS 
+                    <span class="material-symbols-outlined text-[20px] transition-transform group-active:translate-x-1">sms</span>
+</span>
+<span class="bg-black text-white text-sm py-1 px-3 rounded-lg font-bold relative z-10">₦17,600</span>
+<div class="absolute bottom-0 left-0 h-1 w-full bg-gradient-to-r from-blue-500 via-yellow-500 to-green-500 opacity-0 group-active:opacity-100 transition-opacity"></div>
+</button>
+</div>
+</div>
+</body></html>

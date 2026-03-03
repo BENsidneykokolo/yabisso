@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Super Admin Wallet &amp; Points Control</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#42cf17",
+                        "background-light": "#f6f8f6",
+                        "background-dark": "#152111",
+                        "surface-dark": "#1a2c15",
+                        "border-dark": "#2c4724",
+                        "text-muted": "#9fc893",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display antialiased min-h-screen pb-10">
+<!-- Top App Bar -->
+<div class="sticky top-0 z-50 flex items-center bg-background-dark/95 backdrop-blur-sm p-4 pb-2 justify-between border-b border-white/5">
+<div class="text-white flex size-12 shrink-0 items-center justify-start cursor-pointer">
+<span class="material-symbols-outlined text-white" style="font-size: 24px;">arrow_back</span>
+</div>
+<h2 class="text-white text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center">Wallet Control</h2>
+<div class="flex size-12 items-center justify-end">
+<button class="flex items-center justify-center rounded-lg h-12 text-white relative">
+<span class="material-symbols-outlined text-white" style="font-size: 24px;">notifications</span>
+<span class="absolute top-3 right-0 h-2 w-2 rounded-full bg-primary"></span>
+</button>
+</div>
+</div>
+<!-- Main Content Container -->
+<div class="flex flex-col w-full max-w-md mx-auto">
+<!-- Stats Section -->
+<div class="px-4 py-6">
+<div class="flex flex-col gap-2 rounded-xl p-6 bg-surface-dark border border-border-dark shadow-lg relative overflow-hidden group">
+<div class="absolute -right-10 -top-10 h-32 w-32 bg-primary/10 rounded-full blur-2xl group-hover:bg-primary/20 transition-all duration-500"></div>
+<div class="flex items-center gap-2 mb-1">
+<span class="material-symbols-outlined text-primary text-sm">public</span>
+<p class="text-text-muted text-sm font-medium uppercase tracking-wider">Total Circulation</p>
+</div>
+<p class="text-white tracking-tight text-3xl font-bold leading-tight">12,500,000</p>
+<div class="flex items-center gap-2 mt-1">
+<span class="bg-primary/20 text-primary text-xs font-bold px-2 py-0.5 rounded flex items-center gap-1">
+<span class="material-symbols-outlined" style="font-size: 14px;">trending_up</span>
+                        +5%
+                    </span>
+<span class="text-white/40 text-xs">vs last month</span>
+</div>
+</div>
+</div>
+<!-- Issue Points Section -->
+<div class="flex flex-col gap-4">
+<div class="px-4 flex items-center justify-between">
+<h3 class="text-white text-lg font-bold leading-tight tracking-[-0.015em]">Issue Points</h3>
+<span class="material-symbols-outlined text-text-muted cursor-pointer hover:text-white transition-colors" style="font-size: 20px;">info</span>
+</div>
+<!-- Recipient Type Selector -->
+<div class="px-4">
+<div class="flex h-10 w-full items-center rounded-lg bg-surface-dark p-1 border border-border-dark">
+<label class="flex-1 cursor-pointer h-full items-center justify-center rounded px-2 has-[:checked]:bg-background-dark has-[:checked]:shadow-sm has-[:checked]:text-primary text-text-muted text-xs font-semibold transition-all">
+<span class="truncate">Main Admin</span>
+<input checked="" class="hidden" name="recipient_type" type="radio" value="Main Admin"/>
+</label>
+<label class="flex-1 cursor-pointer h-full items-center justify-center rounded px-2 has-[:checked]:bg-background-dark has-[:checked]:shadow-sm has-[:checked]:text-primary text-text-muted text-xs font-semibold transition-all">
+<span class="truncate">Kiosque</span>
+<input class="hidden" name="recipient_type" type="radio" value="Kiosque Admin"/>
+</label>
+<label class="flex-1 cursor-pointer h-full items-center justify-center rounded px-2 has-[:checked]:bg-background-dark has-[:checked]:shadow-sm has-[:checked]:text-primary text-text-muted text-xs font-semibold transition-all">
+<span class="truncate">User</span>
+<input class="hidden" name="recipient_type" type="radio" value="User"/>
+</label>
+</div>
+</div>
+<!-- Input Fields -->
+<div class="px-4 flex flex-col gap-3">
+<!-- Amount Input -->
+<div class="flex w-full items-center rounded-lg border border-border-dark bg-surface-dark focus-within:border-primary focus-within:ring-1 focus-within:ring-primary transition-all">
+<input class="w-full bg-transparent border-none text-white placeholder-text-muted p-4 focus:ring-0 text-lg font-medium" placeholder="Amount (e.g. 5000)" type="number"/>
+<div class="pr-4 text-text-muted flex items-center pointer-events-none">
+<span class="text-sm font-bold">PTS</span>
+</div>
+</div>
+<!-- Recipient Search -->
+<div class="flex w-full items-center rounded-lg border border-border-dark bg-surface-dark focus-within:border-primary focus-within:ring-1 focus-within:ring-primary transition-all">
+<div class="pl-4 text-text-muted flex items-center pointer-events-none">
+<span class="material-symbols-outlined" style="font-size: 20px;">search</span>
+</div>
+<input class="w-full bg-transparent border-none text-white placeholder-text-muted p-4 focus:ring-0 text-base" placeholder="Search ID or Name" type="text"/>
+</div>
+<!-- Primary Action Button -->
+<button class="w-full h-14 mt-2 bg-primary hover:bg-green-500 active:scale-[0.98] transition-all text-background-dark font-bold text-base rounded-lg shadow-[0_0_20px_rgba(66,207,23,0.3)] flex items-center justify-center gap-2">
+<span class="material-symbols-outlined font-bold">add_circle</span>
+                    Issue Points
+                </button>
+</div>
+</div>
+<div class="h-8"></div>
+<!-- Wallet Security Section -->
+<div class="flex flex-col gap-4">
+<h3 class="text-white text-lg font-bold leading-tight tracking-[-0.015em] px-4">Wallet Security</h3>
+<div class="px-4">
+<div class="flex w-full items-center rounded-lg border border-border-dark bg-surface-dark mb-4">
+<input class="w-full bg-transparent border-none text-white placeholder-text-muted p-3 text-sm" placeholder="Enter User ID for Security Action..." type="text"/>
+</div>
+<div class="grid grid-cols-2 gap-3">
+<button class="group flex flex-col items-center justify-center gap-2 rounded-lg bg-[#2c1515] p-4 border border-red-900/30 hover:bg-red-900/20 active:bg-red-900/30 transition-all">
+<div class="bg-red-500/10 p-2 rounded-full group-hover:bg-red-500/20 transition-colors">
+<span class="material-symbols-outlined text-red-500">lock</span>
+</div>
+<span class="text-red-200 text-sm font-medium">Freeze Wallet</span>
+</button>
+<button class="group flex flex-col items-center justify-center gap-2 rounded-lg bg-surface-dark p-4 border border-border-dark hover:bg-border-dark transition-all">
+<div class="bg-blue-500/10 p-2 rounded-full group-hover:bg-blue-500/20 transition-colors">
+<span class="material-symbols-outlined text-blue-400">history</span>
+</div>
+<span class="text-blue-100 text-sm font-medium">Recover Access</span>
+</button>
+</div>
+</div>
+</div>
+<div class="h-8"></div>
+<!-- Recent Activity Section -->
+<div class="flex flex-col gap-4 pb-8">
+<div class="flex items-center justify-between px-4">
+<h3 class="text-white text-lg font-bold leading-tight tracking-[-0.015em]">Recent Activity</h3>
+<a class="text-primary text-sm font-medium hover:underline" href="#">View All</a>
+</div>
+<div class="flex flex-col gap-3 px-4">
+<!-- Transaction Item 1 -->
+<div class="flex items-center justify-between rounded-xl bg-surface-dark p-4 border border-border-dark hover:border-primary/50 transition-colors cursor-pointer group">
+<div class="flex items-center gap-3">
+<div class="flex size-10 items-center justify-center rounded-full bg-primary/10 border border-primary/20 group-hover:bg-primary/20 transition-colors">
+<span class="material-symbols-outlined text-primary" style="font-size: 20px;">arrow_outward</span>
+</div>
+<div class="flex flex-col">
+<p class="text-white font-semibold text-sm">Main Admin 01</p>
+<p class="text-text-muted text-xs flex items-center gap-1">
+<span class="size-1.5 rounded-full bg-primary inline-block"></span>
+                                Minted • Today, 10:23 AM
+                            </p>
+</div>
+</div>
+<span class="text-primary font-bold text-sm tracking-wide">+5,000</span>
+</div>
+<!-- Transaction Item 2 -->
+<div class="flex items-center justify-between rounded-xl bg-surface-dark p-4 border border-border-dark hover:border-primary/50 transition-colors cursor-pointer group">
+<div class="flex items-center gap-3">
+<div class="flex size-10 items-center justify-center rounded-full bg-primary/10 border border-primary/20 group-hover:bg-primary/20 transition-colors">
+<span class="material-symbols-outlined text-primary" style="font-size: 20px;">arrow_outward</span>
+</div>
+<div class="flex flex-col">
+<p class="text-white font-semibold text-sm">Kiosque Alpha</p>
+<p class="text-text-muted text-xs flex items-center gap-1">
+<span class="size-1.5 rounded-full bg-primary inline-block"></span>
+                                Minted • Yesterday, 4:45 PM
+                            </p>
+</div>
+</div>
+<span class="text-primary font-bold text-sm tracking-wide">+12,500</span>
+</div>
+<!-- Transaction Item 3 (Security Action) -->
+<div class="flex items-center justify-between rounded-xl bg-surface-dark p-4 border border-border-dark hover:border-red-500/30 transition-colors cursor-pointer group">
+<div class="flex items-center gap-3">
+<div class="flex size-10 items-center justify-center rounded-full bg-red-500/10 border border-red-500/20 group-hover:bg-red-500/20 transition-colors">
+<span class="material-symbols-outlined text-red-500" style="font-size: 20px;">lock</span>
+</div>
+<div class="flex flex-col">
+<p class="text-white font-semibold text-sm">User ID: #88291</p>
+<p class="text-text-muted text-xs flex items-center gap-1">
+<span class="size-1.5 rounded-full bg-red-500 inline-block"></span>
+                                Wallet Frozen • Oct 24
+                            </p>
+</div>
+</div>
+<span class="text-text-muted font-medium text-xs tracking-wide">ACTION</span>
+</div>
+</div>
+</div>
+</div>
+</body></html>

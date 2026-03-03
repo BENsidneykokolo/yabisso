@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="fr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Yabisso - Ajouter une Adresse Favorite</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                    },
+                    fontFamily: {
+                        "display": ["Inter"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .active-icon {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-white min-h-screen flex flex-col">
+<!-- Header -->
+<header class="flex items-center px-4 py-6">
+<button class="flex items-center justify-center size-10 rounded-full bg-white/5 hover:bg-white/10 transition-colors">
+<span class="material-symbols-outlined text-white">arrow_back</span>
+</button>
+<h1 class="text-xl font-bold ml-4 tracking-tight">Ajouter un favori</h1>
+</header>
+<!-- Main Content -->
+<main class="flex-1 px-4 pb-24 overflow-y-auto">
+<section class="space-y-6">
+<!-- Address Details Section -->
+<div class="space-y-4">
+<h2 class="text-sm font-semibold uppercase tracking-wider text-primary/80">Détails de l'adresse</h2>
+<!-- Name Input -->
+<div class="flex flex-col gap-2">
+<label class="text-sm font-medium text-white/70 ml-1">Nom de l'adresse</label>
+<input class="w-full h-14 px-4 bg-white/5 border border-white/10 rounded-xl focus:border-primary focus:ring-1 focus:ring-primary outline-none text-white placeholder:text-white/30 transition-all" placeholder="Ex: Maison, Travail..." type="text"/>
+</div>
+<!-- Address Selection -->
+<div class="flex flex-col gap-2">
+<label class="text-sm font-medium text-white/70 ml-1">Adresse</label>
+<div class="relative">
+<input class="w-full h-14 pl-4 pr-12 bg-white/5 border border-white/10 rounded-xl focus:border-primary focus:ring-1 focus:ring-primary outline-none text-white placeholder:text-white/30 transition-all" placeholder="Entrez l'adresse..." type="text"/>
+<button class="absolute right-3 top-1/2 -translate-y-1/2 text-primary">
+<span class="material-symbols-outlined">my_location</span>
+</button>
+</div>
+</div>
+<!-- Map Preview -->
+<div class="w-full h-40 rounded-xl overflow-hidden relative border border-white/10 group">
+<img class="w-full h-full object-cover opacity-60 group-hover:opacity-80 transition-opacity" data-alt="Modern dark stylized city map showing location" data-location="Kinshasa, Congo" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBsk8DrXZty014x4m7ri9F-rhcNHO3SFZOcDtd8PZbaeACndH2pw2RdvTunVtIhuFceWvh04zIg7AU8YDNESzKBvLyZvWXAttgEtXTzEx-entVSrkAY7OpmZwJXYyRo28ISHSg7qW5TPAvD76V6f85LmN07S5NEdPuzCg2TALopDUuN8EJPCdNS4Bh065utNPUFI-y6Z8mbe5rN6krECyUjLTut3EAG89oI0ehMNxtBolFMOLlssYSZUCEXIv7aA_7-tRFgH-mE"/>
+<div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+<span class="material-symbols-outlined text-primary text-4xl active-icon">location_on</span>
+</div>
+<div class="absolute bottom-2 right-2 bg-background-dark/80 px-2 py-1 rounded text-[10px] uppercase tracking-widest font-bold border border-white/10">
+                        Aperçu Carte
+                    </div>
+</div>
+</div>
+<!-- Icon Selection -->
+<div class="space-y-4 pt-2">
+<h2 class="text-sm font-semibold uppercase tracking-wider text-primary/80">Choisir une icône</h2>
+<div class="flex justify-between items-center gap-3">
+<button class="flex-1 flex flex-col items-center gap-2 p-4 rounded-xl bg-primary/20 border-2 border-primary transition-all">
+<span class="material-symbols-outlined text-primary active-icon">home</span>
+<span class="text-[10px] font-bold uppercase">Maison</span>
+</button>
+<button class="flex-1 flex flex-col items-center gap-2 p-4 rounded-xl bg-white/5 border-2 border-transparent hover:border-white/20 transition-all">
+<span class="material-symbols-outlined text-white/60">work</span>
+<span class="text-[10px] font-bold uppercase text-white/60">Bureau</span>
+</button>
+<button class="flex-1 flex flex-col items-center gap-2 p-4 rounded-xl bg-white/5 border-2 border-transparent hover:border-white/20 transition-all">
+<span class="material-symbols-outlined text-white/60">star</span>
+<span class="text-[10px] font-bold uppercase text-white/60">Favori</span>
+</button>
+<button class="flex-1 flex flex-col items-center gap-2 p-4 rounded-xl bg-white/5 border-2 border-transparent hover:border-white/20 transition-all">
+<span class="material-symbols-outlined text-white/60">favorite</span>
+<span class="text-[10px] font-bold uppercase text-white/60">Cœur</span>
+</button>
+</div>
+</div>
+<!-- Yabisso ID Preview -->
+<div class="p-5 rounded-xl bg-primary/10 border border-primary/30 flex items-center justify-between">
+<div>
+<h3 class="text-xs font-bold text-primary uppercase tracking-widest mb-1">ID Yabisso Généré</h3>
+<p class="text-2xl font-mono font-bold text-white">YB-782-X</p>
+</div>
+<div class="size-12 rounded-lg bg-white/5 flex items-center justify-center border border-white/10">
+<span class="material-symbols-outlined text-primary/60">qr_code_2</span>
+</div>
+</div>
+<!-- Save Button -->
+<button class="w-full h-16 bg-white text-background-dark font-bold text-lg rounded-xl shadow-xl shadow-primary/10 hover:bg-gray-100 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+                Enregistrer l'adresse
+                <span class="material-symbols-outlined">check_circle</span>
+</button>
+</section>
+</main>
+<!-- Bottom Navigation Bar -->
+<nav class="fixed bottom-0 left-0 right-0 bg-[#192633] border-t border-white/10 px-4 pb-6 pt-3 z-50">
+<div class="flex justify-between items-center max-w-lg mx-auto">
+<a class="flex flex-col items-center gap-1 group" href="#">
+<div class="h-8 flex items-center justify-center text-white/40 group-hover:text-primary transition-colors">
+<span class="material-symbols-outlined">home</span>
+</div>
+<span class="text-[10px] font-medium text-white/40 group-hover:text-primary">Accueil</span>
+</a>
+<a class="flex flex-col items-center gap-1 group" href="#">
+<div class="h-8 flex items-center justify-center text-white/40 group-hover:text-primary transition-colors">
+<span class="material-symbols-outlined">account_balance_wallet</span>
+</div>
+<span class="text-[10px] font-medium text-white/40 group-hover:text-primary">Portefeuille</span>
+</a>
+<a class="flex flex-col items-center gap-1 group" href="#">
+<div class="h-8 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined active-icon">chat_bubble</span>
+</div>
+<span class="text-[10px] font-medium text-primary">IA Chatbot</span>
+</a>
+<a class="flex flex-col items-center gap-1 group" href="#">
+<div class="h-8 flex items-center justify-center text-white/40 group-hover:text-primary transition-colors">
+<span class="material-symbols-outlined">grid_view</span>
+</div>
+<span class="text-[10px] font-medium text-white/40 group-hover:text-primary">Services</span>
+</a>
+<a class="flex flex-col items-center gap-1 group" href="#">
+<div class="h-8 flex items-center justify-center text-white/40 group-hover:text-primary transition-colors">
+<span class="material-symbols-outlined">account_circle</span>
+</div>
+<span class="text-[10px] font-medium text-white/40 group-hover:text-primary">Profil</span>
+</a>
+</div>
+</nav>
+</body></html>

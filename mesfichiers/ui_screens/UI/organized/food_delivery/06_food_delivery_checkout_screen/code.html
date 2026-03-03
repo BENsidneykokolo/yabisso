@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Food Delivery Checkout</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;family=Noto+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                        "yabisso-yellow": "#FBBF24",
+                        "yabisso-green": "#34D399",
+                        "yabisso-red": "#F87171",
+                    },
+                    fontFamily: {
+                        "display": ["Plus Jakarta Sans", "Noto Sans", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom scrollbar for horizontal scroll if needed */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white font-display antialiased pb-32">
+<!-- Top App Bar -->
+<div class="sticky top-0 z-50 bg-background-light/90 dark:bg-background-dark/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-800">
+<div class="flex items-center p-4 justify-between max-w-lg mx-auto w-full">
+<button class="flex size-10 shrink-0 items-center justify-center rounded-full hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors">
+<span class="material-symbols-outlined text-slate-900 dark:text-white">arrow_back</span>
+</button>
+<h2 class="text-lg font-bold leading-tight tracking-tight flex-1 text-center pr-10">Checkout</h2>
+</div>
+</div>
+<div class="max-w-lg mx-auto w-full flex flex-col gap-6 p-4">
+<!-- Segmented Control: Delivery vs Pickup -->
+<div class="w-full">
+<div class="flex h-12 w-full items-center justify-center rounded-xl bg-slate-200 dark:bg-[#1c2936] p-1">
+<label class="group flex cursor-pointer h-full grow items-center justify-center overflow-hidden rounded-lg px-2 has-[:checked]:bg-white dark:has-[:checked]:bg-[#2c3e50] has-[:checked]:shadow-sm transition-all duration-200">
+<span class="text-slate-500 dark:text-[#92adc9] group-has-[:checked]:text-primary text-sm font-semibold">Delivery</span>
+<input checked="" class="invisible w-0 h-0 absolute" name="delivery_mode" type="radio" value="Delivery"/>
+</label>
+<label class="group flex cursor-pointer h-full grow items-center justify-center overflow-hidden rounded-lg px-2 has-[:checked]:bg-white dark:has-[:checked]:bg-[#2c3e50] has-[:checked]:shadow-sm transition-all duration-200">
+<span class="text-slate-500 dark:text-[#92adc9] group-has-[:checked]:text-primary text-sm font-semibold">Pickup</span>
+<input class="invisible w-0 h-0 absolute" name="delivery_mode" type="radio" value="Pickup"/>
+</label>
+</div>
+</div>
+<!-- Address Section -->
+<div class="flex flex-col gap-2">
+<div class="flex items-center justify-between">
+<h3 class="text-base font-bold">Delivery Address</h3>
+<button class="text-sm font-medium text-primary hover:text-primary/80">Change</button>
+</div>
+<div class="relative overflow-hidden rounded-2xl border border-slate-200 dark:border-[#2c3e50] bg-white dark:bg-[#16202a]">
+<!-- Map Preview Image -->
+<div class="h-24 w-full bg-slate-800 relative">
+<img class="w-full h-full object-cover opacity-60" data-alt="Dark stylized map of Lagos streets" data-location="Lagos, Nigeria" src="https://lh3.googleusercontent.com/aida-public/AB6AXuChRQviGR_PYvrlgJpqzyj7CmffpRhOw6fOsllBLKsQuwhPmaNYmMvkd03QLtFrGyQ2hyCJIMDCFGxAL99h72vbOgb4gFS6pm8LCJyOFPJ8grvWkdF0G6UkJEIlMKQB4_vH7MnOk9bP0k6ICUjL6yrGOAQH8qM5jxXZ02p4lb18Ea6ofllCdIIWNqO23YWXsLOeWAWW_7fKMNa3zRS6QcNWWabYB11tpgbKXYBw_RkqA9kdozNO5uwigmlKmfnzN13ImYnZ_3rU"/>
+<div class="absolute inset-0 bg-gradient-to-t from-[#16202a] to-transparent"></div>
+<!-- Location Pin Overlay -->
+<div class="absolute top-1/2 left-4 -translate-y-1/2 flex items-center justify-center size-8 rounded-full bg-primary/20 backdrop-blur-sm border border-primary/50 text-primary">
+<span class="material-symbols-outlined text-[20px]">location_on</span>
+</div>
+</div>
+<div class="p-4 pt-2 flex items-start gap-3">
+<div class="flex flex-col gap-1">
+<p class="text-slate-900 dark:text-white text-base font-bold leading-tight">Home</p>
+<p class="text-slate-500 dark:text-[#92adc9] text-sm font-normal leading-normal">123 Tech Avenue, Yaba, Lagos</p>
+<div class="flex items-center gap-1 mt-1">
+<span class="material-symbols-outlined text-[16px] text-yabisso-yellow">schedule</span>
+<p class="text-xs font-medium text-yabisso-yellow">~35 mins</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Payment Methods -->
+<div class="flex flex-col gap-3">
+<h3 class="text-base font-bold">Payment Method</h3>
+<div class="flex flex-col gap-3" style="--radio-dot-svg: url('data:image/svg+xml,%3csvg viewBox=%270 0 16 16%27 fill=%27rgb(19,128,236)%27 xmlns=%27http://www.w3.org/2000/svg%27%3e%3ccircle cx=%278%27 cy=%278%27 r=%273%27/%3e%3c/svg%3e');">
+<!-- Option 1: Wallet -->
+<label class="group relative flex items-center gap-4 rounded-xl border border-slate-200 dark:border-[#2c3e50] bg-white dark:bg-[#16202a] p-4 cursor-pointer transition-colors has-[:checked]:border-primary/50 has-[:checked]:bg-primary/5 dark:has-[:checked]:bg-[#137fec]/10">
+<div class="flex items-center justify-center size-10 rounded-full bg-slate-100 dark:bg-[#23303e] text-primary">
+<span class="material-symbols-outlined">account_balance_wallet</span>
+</div>
+<div class="flex grow flex-col">
+<p class="text-slate-900 dark:text-white text-sm font-bold">Yabisso Wallet</p>
+<p class="text-yabisso-green text-xs font-medium">Balance: ₦5,000</p>
+</div>
+<input checked="" class="h-5 w-5 border-2 border-slate-300 dark:border-slate-600 bg-transparent text-transparent checked:border-primary checked:bg-[image:--radio-dot-svg] focus:ring-0 focus:ring-offset-0" name="payment_method" type="radio"/>
+</label>
+<!-- Option 2: SMS/Offline -->
+<label class="group relative flex items-center gap-4 rounded-xl border border-slate-200 dark:border-[#2c3e50] bg-white dark:bg-[#16202a] p-4 cursor-pointer transition-colors has-[:checked]:border-primary/50 has-[:checked]:bg-primary/5 dark:has-[:checked]:bg-[#137fec]/10">
+<div class="flex items-center justify-center size-10 rounded-full bg-slate-100 dark:bg-[#23303e] text-slate-500 dark:text-slate-400">
+<span class="material-symbols-outlined">sms</span>
+</div>
+<div class="flex grow flex-col">
+<div class="flex items-center gap-2">
+<p class="text-slate-900 dark:text-white text-sm font-bold">Pay via SMS / USSD</p>
+<span class="inline-flex items-center rounded-md bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 text-[10px] font-medium text-slate-600 dark:text-slate-400 ring-1 ring-inset ring-slate-500/10">Offline</span>
+</div>
+<p class="text-slate-500 dark:text-[#92adc9] text-xs font-normal">Dial *123# to pay</p>
+</div>
+<input class="h-5 w-5 border-2 border-slate-300 dark:border-slate-600 bg-transparent text-transparent checked:border-primary checked:bg-[image:--radio-dot-svg] focus:ring-0 focus:ring-offset-0" name="payment_method" type="radio"/>
+</label>
+<!-- Option 3: Card -->
+<label class="group relative flex items-center gap-4 rounded-xl border border-slate-200 dark:border-[#2c3e50] bg-white dark:bg-[#16202a] p-4 cursor-pointer transition-colors has-[:checked]:border-primary/50 has-[:checked]:bg-primary/5 dark:has-[:checked]:bg-[#137fec]/10">
+<div class="flex items-center justify-center size-10 rounded-full bg-slate-100 dark:bg-[#23303e] text-slate-500 dark:text-slate-400">
+<span class="material-symbols-outlined">credit_card</span>
+</div>
+<div class="flex grow flex-col">
+<p class="text-slate-900 dark:text-white text-sm font-bold">Credit / Debit Card</p>
+<p class="text-slate-500 dark:text-[#92adc9] text-xs font-normal">Pay online securely</p>
+</div>
+<input class="h-5 w-5 border-2 border-slate-300 dark:border-slate-600 bg-transparent text-transparent checked:border-primary checked:bg-[image:--radio-dot-svg] focus:ring-0 focus:ring-offset-0" name="payment_method" type="radio"/>
+</label>
+</div>
+</div>
+<!-- Order Summary -->
+<div class="flex flex-col gap-4 pt-2">
+<h3 class="text-base font-bold px-1">Order Summary</h3>
+<div class="rounded-xl border border-slate-200 dark:border-[#2c3e50] bg-slate-50 dark:bg-[#16202a]/50 p-5 flex flex-col gap-3">
+<!-- Item 1 -->
+<div class="flex justify-between items-start">
+<div class="flex gap-3">
+<div class="flex h-6 w-6 items-center justify-center rounded bg-slate-200 dark:bg-[#2c3e50] text-xs font-bold text-slate-700 dark:text-white">2x</div>
+<span class="text-sm font-medium text-slate-700 dark:text-slate-200">Jollof Rice Special</span>
+</div>
+<span class="text-sm font-bold text-slate-900 dark:text-white">₦6,000</span>
+</div>
+<!-- Item 2 -->
+<div class="flex justify-between items-start">
+<div class="flex gap-3">
+<div class="flex h-6 w-6 items-center justify-center rounded bg-slate-200 dark:bg-[#2c3e50] text-xs font-bold text-slate-700 dark:text-white">1x</div>
+<span class="text-sm font-medium text-slate-700 dark:text-slate-200">Fried Plantain</span>
+</div>
+<span class="text-sm font-bold text-slate-900 dark:text-white">₦500</span>
+</div>
+<div class="my-1 h-px w-full border-b border-dashed border-slate-300 dark:border-slate-700"></div>
+<!-- Fees -->
+<div class="flex justify-between items-center text-xs text-slate-500 dark:text-[#92adc9]">
+<span>Subtotal</span>
+<span>₦6,500</span>
+</div>
+<div class="flex justify-between items-center text-xs text-slate-500 dark:text-[#92adc9]">
+<span>Delivery Fee</span>
+<span>₦500</span>
+</div>
+<div class="flex justify-between items-center text-xs text-slate-500 dark:text-[#92adc9]">
+<span>Service Charge</span>
+<span>₦200</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Sticky Bottom Action Bar -->
+<div class="fixed bottom-0 left-0 right-0 border-t border-slate-200 dark:border-[#2c3e50] bg-background-light dark:bg-background-dark p-4 pb-8 z-40">
+<div class="max-w-lg mx-auto w-full flex flex-col gap-4">
+<div class="flex justify-between items-center">
+<div class="flex flex-col">
+<span class="text-xs text-slate-500 dark:text-[#92adc9]">Total Amount</span>
+<span class="text-2xl font-bold text-slate-900 dark:text-white">₦7,200</span>
+</div>
+<!-- Primary Action Button: White style as requested -->
+<button class="flex-1 ml-6 h-12 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-black font-bold text-base shadow-lg hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+<span>Place Order</span>
+<span class="material-symbols-outlined text-[20px]">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+</body></html>

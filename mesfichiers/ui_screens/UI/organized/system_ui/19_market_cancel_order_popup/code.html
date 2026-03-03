@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Market Cancel Order Popup</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Noto+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "primary-dark": "#0b5cb5",
+                        "danger": "#ef4444",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                        "surface-dark": "#1a2632",
+                        "brand-yellow": "#fbbf24",
+                        "brand-green": "#22c55e",
+                        "brand-red": "#ef4444",
+                    },
+                    fontFamily: {
+                        "display": ["Plus Jakarta Sans", "sans-serif"],
+                        "body": ["Noto Sans", "sans-serif"],
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "2xl": "1rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom scrollbar for reason list if it gets too long */
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+        .scrollbar-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-dark font-display text-white antialiased overflow-hidden">
+<!-- Main Background Content (Simulated App Screen behind modal) -->
+<div aria-hidden="true" class="relative min-h-screen w-full opacity-20 pointer-events-none">
+<div class="p-4 space-y-4">
+<div class="h-14 w-full bg-surface-dark rounded-lg animate-pulse"></div>
+<div class="h-64 w-full bg-surface-dark rounded-lg animate-pulse"></div>
+<div class="h-32 w-full bg-surface-dark rounded-lg animate-pulse"></div>
+</div>
+</div>
+<!-- Modal Overlay -->
+<div class="fixed inset-0 z-50 flex items-center justify-center p-4">
+<!-- Backdrop with blur -->
+<div class="absolute inset-0 bg-black/60 backdrop-blur-md"></div>
+<!-- Modal Container -->
+<div class="relative w-full max-w-[400px] flex flex-col bg-background-dark rounded-2xl shadow-2xl border border-white/5 overflow-hidden animate-in fade-in zoom-in duration-300">
+<!-- Brand Accent Line (African Tech Vibe) -->
+<div class="h-1.5 w-full flex">
+<div class="h-full w-1/4 bg-brand-green"></div>
+<div class="h-full w-1/4 bg-brand-yellow"></div>
+<div class="h-full w-1/4 bg-primary"></div>
+<div class="h-full w-1/4 bg-brand-red"></div>
+</div>
+<!-- Scrollable Content Area -->
+<div class="flex-1 overflow-y-auto max-h-[80vh] scrollbar-hide">
+<!-- Header Section -->
+<div class="pt-8 pb-4 px-6 text-center">
+<div class="mx-auto mb-4 flex items-center justify-center size-14 rounded-full bg-danger/10 text-danger">
+<span class="material-symbols-outlined text-3xl">warning</span>
+</div>
+<h2 class="text-2xl font-bold tracking-tight text-white mb-2">Cancel Order?</h2>
+<p class="text-gray-400 text-sm font-body leading-relaxed">
+                        Are you sure you want to cancel order <span class="text-white font-mono font-medium">#YBS-2930</span>? This action cannot be undone.
+                    </p>
+</div>
+<!-- Product Summary Card -->
+<div class="px-5 pb-6">
+<div class="bg-surface-dark rounded-xl p-3 border border-white/5 flex items-center gap-4">
+<div class="relative shrink-0 size-16 rounded-lg overflow-hidden bg-gray-800">
+<img alt="Product Image" class="h-full w-full object-cover" data-alt="Traditional African patterned fabric kente cloth thumbnail" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAQtktZb_vl9ULjf8hUa8CuCzwLp1GVTSObw7fooS1vQl0uFtKxIbpihmAjTFOgwGiSRuft-ySZnD9jZPLRb5ZP8CIrrqCQCUkhQnQKeAiq4sbAkecjQob4CJDGKD3Ynna5PUoVGj5OwoDhATc9ze5OkzRzU25jUfaEXVWLebppPI8OQjG_6wEzsUr0sI8oPj_tIJDgmS8rZduCAB4dsNmL7MBu6tKPtj26n-_48BEfKpJssGFOQaUH9j_A22fjvnbTf-TxBl3C"/>
+</div>
+<div class="flex flex-col justify-center flex-1 min-w-0">
+<p class="text-white text-sm font-semibold truncate">Vintage Kente Cloth</p>
+<p class="text-gray-400 text-xs truncate mb-1">Seller: Kofi Designs</p>
+<p class="text-primary font-bold text-sm">FCFA 15,000</p>
+</div>
+</div>
+</div>
+<!-- Cancellation Reason Selector -->
+<div class="px-5 pb-2">
+<p class="text-xs font-bold uppercase tracking-wider text-gray-500 mb-3 px-1">Reason for cancellation</p>
+<div class="flex flex-col gap-2" style="--radio-dot-svg: url('data:image/svg+xml,%3csvg viewBox=%270 0 16 16%27 fill=%27rgb(19,128,236)%27 xmlns=%27http://www.w3.org/2000/svg%27%3e%3ccircle cx=%278%27 cy=%278%27 r=%273%27/%3e%3c/svg%3e');">
+<!-- Reason 1 -->
+<label class="group relative flex items-center justify-between rounded-lg border border-white/10 bg-surface-dark/50 p-3 transition-colors hover:bg-surface-dark cursor-pointer">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-gray-400 text-[20px]">sentiment_dissatisfied</span>
+<span class="text-sm text-gray-200 font-medium">Changed my mind</span>
+</div>
+<input checked="" class="h-5 w-5 border-2 border-gray-600 bg-transparent text-transparent checked:border-primary checked:bg-[image:--radio-dot-svg] focus:ring-0 focus:ring-offset-0 checked:focus:border-primary cursor-pointer" name="cancel_reason" type="radio"/>
+</label>
+<!-- Reason 2 -->
+<label class="group relative flex items-center justify-between rounded-lg border border-white/10 bg-surface-dark/50 p-3 transition-colors hover:bg-surface-dark cursor-pointer">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-gray-400 text-[20px]">schedule</span>
+<span class="text-sm text-gray-200 font-medium">Delivery time too long</span>
+</div>
+<input class="h-5 w-5 border-2 border-gray-600 bg-transparent text-transparent checked:border-primary checked:bg-[image:--radio-dot-svg] focus:ring-0 focus:ring-offset-0 checked:focus:border-primary cursor-pointer" name="cancel_reason" type="radio"/>
+</label>
+<!-- Reason 3 -->
+<label class="group relative flex items-center justify-between rounded-lg border border-white/10 bg-surface-dark/50 p-3 transition-colors hover:bg-surface-dark cursor-pointer">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-gray-400 text-[20px]">sell</span>
+<span class="text-sm text-gray-200 font-medium">Found a better price</span>
+</div>
+<input class="h-5 w-5 border-2 border-gray-600 bg-transparent text-transparent checked:border-primary checked:bg-[image:--radio-dot-svg] focus:ring-0 focus:ring-offset-0 checked:focus:border-primary cursor-pointer" name="cancel_reason" type="radio"/>
+</label>
+<!-- Reason 4: Other -->
+<label class="group relative flex items-center justify-between rounded-lg border border-white/10 bg-surface-dark/50 p-3 transition-colors hover:bg-surface-dark cursor-pointer">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-gray-400 text-[20px]">edit_note</span>
+<span class="text-sm text-gray-200 font-medium">Other reason</span>
+</div>
+<input class="h-5 w-5 border-2 border-gray-600 bg-transparent text-transparent checked:border-primary checked:bg-[image:--radio-dot-svg] focus:ring-0 focus:ring-offset-0 checked:focus:border-primary cursor-pointer" name="cancel_reason" type="radio"/>
+</label>
+</div>
+</div>
+<!-- Info/Offline Note -->
+<div class="px-6 py-4">
+<div class="flex items-start gap-2 text-xs text-gray-500">
+<span class="material-symbols-outlined text-[16px] mt-0.5 text-primary">wifi_off</span>
+<p>Currently offline? Your cancellation request will be queued and processed automatically once connection is restored.</p>
+</div>
+</div>
+</div>
+<!-- Footer Actions -->
+<div class="bg-surface-dark p-5 border-t border-white/5 flex flex-col gap-3">
+<!-- Primary Keep Button -->
+<button class="w-full flex items-center justify-center gap-2 rounded-xl bg-primary py-3.5 px-4 text-sm font-bold text-white shadow-lg shadow-primary/20 transition hover:bg-primary-dark active:scale-[0.98]">
+<span>Keep Order</span>
+</button>
+<!-- Secondary Destructive Button -->
+<button class="w-full flex items-center justify-center gap-2 rounded-xl bg-transparent border border-danger/30 py-3.5 px-4 text-sm font-semibold text-danger transition hover:bg-danger/10 active:scale-[0.98]">
+<span>Confirm Cancellation</span>
+</button>
+</div>
+</div>
+</div>
+</body></html>

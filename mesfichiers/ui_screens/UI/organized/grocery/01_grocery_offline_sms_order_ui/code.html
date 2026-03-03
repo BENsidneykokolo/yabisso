@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Grocery Offline Order</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Theme Config -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#46ec13",
+                        "primary-dark": "#32b80d",
+                        "background-light": "#f6f8f6",
+                        "background-dark": "#142210",
+                        "surface-light": "#ffffff",
+                        "surface-dark": "#1c2e16",
+                        "text-main": "#111b0d",
+                        "text-dark": "#ecf5eb",
+                    },
+                    fontFamily: {
+                        "display": ["Lexend", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "2xl": "2rem", "full": "9999px"},
+                    boxShadow: {
+                        "soft": "0 4px 20px -2px rgba(70, 236, 19, 0.1)",
+                        "card": "0 2px 8px rgba(0,0,0,0.04)"
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .icon-filled {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        /* Hide scrollbar for clean UI */
+        ::-webkit-scrollbar {
+            width: 0px;
+            background: transparent;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-text-main dark:text-text-dark antialiased transition-colors duration-200">
+<div class="relative flex h-full min-h-screen w-full flex-col max-w-md mx-auto overflow-x-hidden shadow-2xl bg-background-light dark:bg-background-dark">
+<!-- Header -->
+<header class="sticky top-0 z-50 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-sm px-4 py-3 flex items-center justify-between transition-colors">
+<button class="p-2 rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors">
+<span class="material-symbols-outlined text-2xl dark:text-white">arrow_back</span>
+</button>
+<h1 class="text-lg font-bold tracking-tight text-center flex-1 dark:text-white">Offline Order</h1>
+<button class="p-2 rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors">
+<span class="material-symbols-outlined text-2xl dark:text-white">more_vert</span>
+</button>
+</header>
+<!-- Main Content -->
+<main class="flex-1 flex flex-col px-5 pb-24">
+<!-- Offline Status / Hero -->
+<div class="flex flex-col items-center justify-center py-6 animate-fade-in">
+<div class="relative w-32 h-32 mb-4 rounded-full bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center">
+<div class="absolute inset-0 rounded-full border-2 border-dashed border-orange-300 dark:border-orange-700 animate-[spin_10s_linear_infinite]"></div>
+<span class="material-symbols-outlined text-6xl text-orange-500 dark:text-orange-400 icon-filled">wifi_off</span>
+</div>
+<h2 class="text-xl font-bold text-center mb-1 dark:text-white">No internet detected</h2>
+<p class="text-sm text-gray-500 dark:text-gray-400 text-center max-w-[260px]">
+                    Don't worry! You can still place your grocery order via SMS.
+                </p>
+</div>
+<!-- Form Card -->
+<div class="bg-surface-light dark:bg-surface-dark rounded-2xl p-5 shadow-card dark:shadow-none flex flex-col gap-6 transition-colors">
+<!-- Product Input -->
+<div class="flex flex-col gap-2">
+<label class="flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-200">
+<span class="material-symbols-outlined text-primary text-lg">shopping_basket</span>
+                        What do you need?
+                    </label>
+<div class="relative">
+<input class="w-full h-14 pl-4 pr-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-black/20 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all placeholder:text-gray-400 dark:text-white" placeholder="e.g. Milk, Rice, Bread" type="text" value="Fresh Tomatoes, Onions (1kg)"/>
+</div>
+</div>
+<!-- Quantity Stepper -->
+<div class="flex flex-col gap-2">
+<label class="flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-200">
+<span class="material-symbols-outlined text-primary text-lg">format_list_numbered</span>
+                        How many items?
+                    </label>
+<div class="flex items-center justify-between bg-gray-50 dark:bg-black/20 rounded-xl p-2 border border-gray-200 dark:border-gray-700 h-14">
+<button class="w-10 h-10 flex items-center justify-center rounded-lg bg-white dark:bg-white/10 shadow-sm text-gray-600 dark:text-gray-200 hover:text-primary active:scale-95 transition-all">
+<span class="material-symbols-outlined">remove</span>
+</button>
+<span class="text-lg font-bold text-gray-800 dark:text-white">2</span>
+<button class="w-10 h-10 flex items-center justify-center rounded-lg bg-primary text-black shadow-sm hover:brightness-105 active:scale-95 transition-all">
+<span class="material-symbols-outlined">add</span>
+</button>
+</div>
+</div>
+<!-- Address Section -->
+<div class="flex flex-col gap-3">
+<label class="flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-200">
+<span class="material-symbols-outlined text-primary text-lg">location_on</span>
+                        Delivery Address
+                    </label>
+<!-- Chips -->
+<div class="flex gap-2 overflow-x-auto pb-1 no-scrollbar">
+<button class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary/10 border border-primary/20 text-primary-dark dark:text-primary text-xs font-medium whitespace-nowrap transition-colors">
+<span class="material-symbols-outlined text-[16px] icon-filled">home</span>
+                            Home
+                        </button>
+<button class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gray-100 dark:bg-white/5 border border-transparent text-gray-600 dark:text-gray-400 text-xs font-medium whitespace-nowrap hover:bg-gray-200 dark:hover:bg-white/10 transition-colors">
+<span class="material-symbols-outlined text-[16px]">work</span>
+                            Work
+                        </button>
+<button class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gray-100 dark:bg-white/5 border border-transparent text-gray-600 dark:text-gray-400 text-xs font-medium whitespace-nowrap hover:bg-gray-200 dark:hover:bg-white/10 transition-colors">
+<span class="material-symbols-outlined text-[16px]">add</span>
+                            New
+                        </button>
+</div>
+<textarea class="w-full p-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-black/20 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all placeholder:text-gray-400 text-sm resize-none dark:text-white" placeholder="Or type address here..." rows="2">Plot 45, Lekki Phase 1, Lagos</textarea>
+</div>
+</div>
+<!-- Submit Action -->
+<div class="mt-8">
+<button class="group w-full bg-primary hover:bg-[#3ce00e] active:bg-[#32b80d] text-black h-14 rounded-xl font-bold text-lg shadow-lg shadow-primary/20 flex items-center justify-center gap-3 transition-all transform active:scale-[0.98]">
+<span>Send Order via SMS</span>
+<span class="material-symbols-outlined group-hover:translate-x-1 transition-transform icon-filled">sms</span>
+</button>
+<p class="text-xs text-center text-gray-400 dark:text-gray-500 mt-3">
+                    Standard SMS rates may apply.
+                </p>
+</div>
+</main>
+<!-- Bottom Navigation -->
+<nav class="fixed bottom-0 left-0 right-0 z-40 bg-white dark:bg-[#1a2c15] border-t border-gray-100 dark:border-white/5 pb-safe max-w-md mx-auto">
+<div class="flex items-center justify-around h-16 px-2">
+<a class="flex flex-col items-center justify-center w-full h-full gap-1 text-gray-400 dark:text-gray-500 hover:text-primary dark:hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined text-2xl">storefront</span>
+<span class="text-[10px] font-medium">Shop</span>
+</a>
+<a class="flex flex-col items-center justify-center w-full h-full gap-1 text-gray-400 dark:text-gray-500 hover:text-primary dark:hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined text-2xl">search</span>
+<span class="text-[10px] font-medium">Search</span>
+</a>
+<!-- Floating Cart Button -->
+<div class="relative -top-5">
+<button class="w-14 h-14 rounded-full bg-black dark:bg-white text-primary flex items-center justify-center shadow-lg shadow-black/20 dark:shadow-white/10 hover:scale-105 transition-transform">
+<span class="material-symbols-outlined text-2xl icon-filled">shopping_cart</span>
+<span class="absolute top-3 right-3 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-black dark:border-white"></span>
+</button>
+</div>
+<a class="flex flex-col items-center justify-center w-full h-full gap-1 text-primary dark:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined text-2xl icon-filled">receipt_long</span>
+<span class="text-[10px] font-medium">Orders</span>
+</a>
+<a class="flex flex-col items-center justify-center w-full h-full gap-1 text-gray-400 dark:text-gray-500 hover:text-primary dark:hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined text-2xl">account_circle</span>
+<span class="text-[10px] font-medium">Profile</span>
+</a>
+</div>
+</nav>
+<!-- Confirmation Toast (Simulated "Pending" State) -->
+<div class="fixed top-20 left-1/2 -translate-x-1/2 w-[90%] max-w-[350px] bg-white dark:bg-[#2a3f25] rounded-xl shadow-2xl border-l-4 border-yellow-400 p-4 transform transition-all duration-500 translate-y-[-200%] opacity-0 pointer-events-none" id="toast">
+<div class="flex gap-3">
+<div class="shrink-0 text-yellow-500">
+<span class="material-symbols-outlined">signal_cellular_connected_no_internet_4_bar</span>
+</div>
+<div>
+<h3 class="font-bold text-sm text-gray-900 dark:text-white">You are offline</h3>
+<p class="text-xs text-gray-500 dark:text-gray-300 mt-1">Order will be processed via SMS network.</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Optional: Simple animation for simulation -->
+<style>
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-5px); }
+            100% { transform: translateY(0px); }
+        }
+        .animate-float {
+            animation: float 3s ease-in-out infinite;
+        }
+    </style>
+</body></html>

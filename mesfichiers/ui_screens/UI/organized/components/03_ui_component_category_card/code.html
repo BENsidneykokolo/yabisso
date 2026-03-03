@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Yabisso Super App</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Noto+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                        "card-dark": "#1A2633",
+                    },
+                    fontFamily: {
+                        "display": ["Space Grotesk", "sans-serif"],
+                        "body": ["Noto Sans", "sans-serif"],
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "2xl": "1rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white font-display overflow-x-hidden antialiased">
+<div class="relative flex h-auto min-h-screen w-full flex-col max-w-md mx-auto border-x border-slate-800/50 shadow-2xl">
+<!-- TopAppBar -->
+<div class="sticky top-0 z-50 flex items-center bg-background-dark/95 backdrop-blur-md p-4 pb-2 justify-between border-b border-slate-800">
+<div class="flex items-center gap-3">
+<div class="bg-slate-800 p-2 rounded-full cursor-pointer hover:bg-slate-700 transition-colors">
+<span class="material-symbols-outlined text-white text-[24px]">menu</span>
+</div>
+</div>
+<div class="flex flex-col items-center">
+<h1 class="text-white text-xl font-bold tracking-tight">Yabisso</h1>
+</div>
+<div class="flex items-center justify-end gap-3">
+<div class="relative">
+<span class="material-symbols-outlined text-white text-[24px]">notifications</span>
+<div class="absolute top-0 right-0 h-2.5 w-2.5 bg-red-500 rounded-full border-2 border-background-dark"></div>
+</div>
+<div class="h-8 w-8 rounded-full bg-cover bg-center border border-slate-700" data-alt="User profile portrait" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuC63Lq_vYB95KTD1uLN2yErhD2tRAOrW8quuET1M1I4sdoB_sc9p7YW8ROVQEX5FdsoCv0lDnI_B_ufYlUKnH1j7r1jgEuIjEbP_3mfSfgAr8-6mUZFdxFforg_UN3GlCYrZ9flpSfDRwloNInWEZ8qfJnMD9Y1DS_liGglsrAa4RMjz3ZWuP9IUO6ufe2g93wuXG76PUdULk3KVz8Ya1HTxvIdXJL8GkKpFnhgG8fZrHnhGc3ImuQd1BbRuwrbJzM21rNpyYpZ");'></div>
+</div>
+</div>
+<!-- Balance Section (Contextual Header) -->
+<div class="px-4 pt-6 pb-2">
+<div class="flex flex-col bg-gradient-to-br from-primary to-blue-600 rounded-2xl p-6 shadow-lg relative overflow-hidden">
+<div class="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-10 -mt-10 blur-2xl"></div>
+<div class="absolute bottom-0 left-0 w-24 h-24 bg-black/10 rounded-full -ml-8 -mb-8 blur-xl"></div>
+<div class="flex justify-between items-start z-10 mb-2">
+<p class="text-blue-100 text-sm font-medium">Total Balance</p>
+<span class="material-symbols-outlined text-white/80">visibility</span>
+</div>
+<h2 class="text-white text-3xl font-bold tracking-tight z-10 mb-4">FCFA 450,200</h2>
+<div class="flex gap-3 z-10 mt-auto">
+<button class="flex-1 bg-white/20 hover:bg-white/30 backdrop-blur-sm py-2 px-3 rounded-lg flex items-center justify-center gap-2 transition-all">
+<span class="material-symbols-outlined text-white text-sm">add</span>
+<span class="text-white text-sm font-bold">Top Up</span>
+</button>
+<button class="flex-1 bg-white/20 hover:bg-white/30 backdrop-blur-sm py-2 px-3 rounded-lg flex items-center justify-center gap-2 transition-all">
+<span class="material-symbols-outlined text-white text-sm">qr_code_scanner</span>
+<span class="text-white text-sm font-bold">Pay</span>
+</button>
+</div>
+</div>
+</div>
+<!-- HeadlineText -->
+<div class="px-4 pt-6 pb-2 flex justify-between items-end">
+<h2 class="text-white tracking-tight text-[22px] font-bold leading-tight">Explore Services</h2>
+<button class="text-primary text-sm font-bold hover:text-blue-400 transition-colors">View All</button>
+</div>
+<!-- Category Grid (Modified ImageGrid) -->
+<!-- Using CSS Grid for layout, adapting the styles to be Cards instead of just images -->
+<div class="grid grid-cols-2 gap-3 p-4">
+<!-- Wallet Card (Blue Accent) -->
+<div class="group relative flex flex-col items-center justify-center gap-3 rounded-2xl bg-card-dark p-5 border border-slate-800 hover:border-primary/50 transition-all duration-300 active:scale-95 cursor-pointer overflow-hidden shadow-sm">
+<!-- Hover Glow -->
+<div class="absolute inset-0 bg-gradient-to-tr from-primary/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+<div class="relative flex items-center justify-center h-14 w-14 rounded-full bg-primary/10 text-primary group-hover:bg-primary group-hover:text-white transition-colors duration-300">
+<span class="material-symbols-outlined text-3xl">account_balance_wallet</span>
+</div>
+<div class="relative text-center">
+<p class="text-white text-base font-bold leading-tight">Wallet</p>
+<p class="text-slate-400 text-xs mt-1">Transfers &amp; Bills</p>
+</div>
+</div>
+<!-- Marketplace Card (Yellow Accent) -->
+<div class="group relative flex flex-col items-center justify-center gap-3 rounded-2xl bg-card-dark p-5 border border-slate-800 hover:border-yellow-500/50 transition-all duration-300 active:scale-95 cursor-pointer overflow-hidden shadow-sm">
+<div class="absolute inset-0 bg-gradient-to-tr from-yellow-500/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+<div class="relative flex items-center justify-center h-14 w-14 rounded-full bg-yellow-500/10 text-yellow-500 group-hover:bg-yellow-500 group-hover:text-black transition-colors duration-300">
+<span class="material-symbols-outlined text-3xl">storefront</span>
+</div>
+<div class="relative text-center">
+<p class="text-white text-base font-bold leading-tight">Marketplace</p>
+<p class="text-slate-400 text-xs mt-1">Buy &amp; Sell</p>
+</div>
+</div>
+<!-- Food Card (Red Accent) -->
+<div class="group relative flex flex-col items-center justify-center gap-3 rounded-2xl bg-card-dark p-5 border border-slate-800 hover:border-red-500/50 transition-all duration-300 active:scale-95 cursor-pointer overflow-hidden shadow-sm">
+<div class="absolute inset-0 bg-gradient-to-tr from-red-500/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+<div class="relative flex items-center justify-center h-14 w-14 rounded-full bg-red-500/10 text-red-500 group-hover:bg-red-500 group-hover:text-white transition-colors duration-300">
+<span class="material-symbols-outlined text-3xl">restaurant</span>
+</div>
+<div class="relative text-center">
+<p class="text-white text-base font-bold leading-tight">Food</p>
+<p class="text-slate-400 text-xs mt-1">Delivery</p>
+</div>
+</div>
+<!-- Ride/Transport Card (Green Accent) -->
+<div class="group relative flex flex-col items-center justify-center gap-3 rounded-2xl bg-card-dark p-5 border border-slate-800 hover:border-green-500/50 transition-all duration-300 active:scale-95 cursor-pointer overflow-hidden shadow-sm">
+<div class="absolute inset-0 bg-gradient-to-tr from-green-500/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+<div class="relative flex items-center justify-center h-14 w-14 rounded-full bg-green-500/10 text-green-500 group-hover:bg-green-500 group-hover:text-white transition-colors duration-300">
+<span class="material-symbols-outlined text-3xl">local_taxi</span>
+</div>
+<div class="relative text-center">
+<p class="text-white text-base font-bold leading-tight">Ride</p>
+<p class="text-slate-400 text-xs mt-1">Taxi &amp; Bike</p>
+</div>
+</div>
+<!-- Entertainment/TikTok (Pink/Purple Accent) -->
+<div class="group relative flex flex-col items-center justify-center gap-3 rounded-2xl bg-card-dark p-5 border border-slate-800 hover:border-pink-500/50 transition-all duration-300 active:scale-95 cursor-pointer overflow-hidden shadow-sm">
+<div class="absolute inset-0 bg-gradient-to-tr from-pink-500/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+<div class="relative flex items-center justify-center h-14 w-14 rounded-full bg-pink-500/10 text-pink-500 group-hover:bg-pink-500 group-hover:text-white transition-colors duration-300">
+<span class="material-symbols-outlined text-3xl">smart_display</span>
+</div>
+<div class="relative text-center">
+<p class="text-white text-base font-bold leading-tight">Videos</p>
+<p class="text-slate-400 text-xs mt-1">Fun &amp; Live</p>
+</div>
+</div>
+<!-- More Services (Slate/Neutral) -->
+<div class="group relative flex flex-col items-center justify-center gap-3 rounded-2xl bg-card-dark p-5 border border-slate-800 hover:border-slate-500/50 transition-all duration-300 active:scale-95 cursor-pointer overflow-hidden shadow-sm">
+<div class="absolute inset-0 bg-gradient-to-tr from-slate-500/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+<div class="relative flex items-center justify-center h-14 w-14 rounded-full bg-slate-700/50 text-slate-300 group-hover:bg-slate-600 group-hover:text-white transition-colors duration-300">
+<span class="material-symbols-outlined text-3xl">grid_view</span>
+</div>
+<div class="relative text-center">
+<p class="text-white text-base font-bold leading-tight">More</p>
+<p class="text-slate-400 text-xs mt-1">All Apps</p>
+</div>
+</div>
+</div>
+<!-- Featured Section (Original ImageGrid Style for variety) -->
+<div class="px-4 pt-6 pb-2">
+<h2 class="text-white tracking-tight text-[22px] font-bold leading-tight mb-4">Trending Now</h2>
+<div class="flex overflow-x-auto gap-4 pb-4 snap-x hide-scrollbar">
+<div class="snap-center shrink-0 w-64 h-36 rounded-xl overflow-hidden relative bg-slate-800 group cursor-pointer">
+<div class="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110" data-alt="Plate of spicy jollof rice with chicken" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDriHdVk1R7zq7ojW9UNTl1_xUPrhkRaF_x7Pak7hXQvN6UEM2Y2Jy50RjI0EEKNfQ7BOGn2rZXKGkfeLLjKu-BY1mrqzxnBd7lTDqcrTx6-Hdb9-_3v4hJyM7cAXTtyEG5bi8iInVPcCp6sjNQEMwWa53nvg0_dD_JczbhWl7UHVc-P1GNMQYjhvnzjqdW4ELZMaTR96C8qxJS3N6ZBC_AOKZoSGMUWbXPGXJv2GkwjsR_RbZhVLCmcylIkedprFmonO6jtOEF");'></div>
+<div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent"></div>
+<div class="absolute bottom-0 left-0 p-4">
+<div class="bg-red-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-sm inline-block mb-1">PROMO</div>
+<p class="text-white font-bold text-lg">50% Off Jollof</p>
+<p class="text-slate-300 text-sm">Valid until Friday</p>
+</div>
+</div>
+<div class="snap-center shrink-0 w-64 h-36 rounded-xl overflow-hidden relative bg-slate-800 group cursor-pointer">
+<div class="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110" data-alt="Modern smartphone showing a tech app interface" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuC5mf5JfbA_rwwwo5sN11xqIQR8E0X31sKO3q6LzxVoLXOT6t-_9s7UYfESjbTwMYlaD8DGgYnBFEIY5F7AEGaT7r1qS3SmPBvTkQHcUU3vSkdjQ6gtU7N_9dOGFK9u1hDHMUmwiIuaWmQVR1dJLwnUDbHn_dyetkCcROKlcWrZVLt04kVBKiyt0FTmsAUrxlYRjkQeEzRNtmVJV4tjMORj8-YrDVnpI2NcEIqnjNiFDlR4G9CcJHMk4D-GE8Jeyp9SPFZaXukZ");'></div>
+<div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent"></div>
+<div class="absolute bottom-0 left-0 p-4">
+<div class="bg-blue-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-sm inline-block mb-1">NEW</div>
+<p class="text-white font-bold text-lg">Tech Week</p>
+<p class="text-slate-300 text-sm">Gadgets on sale</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Spacer for Bottom Nav -->
+<div class="h-20 bg-background-dark"></div>
+<!-- Bottom Navigation (Simple Implementation) -->
+<div class="fixed bottom-0 w-full max-w-md bg-background-dark/95 backdrop-blur-md border-t border-slate-800 pb-safe">
+<div class="flex justify-around items-center p-3">
+<div class="flex flex-col items-center gap-1 cursor-pointer text-primary">
+<span class="material-symbols-outlined text-[24px]">home</span>
+<span class="text-[10px] font-bold">Home</span>
+</div>
+<div class="flex flex-col items-center gap-1 cursor-pointer text-slate-400 hover:text-white transition-colors">
+<span class="material-symbols-outlined text-[24px]">search</span>
+<span class="text-[10px] font-bold">Search</span>
+</div>
+<div class="flex flex-col items-center gap-1 cursor-pointer text-slate-400 hover:text-white transition-colors">
+<span class="material-symbols-outlined text-[24px]">receipt_long</span>
+<span class="text-[10px] font-bold">Orders</span>
+</div>
+<div class="flex flex-col items-center gap-1 cursor-pointer text-slate-400 hover:text-white transition-colors">
+<span class="material-symbols-outlined text-[24px]">person</span>
+<span class="text-[10px] font-bold">Account</span>
+</div>
+</div>
+</div>
+</div>
+</body></html>

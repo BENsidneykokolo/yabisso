@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Yabisso - Add Product</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#111a22", // Matching the dark tone from provided examples
+                        "surface-dark": "#192633", // Lighter shade for inputs/cards
+                        "yabisso-red": "#ef4444",
+                        "yabisso-yellow": "#eab308",
+                        "yabisso-green": "#22c55e",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"],
+                        "body": ["Inter", "sans-serif"],
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "2xl": "1rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        /* Hide scrollbar for Chrome, Safari and Opera */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        /* Hide scrollbar for IE, Edge and Firefox */
+        .no-scrollbar {
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display min-h-screen flex flex-col antialiased">
+<!-- Top App Bar -->
+<header class="sticky top-0 z-20 bg-background-light dark:bg-background-dark border-b border-gray-200 dark:border-[#324d67]/30 px-4 py-3">
+<div class="flex items-center justify-between">
+<button class="text-gray-900 dark:text-white flex size-10 shrink-0 items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-surface-dark transition-colors">
+<span class="material-symbols-outlined text-2xl">arrow_back_ios_new</span>
+</button>
+<h2 class="text-gray-900 dark:text-white text-lg font-bold leading-tight flex-1 text-center pr-2">New Listing</h2>
+<div class="flex items-center justify-center size-10 text-gray-500 dark:text-gray-400 relative" title="Offline Mode Supported">
+<!-- Offline/Sync Status Indicator -->
+<span class="material-symbols-outlined">wifi_off</span>
+<span class="absolute top-2 right-2 size-2 rounded-full bg-yabisso-yellow border-2 border-background-light dark:border-background-dark"></span>
+</div>
+</div>
+</header>
+<!-- Main Content -->
+<main class="flex-1 w-full max-w-md mx-auto flex flex-col pb-24">
+<!-- Image Uploader Section -->
+<section class="w-full pt-6 pb-2">
+<div class="px-4 flex justify-between items-end mb-3">
+<label class="text-gray-900 dark:text-white text-base font-semibold">Photos</label>
+<span class="text-sm text-gray-500 dark:text-gray-400">0/5</span>
+</div>
+<div class="flex gap-3 overflow-x-auto px-4 pb-4 no-scrollbar snap-x">
+<!-- Add Button -->
+<button class="flex-none w-28 h-28 rounded-xl border-2 border-dashed border-primary/50 bg-primary/5 hover:bg-primary/10 flex flex-col items-center justify-center gap-2 transition-colors snap-start">
+<div class="bg-primary/20 p-2 rounded-full text-primary">
+<span class="material-symbols-outlined">add_a_photo</span>
+</div>
+<span class="text-xs font-medium text-primary">Add Photo</span>
+</button>
+<!-- Uploaded Image 1 -->
+<div class="flex-none w-28 h-28 rounded-xl relative group overflow-hidden bg-surface-dark snap-start border border-[#324d67]/50">
+<img alt="Smartphone back view showing camera lenses" class="w-full h-full object-cover" data-alt="Smartphone back view showing camera lenses" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAFYhs6xG_mZ76PaDTq-dwKtjHIidkwfBfxPqhixhkWgtcVVKWWKFw1rvHEBXA4Cwrxlb27r6c1X7oVnyn9GR5q5HYdAKSS23JMWzGiqcSY3urLQOiyciZUNu9dbJTg3ahGaufRi5EV_asE27-nKoStIr56zGrncCOzbRMn5gJ2mUVhf_zy8AKI6zanYejxVWVbKvsXBooaI1ODaZTHmjl8M0lX9rDXtklWiFbDetDpLZfFxXt81TixaBiQWixFd-_Jh5hw-1-e"/>
+<button class="absolute top-1 right-1 bg-black/50 text-white rounded-full p-1 hover:bg-red-500 transition-colors backdrop-blur-sm">
+<span class="material-symbols-outlined text-sm">close</span>
+</button>
+</div>
+<!-- Uploaded Image 2 (Placeholder Pattern) -->
+<div class="flex-none w-28 h-28 rounded-xl relative group overflow-hidden bg-surface-dark snap-start border border-[#324d67]/50">
+<div class="w-full h-full bg-gradient-to-tr from-gray-700 to-gray-600 flex items-center justify-center" data-alt="Abstract gradient placeholder for product image">
+<span class="material-symbols-outlined text-white/20 text-4xl">image</span>
+</div>
+<button class="absolute top-1 right-1 bg-black/50 text-white rounded-full p-1 hover:bg-red-500 transition-colors backdrop-blur-sm">
+<span class="material-symbols-outlined text-sm">close</span>
+</button>
+</div>
+</div>
+</section>
+<!-- Form Fields -->
+<div class="flex flex-col gap-5 px-4">
+<!-- Product Name -->
+<label class="flex flex-col gap-2">
+<span class="text-gray-900 dark:text-white text-sm font-medium">Product Name <span class="text-yabisso-red">*</span></span>
+<input class="form-input w-full rounded-xl border border-gray-300 dark:border-[#324d67] bg-white dark:bg-surface-dark text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/50 focus:border-primary h-12 px-4 placeholder:text-gray-400 dark:placeholder:text-[#92adc9] transition-all" placeholder="e.g. iPhone 13 Pro Max" type="text"/>
+</label>
+<!-- Category Select -->
+<label class="flex flex-col gap-2 relative">
+<span class="text-gray-900 dark:text-white text-sm font-medium">Category <span class="text-yabisso-red">*</span></span>
+<div class="relative">
+<select class="form-select w-full rounded-xl border border-gray-300 dark:border-[#324d67] bg-white dark:bg-surface-dark text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/50 focus:border-primary h-12 px-4 pr-10 appearance-none transition-all">
+<option disabled="" selected="" value="">Select a category</option>
+<option value="electronics">Electronics &amp; Gadgets</option>
+<option value="fashion">Fashion &amp; Clothing</option>
+<option value="home">Home &amp; Garden</option>
+<option value="beauty">Health &amp; Beauty</option>
+</select>
+<div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-500">
+<span class="material-symbols-outlined">expand_more</span>
+</div>
+</div>
+</label>
+<!-- Price & Quantity Row -->
+<div class="flex gap-4">
+<label class="flex flex-col gap-2 flex-1">
+<span class="text-gray-900 dark:text-white text-sm font-medium">Price <span class="text-yabisso-red">*</span></span>
+<div class="relative">
+<span class="absolute inset-y-0 left-0 flex items-center pl-4 text-gray-500 dark:text-gray-400">$</span>
+<input class="form-input w-full rounded-xl border border-gray-300 dark:border-[#324d67] bg-white dark:bg-surface-dark text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/50 focus:border-primary h-12 pl-8 pr-4 placeholder:text-gray-400 dark:placeholder:text-[#92adc9] transition-all" placeholder="0.00" type="number"/>
+</div>
+</label>
+<label class="flex flex-col gap-2 w-1/3">
+<span class="text-gray-900 dark:text-white text-sm font-medium">Qty <span class="text-yabisso-red">*</span></span>
+<input class="form-input w-full rounded-xl border border-gray-300 dark:border-[#324d67] bg-white dark:bg-surface-dark text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/50 focus:border-primary h-12 px-4 text-center placeholder:text-gray-400 dark:placeholder:text-[#92adc9] transition-all" placeholder="1" type="number"/>
+</label>
+</div>
+<!-- Description -->
+<label class="flex flex-col gap-2">
+<div class="flex justify-between">
+<span class="text-gray-900 dark:text-white text-sm font-medium">Description</span>
+<span class="text-xs text-gray-500 dark:text-gray-400 font-normal">Optional</span>
+</div>
+<textarea class="form-textarea w-full rounded-xl border border-gray-300 dark:border-[#324d67] bg-white dark:bg-surface-dark text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/50 focus:border-primary p-4 resize-none placeholder:text-gray-400 dark:placeholder:text-[#92adc9] transition-all" placeholder="Describe the condition, features, and specs..." rows="4"></textarea>
+</label>
+<!-- Location with Map Preview (Optional Vibe Addition) -->
+<div class="flex flex-col gap-2 mt-2">
+<span class="text-gray-900 dark:text-white text-sm font-medium">Location</span>
+<div class="flex items-center gap-3 p-3 rounded-xl border border-gray-300 dark:border-[#324d67] bg-white dark:bg-surface-dark">
+<div class="size-10 rounded-lg overflow-hidden bg-gray-700 flex-shrink-0 relative">
+<img alt="Map snippet showing location area" class="w-full h-full object-cover opacity-80" data-alt="Map snippet showing location area" data-location="Lagos, Nigeria" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBs6Z-ZFqsvWEttINwEh1fq3A_CXHNR16mhKRPFIKl2BNb3brqbrPyWay2V2UIt5WBwBkvNiduBuEelzyYEJDaicXdaADNcSqE1Wx4hKI-_rfZjFr-hAZ5_lBGWVEa4Qfwuf3jgNEFkabRY00BENAAhhhAUBZPpX3Opv162VtDnCZyNhnw1Qy2U-nmwaLyFXT31U2eSDcLcaM-omFcFHH4iTuPxGXLRPctOq5vdt9prS7EaHTPDwyh9G-5AqpwTl0uFIj1ZCYSt"/>
+</div>
+<div class="flex flex-col flex-1">
+<span class="text-sm font-medium text-gray-900 dark:text-white">Lagos, Nigeria</span>
+<span class="text-xs text-gray-500">Current Location</span>
+</div>
+<button class="text-primary font-medium text-sm">Change</button>
+</div>
+</div>
+</div>
+</main>
+<!-- Sticky Bottom Action -->
+<div class="fixed bottom-0 w-full z-10 bg-background-light dark:bg-background-dark/95 backdrop-blur-md border-t border-gray-200 dark:border-[#324d67]/30 p-4 safe-area-bottom">
+<div class="max-w-md mx-auto">
+<button class="w-full bg-white text-background-dark hover:bg-gray-100 h-14 rounded-xl font-bold text-base shadow-lg shadow-black/20 flex items-center justify-center gap-2 transition-transform active:scale-[0.98]">
+<span>List Product</span>
+<span class="material-symbols-outlined text-xl">arrow_forward</span>
+</button>
+</div>
+</div>
+</body></html>

@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Note Detail - Yabisso</title>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922", // Deep charcoal for base
+                        "surface-dark": "#1b2531", // Slightly lighter for cards
+                        "yabisso-red": "#e63946",
+                        "yabisso-yellow": "#ffb703",
+                        "yabisso-green": "#2a9d8f",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        /* Subtle geometric pattern for "African tech vibe" background */
+        .bg-pattern {
+            background-color: #101922;
+            background-image: radial-gradient(#1b2531 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="font-display bg-background-light dark:bg-background-dark text-slate-900 dark:text-white min-h-screen">
+<div class="relative mx-auto h-full min-h-screen w-full max-w-md bg-pattern dark:bg-pattern flex flex-col overflow-hidden shadow-2xl">
+<!-- TopAppBar -->
+<header class="sticky top-0 z-10 flex items-center justify-between p-4 backdrop-blur-md bg-background-light/80 dark:bg-background-dark/80">
+<button class="flex size-10 items-center justify-center rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors">
+<span class="material-symbols-outlined text-slate-900 dark:text-white" style="font-size: 24px;">arrow_back</span>
+</button>
+<div class="flex items-center gap-2">
+<button class="flex size-10 items-center justify-center rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors">
+<span class="material-symbols-outlined text-slate-900 dark:text-white" style="font-size: 24px;">ios_share</span>
+</button>
+<button class="flex size-10 items-center justify-center rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors">
+<span class="material-symbols-outlined text-yabisso-red" style="font-size: 24px;">delete</span>
+</button>
+</div>
+</header>
+<!-- Main Content Scroll Area -->
+<main class="flex-1 overflow-y-auto px-5 pb-24">
+<!-- HeadlineText -->
+<div class="pt-2">
+<h1 class="text-3xl font-bold tracking-tight text-slate-900 dark:text-white leading-tight">
+                    Project Alpha Ideas
+                </h1>
+</div>
+<!-- MetaText -->
+<div class="flex items-center gap-2 py-3">
+<p class="text-slate-500 dark:text-slate-400 text-sm font-medium">
+                    Edited today at 10:42 AM
+                </p>
+<span class="text-slate-600 dark:text-slate-600">•</span>
+<div class="flex items-center gap-1 text-yabisso-green text-sm font-medium">
+<span class="material-symbols-outlined" style="font-size: 16px;">cloud_done</span>
+<span>Synced</span>
+</div>
+</div>
+<!-- BodyText -->
+<div class="py-2">
+<p class="text-slate-800 dark:text-slate-200 text-lg font-normal leading-relaxed">
+                    Need to finalize the supply chain logistics for the Nairobi launch. Contact the logistics team by Friday to ensure all permits are sorted out before the weekend. 
+                </p>
+<p class="text-slate-800 dark:text-slate-200 text-lg font-normal leading-relaxed mt-4">
+                    Also, remember to update the inventory sheet with the new SKU numbers we discussed during the stand-up. The new partner in Lagos needs the updated pricing model ASAP.
+                </p>
+<ul class="mt-4 space-y-2 text-slate-800 dark:text-slate-200 text-lg font-normal">
+<li class="flex items-start gap-3">
+<span class="mt-1.5 block h-2 w-2 rounded-full bg-yabisso-yellow shrink-0"></span>
+<span>Confirm vendor list for Q3</span>
+</li>
+<li class="flex items-start gap-3">
+<span class="mt-1.5 block h-2 w-2 rounded-full bg-yabisso-yellow shrink-0"></span>
+<span>Review budget allocation</span>
+</li>
+</ul>
+</div>
+<!-- Attachments Divider -->
+<div class="my-6 h-px w-full bg-slate-200 dark:bg-slate-700/50"></div>
+<h3 class="text-sm font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-4">
+                Attachments
+            </h3>
+<!-- MediaPlayer (Voice Note) -->
+<div class="mb-4 rounded-3xl bg-white dark:bg-surface-dark p-1 shadow-sm border border-slate-100 dark:border-slate-800">
+<div class="flex items-center gap-3 p-2">
+<button class="flex shrink-0 items-center justify-center rounded-full size-12 bg-primary text-white shadow-lg shadow-primary/30 active:scale-95 transition-transform">
+<span class="material-symbols-outlined" style="font-size: 28px; font-variation-settings: 'FILL' 1;">play_arrow</span>
+</button>
+<div class="flex-1 flex flex-col justify-center gap-1 pr-2">
+<div class="flex justify-between items-center">
+<span class="text-slate-900 dark:text-white text-sm font-bold">Voice Note 001</span>
+<span class="text-slate-500 dark:text-slate-400 text-xs">0:42 / 2:30</span>
+</div>
+<!-- Visual Waveform representation -->
+<div class="flex items-center gap-0.5 h-6">
+<div class="w-1 bg-primary h-3 rounded-full"></div>
+<div class="w-1 bg-primary h-5 rounded-full"></div>
+<div class="w-1 bg-primary h-4 rounded-full"></div>
+<div class="w-1 bg-primary h-6 rounded-full"></div>
+<div class="w-1 bg-primary h-3 rounded-full"></div>
+<div class="w-1 bg-primary/40 h-2 rounded-full"></div>
+<div class="w-1 bg-primary/40 h-4 rounded-full"></div>
+<div class="w-1 bg-primary/40 h-2 rounded-full"></div>
+<div class="w-1 bg-primary/40 h-5 rounded-full"></div>
+<div class="w-1 bg-primary/40 h-3 rounded-full"></div>
+<div class="w-1 bg-primary/40 h-2 rounded-full"></div>
+<div class="w-1 bg-primary/40 h-4 rounded-full"></div>
+<div class="w-1 bg-primary/40 h-3 rounded-full"></div>
+<div class="w-1 bg-primary/40 h-5 rounded-full"></div>
+<div class="w-1 bg-primary/40 h-2 rounded-full"></div>
+<div class="w-1 bg-primary/40 h-3 rounded-full"></div>
+<div class="w-1 bg-primary/40 h-2 rounded-full"></div>
+<div class="w-1 bg-primary/40 h-4 rounded-full"></div>
+<div class="w-1 bg-primary/40 h-2 rounded-full"></div>
+<div class="w-1 bg-primary/40 h-3 rounded-full"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Image Grid -->
+<div class="grid grid-cols-2 gap-3 mb-8">
+<div class="relative aspect-square overflow-hidden rounded-2xl bg-slate-100 dark:bg-surface-dark group cursor-pointer">
+<img alt="Whiteboard with diagrams and notes sketched on it" class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" data-alt="Whiteboard with diagrams and notes sketched on it" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDk9-RG86qTvtkGmotQ3OcsWkkHQKJiX4sdx4u57l724n2VSYNir9b40wxBr20hv2XlRU9eb5S4LE5LmHEM58AFX24dqLOwwNe8VSOsBIH_JxSDtXh1a-hJFKUmseUoHdSLC5Gj7qv2Y9mOC1pD7sYuJRBvO_mmSYaE_uQ866BvGS7KjHDxGqAEANulRBLZnDNqTmOU8mtj-hxo03PhNDqerYhLUQ1ZlSzMnnfKItV0yEV-0SpIy7vlz-2iBf3HmljB2wrdQDBb"/>
+<div class="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors"></div>
+</div>
+<div class="relative aspect-square overflow-hidden rounded-2xl bg-slate-100 dark:bg-surface-dark group cursor-pointer">
+<img alt="Close up of a notebook with handwritten text" class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" data-alt="Close up of a notebook with handwritten text" src="https://lh3.googleusercontent.com/aida-public/AB6AXuByN2ZWyyfKg0PA06A72hJD3fF_zz1LdGN_c3rELemKFmVYm8zaKYKS-sP-DQYBXcrYqLKx3OodOGnubJz6_qVjr5iGmyMJW31jpkRTthEPHix3w6bITVL-2oQKwa1dR3jfDV_3be5IFa71V1aKeGgK54mgil8Aw3r3FX64kRbdO04Z_9My13ziauPqDh610v6lprsZke4ysWPZ2v3-wU5eCuhG3V35vN3Rj_M-t4z35_re__aNISWMoWCTLlNdjHRBn4Ppxq_m"/>
+<div class="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors"></div>
+<!-- More overlay -->
+<div class="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-[2px]">
+<span class="material-symbols-outlined text-white">zoom_in</span>
+</div>
+</div>
+</div>
+<div class="h-10"></div> <!-- Spacer for FAB -->
+</main>
+<!-- Floating Action Button Area -->
+<div class="absolute bottom-6 right-5 z-20">
+<button class="group flex items-center gap-2 bg-white text-primary px-5 py-4 rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.3)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.5)] active:scale-95 transition-all duration-200 border-2 border-transparent hover:border-primary/10">
+<span class="material-symbols-outlined font-bold" style="font-size: 24px;">edit</span>
+<span class="font-bold text-base tracking-wide">Edit Note</span>
+</button>
+</div>
+</div>
+</body></html>

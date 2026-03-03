@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Dating Filters Popup</title>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Google Fonts: Be Vietnam Pro -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;700&amp;family=Noto+Sans:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Theme Configuration -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec", // Yabisso Blue
+                        "secondary": "#EAB308", // Yabisso Yellow
+                        "accent": "#EF4444", // Yabisso Red
+                        "success": "#22C55E", // Yabisso Green
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                        "surface-dark": "#1A2633",
+                    },
+                    fontFamily: {
+                        "display": ["Be Vietnam Pro", "sans-serif"],
+                        "body": ["Noto Sans", "sans-serif"],
+                    },
+                    borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom range slider styling for visuals since we aren't using JS */
+        .range-track {
+            background: linear-gradient(to right, #1A2633 0%, #1A2633 10%, #137fec 10%, #137fec 65%, #1A2633 65%, #1A2633 100%);
+        }
+        .range-track-single {
+            background: linear-gradient(to right, #137fec 0%, #137fec 45%, #1A2633 45%, #1A2633 100%);
+        }
+        
+        /* Hide scrollbar for clean UI */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display antialiased text-slate-900 dark:text-white overflow-hidden">
+<!-- Main Container (Mobile Frame Simulator) -->
+<div class="relative mx-auto flex h-full min-h-screen w-full max-w-md flex-col overflow-hidden bg-background-light dark:bg-background-dark shadow-2xl">
+<!-- Background Dimmer (Simulating overlay) -->
+<div class="absolute inset-0 bg-black/60 backdrop-blur-sm z-0"></div>
+<!-- Bottom Sheet Content -->
+<div class="z-10 mt-auto flex h-[92vh] flex-col rounded-t-[2rem] bg-background-light dark:bg-background-dark shadow-[0_-4px_20px_rgba(0,0,0,0.5)] transition-transform duration-300 ease-out transform translate-y-0">
+<!-- Handle -->
+<div class="flex w-full items-center justify-center pt-3 pb-1">
+<div class="h-1.5 w-12 rounded-full bg-slate-300 dark:bg-slate-700/50"></div>
+</div>
+<!-- Top App Bar -->
+<div class="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-800/50">
+<div class="w-10"></div> <!-- Spacer for balance -->
+<h2 class="text-xl font-bold tracking-tight text-slate-900 dark:text-white">Refine Matches</h2>
+<div class="w-10 flex justify-end">
+<button class="flex h-10 w-10 items-center justify-center rounded-full bg-slate-200 dark:bg-surface-dark text-slate-900 dark:text-white hover:bg-slate-300 dark:hover:bg-slate-700 transition-colors">
+<span class="material-symbols-outlined text-xl">close</span>
+</button>
+</div>
+</div>
+<!-- Scrollable Content -->
+<div class="flex-1 overflow-y-auto no-scrollbar px-6 pb-24">
+<!-- Section: Show Me -->
+<div class="py-6">
+<h3 class="mb-4 text-lg font-bold text-slate-900 dark:text-white">Show me</h3>
+<div class="flex h-12 w-full items-center justify-center rounded-full bg-slate-200 dark:bg-surface-dark p-1">
+<label class="group relative flex h-full flex-1 cursor-pointer items-center justify-center overflow-hidden rounded-full">
+<input class="peer sr-only" name="gender" type="radio" value="men"/>
+<span class="z-10 text-sm font-semibold text-slate-500 transition-colors peer-checked:text-white dark:text-slate-400">Men</span>
+<div class="absolute inset-0 hidden bg-primary shadow-sm peer-checked:block rounded-full transition-all"></div>
+</label>
+<label class="group relative flex h-full flex-1 cursor-pointer items-center justify-center overflow-hidden rounded-full">
+<input class="peer sr-only" name="gender" type="radio" value="women"/>
+<span class="z-10 text-sm font-semibold text-slate-500 transition-colors peer-checked:text-white dark:text-slate-400">Women</span>
+<div class="absolute inset-0 hidden bg-primary shadow-sm peer-checked:block rounded-full transition-all"></div>
+</label>
+<label class="group relative flex h-full flex-1 cursor-pointer items-center justify-center overflow-hidden rounded-full">
+<input checked="" class="peer sr-only" name="gender" type="radio" value="everyone"/>
+<span class="z-10 text-sm font-semibold text-slate-500 transition-colors peer-checked:text-white dark:text-slate-400">Everyone</span>
+<div class="absolute inset-0 hidden bg-primary shadow-sm peer-checked:block rounded-full transition-all"></div>
+</label>
+</div>
+</div>
+<!-- Section: Age Preference -->
+<div class="py-4 border-t border-slate-200 dark:border-slate-800/50">
+<div class="flex items-center justify-between mb-6">
+<h3 class="text-lg font-bold text-slate-900 dark:text-white">Age preference</h3>
+<span class="text-base font-semibold text-primary">22 - 34</span>
+</div>
+<!-- Dual Slider Visualization -->
+<div class="relative h-12 flex items-center w-full px-2">
+<!-- Track Background -->
+<div class="absolute h-1.5 w-full rounded-full bg-slate-200 dark:bg-surface-dark overflow-hidden">
+<!-- Active Range (CSS simulated) -->
+<div class="absolute h-full bg-primary left-[15%] w-[40%]"></div>
+</div>
+<!-- Thumb 1 -->
+<div class="absolute left-[15%] h-7 w-7 -ml-3.5 bg-white rounded-full shadow-md border-2 border-primary cursor-pointer flex items-center justify-center z-10 hover:scale-110 transition-transform"></div>
+<!-- Thumb 2 -->
+<div class="absolute left-[55%] h-7 w-7 -ml-3.5 bg-white rounded-full shadow-md border-2 border-primary cursor-pointer flex items-center justify-center z-10 hover:scale-110 transition-transform"></div>
+</div>
+<div class="flex justify-between text-xs font-medium text-slate-400 mt-[-8px] px-1">
+<span>18</span>
+<span>60+</span>
+</div>
+</div>
+<!-- Section: Distance -->
+<div class="py-4 border-t border-slate-200 dark:border-slate-800/50">
+<div class="flex items-center justify-between mb-6">
+<h3 class="text-lg font-bold text-slate-900 dark:text-white">Maximum distance</h3>
+<span class="text-base font-semibold text-primary">45 km</span>
+</div>
+<!-- Single Slider Visualization -->
+<div class="relative h-12 flex items-center w-full px-2">
+<!-- Track Background -->
+<div class="absolute h-1.5 w-full rounded-full bg-slate-200 dark:bg-surface-dark overflow-hidden">
+<!-- Active Range -->
+<div class="absolute h-full bg-primary w-[45%]"></div>
+</div>
+<!-- Thumb -->
+<div class="absolute left-[45%] h-7 w-7 -ml-3.5 bg-white rounded-full shadow-md border-2 border-primary cursor-pointer flex items-center justify-center z-10 hover:scale-110 transition-transform"></div>
+</div>
+</div>
+<!-- Section: Interests -->
+<div class="py-4 border-t border-slate-200 dark:border-slate-800/50">
+<h3 class="mb-4 text-lg font-bold text-slate-900 dark:text-white">Interests</h3>
+<div class="flex flex-wrap gap-2.5">
+<!-- Selected Interest -->
+<button class="group flex items-center gap-2 rounded-full border border-primary bg-primary/10 px-4 py-2 text-sm font-semibold text-primary transition-all active:scale-95">
+<span class="material-symbols-outlined text-[18px]">music_note</span>
+                            Afrobeats
+                        </button>
+<!-- Unselected Interest -->
+<button class="flex items-center gap-2 rounded-full border border-slate-200 dark:border-slate-700 bg-transparent px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-400 transition-all hover:border-slate-400 dark:hover:border-slate-500 active:scale-95">
+<span class="material-symbols-outlined text-[18px]">restaurant</span>
+                            Foodie
+                        </button>
+<!-- Selected Interest (Variant Color) -->
+<button class="flex items-center gap-2 rounded-full border border-secondary bg-secondary/10 px-4 py-2 text-sm font-semibold text-secondary transition-all active:scale-95">
+<span class="material-symbols-outlined text-[18px]">videogame_asset</span>
+                            Gaming
+                        </button>
+<!-- Unselected Interest -->
+<button class="flex items-center gap-2 rounded-full border border-slate-200 dark:border-slate-700 bg-transparent px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-400 transition-all hover:border-slate-400 dark:hover:border-slate-500 active:scale-95">
+<span class="material-symbols-outlined text-[18px]">flight</span>
+                            Travel
+                        </button>
+<!-- Unselected Interest -->
+<button class="flex items-center gap-2 rounded-full border border-slate-200 dark:border-slate-700 bg-transparent px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-400 transition-all hover:border-slate-400 dark:hover:border-slate-500 active:scale-95">
+<span class="material-symbols-outlined text-[18px]">photo_camera</span>
+                            Photography
+                        </button>
+<!-- Selected Interest (Variant Color) -->
+<button class="flex items-center gap-2 rounded-full border border-accent bg-accent/10 px-4 py-2 text-sm font-semibold text-accent transition-all active:scale-95">
+<span class="material-symbols-outlined text-[18px]">palette</span>
+                            Art
+                        </button>
+<!-- Unselected Interest -->
+<button class="flex items-center gap-2 rounded-full border border-slate-200 dark:border-slate-700 bg-transparent px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-400 transition-all hover:border-slate-400 dark:hover:border-slate-500 active:scale-95">
+<span class="material-symbols-outlined text-[18px]">checkroom</span>
+                            Fashion
+                        </button>
+</div>
+</div>
+</div>
+<!-- Sticky Footer Action Bar -->
+<div class="absolute bottom-0 left-0 w-full border-t border-slate-200 dark:border-slate-800 bg-background-light/90 dark:bg-background-dark/90 px-6 py-4 backdrop-blur-md">
+<div class="flex items-center justify-between gap-4">
+<button class="h-12 min-w-[100px] rounded-full px-4 text-base font-bold text-slate-500 dark:text-slate-400 transition-colors hover:bg-slate-200 dark:hover:bg-slate-800">
+                        Reset
+                    </button>
+<button class="h-12 flex-1 rounded-full bg-primary shadow-lg shadow-primary/30 text-base font-bold text-white transition-transform active:scale-[0.98]">
+                        Apply Filters
+                    </button>
+</div>
+</div>
+</div>
+</div>
+</body></html>

@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Yabisso Search Component</title>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "yabisso-red": "#ef4444",
+                        "yabisso-yellow": "#eab308",
+                        "yabisso-green": "#22c55e",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                        "surface-dark": "#1C252E",
+                        "surface-active": "#23303B",
+                    },
+                    fontFamily: {
+                        "display": ["Space Grotesk", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom scrollbar for webkit to match dark theme */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #23303B;
+            border-radius: 10px;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark min-h-screen flex justify-center font-display antialiased selection:bg-primary/30 selection:text-primary">
+<!-- Mobile Screen Container -->
+<div class="relative w-full max-w-md bg-background-light dark:bg-background-dark h-screen flex flex-col overflow-hidden shadow-2xl">
+<!-- Status Bar Area (Mockup) -->
+<div class="w-full h-12 flex items-end justify-between px-6 pb-2 z-20">
+<span class="text-sm font-semibold dark:text-white text-slate-900">9:41</span>
+<div class="flex items-center gap-1.5 dark:text-white text-slate-900">
+<span class="material-symbols-outlined text-[18px]">signal_cellular_alt</span>
+<span class="material-symbols-outlined text-[18px]">wifi</span>
+<span class="material-symbols-outlined text-[18px]">battery_full</span>
+</div>
+</div>
+<!-- Sticky Header & Search Bar -->
+<div class="relative z-10 w-full bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-xl border-b border-transparent dark:border-white/5 pb-2 transition-all duration-300">
+<div class="px-4 py-2 flex items-center gap-3">
+<!-- Search Input Container -->
+<div class="relative flex-1 group">
+<!-- Tech Glow Effect (Gradient of Brand Colors) - Visible on Focus -->
+<div class="absolute -inset-[2px] bg-gradient-to-r from-primary via-yabisso-red to-yabisso-yellow rounded-xl opacity-0 group-focus-within:opacity-100 transition-opacity duration-500 blur-[4px]"></div>
+<!-- Input Field Wrapper -->
+<div class="relative flex items-center w-full h-12 bg-white dark:bg-surface-dark rounded-xl overflow-hidden shadow-sm ring-1 ring-slate-200 dark:ring-white/10 group-focus-within:ring-0 transition-all">
+<!-- Leading Icon (Magnifying Glass) -->
+<div class="pl-3.5 pr-2 text-slate-400 dark:text-slate-500 flex items-center justify-center">
+<span class="material-symbols-outlined">search</span>
+</div>
+<!-- Actual Input -->
+<input class="w-full h-full bg-transparent border-none focus:ring-0 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 text-[16px] leading-normal caret-primary font-medium" placeholder="Search Yabisso..." type="text" value="Jollof Rice"/>
+<!-- Trailing Action: Clear Button -->
+<div class="pr-3 flex items-center gap-3">
+<!-- Clear 'X' -->
+<button class="flex items-center justify-center text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-white transition-colors p-1 rounded-full hover:bg-slate-100 dark:hover:bg-white/10">
+<span class="material-symbols-outlined text-[20px] fill-current">cancel</span>
+</button>
+<!-- Mic Icon (Offline/Tech Vibe Accent) -->
+<button class="flex items-center justify-center text-primary relative">
+<span class="material-symbols-outlined text-[24px]">mic</span>
+<!-- Small visual indicator for functionality -->
+<span class="absolute top-0 right-0 w-1.5 h-1.5 bg-yabisso-green rounded-full border border-surface-dark"></span>
+</button>
+</div>
+</div>
+</div>
+<!-- Cancel Button (Slides in or persists) -->
+<button class="whitespace-nowrap text-slate-900 dark:text-white font-bold text-[15px] hover:text-primary dark:hover:text-primary active:opacity-60 transition-colors px-1">
+                    Cancel
+                </button>
+</div>
+<!-- Contextual Hint / Offline Indicator -->
+<div class="px-5 pb-1 flex items-center gap-2">
+<span class="material-symbols-outlined text-[14px] text-yabisso-green">bolt</span>
+<span class="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Fast Search • Offline Ready</span>
+</div>
+</div>
+<!-- Scrollable Content Area -->
+<div class="flex-1 overflow-y-auto w-full relative">
+<!-- Suggestion / Recent Section -->
+<div class="px-4 py-4">
+<div class="flex items-center justify-between mb-2">
+<h3 class="text-slate-800 dark:text-slate-200 font-bold text-lg">Recent</h3>
+<button class="text-primary text-xs font-bold uppercase tracking-wide hover:underline">Clear</button>
+</div>
+<!-- List Item 1 -->
+<button class="w-full flex items-center gap-4 py-3 border-b border-slate-100 dark:border-white/5 group active:bg-white/5 rounded-lg px-2 -mx-2 transition-colors">
+<div class="w-10 h-10 rounded-full bg-slate-100 dark:bg-surface-active flex items-center justify-center text-slate-500 dark:text-slate-400 group-hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-[20px]">history</span>
+</div>
+<div class="flex-1 text-left">
+<p class="text-slate-900 dark:text-slate-100 font-medium text-[16px]">Jollof Rice</p>
+<p class="text-slate-500 dark:text-slate-500 text-xs">Food Delivery • Tasty Pot</p>
+</div>
+<span class="material-symbols-outlined text-slate-300 dark:text-slate-600 -rotate-45 text-[20px]">arrow_outward</span>
+</button>
+<!-- List Item 2 -->
+<button class="w-full flex items-center gap-4 py-3 border-b border-slate-100 dark:border-white/5 group active:bg-white/5 rounded-lg px-2 -mx-2 transition-colors">
+<div class="w-10 h-10 rounded-full bg-slate-100 dark:bg-surface-active flex items-center justify-center text-slate-500 dark:text-slate-400 group-hover:text-yabisso-yellow transition-colors">
+<span class="material-symbols-outlined text-[20px]">bolt</span>
+</div>
+<div class="flex-1 text-left">
+<p class="text-slate-900 dark:text-slate-100 font-medium text-[16px]">Electric Bill</p>
+<p class="text-slate-500 dark:text-slate-500 text-xs">Utilities • Prepaid</p>
+</div>
+<span class="material-symbols-outlined text-slate-300 dark:text-slate-600 -rotate-45 text-[20px]">arrow_outward</span>
+</button>
+<!-- List Item 3 -->
+<button class="w-full flex items-center gap-4 py-3 border-b border-slate-100 dark:border-white/5 group active:bg-white/5 rounded-lg px-2 -mx-2 transition-colors">
+<div class="w-10 h-10 rounded-full bg-slate-100 dark:bg-surface-active flex items-center justify-center text-slate-500 dark:text-slate-400 group-hover:text-yabisso-red transition-colors">
+<span class="material-symbols-outlined text-[20px]">local_mall</span>
+</div>
+<div class="flex-1 text-left">
+<p class="text-slate-900 dark:text-slate-100 font-medium text-[16px]">iPhone 15 Case</p>
+<p class="text-slate-500 dark:text-slate-500 text-xs">Marketplace • Gadgets</p>
+</div>
+<span class="material-symbols-outlined text-slate-300 dark:text-slate-600 -rotate-45 text-[20px]">arrow_outward</span>
+</button>
+</div>
+<!-- Categories / Tags Section -->
+<div class="px-4 mt-4">
+<h3 class="text-slate-800 dark:text-slate-200 font-bold text-lg mb-4">Discover</h3>
+<div class="flex flex-wrap gap-2.5">
+<button class="px-4 py-2.5 bg-white dark:bg-surface-active text-slate-700 dark:text-slate-200 rounded-lg text-sm font-semibold border border-slate-200 dark:border-white/5 shadow-sm active:scale-95 transition-transform">
+                        🍔 Food
+                    </button>
+<button class="px-4 py-2.5 bg-white dark:bg-surface-active text-slate-700 dark:text-slate-200 rounded-lg text-sm font-semibold border border-slate-200 dark:border-white/5 shadow-sm active:scale-95 transition-transform">
+                        💳 Wallet
+                    </button>
+<button class="px-4 py-2.5 bg-white dark:bg-surface-active text-slate-700 dark:text-slate-200 rounded-lg text-sm font-semibold border border-slate-200 dark:border-white/5 shadow-sm active:scale-95 transition-transform">
+                        🛵 Rides
+                    </button>
+<button class="px-4 py-2.5 bg-white dark:bg-surface-active text-slate-700 dark:text-slate-200 rounded-lg text-sm font-semibold border border-slate-200 dark:border-white/5 shadow-sm active:scale-95 transition-transform">
+                        💊 Pharmacy
+                    </button>
+<button class="px-4 py-2.5 bg-white dark:bg-surface-active text-slate-700 dark:text-slate-200 rounded-lg text-sm font-semibold border border-slate-200 dark:border-white/5 shadow-sm active:scale-95 transition-transform">
+                        🎟️ Events
+                    </button>
+</div>
+</div>
+<!-- Promotion Banner (Abstract Tech Image) -->
+<div class="px-4 mt-8 mb-20">
+<div class="relative w-full h-32 rounded-xl overflow-hidden">
+<img alt="Abstract blue liquid gradient background representing tech flow" class="w-full h-full object-cover opacity-80" data-alt="Abstract blue liquid gradient background representing tech flow" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCBbljYzZaDqjtQj8dYUkIpdKiWo276vlb2ZawTytuslTwfSKNSVgvSVwgovAmw_0NHQvK0IkvvVi5DnDlHIIGSprqCjPPEpUdpB2nL91Kjvv2uAf_zdj2u3BBg71WJNXY2WthTHZVsqgz8P5VcII38IuPNHdwIhHtPDmn82ETvuTZ9QJtUFximYRqJ_krnxnRUUHu_8F8wDd2eDpu9Sb8o-obN8XHpoq00jSIcFApgJ8bzFfVQf-drVY0K9cq4pni2VRFFcV9V"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex flex-col justify-end p-4">
+<p class="text-white font-bold text-lg">Super Deal</p>
+<p class="text-white/80 text-sm">Get 20% off your next jollof order.</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Bottom Navigation Hint -->
+<div class="absolute bottom-0 w-full h-20 bg-gradient-to-t from-background-dark to-transparent pointer-events-none z-20"></div>
+</div>
+</body></html>

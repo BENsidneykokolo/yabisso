@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Market Order Status</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#111a22",
+                        "card-dark": "#192633",
+                        "brand-green": "#22c55e",
+                        "brand-yellow": "#eab308",
+                        "brand-red": "#ef4444",
+                    },
+                    fontFamily: {
+                        "display": ["Work Sans", "sans-serif"]
+                    },
+                    borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "2xl": "1rem", "full": "9999px" },
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        /* Custom scrollbar hide for clean mobile look */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-white antialiased min-h-screen flex flex-col">
+<!-- Header -->
+<header class="sticky top-0 z-20 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-800/50 px-4 py-3 flex items-center justify-between">
+<button class="flex items-center justify-center p-2 -ml-2 rounded-full hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors">
+<span class="material-symbols-outlined text-slate-700 dark:text-white">arrow_back_ios_new</span>
+</button>
+<h1 class="text-lg font-bold leading-tight tracking-tight">Order #2409</h1>
+<button class="flex items-center justify-center p-2 -mr-2 rounded-full hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors text-slate-500 dark:text-[#92adc9]">
+<span class="material-symbols-outlined">help</span>
+</button>
+</header>
+<!-- Scrollable Content -->
+<main class="flex-1 flex flex-col gap-6 p-4 pb-24 overflow-y-auto no-scrollbar">
+<!-- Offline Context / Last Update -->
+<div class="flex items-center justify-center gap-2 opacity-60">
+<span class="material-symbols-outlined text-[16px]">wifi_off</span>
+<p class="text-xs font-medium">Last updated: 10 mins ago</p>
+</div>
+<!-- Product Card -->
+<section class="bg-white dark:bg-card-dark rounded-xl p-4 shadow-sm border border-slate-100 dark:border-slate-800/50">
+<div class="flex gap-4">
+<div class="w-24 h-24 shrink-0 rounded-lg bg-slate-100 dark:bg-slate-800 overflow-hidden relative">
+<div class="absolute inset-0 bg-cover bg-center" data-alt="Sony headphones on a plain background" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBVHnI2E7BbxMti1WOy2PDAUOY8BT7djOwU9Zf3p5v4c4ITZFV90LcsdAUDAIhIn-qEG-RMqNl2ksAiFpg_AWFpOaVqN1GCwGaoZKRal_afEncyqR5kogDP5PMoIv-l4yJ3Rp8SL-agO5a9rFVILMqbXAUZjVYngfpDlPv0RoQAq2b43GP70KWv87yITyZSIUznKS8Y0rkFuuZHps6LmNB5NA7aUHDKzzAoKKyoJVdiT9f_hCujIybrFacoJWo2J24Ie22o7n7s");'></div>
+</div>
+<div class="flex flex-col justify-between flex-1 py-1">
+<div>
+<h2 class="text-base font-bold leading-snug line-clamp-2">Sony WH-1000XM4 Noise Canceling Headphones</h2>
+<p class="text-slate-500 dark:text-[#92adc9] text-sm mt-1">Qty: 1 • Color: Black</p>
+</div>
+<p class="text-primary font-bold text-lg">CFA 185,000</p>
+</div>
+</div>
+</section>
+<!-- Map Preview (Active Stage Context) -->
+<section class="relative w-full h-40 rounded-xl overflow-hidden shadow-md border border-slate-200 dark:border-slate-800">
+<div class="absolute inset-0 bg-cover bg-center opacity-80" data-alt="Map of Kinshasa streets" data-location="Kinshasa" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCNqBEIWjrH1UulniWqedt95moIcEd-vCW3FmNTJGRSjzmrMBkJkOOqfQ4RhWY458nDzT6Q04J5RnvfVLsSDXbAxTh2T9QBIJG2B1kLlE4MVmX3VC72BY-L4K-djArwlol4ds7r-VEfnqq-m-Rq4L5GwUqXgeeow0fxLNXPXbW04cgTL2yBASvuH2mA6a0qEZQsV6MrO8T_JNISfulp_HjMIGFEgCUNk3KcR16u7FP2txrFRNhhM-0jJyacF-51KlsdDo2Bl5MY");'></div>
+<div class="absolute inset-0 bg-gradient-to-t from-background-dark/80 to-transparent"></div>
+<div class="absolute bottom-3 left-3 flex items-center gap-3">
+<div class="bg-primary text-white p-2 rounded-full shadow-lg flex items-center justify-center animate-pulse">
+<span class="material-symbols-outlined text-[20px]">local_shipping</span>
+</div>
+<div class="flex flex-col">
+<span class="text-xs text-white/80 font-medium uppercase tracking-wider">Current Location</span>
+<span class="text-white font-bold text-sm">Boulevard du 30 Juin, Kinshasa</span>
+</div>
+</div>
+</section>
+<!-- Timeline Tracker -->
+<section class="bg-white dark:bg-card-dark rounded-xl p-5 shadow-sm border border-slate-100 dark:border-slate-800/50">
+<h3 class="font-bold text-lg mb-6">Timeline</h3>
+<div class="grid grid-cols-[32px_1fr] gap-x-4">
+<!-- Step 1: Placed -->
+<div class="flex flex-col items-center">
+<div class="w-8 h-8 rounded-full bg-brand-green/20 flex items-center justify-center z-10">
+<span class="material-symbols-outlined text-brand-green text-[18px]">check</span>
+</div>
+<div class="w-[2px] bg-brand-green/30 h-full min-h-[40px]"></div>
+</div>
+<div class="pb-8 pt-1">
+<p class="text-sm font-bold text-slate-900 dark:text-white">Order Placed</p>
+<p class="text-xs text-slate-500 dark:text-[#92adc9]">Oct 20, 10:30 AM</p>
+</div>
+<!-- Step 2: Payment -->
+<div class="flex flex-col items-center">
+<div class="w-8 h-8 rounded-full bg-brand-green/20 flex items-center justify-center z-10">
+<span class="material-symbols-outlined text-brand-green text-[18px]">credit_card</span>
+</div>
+<div class="w-[2px] bg-primary h-full min-h-[40px]"></div>
+</div>
+<div class="pb-8 pt-1">
+<p class="text-sm font-bold text-slate-900 dark:text-white">Payment Confirmed</p>
+<p class="text-xs text-slate-500 dark:text-[#92adc9]">Oct 20, 10:35 AM</p>
+</div>
+<!-- Step 3: In Transit (Active) -->
+<div class="flex flex-col items-center">
+<div class="w-8 h-8 rounded-full bg-primary shadow-[0_0_15px_rgba(19,127,236,0.4)] flex items-center justify-center z-10 ring-4 ring-primary/10">
+<span class="material-symbols-outlined text-white text-[18px]">local_shipping</span>
+</div>
+<div class="w-[2px] bg-slate-200 dark:bg-slate-700 h-full min-h-[40px]"></div>
+</div>
+<div class="pb-8 pt-1">
+<p class="text-base font-bold text-primary">In Transit</p>
+<p class="text-xs text-slate-500 dark:text-[#92adc9]">Oct 21, 08:00 AM • On the way to hub</p>
+</div>
+<!-- Step 4: Delivered -->
+<div class="flex flex-col items-center">
+<div class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 border-2 border-slate-300 dark:border-slate-600 flex items-center justify-center z-10">
+<span class="material-symbols-outlined text-slate-400 text-[18px]">package_2</span>
+</div>
+</div>
+<div class="pt-1">
+<p class="text-sm font-medium text-slate-400 dark:text-slate-500">Delivered</p>
+<p class="text-xs text-slate-400 dark:text-slate-600">Estimated Oct 24</p>
+</div>
+</div>
+</section>
+<!-- Delivery Details -->
+<section class="bg-white dark:bg-card-dark rounded-xl p-0 shadow-sm border border-slate-100 dark:border-slate-800/50 overflow-hidden">
+<div class="p-4 grid grid-cols-[30%_1fr] gap-y-4 items-center">
+<div class="text-slate-500 dark:text-[#92adc9] text-sm font-medium">Arriving by</div>
+<div class="text-slate-900 dark:text-white text-sm font-bold text-right">Tuesday, Oct 24</div>
+<div class="col-span-2 h-px bg-slate-100 dark:bg-slate-700/50"></div>
+<div class="text-slate-500 dark:text-[#92adc9] text-sm font-medium self-start pt-1">Shipping to</div>
+<div class="text-right">
+<div class="text-slate-900 dark:text-white text-sm font-bold">Home</div>
+<div class="text-slate-500 dark:text-slate-400 text-xs mt-1 leading-relaxed">12 Avenue des Ambassades,<br/>Gombe, Kinshasa</div>
+</div>
+</div>
+</section>
+<!-- Bottom Spacer -->
+<div class="h-4"></div>
+</main>
+<!-- Sticky Footer Actions -->
+<footer class="fixed bottom-0 w-full bg-white dark:bg-background-dark border-t border-slate-200 dark:border-slate-800 p-4 z-20 pb-8">
+<div class="flex gap-3 max-w-md mx-auto">
+<button class="flex-1 h-12 rounded-lg border border-slate-300 dark:border-slate-600 bg-transparent text-slate-700 dark:text-white font-semibold text-sm flex items-center justify-center gap-2 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+<span class="material-symbols-outlined text-[20px]">chat</span>
+                Contact Seller
+            </button>
+<button class="flex-1 h-12 rounded-lg bg-primary text-white font-bold text-sm flex items-center justify-center gap-2 shadow-lg shadow-primary/25 hover:bg-blue-600 transition-colors">
+<span class="material-symbols-outlined text-[20px]">map</span>
+                Track Delivery
+            </button>
+</div>
+</footer>
+</body></html>

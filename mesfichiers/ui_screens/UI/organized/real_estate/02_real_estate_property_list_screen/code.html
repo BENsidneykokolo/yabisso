@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Yabisso Real Estate</title>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#137fec",
+              "background-light": "#f6f7f8",
+              "background-dark": "#101922",
+              "surface-dark": "#192633",
+              "accent-green": "#10B981",
+              "accent-yellow": "#F59E0B",
+              "accent-red": "#EF4444",
+            },
+            fontFamily: {
+              "display": ["Plus Jakarta Sans", "sans-serif"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "2xl": "1rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display antialiased text-slate-900 dark:text-white pb-24">
+<!-- Header Section -->
+<header class="sticky top-0 z-40 bg-background-light dark:bg-background-dark border-b border-gray-200 dark:border-gray-800">
+<!-- Top Bar -->
+<div class="flex items-center justify-between px-4 pt-4 pb-2">
+<div class="flex items-center gap-3">
+<button class="flex items-center justify-center w-10 h-10 rounded-full bg-surface-dark/50 hover:bg-surface-dark text-white">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<div>
+<h1 class="text-xl font-bold leading-none">Real Estate</h1>
+<div class="flex items-center gap-1 mt-1">
+<span class="w-2 h-2 rounded-full bg-accent-green"></span>
+<span class="text-xs text-gray-400 font-medium">Online • Lagos</span>
+</div>
+</div>
+</div>
+<button class="flex items-center justify-center w-10 h-10 rounded-full bg-surface-dark/50 hover:bg-surface-dark text-white">
+<span class="material-symbols-outlined">map</span>
+</button>
+</div>
+<!-- Search Bar -->
+<div class="px-4 py-2">
+<div class="relative flex items-center w-full h-12 rounded-xl bg-white dark:bg-surface-dark overflow-hidden shadow-sm">
+<div class="grid place-items-center h-full w-12 text-gray-400">
+<span class="material-symbols-outlined">search</span>
+</div>
+<input class="peer h-full w-full outline-none text-sm text-gray-700 dark:text-gray-100 pr-2 bg-transparent placeholder-gray-500 font-medium border-none focus:ring-0" id="search" placeholder="Search location, city, or zip..." type="text"/>
+<button class="grid place-items-center h-full w-12 text-primary hover:text-primary/80 transition-colors border-l border-gray-700/20 dark:border-gray-700">
+<span class="material-symbols-outlined">tune</span>
+</button>
+</div>
+</div>
+<!-- Horizontal Filter Chips -->
+<div class="flex gap-2 px-4 py-3 overflow-x-auto hide-scrollbar">
+<button class="flex shrink-0 items-center justify-center gap-x-2 rounded-full bg-primary px-4 py-2 shadow-lg shadow-primary/20">
+<span class="text-white text-sm font-semibold">All</span>
+</button>
+<button class="flex shrink-0 items-center justify-center gap-x-2 rounded-full bg-white dark:bg-surface-dark px-4 py-2 border border-gray-100 dark:border-gray-700">
+<span class="material-symbols-outlined text-base text-gray-400">home</span>
+<span class="text-gray-700 dark:text-gray-300 text-sm font-medium">House</span>
+</button>
+<button class="flex shrink-0 items-center justify-center gap-x-2 rounded-full bg-white dark:bg-surface-dark px-4 py-2 border border-gray-100 dark:border-gray-700">
+<span class="material-symbols-outlined text-base text-gray-400">apartment</span>
+<span class="text-gray-700 dark:text-gray-300 text-sm font-medium">Apartment</span>
+</button>
+<button class="flex shrink-0 items-center justify-center gap-x-2 rounded-full bg-white dark:bg-surface-dark px-4 py-2 border border-gray-100 dark:border-gray-700">
+<span class="material-symbols-outlined text-base text-gray-400">villa</span>
+<span class="text-gray-700 dark:text-gray-300 text-sm font-medium">Villa</span>
+</button>
+<button class="flex shrink-0 items-center justify-center gap-x-2 rounded-full bg-white dark:bg-surface-dark px-4 py-2 border border-gray-100 dark:border-gray-700">
+<span class="material-symbols-outlined text-base text-gray-400">storefront</span>
+<span class="text-gray-700 dark:text-gray-300 text-sm font-medium">Commercial</span>
+</button>
+</div>
+</header>
+<!-- Content Feed -->
+<main class="flex flex-col gap-5 px-4 pt-4 pb-8">
+<!-- Offline Indicator (Simulated) -->
+<div class="flex items-center gap-2 bg-surface-dark/40 rounded-lg p-2 px-3 w-fit mx-auto">
+<span class="material-symbols-outlined text-accent-green text-sm">cloud_done</span>
+<span class="text-xs text-gray-400 font-medium">Listings updated &amp; cached for offline use</span>
+</div>
+<!-- Card 1: Sale (Verified) -->
+<article class="flex flex-col rounded-2xl overflow-hidden bg-white dark:bg-surface-dark shadow-md">
+<!-- Image Area -->
+<div class="relative h-56 w-full">
+<div class="absolute inset-0 bg-gray-200 dark:bg-gray-700 animate-pulse" style="z-index: 0;"></div> <!-- Placeholder -->
+<div class="absolute inset-0 w-full h-full bg-cover bg-center" data-alt="Modern luxury apartment living room with large windows and sunlight" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCGglomDB9sRUfPadGZK5DfmbT6_4WwO8nZr-rOHmngNjRqg_WvtY_grEhVv4c2qsCucWQSV6GF1vz1CpHK6j915fVZxOir3kNgFEwlCRnDsF22vwRMwGUW5PbyBzjW7_PktmrQVt0VPmfiCj20wdTRNMxg9EZZX5zhKp7vElA2Fuz1O1TjZ4DB4Rooj2qVJyOKVXQgA58U6gqymEchl2S1ZEgsasgTY57FTERmKaDzVZIXwW6zKDrC1x3DoRFYoB1VG_NGIb0q'); z-index: 1;">
+</div>
+<!-- Overlay Badges -->
+<div class="absolute top-3 left-3 z-10 flex gap-2">
+<span class="px-2.5 py-1 rounded-md bg-accent-yellow text-black text-xs font-bold tracking-wide uppercase flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">verified</span> Verified
+                    </span>
+<span class="px-2.5 py-1 rounded-md bg-background-dark/80 backdrop-blur-sm text-white text-xs font-bold tracking-wide uppercase">
+                        For Sale
+                    </span>
+</div>
+<!-- Favorite Button -->
+<button class="absolute top-3 right-3 z-10 flex items-center justify-center w-9 h-9 rounded-full bg-black/30 backdrop-blur-md text-white hover:bg-accent-red hover:text-white transition-colors">
+<span class="material-symbols-outlined text-[20px]">favorite</span>
+</button>
+<!-- Gradient Overlay for Text Readability on Image bottom -->
+<div class="absolute bottom-0 left-0 w-full h-1/2 bg-gradient-to-t from-black/60 to-transparent z-0"></div>
+</div>
+<!-- Content Area -->
+<div class="p-4 flex flex-col gap-3">
+<div class="flex justify-between items-start">
+<div>
+<h2 class="text-primary text-xl font-extrabold tracking-tight">₦ 45,000,000</h2>
+<h3 class="text-gray-900 dark:text-white text-lg font-bold leading-tight mt-1">Luxury 3-Bed Apartment</h3>
+</div>
+<div class="flex flex-col items-end">
+<span class="text-xs font-bold text-gray-500 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">4.8 ★</span>
+</div>
+</div>
+<div class="flex items-center gap-1 text-gray-500 dark:text-gray-400">
+<span class="material-symbols-outlined text-[18px]">location_on</span>
+<p class="text-sm font-medium truncate">Victoria Island, Lagos</p>
+</div>
+<div class="h-px bg-gray-100 dark:bg-gray-700/50 w-full my-1"></div>
+<div class="flex justify-between items-center text-gray-600 dark:text-gray-300">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[20px] text-gray-400">bed</span>
+<span class="text-sm font-semibold">3 <span class="text-xs font-normal text-gray-500">Beds</span></span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[20px] text-gray-400">bathtub</span>
+<span class="text-sm font-semibold">2 <span class="text-xs font-normal text-gray-500">Baths</span></span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[20px] text-gray-400">square_foot</span>
+<span class="text-sm font-semibold">1,200 <span class="text-xs font-normal text-gray-500">sqft</span></span>
+</div>
+</div>
+</div>
+</article>
+<!-- Card 2: Rent (New) -->
+<article class="flex flex-col rounded-2xl overflow-hidden bg-white dark:bg-surface-dark shadow-md">
+<!-- Image Area -->
+<div class="relative h-56 w-full">
+<div class="absolute inset-0 bg-gray-200 dark:bg-gray-700 animate-pulse" style="z-index: 0;"></div>
+<div class="absolute inset-0 w-full h-full bg-cover bg-center" data-alt="Exterior of a cozy suburban family home with a garden" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuD6Hx91cv-U0mjw0ZieVmvKSrfhxb-jMu9kOXgGXxTBUnE_DouoUKiqVkXE7hLHdTCNlgeCseFh5pSID41-0oOydc-PSsl7VMNECJ65oW8HwjKt90dy_5a60pTA-JECmYv3pp71YwaFRkx5La70hS9Wd8RvbftTYD9ZwToUxLRlwFjzGVZ69Lqn7I_92FwjHdp23-ICG2ojohVk7AonVKTjK-ygBERW71x-UHDpJvsdPdeIRInN7KlbtKFGtb4qrVFYF0yhSlbd'); z-index: 1;">
+</div>
+<div class="absolute top-3 left-3 z-10 flex gap-2">
+<span class="px-2.5 py-1 rounded-md bg-accent-green text-white text-xs font-bold tracking-wide uppercase">
+                        For Rent
+                    </span>
+<span class="px-2.5 py-1 rounded-md bg-primary text-white text-xs font-bold tracking-wide uppercase">
+                        New
+                    </span>
+</div>
+<button class="absolute top-3 right-3 z-10 flex items-center justify-center w-9 h-9 rounded-full bg-black/30 backdrop-blur-md text-white hover:bg-accent-red hover:text-white transition-colors">
+<span class="material-symbols-outlined text-[20px]">favorite_border</span>
+</button>
+</div>
+<!-- Content Area -->
+<div class="p-4 flex flex-col gap-3">
+<div class="flex justify-between items-start">
+<div>
+<h2 class="text-primary text-xl font-extrabold tracking-tight">₦ 2,500,000 <span class="text-sm font-medium text-gray-400">/ year</span></h2>
+<h3 class="text-gray-900 dark:text-white text-lg font-bold leading-tight mt-1">Cozy Family Home</h3>
+</div>
+</div>
+<div class="flex items-center gap-1 text-gray-500 dark:text-gray-400">
+<span class="material-symbols-outlined text-[18px]">location_on</span>
+<p class="text-sm font-medium truncate">East Legon, Accra</p>
+</div>
+<div class="h-px bg-gray-100 dark:bg-gray-700/50 w-full my-1"></div>
+<div class="flex justify-between items-center text-gray-600 dark:text-gray-300">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[20px] text-gray-400">bed</span>
+<span class="text-sm font-semibold">4 <span class="text-xs font-normal text-gray-500">Beds</span></span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[20px] text-gray-400">bathtub</span>
+<span class="text-sm font-semibold">3 <span class="text-xs font-normal text-gray-500">Baths</span></span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[20px] text-gray-400">square_foot</span>
+<span class="text-sm font-semibold">2,000 <span class="text-xs font-normal text-gray-500">sqft</span></span>
+</div>
+</div>
+</div>
+</article>
+<!-- Card 3: Sale (Hot) -->
+<article class="flex flex-col rounded-2xl overflow-hidden bg-white dark:bg-surface-dark shadow-md">
+<!-- Image Area -->
+<div class="relative h-56 w-full">
+<div class="absolute inset-0 bg-gray-200 dark:bg-gray-700 animate-pulse" style="z-index: 0;"></div>
+<div class="absolute inset-0 w-full h-full bg-cover bg-center" data-alt="Modern architectural villa with a swimming pool at dusk" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDzzWqGwlmj44QIHJr1EvJLbbWWcJddiBN_Q2XP0kSZbjIgPvoXsqTZgl0lBBDGRZfwbc-dWdFUMuQmEaUNAt3JsMNqs9baIGhrxrpFXmo7isuz-aid5gCPIaKcyZkGkMJ5NqHjmqagh-Q2Fs_jvUHUEf9jzrG_KVSbp50KKLQo7TeftUKTa_jAZR1__H3tKC7wO_08e2D6VxHAacH4gmDTjnbS4hyBhhESSb_WMkyS1ZX-PB8SAw9Hgx22b2X-J4FZ9JaXW4Ep'); z-index: 1;">
+</div>
+<div class="absolute top-3 left-3 z-10 flex gap-2">
+<span class="px-2.5 py-1 rounded-md bg-accent-red text-white text-xs font-bold tracking-wide uppercase flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">local_fire_department</span> Hot
+                    </span>
+<span class="px-2.5 py-1 rounded-md bg-background-dark/80 backdrop-blur-sm text-white text-xs font-bold tracking-wide uppercase">
+                        For Sale
+                    </span>
+</div>
+<button class="absolute top-3 right-3 z-10 flex items-center justify-center w-9 h-9 rounded-full bg-black/30 backdrop-blur-md text-white hover:bg-accent-red hover:text-white transition-colors">
+<span class="material-symbols-outlined text-[20px]">favorite_border</span>
+</button>
+</div>
+<!-- Content Area -->
+<div class="p-4 flex flex-col gap-3">
+<div class="flex justify-between items-start">
+<div>
+<h2 class="text-primary text-xl font-extrabold tracking-tight">₦ 120,000,000</h2>
+<h3 class="text-gray-900 dark:text-white text-lg font-bold leading-tight mt-1">Modern Villa with Pool</h3>
+</div>
+</div>
+<div class="flex items-center gap-1 text-gray-500 dark:text-gray-400">
+<span class="material-symbols-outlined text-[18px]">location_on</span>
+<p class="text-sm font-medium truncate">Ikoyi, Lagos</p>
+</div>
+<div class="h-px bg-gray-100 dark:bg-gray-700/50 w-full my-1"></div>
+<div class="flex justify-between items-center text-gray-600 dark:text-gray-300">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[20px] text-gray-400">bed</span>
+<span class="text-sm font-semibold">5 <span class="text-xs font-normal text-gray-500">Beds</span></span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[20px] text-gray-400">bathtub</span>
+<span class="text-sm font-semibold">4 <span class="text-xs font-normal text-gray-500">Baths</span></span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[20px] text-gray-400">square_foot</span>
+<span class="text-sm font-semibold">4,500 <span class="text-xs font-normal text-gray-500">sqft</span></span>
+</div>
+</div>
+</div>
+</article>
+</main>
+<!-- Bottom Navigation Bar -->
+<nav class="fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-surface-dark border-t border-gray-200 dark:border-gray-800 pb-safe pt-2 px-2">
+<div class="flex items-center justify-between px-2 pb-2">
+<a class="flex flex-1 flex-col items-center justify-center gap-1 group py-2" href="#">
+<span class="material-symbols-outlined text-gray-400 group-hover:text-primary text-2xl transition-colors">home_app_logo</span>
+<span class="text-[10px] font-semibold text-gray-400 group-hover:text-primary transition-colors">Home</span>
+</a>
+<a class="flex flex-1 flex-col items-center justify-center gap-1 group py-2" href="#">
+<span class="material-symbols-outlined text-gray-400 group-hover:text-primary text-2xl transition-colors">account_balance_wallet</span>
+<span class="text-[10px] font-semibold text-gray-400 group-hover:text-primary transition-colors">Wallet</span>
+</a>
+<!-- Active Item -->
+<a class="flex flex-1 flex-col items-center justify-center gap-1 group py-2" href="#">
+<div class="flex items-center justify-center w-12 h-8 rounded-full bg-primary/20">
+<span class="material-symbols-outlined text-primary text-2xl">real_estate_agent</span>
+</div>
+<span class="text-[10px] font-bold text-primary">Real Estate</span>
+</a>
+<a class="flex flex-1 flex-col items-center justify-center gap-1 group py-2" href="#">
+<span class="material-symbols-outlined text-gray-400 group-hover:text-primary text-2xl transition-colors">grid_view</span>
+<span class="text-[10px] font-semibold text-gray-400 group-hover:text-primary transition-colors">Services</span>
+</a>
+<a class="flex flex-1 flex-col items-center justify-center gap-1 group py-2" href="#">
+<span class="material-symbols-outlined text-gray-400 group-hover:text-primary text-2xl transition-colors">person</span>
+<span class="text-[10px] font-semibold text-gray-400 group-hover:text-primary transition-colors">Profile</span>
+</a>
+</div>
+</nav>
+<!-- Add safe area padding for devices with home bar -->
+<style>
+        .pb-safe {
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+    </style>
+</body></html>

@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Taxi Ordering SMS Fallback Screen</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                        "yabisso-red": "#ef4444",
+                        "yabisso-yellow": "#eab308",
+                        "yabisso-green": "#22c55e",
+                        "surface-dark": "#1a2632",
+                    },
+                    fontFamily: {
+                        "display": ["Plus Jakarta Sans", "sans-serif"]
+                    },
+                    borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "2xl": "1rem", "full": "9999px" },
+                },
+            },
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display antialiased">
+<div class="relative flex h-full min-h-screen w-full flex-col overflow-x-hidden">
+<!-- Header -->
+<header class="flex items-center justify-between p-4 sticky top-0 z-10 bg-background-light/90 dark:bg-background-dark/90 backdrop-blur-md border-b border-gray-200 dark:border-gray-800">
+<div class="flex size-10 shrink-0 items-center justify-center rounded-full active:bg-gray-200 dark:active:bg-gray-800 transition-colors cursor-pointer">
+<span class="material-symbols-outlined text-gray-900 dark:text-white">arrow_back</span>
+</div>
+<div class="flex flex-col items-center">
+<h2 class="text-gray-900 dark:text-white text-lg font-bold leading-tight">Offline Mode</h2>
+<div class="flex items-center gap-1">
+<span class="size-2 rounded-full bg-yabisso-red animate-pulse"></span>
+<span class="text-xs font-medium text-yabisso-red">Disconnected</span>
+</div>
+</div>
+<div class="flex size-10 shrink-0 items-center justify-center">
+<span class="material-symbols-outlined text-gray-500 dark:text-gray-400">cloud_off</span>
+</div>
+</header>
+<!-- Main Content -->
+<main class="flex-1 flex flex-col px-4 py-6 gap-6">
+<!-- Hero / Context -->
+<div class="flex flex-col items-center gap-4 text-center">
+<div class="relative w-full max-w-[320px] aspect-[2/1] rounded-2xl overflow-hidden shadow-lg border border-gray-200 dark:border-gray-800 bg-surface-dark group">
+<div class="absolute inset-0 bg-gradient-to-br from-gray-800 to-black opacity-80 z-0"></div>
+<!-- Abstract African Tech Pattern Background -->
+<div class="absolute inset-0 z-0 opacity-20 bg-[url('https://placeholder.pics/svg/600/101922/333333/geometric%20pattern')] bg-repeat" data-alt="Dark geometric pattern symbolizing african textile"></div>
+<div class="absolute inset-0 flex items-center justify-center z-10 flex-col gap-2">
+<div class="bg-primary/20 p-3 rounded-full backdrop-blur-sm border border-primary/30">
+<span class="material-symbols-outlined text-primary text-4xl">sms</span>
+</div>
+<p class="text-white text-sm font-bold tracking-wide uppercase">Yabisso SMS Dispatch</p>
+</div>
+</div>
+<div class="max-w-xs">
+<h3 class="text-gray-900 dark:text-white text-xl font-bold mb-2">No Internet? No Problem.</h3>
+<p class="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">
+                        Order a ride instantly using our SMS bot. Fill in the details below to generate your message.
+                    </p>
+</div>
+</div>
+<!-- Form Section -->
+<div class="bg-white dark:bg-surface-dark rounded-2xl p-5 shadow-sm border border-gray-200 dark:border-gray-800 flex flex-col gap-5">
+<div class="flex items-center justify-between pb-2 border-b border-gray-100 dark:border-gray-700">
+<h4 class="text-gray-900 dark:text-white font-bold text-base">Ride Details</h4>
+<span class="bg-yabisso-green/10 text-yabisso-green text-xs font-bold px-2 py-1 rounded">SMS Active</span>
+</div>
+<!-- Input Fields with Visual Route Connector -->
+<div class="relative flex flex-col gap-6">
+<!-- Connector Line -->
+<div class="absolute left-[19px] top-10 bottom-10 w-0.5 border-l-2 border-dashed border-gray-300 dark:border-gray-600 z-0"></div>
+<!-- Pickup -->
+<div class="relative z-10 group">
+<label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5 ml-11 uppercase tracking-wider">Pickup Location</label>
+<div class="flex items-center gap-3">
+<div class="flex items-center justify-center size-10 rounded-full bg-yabisso-yellow/10 border border-yabisso-yellow/30 shrink-0">
+<span class="material-symbols-outlined text-yabisso-yellow text-xl">my_location</span>
+</div>
+<input class="form-input block w-full rounded-xl border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-[#111a22] text-gray-900 dark:text-white focus:border-primary focus:ring-primary h-12 text-base shadow-sm placeholder:text-gray-400 dark:placeholder:text-gray-500" placeholder="e.g. Balogun Market, Lagos" type="text" value="Current Location (GPS Est.)"/>
+</div>
+</div>
+<!-- Destination -->
+<div class="relative z-10 group">
+<label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5 ml-11 uppercase tracking-wider">Destination</label>
+<div class="flex items-center gap-3">
+<div class="flex items-center justify-center size-10 rounded-full bg-yabisso-red/10 border border-yabisso-red/30 shrink-0">
+<span class="material-symbols-outlined text-yabisso-red text-xl">pin_drop</span>
+</div>
+<input class="form-input block w-full rounded-xl border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-[#111a22] text-gray-900 dark:text-white focus:border-primary focus:ring-primary h-12 text-base shadow-sm placeholder:text-gray-400 dark:placeholder:text-gray-500" placeholder="Where are you going?" type="text"/>
+</div>
+</div>
+</div>
+</div>
+<!-- SMS Preview Card -->
+<div class="flex flex-col gap-2">
+<p class="text-xs font-medium text-gray-500 dark:text-gray-400 px-1">MESSAGE PREVIEW</p>
+<div class="bg-gray-100 dark:bg-black/30 border border-gray-200 dark:border-gray-700 rounded-xl p-4 flex gap-3 items-start">
+<span class="material-symbols-outlined text-gray-400 text-xl mt-0.5">chat_bubble_outline</span>
+<div class="flex-1">
+<p class="font-mono text-sm text-gray-800 dark:text-gray-300 break-all leading-relaxed">
+                            REQ TAXI<br/>
+<span class="text-yabisso-yellow">FROM:</span> GPS:3.45,6.78<br/>
+<span class="text-yabisso-red">TO:</span> ...
+                        </p>
+</div>
+</div>
+<p class="text-[10px] text-center text-gray-400 dark:text-gray-500 mt-1">Standard SMS rates may apply depending on your carrier.</p>
+</div>
+</main>
+<!-- Fixed Bottom Action -->
+<div class="p-4 pb-8 bg-background-light dark:bg-background-dark border-t border-gray-200 dark:border-gray-800">
+<button class="w-full flex items-center justify-center gap-3 bg-primary hover:bg-blue-600 active:bg-blue-700 text-white rounded-xl h-14 font-bold text-lg shadow-lg shadow-primary/20 transition-all transform active:scale-[0.98]">
+<span>Generate SMS Request</span>
+<span class="material-symbols-outlined">send</span>
+</button>
+<div class="mt-4 flex justify-center gap-2 items-center opacity-60">
+<span class="material-symbols-outlined text-gray-500 text-sm">support_agent</span>
+<p class="text-xs text-gray-500">Dispatch Support: +234 800 YABISSO</p>
+</div>
+</div>
+</div>
+</body></html>

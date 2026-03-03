@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Betting Result Popup</title>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                        "win-green": "#22c55e",
+                        "loss-red": "#ef4444",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-white min-h-screen flex items-center justify-center p-4">
+<!-- Main Container / Backdrop -->
+<div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+<!-- Result Card -->
+<div class="w-full max-w-[360px] relative overflow-hidden bg-[#1a2632] dark:bg-[#1a2632] rounded-xl border border-slate-700 shadow-2xl animate-[fadeInUp_0.3s_ease-out]">
+<!-- Confetti / Background Graphic (Abstract for African Tech Vibe) -->
+<div class="absolute top-0 left-0 w-full h-32 opacity-20 pointer-events-none" style="background: radial-gradient(circle at center, #22c55e 0%, transparent 70%);"></div>
+<!-- Header Image / Icon Area -->
+<div class="relative flex flex-col items-center justify-center pt-8 pb-4">
+<div class="w-24 h-24 rounded-full bg-win-green/20 flex items-center justify-center mb-4 ring-4 ring-win-green/10">
+<span class="material-symbols-outlined text-5xl text-win-green">emoji_events</span>
+</div>
+<!-- Headline -->
+<h1 class="text-white tracking-tight text-[32px] font-bold leading-tight px-4 text-center">YOU WON!</h1>
+<!-- Subtitle -->
+<h2 class="text-slate-400 text-lg font-medium leading-tight px-4 text-center mt-2">You won <span class="text-win-green font-bold">5,000 XAF</span> on Aviator</h2>
+</div>
+<!-- Divider with notch effect -->
+<div class="relative h-4 w-full my-2">
+<div class="absolute left-0 top-1/2 -translate-y-1/2 w-3 h-6 bg-black/80 rounded-r-full"></div>
+<div class="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-6 bg-black/80 rounded-l-full"></div>
+<div class="w-full border-b border-dashed border-slate-600 h-full"></div>
+</div>
+<!-- Description List -->
+<div class="p-6 pt-2">
+<div class="space-y-3">
+<div class="flex justify-between items-center py-1">
+<span class="text-[#92adc9] text-sm font-normal">Game ID</span>
+<span class="text-white text-sm font-mono tracking-wider font-medium">#88231</span>
+</div>
+<div class="flex justify-between items-center py-1">
+<span class="text-[#92adc9] text-sm font-normal">Stake</span>
+<span class="text-white text-sm font-medium">500 XAF</span>
+</div>
+<div class="flex justify-between items-center py-1">
+<span class="text-[#92adc9] text-sm font-normal">Multiplier</span>
+<div class="px-2 py-0.5 rounded bg-yellow-500/20 text-yellow-500 text-xs font-bold border border-yellow-500/30">x10.0</div>
+</div>
+<div class="mt-4 pt-4 border-t border-slate-700/50 flex justify-between items-center">
+<span class="text-[#92adc9] text-base font-medium">Total Return</span>
+<span class="text-win-green text-xl font-bold">5,000 XAF</span>
+</div>
+</div>
+</div>
+<!-- Button Group -->
+<div class="p-6 pt-2 pb-8 flex flex-col gap-3">
+<button class="group relative flex w-full cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-4 bg-primary text-white hover:bg-blue-600 transition-colors shadow-[0_4px_0_0_#0e5ead] active:shadow-none active:translate-y-[4px]">
+<span class="material-symbols-outlined mr-2 text-xl group-hover:animate-spin">refresh</span>
+<span class="font-bold tracking-wide">Play Again</span>
+</button>
+<button class="flex w-full cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-4 bg-transparent border border-slate-600 text-slate-300 hover:bg-slate-800 transition-colors">
+<span class="font-medium">View My Bets</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Example of "Lost" state hidden/commented for visual context in a real app, 
+         but for this single page output, I will add a secondary card below just to showcase the "Lost" variant 
+         as if scrolling down a design document. -->
+<div class="fixed inset-0 z-40 hidden" id="lost-state-example">
+<!-- This is just conceptually where a lost state would be handled -->
+</div>
+</body></html>

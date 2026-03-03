@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Yabisso Admin - Services</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#46ec13",
+                        "primary-dark": "#34b80c",
+                        "background-light": "#f6f8f6",
+                        "background-dark": "#142210",
+                        "surface-dark": "#1c2e18", // Custom dark surface derived from the examples
+                        "surface-lighter": "#2c4823", // Custom lighter surface from examples
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"],
+                        "sans": ["Inter", "sans-serif"],
+                    },
+                    borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-white overflow-hidden">
+<!-- Main Container -->
+<div class="relative flex h-full min-h-screen w-full flex-col max-w-md mx-auto shadow-2xl overflow-hidden bg-background-dark">
+<!-- Top App Bar -->
+<header class="flex items-center bg-background-dark p-4 pb-2 justify-between z-10">
+<div class="text-white flex size-12 shrink-0 items-center justify-start cursor-pointer">
+<span class="material-symbols-outlined text-white text-[28px]">menu</span>
+</div>
+<h2 class="text-white text-xl font-bold leading-tight tracking-[-0.015em] flex-1 text-center">Services</h2>
+<div class="flex w-12 items-center justify-end">
+<button class="relative flex size-12 cursor-pointer items-center justify-center rounded-xl bg-transparent text-white">
+<span class="material-symbols-outlined text-white text-[28px]">notifications</span>
+<span class="absolute top-3 right-3 h-2.5 w-2.5 rounded-full bg-primary border border-background-dark"></span>
+</button>
+</div>
+</header>
+<!-- Scrollable Content Area -->
+<main class="flex-1 overflow-y-auto pb-32 scrollbar-hide">
+<!-- Stats Section -->
+<div class="px-4 py-2">
+<div class="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+<div class="flex min-w-[140px] flex-col gap-1 rounded-xl p-4 bg-surface-lighter">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[20px]">layers</span>
+<p class="text-white/70 text-sm font-medium">Total</p>
+</div>
+<p class="text-white text-2xl font-bold">12</p>
+</div>
+<div class="flex min-w-[140px] flex-col gap-1 rounded-xl p-4 bg-surface-lighter border border-primary/20">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[20px]">check_circle</span>
+<p class="text-white/70 text-sm font-medium">Active</p>
+</div>
+<p class="text-white text-2xl font-bold">8</p>
+</div>
+<div class="flex min-w-[140px] flex-col gap-1 rounded-xl p-4 bg-surface-lighter opacity-70">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-gray-400 text-[20px]">cancel</span>
+<p class="text-white/70 text-sm font-medium">Inactive</p>
+</div>
+<p class="text-white text-2xl font-bold">4</p>
+</div>
+</div>
+</div>
+<!-- Search Bar -->
+<div class="px-4 py-2 sticky top-0 bg-background-dark z-10 shadow-lg shadow-background-dark/50">
+<div class="flex w-full items-center rounded-xl bg-surface-lighter h-12 px-4 border border-white/5 focus-within:border-primary/50 transition-colors">
+<span class="material-symbols-outlined text-primary/70 text-[24px]">search</span>
+<input class="flex-1 bg-transparent border-none text-white placeholder:text-white/40 focus:ring-0 px-3 text-base" placeholder="Search services..."/>
+<span class="material-symbols-outlined text-white/40 text-[24px] cursor-pointer">tune</span>
+</div>
+</div>
+<!-- Service List Headline -->
+<div class="px-4 pt-4 pb-2 flex justify-between items-end">
+<h3 class="text-white text-lg font-bold">Service List</h3>
+<span class="text-xs text-primary font-medium cursor-pointer">View Logs</span>
+</div>
+<!-- List Items -->
+<div class="flex flex-col gap-3 px-4">
+<!-- Service Card 1: Yabisso Ride (Active) -->
+<div class="bg-surface-lighter rounded-xl p-4 flex flex-col gap-4 border-l-4 border-primary shadow-lg">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="flex items-center justify-center rounded-lg bg-background-dark shrink-0 size-12 text-primary">
+<span class="material-symbols-outlined text-[28px]">local_taxi</span>
+</div>
+<div class="flex flex-col">
+<p class="text-white text-base font-bold leading-tight">Yabisso Ride</p>
+<div class="flex items-center gap-1.5 mt-1">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+<p class="text-primary text-xs font-medium">Online</p>
+</div>
+</div>
+</div>
+<!-- Toggle -->
+<label class="relative flex h-[30px] w-[50px] cursor-pointer items-center rounded-full bg-primary p-1 transition-all">
+<input checked="" class="peer sr-only" type="checkbox"/>
+<span class="absolute left-1 top-1 h-[22px] w-[22px] rounded-full bg-white transition-all peer-checked:translate-x-full peer-checked:left-[-2px]"></span>
+</label>
+</div>
+<div class="h-px w-full bg-white/10"></div>
+<div class="flex items-center justify-between">
+<div class="flex gap-4">
+<div class="flex flex-col">
+<span class="text-[10px] text-white/50 uppercase tracking-wider">Base Rate</span>
+<span class="text-sm font-semibold text-white">500 XAF</span>
+</div>
+<div class="flex flex-col">
+<span class="text-[10px] text-white/50 uppercase tracking-wider">Commission</span>
+<span class="text-sm font-semibold text-white">10%</span>
+</div>
+</div>
+<button class="flex items-center gap-1 bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-lg text-xs font-medium text-white transition-colors">
+<span class="material-symbols-outlined text-[16px]">settings</span>
+                            Configure
+                        </button>
+</div>
+</div>
+<!-- Service Card 2: Yabisso Market (Inactive) -->
+<div class="bg-surface-lighter rounded-xl p-4 flex flex-col gap-4 border-l-4 border-gray-600 opacity-90">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="flex items-center justify-center rounded-lg bg-background-dark shrink-0 size-12 text-gray-400">
+<span class="material-symbols-outlined text-[28px]">storefront</span>
+</div>
+<div class="flex flex-col">
+<p class="text-white text-base font-bold leading-tight">Yabisso Market</p>
+<div class="flex items-center gap-1.5 mt-1">
+<span class="w-1.5 h-1.5 rounded-full bg-gray-500"></span>
+<p class="text-gray-400 text-xs font-medium">Suspended</p>
+</div>
+</div>
+</div>
+<!-- Toggle -->
+<label class="relative flex h-[30px] w-[50px] cursor-pointer items-center rounded-full bg-gray-600 p-1 transition-all">
+<input class="peer sr-only" type="checkbox"/>
+<span class="absolute left-1 top-1 h-[22px] w-[22px] rounded-full bg-white/80 transition-all peer-checked:translate-x-full peer-checked:left-[-2px]"></span>
+</label>
+</div>
+<div class="h-px w-full bg-white/10"></div>
+<div class="flex items-center justify-between">
+<div class="flex gap-4">
+<div class="flex flex-col">
+<span class="text-[10px] text-white/50 uppercase tracking-wider">Base Rate</span>
+<span class="text-sm font-semibold text-white">-</span>
+</div>
+</div>
+<button class="flex items-center gap-1 bg-white/5 hover:bg-white/10 px-3 py-1.5 rounded-lg text-xs font-medium text-white/70 transition-colors">
+<span class="material-symbols-outlined text-[16px]">settings</span>
+                            Configure
+                        </button>
+</div>
+</div>
+<!-- Service Card 3: Bill Pay (Active) -->
+<div class="bg-surface-lighter rounded-xl p-4 flex flex-col gap-4 border-l-4 border-primary shadow-lg mb-4">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="flex items-center justify-center rounded-lg bg-background-dark shrink-0 size-12 text-primary">
+<span class="material-symbols-outlined text-[28px]">payments</span>
+</div>
+<div class="flex flex-col">
+<p class="text-white text-base font-bold leading-tight">Bill Pay</p>
+<div class="flex items-center gap-1.5 mt-1">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+<p class="text-primary text-xs font-medium">Online</p>
+</div>
+</div>
+</div>
+<!-- Toggle -->
+<label class="relative flex h-[30px] w-[50px] cursor-pointer items-center rounded-full bg-primary p-1 transition-all">
+<input checked="" class="peer sr-only" type="checkbox"/>
+<span class="absolute left-1 top-1 h-[22px] w-[22px] rounded-full bg-white transition-all peer-checked:translate-x-full peer-checked:left-[-2px]"></span>
+</label>
+</div>
+<div class="h-px w-full bg-white/10"></div>
+<div class="flex items-center justify-between">
+<div class="flex gap-4">
+<div class="flex flex-col">
+<span class="text-[10px] text-white/50 uppercase tracking-wider">Processing Fee</span>
+<span class="text-sm font-semibold text-white">2.5%</span>
+</div>
+</div>
+<button class="flex items-center gap-1 bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-lg text-xs font-medium text-white transition-colors">
+<span class="material-symbols-outlined text-[16px]">settings</span>
+                            Configure
+                        </button>
+</div>
+</div>
+</div>
+<!-- Spacer for visual breathing room at bottom of list -->
+<div class="h-24"></div>
+</main>
+<!-- Bottom Sheet Modal (Simulating "Open" state for Configuration) -->
+<div class="absolute inset-x-0 bottom-0 z-40 transform transition-transform duration-300 ease-in-out">
+<!-- Backdrop Blur (Partial) -->
+<div class="absolute inset-0 h-full w-full bg-black/60 backdrop-blur-sm -z-10 h-[200%] top-[-100%]"></div>
+<div class="bg-surface-lighter rounded-t-[2rem] p-6 shadow-[0_-8px_30px_rgba(0,0,0,0.5)] border-t border-white/10">
+<!-- Handle -->
+<div class="mx-auto h-1.5 w-12 rounded-full bg-white/20 mb-6"></div>
+<div class="flex items-start justify-between mb-6">
+<div>
+<h3 class="text-xl font-bold text-white">Configure Yabisso Ride</h3>
+<p class="text-sm text-white/50">Regional settings for Littoral</p>
+</div>
+<button class="text-white/40 hover:text-white">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<div class="space-y-5">
+<!-- Connectivity Setting -->
+<div class="flex items-center justify-between p-3 rounded-xl bg-background-dark/50 border border-white/5">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary">wifi_off</span>
+<div class="flex flex-col">
+<span class="text-sm font-medium text-white">Offline Booking</span>
+<span class="text-xs text-white/50">Allow SMS/USSD bookings</span>
+</div>
+</div>
+<label class="relative flex h-[24px] w-[44px] cursor-pointer items-center rounded-full bg-primary p-0.5 transition-all">
+<input checked="" class="peer sr-only" type="checkbox"/>
+<span class="absolute left-0.5 top-0.5 h-[20px] w-[20px] rounded-full bg-white shadow-sm transition-all peer-checked:translate-x-[20px]"></span>
+</label>
+</div>
+<!-- Pricing Inputs -->
+<div class="grid grid-cols-2 gap-4">
+<div class="space-y-1.5">
+<label class="text-xs font-medium text-white/70 ml-1">Base Fare (XAF)</label>
+<input class="w-full bg-background-dark border border-white/10 rounded-xl px-4 py-3 text-white focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all font-semibold" type="number" value="500"/>
+</div>
+<div class="space-y-1.5">
+<label class="text-xs font-medium text-white/70 ml-1">Admin Commission (%)</label>
+<input class="w-full bg-background-dark border border-white/10 rounded-xl px-4 py-3 text-white focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all font-semibold" type="number" value="10"/>
+</div>
+</div>
+<!-- Rules Section -->
+<div class="space-y-1.5">
+<label class="text-xs font-medium text-white/70 ml-1">Operation Rules</label>
+<div class="flex flex-wrap gap-2">
+<span class="px-3 py-1 bg-primary/20 text-primary border border-primary/30 rounded-full text-xs font-medium flex items-center gap-1">
+                                 Instant Match <span class="material-symbols-outlined text-[14px] cursor-pointer hover:text-white">close</span>
+</span>
+<span class="px-3 py-1 bg-white/5 text-white/60 border border-white/10 rounded-full text-xs font-medium flex items-center gap-1 hover:bg-white/10 cursor-pointer transition-colors">
+<span class="material-symbols-outlined text-[14px]">add</span> Add Rule
+                             </span>
+</div>
+</div>
+<!-- Save Action -->
+<button class="w-full bg-primary hover:bg-primary-dark text-black font-bold py-4 rounded-xl mt-4 flex items-center justify-center gap-2 transition-colors">
+<span class="material-symbols-outlined">save</span>
+                        Save Changes
+                    </button>
+</div>
+</div>
+</div>
+<!-- Bottom Navigation -->
+<nav class="absolute bottom-0 w-full bg-surface-lighter/90 backdrop-blur-md border-t border-white/5 pb-6 pt-2 px-6 z-50">
+<ul class="flex justify-between items-center">
+<li class="flex flex-col items-center gap-1 cursor-pointer group">
+<span class="material-symbols-outlined text-white/40 group-hover:text-white transition-colors">dashboard</span>
+<span class="text-[10px] font-medium text-white/40 group-hover:text-white transition-colors">Home</span>
+</li>
+<li class="flex flex-col items-center gap-1 cursor-pointer">
+<div class="bg-primary/20 px-4 py-1 rounded-full">
+<span class="material-symbols-outlined text-primary">grid_view</span>
+</div>
+<span class="text-[10px] font-bold text-primary">Services</span>
+</li>
+<li class="flex flex-col items-center gap-1 cursor-pointer group">
+<span class="material-symbols-outlined text-white/40 group-hover:text-white transition-colors">group</span>
+<span class="text-[10px] font-medium text-white/40 group-hover:text-white transition-colors">Users</span>
+</li>
+<li class="flex flex-col items-center gap-1 cursor-pointer group">
+<span class="material-symbols-outlined text-white/40 group-hover:text-white transition-colors">store</span>
+<span class="text-[10px] font-medium text-white/40 group-hover:text-white transition-colors">Kiosques</span>
+</li>
+<li class="flex flex-col items-center gap-1 cursor-pointer group">
+<span class="material-symbols-outlined text-white/40 group-hover:text-white transition-colors">person</span>
+<span class="text-[10px] font-medium text-white/40 group-hover:text-white transition-colors">Profile</span>
+</li>
+</ul>
+</nav>
+</div>
+</body></html>

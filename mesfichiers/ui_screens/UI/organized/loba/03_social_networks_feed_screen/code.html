@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Yabisso Social Feed</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "yabisso-red": "#EF4444",
+                        "yabisso-yellow": "#F59E0B",
+                        "yabisso-green": "#10B981",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#111a22",
+                        "card-dark": "#192633",
+                        "text-secondary": "#92adc9",
+                    },
+                    fontFamily: {
+                        "display": ["Plus Jakarta Sans", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        /* Hide scrollbar for Chrome, Safari and Opera */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        /* Hide scrollbar for IE, Edge and Firefox */
+        .no-scrollbar {
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
+        }
+        
+        .story-ring {
+            background: linear-gradient(45deg, #137fec, #10B981, #F59E0B, #EF4444);
+            padding: 2px;
+            border-radius: 9999px;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display antialiased text-slate-900 dark:text-white overflow-x-hidden pb-20">
+<!-- Top App Bar -->
+<div class="sticky top-0 z-40 bg-background-dark/95 backdrop-blur-md border-b border-white/5">
+<div class="flex items-center p-4 justify-between">
+<h2 class="text-white text-xl font-bold leading-tight tracking-tight flex-1">Yabisso Social</h2>
+<div class="flex items-center gap-4">
+<button class="text-white relative">
+<span class="material-symbols-outlined !text-[26px]">search</span>
+</button>
+<button class="text-white relative">
+<span class="material-symbols-outlined !text-[26px]">chat_bubble</span>
+<span class="absolute -top-1 -right-1 h-2.5 w-2.5 bg-yabisso-red rounded-full border border-background-dark"></span>
+</button>
+</div>
+</div>
+</div>
+<!-- Stories Rail -->
+<div class="w-full overflow-hidden pt-4 pb-2 bg-background-dark">
+<div class="flex w-full overflow-x-auto no-scrollbar px-4 pb-2">
+<div class="flex flex-row items-start justify-start gap-4">
+<!-- Add Story -->
+<div class="flex flex-col items-center justify-center gap-2 w-[72px] text-center shrink-0 relative">
+<div class="relative w-[68px] h-[68px] rounded-full p-[2px] border-2 border-dashed border-white/20">
+<div class="w-full h-full bg-center bg-no-repeat bg-cover rounded-full bg-slate-700" data-alt="User profile picture" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAaw0jPrEcmjaRNN-bGYcsjo0gAqaB9QmIvw8nXhHUTI8FcxMXVuoOv32d75sXZcRW-KQ4pVWP-4TpXvhkYKJtO6BdGtOsAf7S1E4vuVb7qTC8vyhAHaF5_ZbYL4SNWufXrtAEaypVRbxrC0jH7Vj3t4ETXHAkr5CG4ZRcmZYvah7HM_8FGXi_ygS5w5g3pJZcn5ea3NX7Ju_Cey-JJJKpGSBKs4zLZPhVYv3Iph1FQyk5aWDtNjDPGP0lb0vtjCOO4azMYDmiA");'></div>
+<div class="absolute bottom-0 right-0 bg-primary rounded-full p-1 border-2 border-background-dark flex items-center justify-center">
+<span class="material-symbols-outlined text-white !text-[14px] font-bold">add</span>
+</div>
+</div>
+<p class="text-white text-xs font-medium truncate w-full">My Story</p>
+</div>
+<!-- Story 1 -->
+<div class="flex flex-col items-center justify-center gap-2 w-[72px] text-center shrink-0">
+<div class="story-ring w-[68px] h-[68px]">
+<div class="w-full h-full bg-center bg-no-repeat bg-cover rounded-full border-2 border-background-dark" data-alt="Smiling man in orange shirt" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuB-TBRU0_mExufLGR8WbjZwT73D8huo0YWP6SYqPjZAk5FoKCxcY2A8t0Nap7Xp5YH8oIXXqivTyiUp0PMkOlhAEpLNzEn0wSat0_KocNJoRBP8UO_UbVnKynniyFPcQNV2oJHIzC3kn5U1zQP6gZu6OG7M7sASSxX6b31KMbWHX_7sg8nEv5ylgixyLt8yJXS2mOeeIMPBqzlvi8Yqg69YPD1ZAUT0urSSgkC817TvSwR6BG_s0oM6IKgJ-A5Nmf9K9Smd8Uvd");'></div>
+</div>
+<p class="text-white text-xs font-medium truncate w-full">Kofi</p>
+</div>
+<!-- Story 2 -->
+<div class="flex flex-col items-center justify-center gap-2 w-[72px] text-center shrink-0">
+<div class="story-ring w-[68px] h-[68px]">
+<div class="w-full h-full bg-center bg-no-repeat bg-cover rounded-full border-2 border-background-dark" data-alt="Woman with braided hair smiling" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCZtvwVsq92pKVw0nXGx_XhXbbPPsbKmE9-z0m2J9WZN-Q7-x4NnpDNCTcWql6QEdqtk-huBz0JSQ4yHlBVN66Dt7ajEsDc6KiRl1TcDqL_6NXJA7kKwetBmiuyTFoD40GPkBd1Imv0vWcQ_s6TSjUp4ytupfFylDPPvezXmaHhDz1q6H34cCxru3EaSFtY_kxt4CopSle4Saf6hdNyu1qGbocUgyYlvdfuhtCoyvb2aR6EkwlVAG5fPE_gZiWzKySpArm-PMn2");'></div>
+</div>
+<p class="text-white text-xs font-medium truncate w-full">Amara</p>
+</div>
+<!-- Story 3 -->
+<div class="flex flex-col items-center justify-center gap-2 w-[72px] text-center shrink-0">
+<div class="w-[68px] h-[68px] rounded-full p-[2px] border-2 border-white/20">
+<div class="w-full h-full bg-center bg-no-repeat bg-cover rounded-full border-2 border-background-dark" data-alt="Man in suit looking professional" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAGUIGCFh4WwJs-zcZagu4DefthTyTr2-oikHgtM3FLsrK4k4WYUIW3b_2GS2oRMPlrv8eKGDXxfztn8o5q7BQclsPNTf-frOgXE6uVDhPJGectXH72Pixv8LHhenb_HjsDFlTAWVA2T0rc2HB-BNRci5_XU2Qc_g06Yyvqs6hoV4uxd6bXODQCANYc3oorUQLGKnZLoYlYEm8QGzI1ygstqinDLD15aIbmIFIc6Vd2DlsNLK2cbVUZiRf0C9BADopfMkgkEuYf");'></div>
+</div>
+<p class="text-text-secondary text-xs font-medium truncate w-full">Tunde</p>
+</div>
+<!-- Story 4 -->
+<div class="flex flex-col items-center justify-center gap-2 w-[72px] text-center shrink-0">
+<div class="story-ring w-[68px] h-[68px]">
+<div class="w-full h-full bg-center bg-no-repeat bg-cover rounded-full border-2 border-background-dark" data-alt="Young woman with glasses" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDPs-a2lSM_bmNLNs1GkXRzOsSShLYwv_rSzvZ0vFkTZAC35XyDj_29VltZJ1ki-g5kR08ShBo0wAYd1_SBpqR-NbTCcjwfxTR1y2ffn7FwboHugN7JgcDIanSbRlZ43uL81mGHqHonrY1D85VV3D4PtZBH8kQmrPd_od1JQL8Dby0EiiyRwUpolz3ch6BV0z9kOK4jh7mC5Ka3CNlMw4iBGxyPUB6qeLDVis7qzYzApjaA63kBYEemlMf70N-C6fsqRjJZ4E68");'></div>
+</div>
+<p class="text-white text-xs font-medium truncate w-full">Nneka</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Feed Section -->
+<div class="flex flex-col gap-3 px-0 pt-2 pb-6">
+<!-- Post 1: Image -->
+<div class="bg-card-dark @container pb-2 mb-2 border-y border-white/5 md:border-x md:border-none md:rounded-xl md:mx-4">
+<!-- Header -->
+<div class="flex items-center justify-between p-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 bg-center bg-no-repeat bg-cover rounded-full" data-alt="Profile picture of Kofi" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCpQKycPMLIcj6lEgT3yylEk1PYLRLRoGgntAftVcxpaZk_rZCjF9tJVB74QcDXaov6pXlQd0xJc3Hzn42A1xSh9sZDFM8PgyDRwaUsq2dn7Bf4d23hd1L-NEElMtyMOXIXKC3n95_TmtmOznJyFX7p_fI7-3ZxTpsj7scTO5mwqImoclkDwp9xyQN6RBUdjQBm_U_wSO1O_DvULR6bLmrYThfVtAvmsqTQJoZByFXdNIm-IThl8u4qx54KVUdJpCvlTLEejlGP");'></div>
+<div class="flex flex-col">
+<p class="text-white text-sm font-bold leading-tight">Kofi Mensah</p>
+<div class="flex items-center gap-1">
+<p class="text-text-secondary text-xs font-normal">2h ago • Lagos, Nigeria</p>
+<!-- Synced icon -->
+<span class="material-symbols-outlined text-text-secondary !text-[12px]">cloud_done</span>
+</div>
+</div>
+</div>
+<button class="text-text-secondary">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</div>
+<!-- Content Body -->
+<p class="text-white text-[15px] font-normal leading-relaxed px-4 pb-3">
+                Loving the vibes at the tech summit today! The future of African innovation is bright 🌍✨ #AfricanTech #Lagos
+            </p>
+<!-- Media -->
+<div class="w-full bg-center bg-no-repeat aspect-[4/3] bg-cover bg-slate-800" data-alt="Crowd at a tech conference with colorful lights" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAnsmNx5C1-w0Yj3lMlo7-VbFA9OZNzc8vCIqLLNiEWPlqfOQSn40V7O2anTjQdhiVVsOUPd1Fh80S2l0bXDXUxJqhNIq_5GB6gsUsXx0OCuH76RCqW8zwYWx3Z1nuto64008GB7dQ3GGUGAUDYbjA2dXyctAocSS9HrU9BqfKeUCbR0eAsO9ge8eYzPx4BNyZApogpBe7SnsiUhCQ36Q-JA2p3Wz5ZttmMg-YIjNKODC2cU2gW0AhE6WrSmspXkdYVewssDBFD");'></div>
+<!-- Reaction Bar -->
+<div class="flex items-center justify-between px-2 py-3 mt-1">
+<div class="flex items-center gap-1">
+<button class="flex items-center justify-center gap-1.5 px-3 py-1 rounded-full hover:bg-white/5 active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-yabisso-red !text-[24px] material-symbols-outlined-fill" style="font-variation-settings: 'FILL' 1;">favorite</span>
+<span class="text-white text-[13px] font-bold">46</span>
+</button>
+<button class="flex items-center justify-center gap-1.5 px-3 py-1 rounded-full hover:bg-white/5 active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-text-secondary !text-[24px]">chat_bubble</span>
+<span class="text-text-secondary text-[13px] font-bold">12</span>
+</button>
+<button class="flex items-center justify-center gap-1.5 px-3 py-1 rounded-full hover:bg-white/5 active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-text-secondary !text-[24px]">send</span>
+</button>
+</div>
+<button class="flex items-center justify-center px-3 py-1 rounded-full hover:bg-white/5">
+<span class="material-symbols-outlined text-text-secondary !text-[24px]">bookmark</span>
+</button>
+</div>
+<!-- Engagement Text -->
+<div class="px-4 pb-2">
+<p class="text-text-secondary text-sm font-normal">Liked by <span class="text-white font-medium">Amara</span> and <span class="text-white font-medium">45 others</span></p>
+</div>
+</div>
+<!-- Post 2: Text Only -->
+<div class="bg-card-dark @container pb-2 mb-2 border-y border-white/5 md:border-x md:border-none md:rounded-xl md:mx-4">
+<div class="flex items-center justify-between p-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 bg-center bg-no-repeat bg-cover rounded-full" data-alt="Profile picture of Nneka" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBG9ryT5cFc2G88JO3h8DaDLpspRqDhcS0RuM69yGtOBFp34gclVaDEHtiUxKsmXF99QAH4ibPpFCZLZiC7qyZZgX0nlA7vti6FKPUC1IvhxAFMiQ1zGv4L_xfpATknNKRvL5oCQXc3pvR3IVO2D69QnFQUJLSDWe5UAG1csGXIyUDQ8gT2Ih1Tu145H91SBbk-xQxa9d8GBonlI7z_Xejdsu-dEwIIu7Vxx0KiaWrKHAdT24z_gdzc0FlppLMjqkoCOaY5VFU9");'></div>
+<div class="flex flex-col">
+<p class="text-white text-sm font-bold leading-tight">Nneka Abiola</p>
+<div class="flex items-center gap-1">
+<p class="text-text-secondary text-xs font-normal">4h ago</p>
+</div>
+</div>
+</div>
+<button class="text-text-secondary">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</div>
+<div class="px-4 pb-2">
+<div class="p-6 rounded-lg bg-gradient-to-br from-indigo-900/50 to-purple-900/50 border border-white/5">
+<p class="text-white text-lg font-medium leading-normal">
+                        Does anyone know a good React Native developer available for a freelance gig? Need help with an offline-first module. DM me! 💻🚀
+                    </p>
+</div>
+</div>
+<div class="flex items-center justify-between px-2 py-3">
+<div class="flex items-center gap-1">
+<button class="flex items-center justify-center gap-1.5 px-3 py-1 rounded-full hover:bg-white/5">
+<span class="material-symbols-outlined text-text-secondary !text-[24px]">favorite</span>
+<span class="text-text-secondary text-[13px] font-bold">8</span>
+</button>
+<button class="flex items-center justify-center gap-1.5 px-3 py-1 rounded-full hover:bg-white/5">
+<span class="material-symbols-outlined text-text-secondary !text-[24px]">chat_bubble</span>
+<span class="text-text-secondary text-[13px] font-bold">3</span>
+</button>
+<button class="flex items-center justify-center gap-1.5 px-3 py-1 rounded-full hover:bg-white/5">
+<span class="material-symbols-outlined text-text-secondary !text-[24px]">send</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Post 3: Video -->
+<div class="bg-card-dark @container pb-2 mb-2 border-y border-white/5 md:border-x md:border-none md:rounded-xl md:mx-4">
+<div class="flex items-center justify-between p-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 bg-center bg-no-repeat bg-cover rounded-full" data-alt="Profile picture of Tunde" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCrBNcUWoYdPc2Bskk5N-kBh26TY4MWFS3o_cU3o6p57WSxfCTP9IVLiztlxzneIfniZIjXJZ6UbsjBFOV4PqONtEEt9SLTPLovCpRMTTp1TttH5o3QzUwSqn1YIlBfYvocZpzk87_v2BUzukDEgrE3B-cPz5WmlVOkh0G-PYdou-pBIeKBKiPfdXort4u9_Wx0qx9wDMMvdWb_59FlSzddh72pDfMd-2u48WrA2vppIrDrLQZVif3Famtkdye3ECl2qJ8WWW7J");'></div>
+<div class="flex flex-col">
+<p class="text-white text-sm font-bold leading-tight">Tunde Onakoya</p>
+<div class="flex items-center gap-1">
+<p class="text-text-secondary text-xs font-normal">5h ago • Lekki Phase 1</p>
+</div>
+</div>
+</div>
+<button class="text-text-secondary">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</div>
+<p class="text-white text-[15px] font-normal leading-relaxed px-4 pb-3">
+                Chess is not just a game, it's a way of life. Teaching the next generation. ♟️
+            </p>
+<div class="relative w-full aspect-video bg-black group cursor-pointer overflow-hidden">
+<div class="absolute inset-0 w-full h-full bg-center bg-cover opacity-80" data-alt="Blurry chess board background" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBfF9PHKxOR2tAZuwd5F8NShIxRAeLJg0ZqeFL7xXTcWmK2W_PAHRgk6GBKJRlauzcsAoFWlLCMfYLJcr4TpTernxsjcpMjLH85xi9jPK21UdnQBE5SpsuMKHnenJUadVvy3M7RGxGJpyyyA17ZFVuUToBuPet0y9jHlEKby50mfupzZ1KQ2lpPCnrYXzySz3URSC2_q9fh2-XoRDfK0cvHlyPrXTkb3MK_A7eQmaUKpViMM_yY0ga_sz8QCtslioArZbN7eQ07");'></div>
+<div class="absolute inset-0 flex items-center justify-center">
+<div class="w-14 h-14 bg-black/40 backdrop-blur-sm rounded-full flex items-center justify-center border border-white/20 shadow-lg">
+<span class="material-symbols-outlined text-white !text-[32px] ml-1">play_arrow</span>
+</div>
+</div>
+<div class="absolute bottom-3 right-3 bg-black/60 px-2 py-1 rounded text-white text-xs font-bold">0:45</div>
+</div>
+<div class="flex items-center justify-between px-2 py-3 mt-1">
+<div class="flex items-center gap-1">
+<button class="flex items-center justify-center gap-1.5 px-3 py-1 rounded-full hover:bg-white/5">
+<span class="material-symbols-outlined text-text-secondary !text-[24px]">favorite</span>
+<span class="text-text-secondary text-[13px] font-bold">245</span>
+</button>
+<button class="flex items-center justify-center gap-1.5 px-3 py-1 rounded-full hover:bg-white/5">
+<span class="material-symbols-outlined text-text-secondary !text-[24px]">chat_bubble</span>
+<span class="text-text-secondary text-[13px] font-bold">89</span>
+</button>
+<button class="flex items-center justify-center gap-1.5 px-3 py-1 rounded-full hover:bg-white/5">
+<span class="material-symbols-outlined text-text-secondary !text-[24px]">send</span>
+</button>
+</div>
+<button class="flex items-center justify-center px-3 py-1 rounded-full hover:bg-white/5">
+<span class="material-symbols-outlined text-text-secondary !text-[24px]">bookmark</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Bottom Navigation Bar -->
+<div class="fixed bottom-0 left-0 right-0 bg-background-dark border-t border-white/5 z-50 px-2 pb-5 pt-2 lg:pb-2">
+<div class="flex items-center justify-around w-full max-w-lg mx-auto">
+<button class="flex flex-col items-center justify-center gap-1 p-2 w-14 group">
+<span class="material-symbols-outlined text-text-secondary group-hover:text-white transition-colors">home</span>
+<span class="text-[10px] font-medium text-text-secondary group-hover:text-white">Home</span>
+</button>
+<button class="flex flex-col items-center justify-center gap-1 p-2 w-14 group">
+<span class="material-symbols-outlined text-text-secondary group-hover:text-white transition-colors">account_balance_wallet</span>
+<span class="text-[10px] font-medium text-text-secondary group-hover:text-white">Wallet</span>
+</button>
+<!-- Active State Feed Button -->
+<button class="flex flex-col items-center justify-center gap-1 p-2 w-14 relative">
+<div class="absolute -top-3 left-1/2 transform -translate-x-1/2 w-12 h-1 bg-primary rounded-b-full shadow-[0_0_10px_rgba(19,127,236,0.6)]"></div>
+<span class="material-symbols-outlined text-primary !text-[28px] material-symbols-outlined-fill" style="font-variation-settings: 'FILL' 1;">dynamic_feed</span>
+<span class="text-[10px] font-bold text-primary">Feed</span>
+</button>
+<button class="flex flex-col items-center justify-center gap-1 p-2 w-14 group">
+<span class="material-symbols-outlined text-text-secondary group-hover:text-white transition-colors">grid_view</span>
+<span class="text-[10px] font-medium text-text-secondary group-hover:text-white">Apps</span>
+</button>
+<button class="flex flex-col items-center justify-center gap-1 p-2 w-14 group">
+<div class="w-6 h-6 rounded-full bg-cover bg-center border border-text-secondary group-hover:border-white" data-alt="Small user avatar for navigation" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCOeTjI2DTq-HFa4Wqfth1O3CxrPvPSk_d7GTTovBMiWYk1-hvYZJbaGfxRC2aiopR7H-_4dMLWoQwh-iCJv_XfpOsUdDacXb3G-Tbkol4p7hjh-MDOpHBhdyqU7nd26bb5A7Je2p1_yHIABGOtXKh599p1RZrA9v9j_LMbnVIyWMYcm1wZ7UWiNEjfJca9HsF8Y0gEBkw-bEXLsDGzmo_OnO84txla5ZG8ibb45EdGd8CoaUuIeDhlGQbN8a6KvP1Teot5PDwl");'></div>
+<span class="text-[10px] font-medium text-text-secondary group-hover:text-white">Profile</span>
+</button>
+</div>
+</div>
+<!-- Floating Action Button for New Post -->
+<button class="fixed bottom-24 right-4 z-40 bg-primary text-white w-14 h-14 rounded-full shadow-[0_4px_20px_rgba(19,127,236,0.4)] flex items-center justify-center hover:scale-105 active:scale-95 transition-all">
+<span class="material-symbols-outlined !text-[28px]">edit</span>
+</button>
+</body></html>

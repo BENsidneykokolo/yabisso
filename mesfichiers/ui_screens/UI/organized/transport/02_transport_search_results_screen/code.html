@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Yabisso - Transport Search Results</title>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Config -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                        "surface-dark": "#1e2936",
+                        "accent-green": "#00C853",
+                        "accent-yellow": "#FFD600",
+                        "accent-red": "#D50000",
+                    },
+                    fontFamily: {
+                        "display": ["Plus Jakarta Sans", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom Scrollbar for horizontal scrolling areas */
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined.filled {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white font-display antialiased selection:bg-primary selection:text-white overflow-hidden">
+<div class="relative flex h-screen w-full flex-col max-w-md mx-auto bg-background-light dark:bg-background-dark shadow-2xl overflow-hidden border-x border-[#233648]">
+<!-- Header Section -->
+<div class="shrink-0 z-20 bg-background-dark shadow-md">
+<!-- Top App Bar -->
+<div class="flex items-center p-4 pb-1 justify-between gap-4">
+<button class="text-white flex size-10 shrink-0 items-center justify-center rounded-full active:bg-white/10 transition-colors">
+<span class="material-symbols-outlined text-2xl">arrow_back</span>
+</button>
+<div class="flex flex-col items-center flex-1 min-w-0">
+<h2 class="text-white text-base font-bold leading-tight tracking-tight truncate w-full text-center">Lagos (LOS) ➝ Accra (ACC)</h2>
+<p class="text-[#92adc9] text-xs font-medium pt-0.5">Sat, 14 Oct • 1 Adult</p>
+</div>
+<button class="text-white flex size-10 shrink-0 items-center justify-center rounded-full active:bg-white/10 transition-colors">
+<span class="material-symbols-outlined text-2xl">edit</span>
+</button>
+</div>
+<!-- Tabs (Transport Mode) -->
+<div class="pt-2">
+<div class="flex border-b border-[#324d67] px-4 justify-between">
+<button class="group flex flex-col items-center justify-center border-b-[3px] border-primary text-white pb-3 pt-2 flex-1 relative">
+<span class="material-symbols-outlined text-2xl mb-1 text-primary">flight</span>
+<p class="text-white text-xs font-bold tracking-wide">Flight</p>
+</button>
+<button class="group flex flex-col items-center justify-center border-b-[3px] border-transparent text-[#92adc9] pb-3 pt-2 flex-1 hover:text-white transition-colors">
+<span class="material-symbols-outlined text-2xl mb-1 group-hover:text-white transition-colors">directions_bus</span>
+<p class="text-[#92adc9] text-xs font-bold tracking-wide group-hover:text-white transition-colors">Bus</p>
+</button>
+<button class="group flex flex-col items-center justify-center border-b-[3px] border-transparent text-[#92adc9] pb-3 pt-2 flex-1 hover:text-white transition-colors">
+<span class="material-symbols-outlined text-2xl mb-1 group-hover:text-white transition-colors">train</span>
+<p class="text-[#92adc9] text-xs font-bold tracking-wide group-hover:text-white transition-colors">Train</p>
+</button>
+</div>
+</div>
+<!-- Offline Indicator (Conditional) -->
+<div class="bg-amber-500/10 border-b border-amber-500/20 px-4 py-2 flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-amber-500 text-sm">wifi_off</span>
+<p class="text-amber-500 text-xs font-medium">Offline mode. Showing cached results.</p>
+</div>
+<!-- Filter Chips -->
+<div class="flex gap-2 p-3 overflow-x-auto hide-scrollbar items-center">
+<button class="flex h-8 shrink-0 items-center justify-center gap-x-1 rounded-full bg-surface-dark border border-[#324d67] pl-3 pr-2 active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-white text-lg">tune</span>
+</button>
+<button class="flex h-8 shrink-0 items-center justify-center gap-x-2 rounded-full bg-primary pl-4 pr-3 active:scale-95 transition-transform shadow-lg shadow-primary/20">
+<p class="text-white text-xs font-bold">Cheapest</p>
+<span class="material-symbols-outlined text-white text-base">close</span>
+</button>
+<button class="flex h-8 shrink-0 items-center justify-center gap-x-2 rounded-full bg-surface-dark border border-[#324d67] pl-4 pr-3 active:scale-95 transition-transform">
+<p class="text-white text-xs font-medium">Direct</p>
+</button>
+<button class="flex h-8 shrink-0 items-center justify-center gap-x-2 rounded-full bg-surface-dark border border-[#324d67] pl-4 pr-3 active:scale-95 transition-transform">
+<p class="text-white text-xs font-medium">Airlines</p>
+<span class="material-symbols-outlined text-white text-base">expand_more</span>
+</button>
+<button class="flex h-8 shrink-0 items-center justify-center gap-x-2 rounded-full bg-surface-dark border border-[#324d67] pl-4 pr-3 active:scale-95 transition-transform">
+<p class="text-white text-xs font-medium">Time</p>
+<span class="material-symbols-outlined text-white text-base">expand_more</span>
+</button>
+</div>
+</div>
+<!-- Scrollable Results Area -->
+<div class="flex-1 overflow-y-auto p-4 pb-24 space-y-4 hide-scrollbar">
+<!-- Result Card 1: Best Value -->
+<div class="group relative flex flex-col gap-3 rounded-xl bg-surface-dark p-4 shadow-lg border border-[#324d67]/50 active:border-primary/50 transition-colors">
+<!-- Accent Line -->
+<div class="absolute left-0 top-3 bottom-3 w-1 bg-accent-green rounded-r-full"></div>
+<!-- Card Header -->
+<div class="flex justify-between items-center pl-3">
+<div class="flex items-center gap-3">
+<div class="size-8 rounded-full bg-white flex items-center justify-center overflow-hidden p-1">
+<img alt="Air Peace airline logo" class="w-full h-full object-contain" data-alt="Air Peace logo icon" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC_ybBIsbYwS7VhIKfebn-MNmovgmnwiuIlVgafQ6RMifRCxhWHGESrCbnGtU4MfcplQowhcSTmcTXimGGm_V5LJdhvjmjk2XDboATgj8sPEY-SkXOZavIAj7VA3bxk2s41wfElVCVD5U1krgXCowcMOVlt_bIUxoKKTpnc6hLClo7NfLJSQfjIogjawoGs6UUcBLe_grbYBk4X_GUPqgF0CmWBF-lFhS3tsGHYqejGcGb9Ps_o_3iShGjdsVMgv7ntTUOQzTkH"/>
+</div>
+<div>
+<p class="text-white text-sm font-bold">Air Peace</p>
+<p class="text-[#92adc9] text-[10px] uppercase tracking-wider">Economy</p>
+</div>
+</div>
+<div class="text-right">
+<p class="text-white text-lg font-bold">₦85,000</p>
+</div>
+</div>
+<!-- Flight Route Viz -->
+<div class="flex items-center justify-between pl-3 my-1">
+<div class="flex flex-col">
+<p class="text-white text-base font-bold">10:00</p>
+<p class="text-[#92adc9] text-xs">LOS</p>
+</div>
+<div class="flex flex-1 flex-col items-center px-4">
+<p class="text-[#92adc9] text-[10px] mb-1">1h 05m</p>
+<div class="w-full flex items-center gap-1">
+<div class="h-[2px] flex-1 bg-[#324d67]"></div>
+<span class="material-symbols-outlined text-[#92adc9] text-base rotate-90">flight</span>
+<div class="h-[2px] flex-1 bg-[#324d67]"></div>
+</div>
+<p class="text-accent-green text-[10px] mt-1 font-medium">Direct</p>
+</div>
+<div class="flex flex-col items-end">
+<p class="text-white text-base font-bold">11:05</p>
+<p class="text-[#92adc9] text-xs">ACC</p>
+</div>
+</div>
+<!-- Footer / CTA -->
+<div class="flex justify-between items-center border-t border-[#324d67] pt-3 pl-3 mt-1">
+<span class="inline-flex items-center rounded-md bg-accent-green/10 px-2 py-1 text-xs font-medium text-accent-green ring-1 ring-inset ring-accent-green/20">Best Value</span>
+<button class="bg-primary hover:bg-blue-600 text-white text-sm font-bold py-2 px-6 rounded-lg transition-colors">
+                        Select
+                     </button>
+</div>
+</div>
+<!-- Result Card 2: Fastest -->
+<div class="group relative flex flex-col gap-3 rounded-xl bg-surface-dark p-4 shadow-lg border border-[#324d67]/50 active:border-primary/50 transition-colors">
+<!-- Accent Line -->
+<div class="absolute left-0 top-3 bottom-3 w-1 bg-accent-yellow rounded-r-full"></div>
+<div class="flex justify-between items-center pl-3">
+<div class="flex items-center gap-3">
+<div class="size-8 rounded-full bg-white flex items-center justify-center overflow-hidden p-1">
+<img alt="Delta Airlines logo" class="w-full h-full object-contain" data-alt="Delta logo icon" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCeI4DB8z0I_Ilx395K5jA-DO64aUfvDqQpEtLXlYBlNFARR3xYLE1suoSfXli_0T4xPJnFYmlOCx7gvJS82WsXTnAyECkM1SUxXzA9I-ZfVI54Z7G_16-f2eP4VrXFxPYlXH8xDWmP_kY1eoS9gHO5gDwUwxpqO2uwErWO-Pi1kzqwRG3GXZdo-opF9aSmKdGv8KTzQGAP50Y4Hk2bREeOqHWuK68qKtaeMg0fIRYDuSiwu0j5VqV1Lr4VZQgrc9Y1XdH9adgS"/>
+</div>
+<div>
+<p class="text-white text-sm font-bold">Delta</p>
+<p class="text-[#92adc9] text-[10px] uppercase tracking-wider">Business</p>
+</div>
+</div>
+<div class="text-right">
+<p class="text-white text-lg font-bold">₦120,500</p>
+</div>
+</div>
+<div class="flex items-center justify-between pl-3 my-1">
+<div class="flex flex-col">
+<p class="text-white text-base font-bold">14:30</p>
+<p class="text-[#92adc9] text-xs">LOS</p>
+</div>
+<div class="flex flex-1 flex-col items-center px-4">
+<p class="text-[#92adc9] text-[10px] mb-1">0h 55m</p>
+<div class="w-full flex items-center gap-1">
+<div class="h-[2px] flex-1 bg-[#324d67]"></div>
+<span class="material-symbols-outlined text-[#92adc9] text-base rotate-90">flight</span>
+<div class="h-[2px] flex-1 bg-[#324d67]"></div>
+</div>
+<p class="text-accent-yellow text-[10px] mt-1 font-medium">Fastest</p>
+</div>
+<div class="flex flex-col items-end">
+<p class="text-white text-base font-bold">15:25</p>
+<p class="text-[#92adc9] text-xs">ACC</p>
+</div>
+</div>
+<div class="flex justify-between items-center border-t border-[#324d67] pt-3 pl-3 mt-1">
+<span class="inline-flex items-center rounded-md bg-accent-yellow/10 px-2 py-1 text-xs font-medium text-accent-yellow ring-1 ring-inset ring-accent-yellow/20">Priority Boarding</span>
+<button class="bg-surface-dark border border-primary text-primary hover:bg-primary hover:text-white text-sm font-bold py-2 px-6 rounded-lg transition-colors">
+                        Select
+                     </button>
+</div>
+</div>
+<!-- Result Card 3: Urgency -->
+<div class="group relative flex flex-col gap-3 rounded-xl bg-surface-dark p-4 shadow-lg border border-[#324d67]/50 active:border-primary/50 transition-colors opacity-90">
+<!-- Accent Line -->
+<div class="absolute left-0 top-3 bottom-3 w-1 bg-accent-red rounded-r-full"></div>
+<div class="flex justify-between items-center pl-3">
+<div class="flex items-center gap-3">
+<div class="size-8 rounded-full bg-white flex items-center justify-center overflow-hidden p-1">
+<img alt="Africa World Airlines logo" class="w-full h-full object-contain" data-alt="Africa World Airlines logo icon" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBKWIelhTMIxXo2GS0e_sP1FXttOtzIwkHyAubKWhiMtSmOSZqrnNO10yGK64ejJugKH5Xn1eewnJnKu8t1C-aCtTH68tEQXHeqWBNMfkiO7efGCgNIqlThk_HhwW8hp12G9lZv4QPVYNBNzWyJarhqDWz2iyujiG-ujBfZfHO8t8AtmLYgCdJ-jvj0aXs2aCgdJjqVHBfhhWksESgl8KJHS_FmJfMjXf61HVhgwEEklyYzaU5JstdhCvIdjPKyQnoPVEvYnsoj"/>
+</div>
+<div>
+<p class="text-white text-sm font-bold">AWA</p>
+<p class="text-[#92adc9] text-[10px] uppercase tracking-wider">Economy</p>
+</div>
+</div>
+<div class="text-right">
+<p class="text-white text-lg font-bold">₦92,000</p>
+</div>
+</div>
+<div class="flex items-center justify-between pl-3 my-1">
+<div class="flex flex-col">
+<p class="text-white text-base font-bold">08:15</p>
+<p class="text-[#92adc9] text-xs">LOS</p>
+</div>
+<div class="flex flex-1 flex-col items-center px-4">
+<p class="text-[#92adc9] text-[10px] mb-1">3h 20m</p>
+<div class="w-full flex items-center gap-1">
+<div class="h-[2px] flex-1 bg-[#324d67]"></div>
+<div class="h-2 w-2 rounded-full border border-[#324d67] bg-background-dark"></div>
+<div class="h-[2px] flex-1 bg-[#324d67]"></div>
+</div>
+<p class="text-[#92adc9] text-[10px] mt-1 font-medium">1 Stop (LFW)</p>
+</div>
+<div class="flex flex-col items-end">
+<p class="text-white text-base font-bold">11:35</p>
+<p class="text-[#92adc9] text-xs">ACC</p>
+</div>
+</div>
+<div class="flex justify-between items-center border-t border-[#324d67] pt-3 pl-3 mt-1">
+<span class="inline-flex items-center rounded-md bg-accent-red/10 px-2 py-1 text-xs font-medium text-accent-red ring-1 ring-inset ring-accent-red/20">Only 2 seats left</span>
+<button class="bg-surface-dark border border-primary text-primary hover:bg-primary hover:text-white text-sm font-bold py-2 px-6 rounded-lg transition-colors">
+                        Select
+                     </button>
+</div>
+</div>
+<!-- Result Card 4: Bus Option (Cross-sell) -->
+<div class="group relative flex flex-col gap-3 rounded-xl bg-surface-dark/60 p-4 shadow-lg border border-dashed border-[#324d67] transition-colors">
+<div class="flex justify-between items-center">
+<div class="flex items-center gap-3">
+<div class="size-8 rounded-full bg-[#324d67] flex items-center justify-center">
+<span class="material-symbols-outlined text-white text-lg">directions_bus</span>
+</div>
+<div>
+<p class="text-white text-sm font-bold">ABC Transport</p>
+<p class="text-[#92adc9] text-[10px] uppercase tracking-wider">Luxury Bus</p>
+</div>
+</div>
+<div class="text-right">
+<p class="text-white text-lg font-bold">₦45,000</p>
+</div>
+</div>
+<div class="flex items-center justify-between my-1">
+<div class="flex flex-col">
+<p class="text-white text-base font-bold">06:00</p>
+<p class="text-[#92adc9] text-xs">Jibowu</p>
+</div>
+<div class="flex flex-1 flex-col items-center px-4">
+<p class="text-[#92adc9] text-[10px] mb-1">9h 30m</p>
+<div class="w-full flex items-center gap-1">
+<div class="h-[2px] flex-1 bg-[#324d67]"></div>
+</div>
+</div>
+<div class="flex flex-col items-end">
+<p class="text-white text-base font-bold">15:30</p>
+<p class="text-[#92adc9] text-xs">Circle</p>
+</div>
+</div>
+<div class="flex justify-center mt-2">
+<button class="text-primary text-xs font-bold underline">View Bus Options</button>
+</div>
+</div>
+<!-- Spacer for bottom nav -->
+<div class="h-8"></div>
+</div>
+<!-- Bottom Navigation -->
+<div class="absolute bottom-0 w-full bg-background-dark/95 backdrop-blur-md border-t border-[#233648] pb-5 pt-2 px-4 z-30">
+<div class="flex justify-between items-end">
+<button class="flex flex-col items-center gap-1 flex-1 text-[#92adc9] hover:text-white group">
+<span class="material-symbols-outlined text-2xl group-hover:scale-110 transition-transform">home</span>
+<span class="text-[10px] font-medium">Home</span>
+</button>
+<button class="flex flex-col items-center gap-1 flex-1 text-primary group">
+<span class="material-symbols-outlined filled text-2xl group-hover:scale-110 transition-transform">airplane_ticket</span>
+<span class="text-[10px] font-medium">Bookings</span>
+</button>
+<div class="relative -top-6 flex flex-col items-center justify-center flex-1">
+<div class="size-14 rounded-full bg-primary flex items-center justify-center shadow-[0_0_15px_rgba(19,127,236,0.4)] border-4 border-background-dark">
+<span class="material-symbols-outlined text-white text-3xl">qr_code_scanner</span>
+</div>
+</div>
+<button class="flex flex-col items-center gap-1 flex-1 text-[#92adc9] hover:text-white group">
+<span class="material-symbols-outlined text-2xl group-hover:scale-110 transition-transform">account_balance_wallet</span>
+<span class="text-[10px] font-medium">Wallet</span>
+</button>
+<button class="flex flex-col items-center gap-1 flex-1 text-[#92adc9] hover:text-white group">
+<span class="material-symbols-outlined text-2xl group-hover:scale-110 transition-transform">person</span>
+<span class="text-[10px] font-medium">Profile</span>
+</button>
+</div>
+</div>
+</div>
+</body></html>

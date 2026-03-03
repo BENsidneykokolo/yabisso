@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+
+<html lang="fr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Yabisso Push Notification - iOS Mobile</title>
+<!-- Tailwind CSS v3 CDN -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- BEGIN: Custom Typography and Layout Styles -->
+<style data-purpose="font-settings">
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+    
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: #000; /* Deep black for OLED dark mode feel */
+    }
+
+    /* Simulating the iOS glassmorphism effect */
+    .glass-effect {
+      background: rgba(30, 30, 30, 0.7);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+  </style>
+<!-- END: Custom Typography and Layout Styles -->
+</head>
+<body class="flex items-center justify-center min-h-screen p-4 overflow-hidden">
+<!-- BEGIN: Mobile Screen Container -->
+<main class="relative w-full max-w-[375px] h-[812px] bg-black rounded-[60px] border-[8px] border-zinc-800 shadow-2xl overflow-hidden flex flex-col items-center" data-purpose="mobile-mockup-container">
+<!-- Background Gradient for African Tech Vibe -->
+<div class="absolute inset-0 bg-gradient-to-tr from-orange-900/20 via-black to-zinc-900 z-0"></div>
+<!-- BEGIN: iOS Status Bar -->
+<header class="w-full flex justify-between px-10 pt-12 pb-4 z-10 text-white/90" data-purpose="status-bar">
+<span class="text-sm font-semibold">9:41</span>
+<div class="flex gap-1.5 items-center">
+<svg class="w-4 h-4" fill="currentColor" viewbox="0 0 24 24"><path d="M12 21.5c-4.4 0-8-3.6-8-8s3.6-8 8-8 8 3.6 8 8-3.6 8-8 8zm0-14c-3.3 0-6 2.7-6 6s2.7 6 6 6 6-2.7 6-6-2.7-6-6-6z"></path></svg>
+<svg class="w-4 h-4" fill="currentColor" viewbox="0 0 24 24"><path d="M15.67 4H14V2h-4v2H8.33C7.6 4 7 4.6 7 5.33v15.33C7 21.4 7.6 22 8.33 22h7.33c.74 0 1.34-.6 1.34-1.33V5.33C17 4.6 16.4 4 15.67 4z"></path></svg>
+</div>
+</header>
+<!-- END: iOS Status Bar -->
+<!-- BEGIN: Clock Section -->
+<section class="mt-12 text-center z-10" data-purpose="lock-screen-clock">
+<h1 class="text-white text-7xl font-medium tracking-tight">09:41</h1>
+<p class="text-white/80 text-lg mt-2 font-medium">Lundi 24 Mai</p>
+</section>
+<!-- END: Clock Section -->
+<!-- BEGIN: Push Notification Area -->
+<section class="w-full px-4 mt-16 z-20" data-purpose="notification-center">
+<!-- Notification Card -->
+<article class="glass-effect rounded-[28px] p-4 flex flex-col gap-2 shadow-lg animate-bounce-short">
+<!-- Header: App Icon and Title -->
+<div class="flex items-center justify-between mb-1">
+<div class="flex items-center gap-2">
+<!-- App Icon Placeholder -->
+<div class="w-7 h-7 bg-orange-500 rounded-lg flex items-center justify-center overflow-hidden shadow-inner">
+<span class="text-white font-bold text-xs">Y</span>
+</div>
+<span class="text-white/60 text-xs font-semibold uppercase tracking-wider">YABISSO</span>
+</div>
+<span class="text-white/40 text-[10px]">maintenant</span>
+</div>
+<!-- Content: Message Body -->
+<div class="flex flex-col">
+<h2 class="text-white font-semibold text-[15px]">Commande Livrée - Bon appétit !</h2>
+<p class="text-white/90 text-[14px] leading-snug">Votre commande a été livrée avec succès.</p>
+</div>
+</article>
+</section>
+<!-- END: Push Notification Area -->
+<!-- BEGIN: Home Indicator -->
+<footer class="absolute bottom-2 w-full flex justify-center pb-2" data-purpose="bottom-navigation">
+<div class="w-32 h-1.5 bg-white/40 rounded-full"></div>
+</footer>
+<!-- END: Home Indicator -->
+</main>
+<!-- END: Mobile Screen Container -->
+</body></html>

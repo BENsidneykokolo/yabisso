@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Yabisso - Real Estate</title>
+<!-- Fonts and Icons -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                        "yabisso-red": "#ef4444",
+                        "yabisso-yellow": "#fbbf24",
+                        "yabisso-green": "#22c55e",
+                        "surface-dark": "#1c2936",
+                    },
+                    fontFamily: {
+                        "display": ["Plus Jakarta Sans", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "2xl": "1rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        /* Hide scrollbar for clean UI */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white font-display overflow-x-hidden antialiased selection:bg-primary selection:text-white">
+<div class="relative flex h-full min-h-screen w-full flex-col pb-24">
+<!-- Top App Bar -->
+<header class="sticky top-0 z-40 flex items-center justify-between bg-background-light/90 dark:bg-background-dark/90 backdrop-blur-md px-4 py-4 transition-all duration-300">
+<button class="group flex size-10 items-center justify-center rounded-full bg-white/5 dark:bg-surface-dark/50 text-slate-900 dark:text-white hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors border border-transparent dark:border-white/5">
+<span class="material-symbols-outlined text-xl group-hover:-translate-x-0.5 transition-transform">arrow_back_ios_new</span>
+</button>
+<h1 class="text-lg font-bold tracking-tight text-slate-900 dark:text-white">Real Estate</h1>
+<div class="size-10"></div> <!-- Spacer for optical centering -->
+</header>
+<!-- Main Content Area -->
+<main class="flex-1 flex flex-col px-4 gap-6 animate-fade-in">
+<!-- Search Bar -->
+<div class="w-full relative z-30">
+<label class="relative flex w-full items-center group">
+<span class="absolute left-4 text-slate-400 dark:text-slate-400 group-focus-within:text-primary transition-colors">
+<span class="material-symbols-outlined">location_on</span>
+</span>
+<input class="h-14 w-full rounded-2xl border-none bg-white dark:bg-surface-dark py-3 pl-12 pr-4 text-base font-medium text-slate-900 dark:text-white placeholder:text-slate-400 focus:ring-2 focus:ring-primary/50 shadow-sm dark:shadow-none transition-all" placeholder="City, neighborhood, or street..." type="text"/>
+</label>
+</div>
+<!-- Split-Choice Hero Cards -->
+<div class="flex flex-col gap-5 flex-1 pb-4">
+<!-- Buy Card -->
+<div class="group relative flex min-h-[300px] flex-1 flex-col justify-end overflow-hidden rounded-2xl bg-surface-dark shadow-xl ring-1 ring-white/10">
+<!-- Background Image -->
+<div class="absolute inset-0 z-0 h-full w-full bg-cover bg-center transition-transform duration-700 ease-out group-hover:scale-105" data-alt="Modern geometric house exterior with large glass windows at dusk" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAxxDWkKSPrKAmePqxMbOl-HNP_E_Sp947Zj9ZLly5GoM5TBjdeDVCsEDiMjK06l82GL_tElM-w2jdW-865qhzfR6tLjHf8LYDEEPjWTgc6--A_7KQ7YXR20QmKcigdnpQX5xFBkoeFQ7Q_FiNXtBDT-bGuwWnxMfkyv9yXNV0o1olGWDkmJJXKEYhOcmXfEH1ioohrHOoF6H37GEhV0eqcJvngyNPUytBKFTFE3EfmAwCFaaz816ZRgsogYmrpbF_TKidd3Zx9');">
+</div>
+<!-- Gradient Overlay -->
+<div class="absolute inset-0 z-10 bg-gradient-to-t from-background-dark via-background-dark/60 to-transparent"></div>
+<!-- African Tech Accent: Top Border & Glow -->
+<div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-yabisso-green to-primary z-20 shadow-[0_0_15px_rgba(34,197,94,0.4)]"></div>
+<!-- Content -->
+<div class="relative z-20 flex flex-col items-start gap-4 p-6">
+<div class="flex flex-col gap-2">
+<span class="inline-flex items-center rounded-lg bg-yabisso-green/20 px-2.5 py-1 text-xs font-bold uppercase tracking-wider text-yabisso-green ring-1 ring-inset ring-yabisso-green/30 backdrop-blur-md">
+                            Buy
+                        </span>
+<div>
+<h2 class="text-3xl font-extrabold leading-tight text-white tracking-tight">Buy a Home</h2>
+<p class="mt-1 text-base font-medium text-slate-300">Invest in your future with premium properties.</p>
+</div>
+</div>
+<button class="mt-2 flex w-full items-center justify-center gap-2 rounded-xl bg-white px-6 py-3.5 text-sm font-bold text-slate-900 shadow-lg transition-all active:scale-95 hover:bg-slate-50 hover:shadow-xl">
+<span>Explore Buying</span>
+<span class="material-symbols-outlined text-xl">arrow_forward</span>
+</button>
+</div>
+</div>
+<!-- Rent Card -->
+<div class="group relative flex min-h-[300px] flex-1 flex-col justify-end overflow-hidden rounded-2xl bg-surface-dark shadow-xl ring-1 ring-white/10">
+<!-- Background Image -->
+<div class="absolute inset-0 z-0 h-full w-full bg-cover bg-center transition-transform duration-700 ease-out group-hover:scale-105" data-alt="Cozy and stylish apartment interior living room with soft lighting" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCj54yRvycxcLck7i2XlFThnatzMy67juvx84CwXQhrwPGT7UwuP1ILOsTXJ4erjDkuz5BU_n2UBWNwDvxB_dsFVojD5Qob_2PHWbTAEjGfDa0cH7YzJkuQswBJRzXMDeEeQCQuHIhyo_mmxhEucM8cGZz-zutoMtcrG5fHzu6DfHMiS1tP552cF9PyEqF3iNyNn0pjI_RnS0f57Kq-P_d3I7kvoReYza1L9zUofBzL6hbTMQnPkPKZs8SCh7pSBijM9yZESiOv');">
+</div>
+<!-- Gradient Overlay -->
+<div class="absolute inset-0 z-10 bg-gradient-to-t from-background-dark via-background-dark/60 to-transparent"></div>
+<!-- African Tech Accent: Top Border & Glow -->
+<div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-yabisso-yellow to-yabisso-red z-20 shadow-[0_0_15px_rgba(251,191,36,0.4)]"></div>
+<!-- Content -->
+<div class="relative z-20 flex flex-col items-start gap-4 p-6">
+<div class="flex flex-col gap-2">
+<span class="inline-flex items-center rounded-lg bg-yabisso-yellow/20 px-2.5 py-1 text-xs font-bold uppercase tracking-wider text-yabisso-yellow ring-1 ring-inset ring-yabisso-yellow/30 backdrop-blur-md">
+                            Rent
+                        </span>
+<div>
+<h2 class="text-3xl font-extrabold leading-tight text-white tracking-tight">Rent a Place</h2>
+<p class="mt-1 text-base font-medium text-slate-300">Find flexibility and comfort in your next home.</p>
+</div>
+</div>
+<button class="mt-2 flex w-full items-center justify-center gap-2 rounded-xl bg-white px-6 py-3.5 text-sm font-bold text-slate-900 shadow-lg transition-all active:scale-95 hover:bg-slate-50 hover:shadow-xl">
+<span>Explore Rentals</span>
+<span class="material-symbols-outlined text-xl">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+</main>
+<!-- Bottom Navigation -->
+<nav class="fixed bottom-0 left-0 right-0 z-50 border-t border-slate-200 bg-white/90 dark:bg-[#151f2b]/95 backdrop-blur-lg dark:border-white/5 pb-safe pt-2 transition-transform">
+<div class="flex items-end justify-around px-2 pb-5 pt-2">
+<a class="group flex flex-1 flex-col items-center gap-1.5 p-1 text-slate-400 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined text-2xl group-hover:scale-110 transition-transform">home</span>
+<span class="text-[10px] font-semibold tracking-wide">Home</span>
+</a>
+<a class="group flex flex-1 flex-col items-center gap-1.5 p-1 text-slate-400 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined text-2xl group-hover:scale-110 transition-transform">account_balance_wallet</span>
+<span class="text-[10px] font-semibold tracking-wide">Wallet</span>
+</a>
+<a class="group flex flex-1 flex-col items-center gap-1.5 p-1 text-slate-400 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined text-2xl group-hover:scale-110 transition-transform">restaurant</span>
+<span class="text-[10px] font-semibold tracking-wide">Food</span>
+</a>
+<a class="group flex flex-1 flex-col items-center gap-1.5 p-1 text-primary" href="#">
+<div class="relative rounded-full bg-primary/10 dark:bg-primary/20 px-5 py-1 transition-colors">
+<span class="material-symbols-outlined text-2xl fill-1">apartment</span>
+<span class="absolute -top-1 -right-1 flex h-2.5 w-2.5">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-primary"></span>
+</span>
+</div>
+<span class="text-[10px] font-bold tracking-wide">Real Estate</span>
+</a>
+<a class="group flex flex-1 flex-col items-center gap-1.5 p-1 text-slate-400 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined text-2xl group-hover:scale-110 transition-transform">person</span>
+<span class="text-[10px] font-semibold tracking-wide">Profile</span>
+</a>
+</div>
+</nav>
+</div>
+</body></html>

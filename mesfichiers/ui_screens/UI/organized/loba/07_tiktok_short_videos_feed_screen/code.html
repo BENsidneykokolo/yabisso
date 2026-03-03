@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Yabisso Short Videos</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                    },
+                    fontFamily: {
+                        "display": ["Plus Jakarta Sans", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                    animation: {
+                        'spin-slow': 'spin 8s linear infinite',
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        .text-shadow {
+            text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-dark font-display text-white overflow-hidden">
+<div class="relative h-screen w-full flex flex-col bg-background-dark group/design-root overflow-hidden">
+<!-- Video Background Layer -->
+<div class="absolute inset-0 z-0 bg-gray-900">
+<!-- Simulated Video Content -->
+<div class="relative h-full w-full">
+<div class="h-full w-full bg-cover bg-center" data-alt="Vertical video showing a vibrant African street market scene with food vendors" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCtK8TvWjtBzKDjxuNCgfKCM4VlXkH7Hg9QBzK5eG3Ln-zP7vsQaoci0T6qobNgJTG-5XhMtb5xOpfX-pW4Q51r7E1jBDBkJ8ui72wvXPeaDdJ4XWogDMTXMK4rRBmj96uJkepQcbLbXghuHhcfgXXwVoJgVoNN7_EkMxkinirFlaspT4lpwuIVSIzP4iJEeJQuWKp8mryxMKc8Yr_16eVJt7gdmfV4Zzh-JOxvlDIzL-0kM-4AUc-kHPKVwQ1Aa020PiWFk7KE");'>
+</div>
+<!-- Video Overlay Gradient for Text Readability -->
+<div class="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/80"></div>
+</div>
+</div>
+<!-- Top Header & Status -->
+<div class="absolute top-0 left-0 right-0 z-20 pt-12 pb-4 px-4 flex justify-between items-start">
+<!-- Offline Status Chip -->
+<div class="flex items-center justify-center gap-x-2 rounded-full bg-black/40 backdrop-blur-md pl-3 pr-4 py-1.5 border border-white/10 shadow-lg">
+<span class="material-symbols-outlined text-yellow-500 text-[18px]">wifi_off</span>
+<p class="text-white text-xs font-semibold leading-normal">Offline Mode</p>
+</div>
+<!-- Segmented Control / Tabs -->
+<div class="flex items-center gap-6 absolute left-1/2 -translate-x-1/2 top-14">
+<button class="text-white/60 text-base font-semibold hover:text-white transition-colors">Following</button>
+<div class="h-4 w-[1px] bg-white/20"></div>
+<button class="text-white text-base font-bold relative after:content-[''] after:absolute after:-bottom-1.5 after:left-1/2 after:-translate-x-1/2 after:w-5 after:h-0.5 after:bg-white after:rounded-full">For You</button>
+</div>
+<!-- Search Icon -->
+<button class="p-2 rounded-full hover:bg-white/10 active:bg-white/20 transition-colors">
+<span class="material-symbols-outlined text-white text-[28px]">search</span>
+</button>
+</div>
+<!-- Right Side Action Bar -->
+<div class="absolute right-2 bottom-[90px] z-20 flex flex-col items-center gap-6 pb-4 w-[60px]">
+<!-- Profile Avatar -->
+<div class="relative mb-2 group cursor-pointer">
+<div class="h-12 w-12 rounded-full border border-white bg-cover bg-center shadow-md" data-alt="Profile picture of a smiling young African woman" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuB-cZ953z6Pef-m-esMbutiujQzwcQ3gXocj0ErdwM9gmhxLpWo4SKz4VFvkSga_qlHMvvYo8Lkoex8tWespXnC8gKlURT7iGPPII63Uh98f-AX-ZYpjq5WOAHrL1QarS-bIe8awUnOztGtUDF19UvJerb2PYVsQUw5cJLRSU5yM8wnobwysn7cOF3j3h71OchJaZfAHWd1qNkkVk6oEEAlMw63bsadLjh3IsXVs3Db_jad-rzwr27E6XhAExYmUfH2A85zZ_Q7");'>
+</div>
+<!-- Follow Badge -->
+<div class="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-primary text-white rounded-full h-5 w-5 flex items-center justify-center border-2 border-background-dark shadow-sm">
+<span class="material-symbols-outlined text-[12px] font-bold">add</span>
+</div>
+</div>
+<!-- Like Button -->
+<div class="flex flex-col items-center gap-1 cursor-pointer group">
+<button class="p-2 rounded-full bg-transparent active:scale-90 transition-transform">
+<span class="material-symbols-outlined text-white text-[32px] fill-white text-shadow">favorite</span>
+</button>
+<p class="text-white text-xs font-bold tracking-wide text-shadow">1.2k</p>
+</div>
+<!-- Comment Button -->
+<div class="flex flex-col items-center gap-1 cursor-pointer group">
+<button class="p-2 rounded-full bg-transparent active:scale-90 transition-transform">
+<span class="material-symbols-outlined text-white text-[32px] text-shadow">chat_bubble</span>
+</button>
+<p class="text-white text-xs font-bold tracking-wide text-shadow">300</p>
+</div>
+<!-- Share Button -->
+<div class="flex flex-col items-center gap-1 cursor-pointer group">
+<button class="p-2 rounded-full bg-transparent active:scale-90 transition-transform">
+<span class="material-symbols-outlined text-white text-[32px] text-shadow">share</span>
+</button>
+<p class="text-white text-xs font-bold tracking-wide text-shadow">Share</p>
+</div>
+<!-- More Button -->
+<div class="flex flex-col items-center gap-1 cursor-pointer group">
+<button class="p-2 rounded-full bg-transparent active:scale-90 transition-transform">
+<span class="material-symbols-outlined text-white text-[32px] text-shadow">more_horiz</span>
+</button>
+</div>
+<!-- Music Disc Animation -->
+<div class="mt-4 relative flex items-center justify-center">
+<div class="h-10 w-10 rounded-full bg-gray-900 border-[3px] border-gray-800 flex items-center justify-center overflow-hidden animate-spin-slow">
+<div class="h-full w-full bg-cover bg-center" data-alt="Album art for the song playing" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAShaEdI0cOGzaJIO6ZtNCiMyiFXKFxvWDdPNgX1v2CS-dB3qIb0b5FaVfIByYCLcHGSWNyl8ibyBgrciN0yGwNGZ9aCzF0krwIaS7J-mxkpDxmtKSp6L_p83FZPuQrdRwDz7k9XjHsskWHbpmJDFrNWkhArRzUJfk9DL4RSKMPhCnpT1MozcfCvaOLAUhT4O1zOyofH8iGNkIKBBk8W9UlJq3Eccst4Xznm4-cI27Gz6Fy2uD6XSX__JDThgc-KietZzrtcPzb");'>
+</div>
+</div>
+<!-- Floating Music Notes -->
+<div class="absolute -top-4 -right-2">
+<span class="material-symbols-outlined text-gray-300 text-sm animate-bounce" style="animation-delay: 0.5s;">music_note</span>
+</div>
+</div>
+</div>
+<!-- Bottom Info Layer -->
+<div class="absolute bottom-[80px] left-0 w-[calc(100%-80px)] px-4 z-20 flex flex-col gap-2 pb-2">
+<!-- Username -->
+<h3 class="text-white text-lg font-bold leading-tight text-shadow hover:underline cursor-pointer">@LagosEats</h3>
+<!-- Caption -->
+<p class="text-white/95 text-sm font-normal leading-snug line-clamp-3 text-shadow">
+                Trying the best suya in the city! 🔥🥩 This place is hidden but worth the trek. #Lagos #Foodie #Yabisso
+            </p>
+<!-- Audio Track -->
+<div class="flex items-center gap-2 mt-1 max-w-full">
+<span class="material-symbols-outlined text-white text-base">music_note</span>
+<div class="overflow-hidden relative w-full">
+<p class="text-white text-sm font-medium whitespace-nowrap animate-marquee">
+                        Burna Boy - Last Last • Original Sound
+                    </p>
+</div>
+</div>
+</div>
+<!-- Video Progress Bar -->
+<div class="absolute bottom-[72px] left-0 w-full h-[2px] bg-white/20 z-30">
+<div class="h-full bg-primary w-[35%] relative">
+<div class="absolute right-0 top-1/2 -translate-y-1/2 h-2 w-2 bg-white rounded-full shadow-sm"></div>
+</div>
+</div>
+<!-- Bottom Navigation Bar -->
+<div class="absolute bottom-0 w-full h-[72px] bg-black/80 backdrop-blur-xl border-t border-white/5 flex items-center justify-around z-40 px-2 pb-2">
+<!-- Home Tab -->
+<button class="flex flex-col items-center justify-center gap-1 w-14 h-full text-gray-400 hover:text-white transition-colors">
+<span class="material-symbols-outlined text-[24px]">home</span>
+<span class="text-[10px] font-medium">Home</span>
+</button>
+<!-- Wallet Tab -->
+<button class="flex flex-col items-center justify-center gap-1 w-14 h-full text-gray-400 hover:text-white transition-colors">
+<span class="material-symbols-outlined text-[24px]">account_balance_wallet</span>
+<span class="text-[10px] font-medium">Wallet</span>
+</button>
+<!-- Upload/Center Button -->
+<button class="relative -top-4 group">
+<div class="h-12 w-12 rounded-full bg-gradient-to-tr from-primary to-blue-400 flex items-center justify-center shadow-[0_0_15px_rgba(19,127,236,0.5)] border-[3px] border-background-dark group-active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-white text-[28px]">add</span>
+</div>
+</button>
+<!-- Feed Tab (Active) -->
+<button class="flex flex-col items-center justify-center gap-1 w-14 h-full text-white">
+<span class="material-symbols-outlined text-[24px] fill-current">smart_display</span>
+<span class="text-[10px] font-medium">Feed</span>
+</button>
+<!-- Profile Tab -->
+<button class="flex flex-col items-center justify-center gap-1 w-14 h-full text-gray-400 hover:text-white transition-colors">
+<span class="material-symbols-outlined text-[24px]">person</span>
+<span class="text-[10px] font-medium">Profile</span>
+</button>
+</div>
+</div>
+</body></html>

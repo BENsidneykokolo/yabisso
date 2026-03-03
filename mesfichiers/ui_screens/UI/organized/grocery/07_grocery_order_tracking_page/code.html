@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Grocery Order Tracking Page</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#46ec13", // Vibrant Lime Green
+                        "secondary": "#FFB800", // Warm Sunshine Yellow
+                        "background-light": "#f6f8f6", // Soft White/Mint tint
+                        "background-dark": "#142210", // Deep Jungle Green
+                        "surface-light": "#ffffff",
+                        "surface-dark": "#1e331b",
+                        "danger": "#ef4444",
+                    },
+                    fontFamily: {
+                        "display": ["Lexend", "sans-serif"]
+                    },
+                    borderRadius: { "DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "2xl": "2rem", "full": "9999px" },
+                    boxShadow: {
+                        "soft": "0 4px 20px -2px rgba(0, 0, 0, 0.05)",
+                        "glow": "0 0 15px rgba(70, 236, 19, 0.3)",
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined { 
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24; 
+        }
+        
+        /* Pulse animation for the active status indicator */
+        @keyframes pulse-ring {
+            0% { transform: scale(0.8); box-shadow: 0 0 0 0 rgba(70, 236, 19, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(70, 236, 19, 0); }
+            100% { transform: scale(0.8); box-shadow: 0 0 0 0 rgba(70, 236, 19, 0); }
+        }
+        .animate-pulse-ring {
+            animation: pulse-ring 2s infinite;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-[#111b0d] dark:text-gray-100 font-display transition-colors duration-200">
+<div class="relative flex h-full min-h-screen w-full flex-col overflow-x-hidden max-w-md mx-auto shadow-2xl bg-background-light dark:bg-background-dark pb-28">
+<!-- Top App Bar -->
+<div class="flex items-center px-4 py-3 justify-between bg-background-light dark:bg-background-dark z-20 sticky top-0 backdrop-blur-sm bg-opacity-95 dark:bg-opacity-95">
+<button class="bg-surface-light dark:bg-surface-dark w-10 h-10 rounded-full shadow-soft border border-gray-100 dark:border-gray-800 flex items-center justify-center text-black dark:text-white transition-transform active:scale-95">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<h2 class="text-lg font-bold leading-tight tracking-tight flex-1 text-center pr-10">Track Order</h2>
+<div></div> <!-- Spacer for visual balance -->
+</div>
+<!-- Map Section (Visual Hero) -->
+<div class="px-4 pb-2">
+<div class="relative w-full aspect-video rounded-2xl overflow-hidden shadow-soft group">
+<!-- Map Background -->
+<div class="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105" data-alt="Map view of city streets with a route highlighted in green" data-location="Lagos, Nigeria" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCiy4cAhG8S_HIE6w1oLqQ1lRW_gl1z6uzurtInyKIiUXHIeQRyw-_5obBSArqi0cPpMdjt1hIW3AaWFr5EX1Vd-o5wFTscEO3ogh3mL3I3FP8f216rxdr78VQ2xA4sUtCqQlr3pXy5b2r19Pl6EwuTZS1H4Hxg9V7kMGquvtIDzWKGJT6n_ytCuKHbI2Fvx0MdOFBN986W6AD392rZIH5Spjj24hMFzKHtXMxQBKvMJZZo3wmTcdjPaGw0reVROmOqAHSsl7gy");'>
+</div>
+<!-- Gradient Overlay for text readability -->
+<div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+<!-- Floating Info: ETA -->
+<div class="absolute bottom-3 left-3 bg-surface-light dark:bg-surface-dark px-3 py-1.5 rounded-lg shadow-lg flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-xl">schedule</span>
+<div>
+<p class="text-[10px] font-medium text-gray-500 uppercase leading-none">Arrival</p>
+<p class="text-sm font-bold text-black dark:text-white leading-none">~15 mins</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Order Summary Condensed -->
+<div class="px-5 py-2 flex justify-between items-center">
+<div class="flex items-center gap-2">
+<span class="text-gray-500 dark:text-gray-400 text-sm">Order #8492</span>
+<span class="w-1 h-1 rounded-full bg-gray-300"></span>
+<span class="text-gray-500 dark:text-gray-400 text-sm">5 Items</span>
+</div>
+<a class="text-primary text-sm font-bold hover:underline" href="#">View Details</a>
+</div>
+<!-- Timeline Section -->
+<div class="px-5 mt-2 mb-4">
+<div class="grid grid-cols-[48px_1fr] gap-x-2">
+<!-- Step 1: Placed (Completed) -->
+<div class="flex flex-col items-center">
+<div class="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary-dark z-10 ring-4 ring-background-light dark:ring-background-dark">
+<span class="material-symbols-outlined text-lg text-primary">shopping_cart</span>
+</div>
+<div class="w-[3px] bg-primary h-full min-h-[32px] rounded-full my-[-4px]"></div>
+</div>
+<div class="pb-6 pt-1 pl-2 opacity-60">
+<p class="text-black dark:text-white text-base font-bold leading-none">Order placed</p>
+<p class="text-gray-500 dark:text-gray-400 text-xs mt-1">We have received your order</p>
+</div>
+<!-- Step 2: Preparing (Completed) -->
+<div class="flex flex-col items-center">
+<div class="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary-dark z-10 ring-4 ring-background-light dark:ring-background-dark">
+<span class="material-symbols-outlined text-lg text-primary">skillet</span>
+</div>
+<div class="w-[3px] bg-primary h-full min-h-[32px] rounded-full my-[-4px]"></div>
+</div>
+<div class="pb-6 pt-1 pl-2 opacity-60">
+<p class="text-black dark:text-white text-base font-bold leading-none">Preparing</p>
+<p class="text-gray-500 dark:text-gray-400 text-xs mt-1">Your items are being packed</p>
+</div>
+<!-- Step 3: On the way (Active/Current) -->
+<div class="flex flex-col items-center">
+<div class="relative w-12 h-12 -ml-2 flex items-center justify-center z-10 my-1">
+<!-- Pulse Effect -->
+<div class="absolute inset-0 bg-primary rounded-full animate-pulse-ring opacity-40"></div>
+<!-- Main Icon -->
+<div class="relative w-12 h-12 rounded-full bg-primary flex items-center justify-center shadow-glow border-4 border-background-light dark:border-background-dark">
+<span class="material-symbols-outlined text-white text-2xl">two_wheeler</span>
+</div>
+</div>
+<div class="w-[3px] bg-gray-200 dark:bg-gray-700 h-full min-h-[32px] rounded-full my-[-4px]"></div>
+</div>
+<div class="pb-8 pt-3 pl-2">
+<p class="text-black dark:text-white text-lg font-bold leading-none">On the way</p>
+<p class="text-gray-500 dark:text-gray-400 text-sm mt-1">Driver is heading to you</p>
+</div>
+<!-- Step 4: Delivered (Pending) -->
+<div class="flex flex-col items-center">
+<div class="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-400 z-10 ring-4 ring-background-light dark:ring-background-dark">
+<span class="material-symbols-outlined text-lg">home_pin</span>
+</div>
+</div>
+<div class="pt-1 pl-2 opacity-50">
+<p class="text-gray-400 dark:text-gray-500 text-base font-medium leading-none">Delivered</p>
+</div>
+</div>
+</div>
+<!-- Driver Info Card -->
+<div class="px-4 mt-2">
+<div class="bg-surface-light dark:bg-surface-dark rounded-xl p-4 shadow-soft border border-gray-100 dark:border-gray-800 flex items-center justify-between">
+<div class="flex items-center gap-4">
+<div class="relative">
+<div class="bg-center bg-no-repeat bg-cover rounded-full h-14 w-14 border-2 border-primary" data-alt="Smiling African delivery driver portrait" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBR06lnx7y9dAPnn4WmOPULbwVUPmt99FOlad5MEK8M3uGNNNBGc2Q0ScXI3fhgiutaMFiFnHMFeVfkzHOwcCV578wpagp7G-HVghdU5e97HVxamEVCsw4xcdTzb1h-w-vQAVhH58QBlqY0Nhn74L2rY7qtmxLRuauqz7d2acqrM3cPP2w2T5I6aH_d3KfDwZb9bk2zQK6a6pMa3AB3i6gH8ix1Fl3vk4A60m7tosMKl0mksajVwiTBnQrsMWJctpEV0xtzMQ4C");'>
+</div>
+<div class="absolute -bottom-1 -right-1 bg-surface-light dark:bg-surface-dark rounded-full p-0.5 border border-gray-100 dark:border-gray-700">
+<div class="flex items-center gap-0.5 bg-secondary/10 px-1.5 py-0.5 rounded-full">
+<span class="material-symbols-outlined text-secondary text-[10px]">star</span>
+<span class="text-[10px] font-bold text-black dark:text-white">4.9</span>
+</div>
+</div>
+</div>
+<div class="flex flex-col">
+<p class="font-bold text-lg leading-tight text-black dark:text-white">Kofi A.</p>
+<p class="text-gray-500 dark:text-gray-400 text-xs font-medium mt-0.5">Bajaj Motorbike • GH-8821</p>
+</div>
+</div>
+<!-- Visual Vehicle Icon -->
+<div class="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-2xl">sports_motorsports</span>
+</div>
+</div>
+</div>
+<!-- Action Buttons -->
+<div class="px-4 mt-4 grid grid-cols-2 gap-4">
+<button class="flex items-center justify-center gap-2 bg-surface-light dark:bg-surface-dark h-14 rounded-xl shadow-soft border border-gray-100 dark:border-gray-800 active:scale-95 transition-transform hover:bg-gray-50 dark:hover:bg-gray-800">
+<div class="bg-green-100 dark:bg-green-900 p-1.5 rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-xl">call</span>
+</div>
+<span class="font-bold text-base text-black dark:text-white">Call</span>
+</button>
+<button class="flex items-center justify-center gap-2 bg-surface-light dark:bg-surface-dark h-14 rounded-xl shadow-soft border border-gray-100 dark:border-gray-800 active:scale-95 transition-transform hover:bg-gray-50 dark:hover:bg-gray-800">
+<div class="bg-blue-100 dark:bg-blue-900 p-1.5 rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined text-blue-600 dark:text-blue-400 text-xl">chat</span>
+</div>
+<span class="font-bold text-base text-black dark:text-white">Message</span>
+</button>
+</div>
+<!-- Cancel Button (Secondary) -->
+<div class="px-4 mt-4 mb-4">
+<button class="w-full flex items-center justify-center gap-2 bg-surface-light dark:bg-surface-dark h-12 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-danger text-xl">cancel</span>
+<span class="font-bold text-sm text-danger">Cancel Order</span>
+</button>
+</div>
+<!-- Fixed Bottom Navigation Bar -->
+<div class="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-surface-light dark:bg-surface-dark border-t border-gray-100 dark:border-gray-800 h-[80px] flex justify-between items-end px-6 pb-4 z-50 rounded-t-2xl shadow-[0_-5px_20px_rgba(0,0,0,0.05)]">
+<!-- Home -->
+<button class="flex flex-col items-center gap-1 text-gray-400 hover:text-primary transition-colors group">
+<span class="material-symbols-outlined text-[28px] group-hover:-translate-y-1 transition-transform">home</span>
+<span class="text-[10px] font-medium">Home</span>
+</button>
+<!-- Store -->
+<button class="flex flex-col items-center gap-1 text-gray-400 hover:text-primary transition-colors group">
+<span class="material-symbols-outlined text-[28px] group-hover:-translate-y-1 transition-transform">storefront</span>
+<span class="text-[10px] font-medium">Store</span>
+</button>
+<!-- Wallet (Featured/Central) -->
+<button class="flex flex-col items-center justify-end h-full mb-3 relative group">
+<div class="absolute bottom-5 bg-primary text-black h-14 w-14 rounded-full flex items-center justify-center shadow-lg border-[4px] border-background-light dark:border-background-dark group-active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-[28px]">account_balance_wallet</span>
+</div>
+<span class="text-[10px] font-bold mt-8 text-black dark:text-white">Wallet</span>
+</button>
+<!-- Orders (Active) -->
+<button class="flex flex-col items-center gap-1 text-primary relative">
+<span class="material-symbols-outlined text-[28px]">receipt_long</span>
+<span class="text-[10px] font-bold">Orders</span>
+<!-- Active Indicator Dot -->
+<span class="absolute -top-1 right-2 w-2 h-2 bg-secondary rounded-full"></span>
+</button>
+<!-- Profile -->
+<button class="flex flex-col items-center gap-1 text-gray-400 hover:text-primary transition-colors group">
+<span class="material-symbols-outlined text-[28px] group-hover:-translate-y-1 transition-transform">person</span>
+<span class="text-[10px] font-medium">Profile</span>
+</button>
+</div>
+</div>
+</body></html>

@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Yabisso Music Playlists</title>
+<!-- Material Symbols Link -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Spline+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Theme Config -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                        "surface-dark": "#192633",
+                        "yabisso-red": "#ef4444",
+                        "yabisso-yellow": "#eab308",
+                        "yabisso-green": "#22c55e",
+                    },
+                    fontFamily: {
+                        "display": ["Spline Sans", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "1rem", "lg": "1.5rem", "xl": "2rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom scrollbar hiding for cleaner mobile look */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-white antialiased selection:bg-primary/30">
+<div class="relative flex h-full min-h-screen w-full flex-col overflow-x-hidden pb-24">
+<!-- Header -->
+<header class="sticky top-0 z-20 flex flex-col gap-2 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-md p-4 pb-2 transition-colors">
+<div class="flex items-center h-12 justify-between">
+<button class="flex size-10 shrink-0 items-center justify-center rounded-full active:bg-slate-200 dark:active:bg-surface-dark transition-colors">
+<span class="material-symbols-outlined text-slate-900 dark:text-white" style="font-size: 24px;">arrow_back</span>
+</button>
+<div class="flex gap-4">
+<button class="flex size-10 shrink-0 items-center justify-center rounded-full active:bg-slate-200 dark:active:bg-surface-dark transition-colors">
+<span class="material-symbols-outlined text-slate-900 dark:text-white" style="font-size: 24px;">cast</span>
+</button>
+<button class="flex size-10 shrink-0 items-center justify-center rounded-full overflow-hidden border border-slate-200 dark:border-slate-700">
+<img alt="User Profile" class="h-full w-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDaCNLgl_zWHifc_PHcp68Haqcwt9mWwhZFCLG1I9iswo_t9PgIBXAuxBtKUtMo-ctG1sGlgA02tF4K_Zofsky0WER4XwPjRqllWMwQbC3gJocOhPKvJzDAtUxSWgNpf2OI835hna5C2_sQoyTMBL3Qf0-pAFbDdSeByAzQxMz63eYoWdfrfQFDxub9khgVGJSsB5LeACxMuk7Krvnre6LQUojcUUcJg4wXl3Mm3-Qjki6qRZW6-NT920vFXy3BOgOA8DvxpJXa"/>
+</button>
+</div>
+</div>
+<div class="flex items-end justify-between px-1">
+<h1 class="text-[32px] font-bold leading-tight tracking-tight">Playlists</h1>
+</div>
+</header>
+<!-- Search Bar -->
+<div class="px-4 py-2">
+<label class="flex flex-col h-12 w-full">
+<div class="flex w-full flex-1 items-center rounded-xl bg-white dark:bg-surface-dark border border-slate-200 dark:border-slate-700 shadow-sm transition-colors focus-within:ring-2 focus-within:ring-primary/50">
+<div class="flex items-center justify-center pl-4 pr-2">
+<span class="material-symbols-outlined text-slate-400 dark:text-slate-400" style="font-size: 24px;">search</span>
+</div>
+<input class="flex w-full flex-1 bg-transparent px-2 text-base font-normal text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none" placeholder="Find a playlist..." value=""/>
+</div>
+</label>
+</div>
+<!-- Create New Playlist Action -->
+<div class="px-4 pt-4 pb-2">
+<button class="group flex w-full items-center justify-between gap-4 rounded-xl bg-primary px-4 py-3 shadow-lg shadow-primary/20 active:scale-[0.98] transition-all">
+<div class="flex items-center gap-3">
+<div class="flex size-10 items-center justify-center rounded-full bg-white/20 text-white">
+<span class="material-symbols-outlined" style="font-size: 24px;">add</span>
+</div>
+<p class="text-base font-bold text-white">Create New Playlist</p>
+</div>
+<span class="material-symbols-outlined text-white/80" style="font-size: 20px;">chevron_right</span>
+</button>
+</div>
+<!-- Section: Your Collection -->
+<div class="flex flex-col">
+<div class="flex items-center justify-between px-4 pb-2 pt-6">
+<h3 class="text-lg font-bold leading-tight tracking-tight">Your Collection</h3>
+<button class="text-sm font-medium text-primary hover:text-primary/80">Sort by</button>
+</div>
+<!-- Grid Layout -->
+<div class="grid grid-cols-2 gap-4 px-4 pb-4 sm:grid-cols-3 md:grid-cols-4">
+<!-- Card 1: Curated -->
+<div class="group flex cursor-pointer flex-col gap-3 rounded-xl p-0 transition-transform active:scale-95">
+<div class="relative aspect-square w-full overflow-hidden rounded-xl shadow-md">
+<!-- Using a vibrant gradient placeholder for African Tech Vibe -->
+<div class="h-full w-full bg-cover bg-center transition-transform group-hover:scale-105" data-alt="Vibrant abstract gradient with orange and purple hues representing afrobeat energy" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuD6KJGGPyTZ1fCOdM2yvCOfcJqMcFWmz4tlwtdTES8Riy9Hi9NPlTjIsu_va5uM4na5KC-PMCLq_WerTcCIkQEiD7zq28q5YgF6kcptGt9mfGz1g2amcg4bHufM7yCtriOGtdddSU83ohPlSX_PVDDvds23bDu5zZzPX8XgumLuW5st6tkOOHGxWjuIKpI4j1LoH4AXaE56j1PVLHYJszX1p9l_Vg-xI9hrbVvRGYBcIVZKejnt9CE4hyhh72b8U5sPj6_IKJ39');">
+<div class="absolute inset-0 bg-black/10"></div>
+</div>
+<!-- Offline Indicator -->
+<div class="absolute bottom-2 right-2 flex size-6 items-center justify-center rounded-full bg-black/60 backdrop-blur-md">
+<span class="material-symbols-outlined text-yabisso-green text-[14px]">download_done</span>
+</div>
+<div class="absolute top-2 left-2 rounded-md bg-primary/90 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white backdrop-blur-sm">
+                            Yabisso Pick
+                        </div>
+</div>
+<div class="flex flex-col gap-0.5">
+<h2 class="truncate text-base font-bold text-slate-900 dark:text-white">Lagos Traffic Jams</h2>
+<p class="truncate text-sm font-medium text-slate-500 dark:text-slate-400">42 Songs • By Yabisso</p>
+</div>
+</div>
+<!-- Card 2: User Generated -->
+<div class="group flex cursor-pointer flex-col gap-3 rounded-xl p-0 transition-transform active:scale-95">
+<div class="relative aspect-square w-full overflow-hidden rounded-xl shadow-md bg-surface-dark">
+<div class="h-full w-full bg-cover bg-center transition-transform group-hover:scale-105" data-alt="Energetic gym workout scene with dumbbells and moody lighting" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDvLnlNfZ_CYuHtGTwDoeiqTihKYVqJBJorDsqQliBbfvswMAhBxehYRpXL6MMQqT-_dbbCxhDt-KBVyrz3yN2JBK591dDw03CMHnFD_WlIMYU3CZHG0jxiJJfqMrEhqd07BxFTpLwxk03_XKpwJUL28Azr1lqCt4gusVwNHl3n3BxshIizaNMwOm37FzgAXUEhtQrJ87FERpHhot8M1ofG4snR58SKqAMjKhQVqHDJNp7Jcw9gv6LmLVtfQ32-r10yeuB9FbbS');"></div>
+<!-- Offline Indicator -->
+<div class="absolute bottom-2 right-2 flex size-6 items-center justify-center rounded-full bg-black/60 backdrop-blur-md">
+<span class="material-symbols-outlined text-yabisso-green text-[14px]">download_done</span>
+</div>
+</div>
+<div class="flex flex-col gap-0.5">
+<h2 class="truncate text-base font-bold text-slate-900 dark:text-white">Gym Hype</h2>
+<p class="truncate text-sm font-medium text-slate-500 dark:text-slate-400">15 Songs • By You</p>
+</div>
+</div>
+<!-- Card 3: User Generated -->
+<div class="group flex cursor-pointer flex-col gap-3 rounded-xl p-0 transition-transform active:scale-95">
+<div class="relative aspect-square w-full overflow-hidden rounded-xl shadow-md bg-surface-dark">
+<div class="h-full w-full bg-cover bg-center transition-transform group-hover:scale-105" data-alt="Calm acoustic guitar resting on a chair in sunlight" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAV_ZsR-UYg4xwTNLHG0OxLKXZguAQN1LQ-8s39ju1Pl6dhp5H7HxfQ-v0pLTRzC_eOdlLkVsujbjc4Qc_brnz4GkWqnUO-i2N59pWXHTLGZ09DXuetqE8BKUxx9W6cZEycydPqqO-EI2suG-nudF77LqKjh_cqQu9Qofimddxe6FGhu8HMNsS-at-tqDmVDmf3Bb4GLQCVpdbhQnndVjo3jmNEHdn9E6tuwCG3IRPJiSDvklZ03HHeFJ94xpRgNjJOIQXy5xgm');"></div>
+</div>
+<div class="flex flex-col gap-0.5">
+<h2 class="truncate text-base font-bold text-slate-900 dark:text-white">Sunday Chill</h2>
+<p class="truncate text-sm font-medium text-slate-500 dark:text-slate-400">28 Songs • By You</p>
+</div>
+</div>
+<!-- Card 4: Generated Abstract -->
+<div class="group flex cursor-pointer flex-col gap-3 rounded-xl p-0 transition-transform active:scale-95">
+<div class="relative aspect-square w-full overflow-hidden rounded-xl shadow-md bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500">
+<div class="flex h-full w-full items-center justify-center text-white/20">
+<span class="material-symbols-outlined text-[48px]">music_note</span>
+</div>
+<!-- Offline Indicator -->
+<div class="absolute bottom-2 right-2 flex size-6 items-center justify-center rounded-full bg-black/60 backdrop-blur-md">
+<span class="material-symbols-outlined text-yabisso-green text-[14px]">download_done</span>
+</div>
+</div>
+<div class="flex flex-col gap-0.5">
+<h2 class="truncate text-base font-bold text-slate-900 dark:text-white">Coding Focus</h2>
+<p class="truncate text-sm font-medium text-slate-500 dark:text-slate-400">102 Songs • By You</p>
+</div>
+</div>
+<!-- Card 5: Generated Abstract African Vibe -->
+<div class="group flex cursor-pointer flex-col gap-3 rounded-xl p-0 transition-transform active:scale-95">
+<div class="relative aspect-square w-full overflow-hidden rounded-xl shadow-md bg-gradient-to-tr from-yabisso-green via-yabisso-yellow to-yabisso-red">
+<div class="absolute inset-0 bg-black/10"></div>
+<div class="flex h-full w-full items-center justify-center">
+<span class="material-symbols-outlined text-white drop-shadow-md" style="font-size: 40px;">equalizer</span>
+</div>
+</div>
+<div class="flex flex-col gap-0.5">
+<h2 class="truncate text-base font-bold text-slate-900 dark:text-white">Naija Top 50</h2>
+<p class="truncate text-sm font-medium text-slate-500 dark:text-slate-400">50 Songs • By Yabisso</p>
+</div>
+</div>
+<!-- Card 6: User Generated -->
+<div class="group flex cursor-pointer flex-col gap-3 rounded-xl p-0 transition-transform active:scale-95">
+<div class="relative aspect-square w-full overflow-hidden rounded-xl shadow-md bg-surface-dark">
+<div class="h-full w-full bg-cover bg-center transition-transform group-hover:scale-105" data-alt="Dark moody rainy window for sleep vibes" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBpyHQO-g__kmtb6gBpegTegIhyTJRODPvIgEDVt2MTlhjnOI998j4PJce1RT3tpBZUiGQ7DFHPOWtJ_T43E4_R7AdDQ2VXH_00ziiRQmKbB-fbJP3pCsK3vsLQeFnXnHD3QWzfd72hiBI4LAZrSgfofDEa2iTR2uzTdrrNT6zJ9WeiDpV4mNakdLZvv6xMwM05_nONwCLHpj7qgq89JmLa7aJeafQF-sASpVBayqDzIlME0wsi9P5en96tkbTgFaR9tn1Vsm-h');"></div>
+</div>
+<div class="flex flex-col gap-0.5">
+<h2 class="truncate text-base font-bold text-slate-900 dark:text-white">Sleep Sounds</h2>
+<p class="truncate text-sm font-medium text-slate-500 dark:text-slate-400">8 Songs • By You</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Offline Mode Banner (Contextual) -->
+<div class="px-4 py-2">
+<div class="flex items-center gap-3 rounded-lg bg-surface-dark border border-slate-700 p-3">
+<div class="flex size-8 items-center justify-center rounded-full bg-primary/20 text-primary">
+<span class="material-symbols-outlined" style="font-size: 18px;">wifi_off</span>
+</div>
+<div class="flex-1">
+<p class="text-sm font-medium text-white">Offline Mode Ready</p>
+<p class="text-xs text-slate-400">Your downloaded playlists are available.</p>
+</div>
+</div>
+</div>
+<!-- Super App Bottom Navigation -->
+<div class="fixed bottom-0 left-0 z-50 w-full border-t border-slate-200 dark:border-slate-800 bg-background-light/90 dark:bg-[#0f151b]/95 backdrop-blur-lg pb-safe">
+<div class="flex h-16 items-center justify-around px-2">
+<button class="group flex flex-1 flex-col items-center justify-center gap-1">
+<span class="material-symbols-outlined text-slate-400 group-hover:text-primary transition-colors" style="font-size: 24px;">home_app_logo</span>
+<span class="text-[10px] font-medium text-slate-400 group-hover:text-primary transition-colors">Home</span>
+</button>
+<button class="group flex flex-1 flex-col items-center justify-center gap-1">
+<span class="material-symbols-outlined text-slate-400 group-hover:text-primary transition-colors" style="font-size: 24px;">shopping_bag</span>
+<span class="text-[10px] font-medium text-slate-400 group-hover:text-primary transition-colors">Shop</span>
+</button>
+<!-- Active State -->
+<button class="group flex flex-1 flex-col items-center justify-center gap-1">
+<div class="flex h-8 w-14 items-center justify-center rounded-full bg-primary/20">
+<span class="material-symbols-outlined text-primary" style="font-size: 24px;">music_note</span>
+</div>
+<span class="text-[10px] font-bold text-primary">Music</span>
+</button>
+<button class="group flex flex-1 flex-col items-center justify-center gap-1">
+<span class="material-symbols-outlined text-slate-400 group-hover:text-primary transition-colors" style="font-size: 24px;">account_balance_wallet</span>
+<span class="text-[10px] font-medium text-slate-400 group-hover:text-primary transition-colors">Wallet</span>
+</button>
+<button class="group flex flex-1 flex-col items-center justify-center gap-1">
+<span class="material-symbols-outlined text-slate-400 group-hover:text-primary transition-colors" style="font-size: 24px;">person</span>
+<span class="text-[10px] font-medium text-slate-400 group-hover:text-primary transition-colors">Profile</span>
+</button>
+</div>
+<!-- iOS Home Indicator Spacing -->
+<div class="h-5 w-full"></div>
+</div>
+</div>
+</body></html>

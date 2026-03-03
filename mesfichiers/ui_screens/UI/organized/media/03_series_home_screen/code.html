@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Yabisso Series Home</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Spline+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                        "brand-green": "#22c55e",
+                        "brand-red": "#ef4444", 
+                        "brand-yellow": "#eab308",
+                        "surface-dark": "#192633",
+                        "surface-dark-highlight": "#233648"
+                    },
+                    fontFamily: {
+                        "display": ["Spline Sans", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom Scrollbar Hide */
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white font-display antialiased pb-20">
+<!-- Top App Bar -->
+<header class="sticky top-0 z-50 bg-[#111a22]/95 backdrop-blur-sm border-b border-[#233648]">
+<div class="flex items-center justify-between p-4">
+<div class="flex items-center gap-3">
+<div class="size-8 rounded-full bg-gradient-to-tr from-primary to-brand-green flex items-center justify-center">
+<span class="material-symbols-outlined text-white text-[20px]">play_arrow</span>
+</div>
+<h1 class="text-white text-xl font-bold tracking-tight">Yabisso Series</h1>
+</div>
+<div class="flex items-center gap-4">
+<!-- Data Saver Toggle -->
+<div class="flex items-center gap-2 bg-[#233648] px-2 py-1 rounded-full border border-gray-700">
+<span class="material-symbols-outlined text-brand-yellow text-[16px]">eco</span>
+<span class="text-[10px] font-bold text-gray-300 uppercase tracking-wide">Data Saver</span>
+<div class="w-8 h-4 bg-primary rounded-full relative">
+<div class="absolute right-0.5 top-0.5 size-3 bg-white rounded-full shadow-sm"></div>
+</div>
+</div>
+<button class="text-white hover:text-primary transition-colors">
+<span class="material-symbols-outlined">search</span>
+</button>
+</div>
+</div>
+<!-- Filter Chips -->
+<div class="flex gap-3 px-4 pb-4 overflow-x-auto hide-scrollbar">
+<button class="flex h-8 shrink-0 items-center justify-center gap-x-2 rounded-full bg-primary px-4 shadow-lg shadow-primary/20 transition-transform active:scale-95">
+<p class="text-white text-sm font-bold leading-normal">All</p>
+</button>
+<button class="flex h-8 shrink-0 items-center justify-center gap-x-2 rounded-full bg-[#233648] border border-gray-700 px-4 transition-transform active:scale-95">
+<p class="text-gray-300 text-sm font-medium leading-normal">African Originals</p>
+</button>
+<button class="flex h-8 shrink-0 items-center justify-center gap-x-2 rounded-full bg-[#233648] border border-gray-700 px-4 transition-transform active:scale-95">
+<p class="text-gray-300 text-sm font-medium leading-normal">Action</p>
+</button>
+<button class="flex h-8 shrink-0 items-center justify-center gap-x-2 rounded-full bg-[#233648] border border-gray-700 px-4 transition-transform active:scale-95">
+<p class="text-gray-300 text-sm font-medium leading-normal">Romance</p>
+</button>
+<button class="flex h-8 shrink-0 items-center justify-center gap-x-2 rounded-full bg-[#233648] border border-gray-700 px-4 transition-transform active:scale-95">
+<p class="text-gray-300 text-sm font-medium leading-normal">Comedy</p>
+</button>
+</div>
+</header>
+<!-- Hero Section -->
+<section class="relative w-full aspect-[4/5] sm:aspect-video md:aspect-[21/9] overflow-hidden">
+<div class="absolute inset-0 bg-cover bg-center" data-alt="Cinematic shot of a diverse group of friends looking at a futuristic city skyline at night" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAkaKy0zk9XAfeXUZKxdhdzdcJ1I9DgLSrd_Bv8ZRhoj2CmnPpKg_rTpOfbml9IWXQCqqrfggGtMVJbdpzTQduxqtCb5RqYpWajbTrLhDsT4o0a3abYx1o-EG1dT_wR9SChnR8jqVqSYw6vkdG6eRPMXELMH5SfzINqoyqQRjw0CRMnspzvOrUPdueKXX_rdOiNQfsWEJ9r5EAyk05ue6f5lIUCmLKw0opLoQAGLP09o59EkWRLC_yTWVkrF1212zCulObRQUq-");'>
+</div>
+<!-- Gradient Overlay -->
+<div class="absolute inset-0 bg-gradient-to-t from-[#101922] via-[#101922]/60 to-transparent"></div>
+<div class="absolute bottom-0 left-0 w-full p-5 flex flex-col gap-3">
+<div class="flex gap-2 mb-1">
+<span class="bg-brand-red text-white text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider">Top 10</span>
+<span class="bg-white/20 backdrop-blur-md text-white text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider">Nollywood</span>
+</div>
+<h2 class="text-white text-4xl font-bold leading-none tracking-tight">Lagos Hustle</h2>
+<p class="text-gray-300 text-sm font-medium line-clamp-2 max-w-md">Three friends navigate the chaotic startup scene in Lagos, balancing dreams, love, and the daily grind.</p>
+<div class="flex items-center gap-3 mt-2">
+<button class="flex-1 bg-primary hover:bg-primary/90 text-white font-bold py-3 px-6 rounded-lg flex items-center justify-center gap-2 transition-all active:scale-95">
+<span class="material-symbols-outlined fill-current">play_arrow</span>
+<span>Watch Now</span>
+</button>
+<button class="flex-none bg-white/10 backdrop-blur-md hover:bg-white/20 text-white font-bold p-3 rounded-lg flex items-center justify-center transition-all active:scale-95">
+<span class="material-symbols-outlined">add</span>
+</button>
+<button class="flex-none bg-white/10 backdrop-blur-md hover:bg-white/20 text-white font-bold p-3 rounded-lg flex items-center justify-center transition-all active:scale-95">
+<span class="material-symbols-outlined">download</span>
+</button>
+</div>
+</div>
+</section>
+<!-- Offline Hub Section (Crucial Requirement) -->
+<section class="mt-8 px-4">
+<div class="flex items-center justify-between mb-4">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-brand-green">cloud_done</span>
+<h3 class="text-white text-lg font-bold">Watch Without Data</h3>
+</div>
+<span class="text-xs font-medium text-primary cursor-pointer">View Downloads</span>
+</div>
+<!-- Special Horizontal Card for Continue Watching/Downloaded -->
+<div class="bg-gradient-to-r from-surface-dark to-surface-dark-highlight rounded-xl p-4 border border-surface-dark-highlight shadow-lg mb-6">
+<div class="flex gap-4 items-stretch">
+<!-- Thumbnail -->
+<div class="relative w-1/3 aspect-[2/3] rounded-lg overflow-hidden shrink-0">
+<div class="absolute inset-0 bg-cover bg-center" data-alt="Close up portrait of an African woman with traditional face paint" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBwCKygccnIZYKrWQmJJRLbIMfK1sGYVjnW6KdpPkj-FqAU0IPMZQlb-lCGmb4TTirASYUajymd0XQer2WpiWovq99MYx0O_-UHnLzBHB13nzLTV0y3Wj4_A1D9XnGrvxqvES0uAUq5SIm0ugMy4KrJosIDQ103u-0IBPNtB_tCKCryaPpEsBLTkPGsH_mLoYDRizcp8fNE4U9eSc21W1gS86nMIroigp-X5qlTlt_gBc0-YYJdHXAoGwoSlEab41EvrwnXt5hr");'></div>
+<div class="absolute inset-0 bg-black/20 flex items-center justify-center">
+<div class="size-8 bg-white/20 backdrop-blur rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined text-white text-sm">play_arrow</span>
+</div>
+</div>
+<!-- Downloaded Badge -->
+<div class="absolute top-1 right-1 bg-brand-green p-0.5 rounded-full shadow-md">
+<span class="material-symbols-outlined text-white text-[12px] block">check</span>
+</div>
+</div>
+<!-- Content -->
+<div class="flex flex-col justify-between py-1 flex-1 min-w-0">
+<div>
+<div class="flex justify-between items-start">
+<h4 class="text-white font-bold text-lg truncate pr-2">Queen of the South</h4>
+</div>
+<p class="text-gray-400 text-xs mt-1">S2 E4 • The Big Deal</p>
+<p class="text-gray-500 text-[10px] mt-0.5">280MB • Exp. 7 days</p>
+</div>
+<div class="mt-3">
+<div class="flex justify-between text-[10px] text-gray-400 mb-1">
+<span>24m remaining</span>
+<span>45%</span>
+</div>
+<div class="w-full bg-gray-700 h-1 rounded-full overflow-hidden">
+<div class="bg-primary h-full rounded-full" style="width: 45%"></div>
+</div>
+<button class="mt-3 w-full bg-[#233648] hover:bg-[#2d445a] text-white text-xs font-bold py-2 rounded flex items-center justify-center gap-1 transition-colors">
+                            Resume
+                        </button>
+</div>
+</div>
+</div>
+</div>
+<!-- Downloaded List (Horizontal Scroll) -->
+<div class="flex gap-4 overflow-x-auto hide-scrollbar pb-2">
+<!-- Item 1 -->
+<div class="w-28 shrink-0 group cursor-pointer">
+<div class="relative aspect-[2/3] rounded-lg overflow-hidden bg-surface-dark mb-2">
+<div class="absolute inset-0 bg-cover bg-center transition-transform duration-300 group-hover:scale-110" data-alt="Dark moody cinema poster concept with red lighting" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCrmwfnzxJixAo7igx86hPKHadsqnOd0_0bkKSmO0heRzTs2jiBzVvfqhlLXiwVDiCprjq3GjEMMlMhQirPsyP8rgWZfjI6BC3vWmyVMm_k2ir8Pvi8EMJMYz4VgMv6rUmIdrq8foyrPcOinJ1FStddWKQXPjJfhzZnoajVdieWttwz0RGezhI3TRKwSKjh9FNwE0GQhd0_ZoOaAWyf8gZIoyXcFPYQPGxvSXyJmIBuBUCT0C2ZSNs3q2UOq69Wlxwv8oWnqX4C");'></div>
+<div class="absolute top-1 right-1 bg-brand-green text-white text-[10px] font-bold px-1.5 py-0.5 rounded flex items-center gap-0.5 shadow-sm">
+<span class="material-symbols-outlined text-[10px]">offline_pin</span>
+</div>
+</div>
+<h5 class="text-gray-200 text-xs font-bold truncate">Nightfall</h5>
+<p class="text-gray-500 text-[10px]">3 Episodes</p>
+</div>
+<!-- Item 2 -->
+<div class="w-28 shrink-0 group cursor-pointer">
+<div class="relative aspect-[2/3] rounded-lg overflow-hidden bg-surface-dark mb-2">
+<div class="absolute inset-0 bg-cover bg-center transition-transform duration-300 group-hover:scale-110" data-alt="Abstract colorful neon pattern representing a tech series" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDILv1bU0w7CUQQiPvEmDJ1r-DW7gq8XiwzW9NVabW9GCPIwM8vvAPi1YH_Ag5ir4X7O7IABr0d3zOcLhoVBaFUAgcRzvylnrOFPMc3WfJiH4BdZkHCXBx6VTl1D5xjtihD4haCIqCZHIgyyrhb6IfVMagr6uamuIvhjPnWH3OAVW_PIKggpd7EHho0BqJhzFI_BwqRfnMiF9V4iQ2t8g9HA6J5iie4RCtXMrivwG5JIGQrzK9UKNKAC9gHJcyvBGD4SphzdeoK");'></div>
+<div class="absolute top-1 right-1 bg-brand-green text-white text-[10px] font-bold px-1.5 py-0.5 rounded flex items-center gap-0.5 shadow-sm">
+<span class="material-symbols-outlined text-[10px]">offline_pin</span>
+</div>
+</div>
+<h5 class="text-gray-200 text-xs font-bold truncate">Tech Titans</h5>
+<p class="text-gray-500 text-[10px]">Season 1</p>
+</div>
+<!-- Item 3 -->
+<div class="w-28 shrink-0 group cursor-pointer">
+<div class="relative aspect-[2/3] rounded-lg overflow-hidden bg-surface-dark mb-2 border-2 border-dashed border-gray-700 flex flex-col items-center justify-center gap-1">
+<span class="material-symbols-outlined text-gray-500">add_circle</span>
+</div>
+<h5 class="text-gray-200 text-xs font-bold truncate text-center">Find More</h5>
+<p class="text-gray-500 text-[10px] text-center">Download</p>
+</div>
+</div>
+</section>
+<div class="h-px bg-gradient-to-r from-transparent via-gray-800 to-transparent my-6"></div>
+<!-- Category: Made in Lagos -->
+<section class="px-4 mb-8">
+<h3 class="text-white text-lg font-bold mb-4 flex items-center gap-2">
+            Made in Lagos
+            <span class="bg-brand-yellow text-[#101922] text-[10px] font-extrabold px-1.5 py-0.5 rounded">HOT</span>
+</h3>
+<div class="flex gap-4 overflow-x-auto hide-scrollbar snap-x">
+<!-- Series Card 1 -->
+<div class="w-36 shrink-0 snap-start">
+<div class="relative aspect-[2/3] rounded-lg overflow-hidden bg-gray-800 mb-2">
+<div class="absolute inset-0 bg-cover bg-center" data-alt="Street photography of a bustling market scene in Lagos" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCgJouPROyi6Uq9IIxYjATULv3Zo6zQMe-XUwSRk46YDaSnXaY20-HIOL-4WTgiKmU_kaj45MRB1x3avP56ixGUlrk8IUn32DynnJEi6vY53BN9kMe9uHF0Z7PCjm9k_-xl8GuleZ_91WbDjwWFX6T2cqwCfEr0pHbr8wgCCUSx8R7qeE9hKPAzn4dIQu8AALLhxD6BmOYW5HhkDPG31pOYOqelQEWFXRioiS72i4uULUL32X2DNlYF0IJ5f6Mx94nkXlijHX6q");'></div>
+<!-- Rating Badge -->
+<div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 to-transparent p-2 pt-8">
+<div class="flex text-brand-yellow text-[10px]">
+<span class="material-symbols-outlined text-[12px] fill-current">star</span>
+<span class="material-symbols-outlined text-[12px] fill-current">star</span>
+<span class="material-symbols-outlined text-[12px] fill-current">star</span>
+<span class="material-symbols-outlined text-[12px] fill-current">star</span>
+<span class="material-symbols-outlined text-[12px] fill-current">star_half</span>
+</div>
+</div>
+</div>
+<h4 class="text-white text-sm font-bold truncate">Island Vibe</h4>
+<p class="text-gray-500 text-xs">Drama • 2023</p>
+</div>
+<!-- Series Card 2 -->
+<div class="w-36 shrink-0 snap-start">
+<div class="relative aspect-[2/3] rounded-lg overflow-hidden bg-gray-800 mb-2">
+<div class="absolute inset-0 bg-cover bg-center" data-alt="Portrait of a young fashionable man with sunglasses in neon light" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDG6jkAGc0bf_QLkSxRJqMciUZHjIETv1MU7GjoltFsM5t8uvgFScBxRWStIp09lmmPgp5KEwkHagPX337RMjSdIdFtiwDtTw_iNcGM55U-rjMpsv5oIB_m946u8ofVYogeRtXjHdoTG5hRYVXrBUDDgw68k-d179LLYB-AlbiACJBFZ8R3Ebs0F2AaP2b4lf593DLwQsomD4CXvixDuDDPZcXhe3GlOXDEfS4BOjRrOgPb2aHB8Np0n5rZiL9V3wmOpmabsoxb");'></div>
+<div class="absolute top-2 left-0 bg-primary text-white text-[10px] font-bold px-2 py-0.5 rounded-r">NEW</div>
+</div>
+<h4 class="text-white text-sm font-bold truncate">Afro Beats Story</h4>
+<p class="text-gray-500 text-xs">Documentary</p>
+</div>
+<!-- Series Card 3 -->
+<div class="w-36 shrink-0 snap-start">
+<div class="relative aspect-[2/3] rounded-lg overflow-hidden bg-gray-800 mb-2">
+<div class="absolute inset-0 bg-cover bg-center" data-alt="Group of people laughing and talking in a cafe setting" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuD1mq32bFzJSF1YKUFZZiXjmbPPcOD3tUHvjoGYzJlACvROosUdrYPF8lNnll4TgypBzr_mQ8gJJYjg_x9fHY4tRu1Ep2OFMVwZibTIpbHbJRqg_eJkygLe7DxjKuwq8XKpSPz4S1wgQTlUSw591RCj35PIP7MQsXDQ5iprH82wCokb9MtSYVDKnPrcFLG6q8DTkRtY21nNdndL-x8LSPOyaCVdzX-QRrAx-aONoarSh0W28S-Xh4ujV8PyaznuiU9kD5WyMOUT");'></div>
+</div>
+<h4 class="text-white text-sm font-bold truncate">The Startup</h4>
+<p class="text-gray-500 text-xs">Comedy • S2</p>
+</div>
+</div>
+</section>
+<!-- Category: Binge-Worthy Weekends -->
+<section class="px-4 mb-8">
+<h3 class="text-white text-lg font-bold mb-4">Binge-Worthy Weekends</h3>
+<div class="flex flex-col gap-4">
+<!-- Horizontal Card 1 -->
+<div class="flex gap-3 bg-surface-dark rounded-lg p-2 pr-4 shadow-sm hover:bg-surface-dark-highlight transition-colors cursor-pointer">
+<div class="w-24 aspect-video rounded bg-gray-700 bg-cover bg-center shrink-0" data-alt="Still shot from a movie showing a dramatic scene" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDWy0-v3lOfZrw04-1pK4KjzCFtKx2Usme8X-SrYiis-t7xcdVnCjU1JgQvv1B1IsegFEsEnUR0sSrmwDiwGjHPhqlWqpEEgQGuP7N4rXT51bYKxoced9KMpxNu2CBXSktfGT8_JScYmQa5zhZDmt2BEl9bAJluqACpDmgqKOzdH0LvGzn_sXiYYiR9H0oRtciGonx9MHHqFOmd97W9DXmTqCQGw4Zt7_F5xJMpB7IxpxcjHjfmYaVWVbnev7iRep_fNQyOy3Uy");'></div>
+<div class="flex flex-col justify-center flex-1 min-w-0">
+<h4 class="text-white font-bold text-sm truncate">The Last Kingdom</h4>
+<p class="text-gray-400 text-xs mt-1 line-clamp-2">As Alfred the Great defends his kingdom from Norse invaders...</p>
+</div>
+<div class="flex items-center">
+<button class="size-8 rounded-full border border-gray-600 flex items-center justify-center text-white hover:bg-white hover:text-black transition-colors">
+<span class="material-symbols-outlined text-lg">play_arrow</span>
+</button>
+</div>
+</div>
+<!-- Horizontal Card 2 -->
+<div class="flex gap-3 bg-surface-dark rounded-lg p-2 pr-4 shadow-sm hover:bg-surface-dark-highlight transition-colors cursor-pointer">
+<div class="w-24 aspect-video rounded bg-gray-700 bg-cover bg-center shrink-0" data-alt="Cinematic shot of a car chase at night" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCYVspMvT1cqkDwpIW5E7Wa6bCJqAvna3xFKvaZAjqalh628kKjKS64V_QvOxeLNL3oW-kL2Fr9deiHqlWXlgiKeWl38ObnwWF46eDUX16wQdL1MI8maJIqUGmRdGn6LFyntcG1xMaUUXNn1u3P_kyiD7qbHv2vNV9cfQgQLlEK9lhrjG8bQlxqYRFbE5A6U1gTFc7D3Q-WKnE3dNDeiqTIS3KL2ayFpthfNooiFff_ET2rgCXxr6JtRhDiqWsaQCBsHNm1Ie-x");'></div>
+<div class="flex flex-col justify-center flex-1 min-w-0">
+<h4 class="text-white font-bold text-sm truncate">Fast Lane</h4>
+<p class="text-gray-400 text-xs mt-1 line-clamp-2">Underground racing scene in Nairobi takes a dangerous turn.</p>
+</div>
+<div class="flex items-center">
+<button class="size-8 rounded-full border border-gray-600 flex items-center justify-center text-white hover:bg-white hover:text-black transition-colors">
+<span class="material-symbols-outlined text-lg">play_arrow</span>
+</button>
+</div>
+</div>
+</div>
+</section>
+<!-- Bottom Navigation -->
+<nav class="fixed bottom-0 left-0 w-full bg-[#111a22] border-t border-[#233648] px-2 pb-safe pt-2 z-50">
+<div class="flex justify-around items-center h-16">
+<a class="flex flex-col items-center gap-1 w-16 text-primary" href="#">
+<span class="material-symbols-outlined text-[24px]">home</span>
+<span class="text-[10px] font-medium">Home</span>
+</a>
+<a class="flex flex-col items-center gap-1 w-16 text-gray-500 hover:text-gray-300 transition-colors" href="#">
+<span class="material-symbols-outlined text-[24px]">explore</span>
+<span class="text-[10px] font-medium">Browse</span>
+</a>
+<a class="flex flex-col items-center gap-1 w-16 text-gray-500 hover:text-gray-300 transition-colors relative" href="#">
+<div class="relative">
+<span class="material-symbols-outlined text-[24px]">download_for_offline</span>
+<span class="absolute -top-1 -right-1 size-2.5 bg-brand-green rounded-full border border-[#111a22]"></span>
+</div>
+<span class="text-[10px] font-medium">Downloads</span>
+</a>
+<a class="flex flex-col items-center gap-1 w-16 text-gray-500 hover:text-gray-300 transition-colors" href="#">
+<div class="size-6 rounded-full overflow-hidden bg-gray-700">
+<img class="w-full h-full object-cover" data-alt="User profile avatar" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDa8z_VJ7f9Qri6qQMn3xkWJMc2vZ2jJWF6eLwiXcULiuJ4mQPE3H-k8nhcLCVlC14njfvX3Ameh90pKlsKtCWHY4cBh35AbJ_KLB7xlRpbifuUx0gtOOdgTzBrVppEtHF8brhq_nNsI6fdmCB-bfTs76jgUH0paD93VCP5TRJ4yPBekz8HVZ3zPAvgs3au2cHkoYBE_1iNrbNaAPKMMx3g6sCqAuWmyamSgaBis1zoANL5pZ1psV8FrzNb36vfX0nLAYgg9HRI"/>
+</div>
+<span class="text-[10px] font-medium">Profile</span>
+</a>
+</div>
+</nav>
+<!-- Extra space for bottom nav scrolling -->
+<div class="h-10"></div>
+</body></html>

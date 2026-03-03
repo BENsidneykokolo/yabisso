@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Yabisso - Track Your Order</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "yabisso-green": "#22c55e",
+                        "yabisso-yellow": "#eab308",
+                        "yabisso-red": "#ef4444",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                        "surface-dark": "#192633",
+                        "surface-dark-highlight": "#233345",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "2xl": "1rem",
+                        "3xl": "1.5rem",
+                        "full": "9999px"
+                    },
+                    backgroundImage: {
+                        'subtle-pattern': "url(\"data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%231d2a38' fill-opacity='0.4'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E\")",
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom scrollbar hide for clean mobile look */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-dark text-white font-display overflow-hidden">
+<div class="relative h-screen w-full flex flex-col group/design-root">
+<!-- Map Section (Background/Top) -->
+<div class="absolute top-0 left-0 w-full h-[55%] z-0">
+<!-- Map Image -->
+<div class="w-full h-full bg-gray-800 relative overflow-hidden">
+<img alt="Dark themed map of a city street layout with roads and blocks" class="w-full h-full object-cover opacity-60" data-location="Nairobi" src="https://lh3.googleusercontent.com/aida-public/AB6AXuChJ4SPq9XD2CMK2bh8NCuH-srqASMpax5GL4buS8KvFx-2OklfnHvYKgyRHbR_sXeqkUZ1-fVG8xy-FrUQMtX8Qu-AgV_QLnhyUzo9SiXUvS9Gaz1yj7R_wIRuxbiUf2MvARjfTqOhCHYsdsQ0oEG6V-pclNrBVddZx7IxXs21wjmkMYo7gas5zsPVil_3LBzLVYA7BmLXli015H7yhlRCXGtz0MetWAVTr54UIjLs-4XmfAodQMgFE6dqyXy08FHm-Smo0WeY"/>
+<div class="absolute inset-0 bg-indigo-900/20 mix-blend-overlay"></div>
+</div>
+<!-- Header Overlay -->
+<div class="absolute top-0 left-0 w-full p-4 pt-8 bg-gradient-to-b from-black/80 to-transparent z-20">
+<div class="flex items-center justify-between">
+<button class="bg-surface-dark/80 backdrop-blur-md size-10 rounded-full flex items-center justify-center hover:bg-surface-dark transition-colors border border-white/10">
+<span class="material-symbols-outlined text-white" style="font-size: 24px;">arrow_back</span>
+</button>
+<h2 class="text-white text-lg font-bold tracking-tight shadow-black drop-shadow-md">Track Order #YAB-2938</h2>
+<button class="bg-surface-dark/80 backdrop-blur-md size-10 rounded-full flex items-center justify-center hover:bg-surface-dark transition-colors border border-white/10">
+<span class="material-symbols-outlined text-white" style="font-size: 24px;">support_agent</span>
+</button>
+</div>
+</div>
+<!-- Map Markers -->
+<!-- Driver Marker -->
+<div class="absolute top-[40%] left-[45%] flex flex-col items-center transform -translate-x-1/2 -translate-y-1/2 z-10 animate-bounce" style="animation-duration: 3s;">
+<div class="bg-primary p-2 rounded-full border-2 border-white shadow-[0_0_15px_rgba(19,127,236,0.6)] relative z-10">
+<span class="material-symbols-outlined text-white block" style="font-size: 20px;">two_wheeler</span>
+</div>
+<div class="bg-surface-dark/90 text-xs px-2 py-1 rounded-md mt-1 font-semibold whitespace-nowrap border border-white/10">Kofi • 5 mins away</div>
+</div>
+<!-- Destination Marker -->
+<div class="absolute top-[60%] left-[65%] flex flex-col items-center transform -translate-x-1/2 -translate-y-1/2">
+<div class="bg-yabisso-green p-2 rounded-full border-2 border-white shadow-lg relative z-10">
+<span class="material-symbols-outlined text-white block" style="font-size: 20px;">home</span>
+</div>
+</div>
+<!-- Route Line Simulation (SVG) -->
+<svg class="absolute top-0 left-0 w-full h-full pointer-events-none" style="z-index: 5;">
+<path d="M 170 300 Q 200 280 180 200 T 250 150" fill="none" stroke="#137fec" stroke-dasharray="8 4" stroke-linecap="round" stroke-width="4"></path>
+</svg>
+<!-- Map Controls -->
+<div class="absolute bottom-12 right-4 flex flex-col gap-2 z-10">
+<button class="size-10 bg-surface-dark text-white rounded-lg shadow-lg flex items-center justify-center active:scale-95 transition-transform">
+<span class="material-symbols-outlined" style="font-size: 24px;">my_location</span>
+</button>
+</div>
+</div>
+<!-- Bottom Sheet (Details) -->
+<div class="absolute bottom-0 left-0 w-full h-[50%] z-30 flex flex-col">
+<!-- Sheet Container -->
+<div class="w-full h-full bg-background-dark rounded-t-3xl shadow-[0_-4px_20px_rgba(0,0,0,0.4)] flex flex-col relative overflow-hidden border-t border-white/5 bg-subtle-pattern">
+<!-- Drag Handle -->
+<div class="w-full flex justify-center pt-3 pb-2 shrink-0" role="button">
+<div class="h-1.5 w-12 rounded-full bg-surface-dark-highlight"></div>
+</div>
+<!-- Scrollable Content -->
+<div class="flex-1 overflow-y-auto no-scrollbar px-5 pb-8">
+<!-- ETA Headline -->
+<div class="flex justify-between items-start mt-2 mb-6">
+<div>
+<p class="text-gray-400 text-sm font-medium mb-1">Estimated Arrival</p>
+<h1 class="text-3xl font-extrabold text-white tracking-tight">12 - 15 <span class="text-xl text-gray-400 font-normal">mins</span></h1>
+</div>
+<div class="bg-surface-dark px-3 py-1.5 rounded-lg border border-white/5">
+<span class="text-sm font-bold text-primary">11:45 AM</span>
+</div>
+</div>
+<!-- Driver Card -->
+<div class="bg-surface-dark rounded-xl p-4 mb-8 border border-white/5 shadow-sm">
+<div class="flex items-center gap-4">
+<!-- Avatar -->
+<div class="relative">
+<img alt="Profile photo of the delivery driver, a young African man smiling" class="size-14 rounded-full object-cover border-2 border-surface-dark-highlight" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCH_VegiTqrYP2PhRN55m2dSI6UN1FdCaXeKQW2oie78dXVvFN4oX_PjMHZVj2EZgV-i53OOIses8AGprf5RMMx1rjLbizrPSrKWMObc7Hm3u8ebDdEhqsqaSWL2rYaWmuY1MHbPYGLiJGuoVnzDHv7n6q0AvIwXcqhoJgc19F0WOqG0j5nffaIqHTMVRKsT3j0vX4MxmPnE8Be80N9VahW--AEDC4W1X9Pt2OrrQzIOWoDlQ3YkVtGPUTkVSToIjdslJSGXCmk"/>
+<div class="absolute -bottom-1 -right-1 bg-background-dark p-0.5 rounded-full">
+<div class="bg-yabisso-green size-3 rounded-full border-2 border-background-dark"></div>
+</div>
+</div>
+<!-- Info -->
+<div class="flex-1 min-w-0">
+<h3 class="text-white font-bold text-lg truncate">Kofi Mensah</h3>
+<div class="flex items-center gap-2 text-sm text-gray-400">
+<span class="material-symbols-outlined text-yabisso-yellow fill-1" style="font-size: 16px; font-variation-settings: 'FILL' 1;">star</span>
+<span class="font-medium text-white">4.9</span>
+<span class="w-1 h-1 bg-gray-600 rounded-full"></span>
+<span class="truncate">Yamaha Ace 125</span>
+</div>
+</div>
+<!-- Actions -->
+<div class="flex gap-2 shrink-0">
+<button class="size-10 rounded-full bg-primary/20 hover:bg-primary/30 flex items-center justify-center transition-colors">
+<span class="material-symbols-outlined text-primary" style="font-size: 20px;">chat</span>
+</button>
+<button class="size-10 rounded-full bg-yabisso-green flex items-center justify-center hover:bg-green-600 transition-colors shadow-lg shadow-green-900/20">
+<span class="material-symbols-outlined text-white" style="font-size: 20px;">call</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Timeline -->
+<div class="mb-8">
+<h4 class="text-sm font-bold text-gray-500 uppercase tracking-wider mb-4">Delivery Status</h4>
+<div class="grid grid-cols-[32px_1fr] gap-x-4">
+<!-- Step 1: Confirmed -->
+<div class="flex flex-col items-center">
+<div class="size-8 rounded-full bg-yabisso-green/20 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-yabisso-green" style="font-size: 18px;">check</span>
+</div>
+<div class="w-[2px] bg-yabisso-green/30 h-full min-h-[24px]"></div>
+</div>
+<div class="pb-6 pt-1">
+<p class="text-white text-base font-semibold leading-none">Order Confirmed</p>
+<p class="text-gray-500 text-sm mt-1">11:15 AM</p>
+</div>
+<!-- Step 2: Picked Up -->
+<div class="flex flex-col items-center">
+<div class="size-8 rounded-full bg-yabisso-green/20 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-yabisso-green" style="font-size: 18px;">storefront</span>
+</div>
+<div class="w-[2px] bg-gradient-to-b from-yabisso-green/30 to-primary h-full min-h-[24px]"></div>
+</div>
+<div class="pb-6 pt-1">
+<p class="text-white text-base font-semibold leading-none">Picked Up</p>
+<p class="text-gray-500 text-sm mt-1">11:30 AM • Mama Olie's Kitchen</p>
+</div>
+<!-- Step 3: Out for Delivery (Active) -->
+<div class="flex flex-col items-center">
+<div class="size-8 rounded-full bg-primary flex items-center justify-center shadow-[0_0_12px_rgba(19,127,236,0.4)] shrink-0 z-10 ring-4 ring-background-dark">
+<span class="material-symbols-outlined text-white animate-pulse" style="font-size: 18px;">local_shipping</span>
+</div>
+<div class="w-[2px] bg-surface-dark-highlight h-full min-h-[24px]"></div>
+</div>
+<div class="pb-6 pt-1">
+<p class="text-primary text-base font-bold leading-none">Out for Delivery</p>
+<p class="text-gray-400 text-sm mt-1">Driver is on the way to your location</p>
+</div>
+<!-- Step 4: Arriving -->
+<div class="flex flex-col items-center">
+<div class="size-8 rounded-full bg-surface-dark border border-gray-600 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-gray-500" style="font-size: 18px;">location_on</span>
+</div>
+</div>
+<div class="pt-1">
+<p class="text-gray-500 text-base font-medium leading-none">Arriving</p>
+<p class="text-gray-600 text-sm mt-1">Est. 11:45 AM</p>
+</div>
+</div>
+</div>
+<!-- Order Summary Toggle -->
+<div class="border-t border-white/5 pt-4">
+<button class="w-full flex items-center justify-between py-2 group">
+<div class="flex flex-col items-start">
+<span class="text-white font-semibold">Order Summary</span>
+<span class="text-sm text-gray-400">2 items • $24.50</span>
+</div>
+<span class="material-symbols-outlined text-gray-400 group-hover:text-white transition-colors">keyboard_arrow_down</span>
+</button>
+</div>
+<!-- Cancel / Help Text -->
+<div class="mt-6 text-center">
+<p class="text-sm text-gray-500">Need help? <a class="text-yabisso-red font-semibold hover:underline" href="#">Report an issue</a></p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</body></html>

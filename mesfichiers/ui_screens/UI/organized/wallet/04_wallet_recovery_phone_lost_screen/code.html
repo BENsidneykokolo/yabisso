@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Wallet Recovery - Yabisso</title>
+<!-- Tailwind CSS with Plugins -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Theme Configuration -->
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#137fec",
+              "background-light": "#f6f7f8",
+              "background-dark": "#101922",
+            },
+            fontFamily: {
+              "display": ["Inter", "sans-serif"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display antialiased">
+<div class="relative flex h-auto min-h-screen w-full flex-col bg-background-light dark:bg-background-dark overflow-x-hidden max-w-md mx-auto shadow-2xl">
+<!-- TopAppBar -->
+<div class="flex items-center bg-background-dark p-4 pb-2 justify-between sticky top-0 z-20 border-b border-white/5">
+<div class="text-white flex size-12 shrink-0 items-center justify-center rounded-full hover:bg-white/10 cursor-pointer transition-colors">
+<span class="material-symbols-outlined" style="font-size: 24px;">arrow_back</span>
+</div>
+<h2 class="text-white text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center pr-12">Recover Wallet</h2>
+</div>
+<!-- Yabisso Brand Accent Line -->
+<div class="h-1 w-full bg-gradient-to-r from-[#137fec] via-[#fcd34d] to-[#ef4444]"></div>
+<!-- HeadlineText & BodyText -->
+<div class="flex flex-col px-4 pt-6 pb-2">
+<h2 class="text-slate-900 dark:text-white tracking-tight text-[28px] font-bold leading-tight text-left pb-2">Restore Access</h2>
+<p class="text-slate-600 dark:text-slate-400 text-base font-normal leading-relaxed">
+                Lost your device? Securely recover your Yabisso wallet using one of the methods below.
+            </p>
+</div>
+<!-- Cards Container -->
+<div class="flex flex-col gap-4 pb-8">
+<!-- Card 1: Cloud Restore -->
+<div class="px-4 pt-2 @container">
+<div class="flex flex-col items-stretch justify-start rounded-xl overflow-hidden shadow-lg bg-white dark:bg-[#192633] border border-slate-200 dark:border-slate-800">
+<!-- Image Area -->
+<div class="relative w-full aspect-video bg-center bg-no-repeat bg-cover" data-alt="Abstract digital network visualization with blue glowing nodes representing cloud data" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCLw3v2yqd9ZSCnlH9MhGogHOHalTPfRUZl6QXrm1RI8Zn2ayvzCX5xzTfyXzvzTa102fp8YPkvjyp5p9WfRUIQDxzIVhseAifKy2H-g9OwkeDyTYNoTwqzx3lrpC25ucaCirsqU6wD_Jhrd2LrS-ejVwEEE7_IcMfoqhrAG81LqHWgxHADyHDVK6PsnkRUP2ld9BvBCstPTg5sIcQeLKFpiDKUhfB_9SA8npCLH9GYVkVgftS2DcX5kMKvJfHG3-jS-bhRCJ-I");'>
+<div class="absolute inset-0 bg-gradient-to-t from-white dark:from-[#192633] via-transparent to-transparent opacity-90"></div>
+<!-- Badge -->
+<div class="absolute top-3 right-3 bg-green-500/90 backdrop-blur-sm text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">bolt</span>
+                            FASTEST
+                         </div>
+</div>
+<!-- Content Area -->
+<div class="flex w-full grow flex-col items-stretch justify-center gap-1 px-4 pb-5 pt-1 relative z-10 -mt-8">
+<!-- Icon Float -->
+<div class="size-12 rounded-xl bg-primary shadow-lg flex items-center justify-center text-white mb-2">
+<span class="material-symbols-outlined text-[28px]">cloud_download</span>
+</div>
+<div class="flex flex-col gap-2">
+<div>
+<p class="text-slate-900 dark:text-white text-xl font-bold leading-tight tracking-[-0.015em]">Cloud Restore</p>
+<p class="text-slate-500 dark:text-[#92adc9] text-sm font-normal leading-relaxed mt-1">
+                                    Restore your wallet balance and history from your last encrypted backup.
+                                </p>
+</div>
+<button class="flex w-full cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-4 bg-slate-900 dark:bg-white hover:opacity-90 transition-opacity text-white dark:text-[#111a22] text-sm font-bold leading-normal mt-2 shadow-sm">
+<span class="material-symbols-outlined mr-2 text-[20px]">add_to_drive</span>
+<span class="truncate">Connect Google Drive</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Card 2: Kiosk Validation -->
+<div class="px-4 @container">
+<div class="flex flex-col items-stretch justify-start rounded-xl overflow-hidden shadow-lg bg-white dark:bg-[#192633] border border-slate-200 dark:border-slate-800">
+<!-- Image Area -->
+<div class="relative w-full aspect-video bg-center bg-no-repeat bg-cover" data-alt="Street map view with location pins highlighting agent spots" data-location="Lagos, Nigeria" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDpyPxxQvOoU2x9hOMX8NLdQk-xfja7lb_x71Pu7vVQaAdbXcgGRjiHXiHCcTT9le6C4hkD-tsBcnRG2dY3a8V4a7yX_Pv0-BlHEQC5SV4bBu3U-sxLskTcmJJQwV-LNONlvuey-utScgGk1HiHyCtBbSsscJeLlNnWL-UHpzCAChDG3JyoywRzzr5Jy3CPdkGE5TFRXtKP61JWEexYrNA2y7VP76gBieB3y7cyish262zncKUIcx96gCKIhudJpKRCrDyCbp2C");'>
+<div class="absolute inset-0 bg-gradient-to-t from-white dark:from-[#192633] via-transparent to-transparent opacity-90"></div>
+<!-- Badge -->
+<div class="absolute top-3 right-3 bg-yellow-500/90 backdrop-blur-sm text-black text-xs font-bold px-3 py-1.5 rounded-full shadow-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">wifi_off</span>
+                            OFFLINE
+                         </div>
+</div>
+<!-- Content Area -->
+<div class="flex w-full grow flex-col items-stretch justify-center gap-1 px-4 pb-5 pt-1 relative z-10 -mt-8">
+<!-- Icon Float -->
+<div class="size-12 rounded-xl bg-slate-700 shadow-lg flex items-center justify-center text-white mb-2 border border-slate-600">
+<span class="material-symbols-outlined text-[28px]">storefront</span>
+</div>
+<div class="flex flex-col gap-2">
+<div>
+<p class="text-slate-900 dark:text-white text-xl font-bold leading-tight tracking-[-0.015em]">Kiosk Validation</p>
+<p class="text-slate-500 dark:text-[#92adc9] text-sm font-normal leading-relaxed mt-1">
+                                    Visit a nearby Yabisso agent to verify your identity with your ID card.
+                                </p>
+</div>
+<button class="flex w-full cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-4 bg-slate-900 dark:bg-white hover:opacity-90 transition-opacity text-white dark:text-[#111a22] text-sm font-bold leading-normal mt-2 shadow-sm">
+<span class="material-symbols-outlined mr-2 text-[20px]">near_me</span>
+<span class="truncate">Find Nearest Kiosk</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Footer Support Link -->
+<div class="w-full flex justify-center py-4">
+<button class="text-slate-500 hover:text-primary dark:hover:text-white text-sm font-medium transition-colors">
+                    I don't have a backup or ID
+                </button>
+</div>
+<!-- Spacer for scroll -->
+<div class="h-5"></div>
+</div>
+</div>
+</body></html>

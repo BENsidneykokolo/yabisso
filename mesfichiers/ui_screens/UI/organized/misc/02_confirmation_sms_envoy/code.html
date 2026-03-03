@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="fr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Yabisso - Confirmation SMS</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                        "yabisso-red": "#e63946",
+                        "yabisso-yellow": "#ffb703",
+                        "yabisso-green": "#2a9d8f",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white min-h-screen flex flex-col">
+<!-- Header / Navigation Bar -->
+<header class="flex items-center justify-between p-4 border-b border-white/5 bg-background-light dark:bg-background-dark/50 backdrop-blur-md sticky top-0 z-50">
+<button class="flex h-10 w-10 items-center justify-center rounded-full hover:bg-white/10 transition-colors">
+<span class="material-symbols-outlined text-white">close</span>
+</button>
+<div class="flex items-center gap-2">
+<div class="h-2 w-2 rounded-full bg-yabisso-red"></div>
+<div class="h-2 w-2 rounded-full bg-yabisso-yellow"></div>
+<div class="h-2 w-2 rounded-full bg-primary"></div>
+<span class="text-sm font-bold tracking-tight text-white/90">YABISSO</span>
+</div>
+<div class="w-10"></div> <!-- Spacer for centering -->
+</header>
+<main class="flex-1 flex flex-col items-center px-6 py-12 max-w-md mx-auto w-full">
+<!-- Success Icon -->
+<div class="mb-8 relative">
+<div class="absolute inset-0 bg-yabisso-green/20 blur-2xl rounded-full"></div>
+<div class="relative flex items-center justify-center h-24 w-24 rounded-full bg-yabisso-green text-white shadow-lg shadow-yabisso-green/20">
+<span class="material-symbols-outlined text-5xl">check_circle</span>
+</div>
+</div>
+<!-- Title & Subtitle -->
+<div class="text-center space-y-3 mb-10">
+<h1 class="text-3xl font-bold tracking-tight text-white">SMS Envoyé !</h1>
+<p class="text-white/60 leading-relaxed text-sm">
+                Votre demande a été transmise avec succès par SMS. Elle sera automatiquement synchronisée dès que vous retrouverez une connexion internet.
+            </p>
+</div>
+<!-- Summary Card -->
+<div class="w-full bg-white/5 border border-white/10 rounded-xl p-5 mb-10 backdrop-blur-sm">
+<h3 class="text-xs font-semibold uppercase tracking-wider text-white/40 mb-4">Détails de l'opération</h3>
+<div class="space-y-4">
+<div class="flex justify-between items-center">
+<span class="text-sm text-white/60">Type de demande</span>
+<span class="text-sm font-medium text-white">Commande Marketplace</span>
+</div>
+<div class="flex justify-between items-center">
+<span class="text-sm text-white/60">Référence</span>
+<span class="text-sm font-mono font-medium text-primary">#YBS-OFF-8821</span>
+</div>
+<div class="pt-3 border-t border-white/5 flex justify-between items-start">
+<span class="text-sm text-white/60">Statut</span>
+<div class="flex flex-col items-end gap-1">
+<div class="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-yabisso-yellow/10 border border-yabisso-yellow/20">
+<span class="material-symbols-outlined text-[14px] text-yabisso-yellow">schedule</span>
+<span class="text-[11px] font-bold text-yabisso-yellow uppercase tracking-tight">En attente</span>
+</div>
+<span class="text-[10px] text-white/40 italic">Synchronisation dès connexion</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Call to Actions -->
+<div class="w-full space-y-3 mt-auto">
+<a class="flex items-center justify-center w-full py-4 px-6 bg-white text-background-dark font-bold rounded-xl hover:bg-slate-100 transition-all active:scale-[0.98]" href="#">
+                Retour à l'accueil
+            </a>
+<a class="flex items-center justify-center w-full py-4 px-6 bg-transparent border border-white/20 text-white font-semibold rounded-xl hover:bg-white/5 transition-all active:scale-[0.98]" href="#">
+                Voir mes transactions
+            </a>
+</div>
+</main>
+<!-- Bottom Navigation Bar (Simplified from component) -->
+<div class="mt-auto border-t border-white/5 bg-background-dark/80 backdrop-blur-xl px-4 pb-6 pt-3">
+<div class="flex gap-2 max-w-md mx-auto">
+<a class="flex flex-1 flex-col items-center justify-center gap-1 text-primary" href="#">
+<span class="material-symbols-outlined">home</span>
+<p class="text-[10px] font-medium leading-normal">Accueil</p>
+</a>
+<a class="flex flex-1 flex-col items-center justify-center gap-1 text-white/40" href="#">
+<span class="material-symbols-outlined">storefront</span>
+<p class="text-[10px] font-medium leading-normal">Marketplace</p>
+</a>
+<a class="flex flex-1 flex-col items-center justify-center gap-1 text-white/40" href="#">
+<span class="material-symbols-outlined">receipt_long</span>
+<p class="text-[10px] font-medium leading-normal">Transactions</p>
+</a>
+<a class="flex flex-1 flex-col items-center justify-center gap-1 text-white/40" href="#">
+<span class="material-symbols-outlined">chat_bubble</span>
+<p class="text-[10px] font-medium leading-normal">Messages</p>
+</a>
+<a class="flex flex-1 flex-col items-center justify-center gap-1 text-white/40" href="#">
+<span class="material-symbols-outlined">person</span>
+<p class="text-[10px] font-medium leading-normal">Profil</p>
+</a>
+</div>
+</div>
+</body></html>

@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Hotel Payment Screen</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Noto+Sans:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922", // Adjusted to match the dark aesthetic requested
+                        "yabisso-blue": "#137fec",
+                        "yabisso-red": "#ef4444",
+                        "yabisso-yellow": "#eab308",
+                        "yabisso-green": "#22c55e",
+                    },
+                    fontFamily: {
+                        "display": ["Plus Jakarta Sans", "sans-serif"],
+                        "body": ["Noto Sans", "sans-serif"],
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "2xl": "1rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom scrollbar hide for cleaner mobile look */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        .radio-selected-ring:checked + div {
+            border-color: #137fec;
+            background-color: rgba(19, 127, 236, 0.05);
+        }
+        /* Custom radio appearance */
+        input[type="radio"] {
+            appearance: none;
+            -webkit-appearance: none;
+            width: 1.25rem;
+            height: 1.25rem;
+            border: 2px solid #324d67;
+            border-radius: 50%;
+            background-color: transparent;
+            display: grid;
+            place-content: center;
+        }
+        input[type="radio"]::before {
+            content: "";
+            width: 0.65rem;
+            height: 0.65rem;
+            border-radius: 50%;
+            transform: scale(0);
+            transition: 120ms transform ease-in-out;
+            box-shadow: inset 1em 1em #137fec;
+        }
+        input[type="radio"]:checked {
+            border-color: #137fec;
+        }
+        input[type="radio"]:checked::before {
+            transform: scale(1);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white font-display antialiased selection:bg-primary selection:text-white overflow-x-hidden">
+<div class="relative flex min-h-screen w-full flex-col max-w-md mx-auto shadow-2xl bg-[#111a22]">
+<!-- Header -->
+<header class="sticky top-0 z-50 flex items-center bg-[#111a22]/95 backdrop-blur-sm p-4 pb-2 justify-between border-b border-white/5">
+<button class="text-white flex size-10 shrink-0 items-center justify-center rounded-full active:bg-white/10 transition-colors">
+<span class="material-symbols-outlined text-[24px]">arrow_back</span>
+</button>
+<h2 class="text-white text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center pr-10">Checkout</h2>
+</header>
+<!-- Main Content -->
+<main class="flex-1 flex flex-col gap-6 p-4 pb-32">
+<!-- Booking Summary Card -->
+<section>
+<div class="flex items-stretch justify-between gap-4 rounded-xl bg-[#1a2632] p-4 border border-white/5 shadow-lg">
+<div class="w-24 bg-center bg-no-repeat bg-cover rounded-lg shrink-0 aspect-square" data-alt="Modern hotel building exterior view at dusk with warm lighting" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAy60loaRcLa3RojL1p7xN1RMSITSyMTFd2AKu5QzZIJP9rVczsfujB_uHbRkNGRAV2dGj5NYiQnrAXE-j8NHLH2CvKlNbzsMDJymH4O0J_pV0CyKbGseaXGLm8rwEIu41-fqeBjlAANyniPEsvwdFuHPUtk0R9Pqkgntsnktwv6EfMV3pEqQ0QaTKVhRMsW6JTby-LwKajn9ZuDoSG9nWSNb2aRkXsf-xczwZOhjwhqjTe4nkBAExSYcyhBKSFcy3T9WVnNUv3");'>
+</div>
+<div class="flex flex-col justify-between flex-1 py-1">
+<div>
+<p class="text-white text-lg font-bold leading-tight">Hotel Ivoire</p>
+<div class="flex items-center gap-1 mt-1 text-[#92adc9]">
+<span class="material-symbols-outlined text-[16px]">calendar_month</span>
+<p class="text-sm font-medium">2 Nights • 1 Guest</p>
+</div>
+</div>
+<div class="flex items-end justify-between">
+<p class="text-[#92adc9] text-xs font-normal">Total Price</p>
+<p class="text-yabisso-blue text-lg font-bold tracking-tight">XOF 150,000</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Payment Methods -->
+<section class="flex flex-col gap-4">
+<h3 class="text-white tracking-tight text-xl font-bold leading-tight px-1">Select Payment Method</h3>
+<div class="flex flex-col gap-3" role="radiogroup">
+<!-- Option 1: Yabisso Wallet -->
+<label class="group relative cursor-pointer">
+<input checked="" class="peer sr-only" name="payment_method" type="radio"/>
+<div class="flex items-center gap-4 rounded-xl border border-[#324d67] bg-[#1a2632] p-4 transition-all duration-200 peer-checked:border-yabisso-blue peer-checked:bg-[#137fec]/5 hover:border-[#4b6a88]">
+<div class="flex size-12 shrink-0 items-center justify-center rounded-full bg-yabisso-blue/10 text-yabisso-blue">
+<span class="material-symbols-outlined">account_balance_wallet</span>
+</div>
+<div class="flex grow flex-col">
+<p class="text-white text-base font-bold leading-normal">Yabisso Wallet</p>
+<p class="text-[#92adc9] text-sm font-normal leading-normal">Balance: <span class="text-white font-medium">XOF 200,000</span></p>
+</div>
+<div class="h-6 w-6 rounded-full border-2 border-[#324d67] group-hover:border-[#587da3] peer-checked:border-yabisso-blue flex items-center justify-center transition-colors">
+<div class="h-3 w-3 rounded-full bg-yabisso-blue scale-0 peer-checked:scale-100 transition-transform"></div>
+</div>
+</div>
+</label>
+<!-- Option 2: Online Payment -->
+<label class="group relative cursor-pointer">
+<input class="peer sr-only" name="payment_method" type="radio"/>
+<div class="flex items-center gap-4 rounded-xl border border-[#324d67] bg-[#1a2632] p-4 transition-all duration-200 peer-checked:border-yabisso-blue peer-checked:bg-[#137fec]/5 hover:border-[#4b6a88]">
+<div class="flex size-12 shrink-0 items-center justify-center rounded-full bg-yabisso-green/10 text-yabisso-green">
+<span class="material-symbols-outlined">payments</span>
+</div>
+<div class="flex grow flex-col gap-1">
+<p class="text-white text-base font-bold leading-normal">Pay Online</p>
+<div class="flex items-center gap-2">
+<span class="text-[#92adc9] text-xs">Card / Mobile Money</span>
+<div class="flex gap-1">
+<span class="material-symbols-outlined text-[18px] text-white/60">credit_card</span>
+<span class="material-symbols-outlined text-[18px] text-white/60">phonelink_ring</span>
+</div>
+</div>
+</div>
+<div class="h-6 w-6 rounded-full border-2 border-[#324d67] group-hover:border-[#587da3] peer-checked:border-yabisso-blue flex items-center justify-center transition-colors">
+<div class="h-3 w-3 rounded-full bg-yabisso-blue scale-0 peer-checked:scale-100 transition-transform"></div>
+</div>
+</div>
+</label>
+<!-- Option 3: SMS Payment (Offline) -->
+<label class="group relative cursor-pointer">
+<input class="peer sr-only" name="payment_method" type="radio"/>
+<div class="flex items-center gap-4 rounded-xl border border-[#324d67] bg-[#1a2632] p-4 transition-all duration-200 peer-checked:border-yabisso-blue peer-checked:bg-[#137fec]/5 hover:border-[#4b6a88]">
+<div class="flex size-12 shrink-0 items-center justify-center rounded-full bg-yabisso-yellow/10 text-yabisso-yellow">
+<span class="material-symbols-outlined">sms</span>
+</div>
+<div class="flex grow flex-col">
+<div class="flex items-center gap-2">
+<p class="text-white text-base font-bold leading-normal">Pay via SMS</p>
+<span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-[#324d67] text-white uppercase tracking-wider">Offline</span>
+</div>
+<p class="text-[#92adc9] text-sm font-normal leading-normal">Generate code without internet</p>
+</div>
+<div class="h-6 w-6 rounded-full border-2 border-[#324d67] group-hover:border-[#587da3] peer-checked:border-yabisso-blue flex items-center justify-center transition-colors">
+<div class="h-3 w-3 rounded-full bg-yabisso-blue scale-0 peer-checked:scale-100 transition-transform"></div>
+</div>
+</div>
+</label>
+</div>
+</section>
+<!-- Trust / Feature Section -->
+<section class="mt-4 px-2">
+<div class="flex items-start gap-4 p-4 rounded-xl bg-gradient-to-br from-[#1a2632] to-[#111a22] border border-white/5">
+<span class="material-symbols-outlined text-yabisso-green text-3xl shrink-0">verified_user</span>
+<div class="flex flex-col gap-1">
+<h4 class="text-white text-sm font-bold">Secure &amp; Reliable</h4>
+<p class="text-[#92adc9] text-xs leading-relaxed">
+                            Your transaction is protected by end-to-end encryption. Offline SMS payment is available for low connectivity areas.
+                        </p>
+</div>
+</div>
+</section>
+</main>
+<!-- Sticky Bottom Bar -->
+<div class="fixed bottom-0 left-0 right-0 z-50 p-4 bg-[#111a22] border-t border-white/5 max-w-md mx-auto">
+<button class="flex w-full items-center justify-center gap-2 rounded-xl bg-white px-6 py-4 transition-transform active:scale-[0.98] hover:bg-gray-100">
+<span class="text-[#111a22] text-base font-bold tracking-tight">Confirm Payment</span>
+<span class="text-[#111a22] text-base font-bold tracking-tight">•</span>
+<span class="text-[#111a22] text-base font-bold tracking-tight">XOF 150,000</span>
+<span class="material-symbols-outlined text-[#111a22] ml-1">arrow_forward</span>
+</button>
+</div>
+</div>
+</body></html>

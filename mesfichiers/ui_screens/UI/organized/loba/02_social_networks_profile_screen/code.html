@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Yabisso Profile</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "yabisso-red": "#ef4444",
+                        "yabisso-yellow": "#eab308",
+                        "yabisso-green": "#22c55e",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                        "surface-dark": "#1c2630",
+                        "surface-light": "#ffffff",
+                    },
+                    fontFamily: {
+                        "display": ["Plus Jakarta Sans", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white font-display antialiased selection:bg-primary/30">
+<div class="relative flex h-full min-h-screen w-full flex-col overflow-x-hidden pb-24">
+<!-- Top Navigation (Overlay) -->
+<div class="absolute top-0 left-0 w-full z-20 p-4 pt-12 flex justify-between items-center text-white bg-gradient-to-b from-black/60 to-transparent">
+<button class="w-10 h-10 flex items-center justify-center rounded-full bg-black/20 backdrop-blur-md active:scale-95 transition-transform">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<div class="flex gap-3">
+<!-- Offline Indicator -->
+<div class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/30 backdrop-blur-md border border-white/10">
+<span class="material-symbols-outlined text-[18px] text-yabisso-green">cloud_done</span>
+<span class="text-xs font-medium">Cached</span>
+</div>
+<button class="w-10 h-10 flex items-center justify-center rounded-full bg-black/20 backdrop-blur-md active:scale-95 transition-transform">
+<span class="material-symbols-outlined">ios_share</span>
+</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-full bg-black/20 backdrop-blur-md active:scale-95 transition-transform">
+<span class="material-symbols-outlined">settings</span>
+</button>
+</div>
+</div>
+<!-- Banner Image -->
+<div class="relative w-full h-48 sm:h-64 bg-slate-800 overflow-hidden">
+<div class="absolute inset-0 bg-gradient-to-r from-blue-900 via-indigo-900 to-slate-900 opacity-80 z-10"></div>
+<!-- Abstract pattern for "African Tech" vibe -->
+<div class="absolute inset-0 opacity-30 z-0 bg-[url('https://placeholder.pics/svg/800')] bg-cover bg-center mix-blend-overlay" data-alt="Abstract geometric african pattern overlay"></div>
+<div class="absolute inset-0 bg-gradient-to-t from-background-dark to-transparent z-10"></div>
+</div>
+<!-- Profile Info Section -->
+<div class="relative px-4 -mt-16 z-10 flex flex-col items-center">
+<!-- Avatar with Brand Colors Ring -->
+<div class="relative p-1 rounded-full bg-gradient-to-tr from-yabisso-yellow via-yabisso-red to-primary shadow-xl">
+<div class="w-28 h-28 rounded-full border-4 border-background-dark bg-slate-700 bg-cover bg-center" data-alt="Portrait of Kwame Osei smiling" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDQhIYrsn0BgO3o2NSHOl0rqWaVVjO8DaNG_JMTJLCRg8306mCppb5GKTf1dKIMI5DQNoJvE6xmSRw5Bfif5oTg6ENE0ViWBUCXChpCJPORs11wgFaIL3GxZNCxUoANlXiohrIy6Yb9r6k89wP9DhKzkn0KKwAhcFf4c1sd07XrdKgzvSdVle8g9AG5vQRmQ39kA2vZ1v6jspFjVsy7WIy79Jp4Joc363N-kIwK7ugZIUMlmI0mQ9PO6o7HWAMLvEOEh7ii7-zv');"></div>
+<div class="absolute bottom-2 right-2 bg-primary text-white rounded-full p-1 border-4 border-background-dark flex items-center justify-center">
+<span class="material-symbols-outlined text-[16px]">add</span>
+</div>
+</div>
+<!-- Name & Bio -->
+<div class="mt-3 flex flex-col items-center text-center w-full max-w-md">
+<div class="flex items-center gap-1">
+<h1 class="text-2xl font-bold tracking-tight text-white">Kwame Osei</h1>
+<span class="material-symbols-outlined text-primary text-[20px] fill-current">verified</span>
+</div>
+<p class="text-slate-400 text-sm font-medium">@kwame_tech</p>
+<p class="mt-3 text-slate-300 text-sm leading-relaxed px-4">
+                    Building digital bridges in Accra 🇬🇭 <br/> 
+                    Tech enthusiast | <span class="text-primary">#YabissoBuilder</span> | Coffee lover
+                </p>
+</div>
+<!-- Action Buttons -->
+<div class="mt-6 flex w-full max-w-sm gap-3">
+<button class="flex-1 h-11 bg-white hover:bg-slate-100 text-background-dark font-bold text-sm rounded-lg flex items-center justify-center gap-2 transition-colors">
+                    Edit Profile
+                </button>
+<button class="flex-1 h-11 bg-surface-dark border border-slate-700 hover:bg-slate-800 text-white font-bold text-sm rounded-lg flex items-center justify-center gap-2 transition-colors">
+                    Share Profile
+                </button>
+</div>
+</div>
+<!-- Stats Row -->
+<div class="w-full max-w-md mx-auto mt-6 px-4">
+<div class="flex justify-between items-center bg-surface-dark/50 backdrop-blur-sm rounded-xl border border-white/5 p-4">
+<div class="flex flex-col items-center flex-1">
+<span class="text-white font-bold text-xl">124</span>
+<span class="text-slate-400 text-xs">Posts</span>
+</div>
+<div class="w-px h-8 bg-white/10"></div>
+<div class="flex flex-col items-center flex-1">
+<span class="text-white font-bold text-xl">4.5k</span>
+<span class="text-slate-400 text-xs">Followers</span>
+</div>
+<div class="w-px h-8 bg-white/10"></div>
+<div class="flex flex-col items-center flex-1">
+<span class="text-white font-bold text-xl">320</span>
+<span class="text-slate-400 text-xs">Following</span>
+</div>
+</div>
+</div>
+<!-- Content Tabs -->
+<div class="mt-8 sticky top-0 bg-background-dark/95 backdrop-blur-md z-10 border-b border-white/5">
+<div class="flex w-full">
+<button class="flex-1 pb-3 pt-3 flex items-center justify-center border-b-2 border-primary text-primary transition-colors">
+<span class="material-symbols-outlined">grid_view</span>
+</button>
+<button class="flex-1 pb-3 pt-3 flex items-center justify-center border-b-2 border-transparent text-slate-500 hover:text-slate-300 transition-colors">
+<span class="material-symbols-outlined">view_agenda</span>
+</button>
+<button class="flex-1 pb-3 pt-3 flex items-center justify-center border-b-2 border-transparent text-slate-500 hover:text-slate-300 transition-colors">
+<span class="material-symbols-outlined">bookmark_border</span>
+</button>
+<button class="flex-1 pb-3 pt-3 flex items-center justify-center border-b-2 border-transparent text-slate-500 hover:text-slate-300 transition-colors">
+<span class="material-symbols-outlined">assignment_ind</span>
+</button>
+</div>
+</div>
+<!-- Image Grid -->
+<div class="p-1">
+<div class="grid grid-cols-3 gap-1">
+<!-- Grid Item 1 (Video) -->
+<div class="aspect-square relative group bg-surface-dark overflow-hidden">
+<div class="w-full h-full bg-cover bg-center" data-alt="Tech meetup presentation showing code on screen" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAQnm0J4W3ojbwB5YouVN9xJuYOe7EF_v7o6Y9hduBLIUUlf37tJocB4KK6a9f8ZY1bVqY8kDIl9MPxcjQdX0pNhB1lkJwh6h1jrs_dwbsmbo9ChpctMPudLcJyuB9UMkFt1RhR8YN6NIYV7Jh-W4tr-PvYgK5yHyrS-4RMYkB2mc21q9EcytKvrwRjRKwB_Okh6e6zKEpgD9azZFX3RUipCk38ReL_-KprzGEJ-K1hCg-BCFijTneqiZ_TQC5DCVeA1sxfjQTc');"></div>
+<div class="absolute top-2 right-2 z-10">
+<span class="material-symbols-outlined text-white drop-shadow-md text-[20px]">play_arrow</span>
+</div>
+</div>
+<!-- Grid Item 2 (Carousel) -->
+<div class="aspect-square relative group bg-surface-dark overflow-hidden">
+<div class="w-full h-full bg-cover bg-center" data-alt="Laptop setup with coffee on a wooden desk" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuC3n2wNiPTDjtato8BkkVdKW-HBNk4c4y1swtCxnfJ410aQWPOAhEHfduI3imdO7IdUv0AlIhFjbi7Q9D8OdWoCJaleRr8XMT7SPffJD_fim3zs9DUxh__KBomL8Q3h2m17Lshefm6lBz9WamQch0LnCSrtGAvo92Kvx2JPOtJDyYcDMbM-sYuSeDwEiIK3TqrXvHIDWPSyTZOnEQMU2pf-TS5hw8iDA48eafAVFopqA06mjOrl8w-IlHV-ug7fc-_uuyHXUAfU');"></div>
+<div class="absolute top-2 right-2 z-10">
+<span class="material-symbols-outlined text-white drop-shadow-md text-[18px]">content_copy</span>
+</div>
+</div>
+<!-- Grid Item 3 -->
+<div class="aspect-square relative group bg-surface-dark overflow-hidden">
+<div class="w-full h-full bg-cover bg-center" data-alt="Vibrant street market scene in Accra" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuACIttrprtvC7hWxkJ_r_-2bGP-qX5smKdQTmJqqBz8pfZPdxIoHW4QfUnNTYzIbvlE8mDzefKNDt34TVWUIjI_hhYGGkqvowgFGTvmQJN_Q0x0TLLCe4nkrte0T-SUQ8kE5F6Hf6MpMuOONGPiT3naszHr38I_0_t_sNNE9n7kHnPdxOGn98-nsielgSoDXpuzalRxCyY0FIRfTLDxzo-IVel9skKbXkYBbg3hkTx9TFC2-KRiSr6cVgfc6tLiqMVKpUXGem_f');"></div>
+</div>
+<!-- Grid Item 4 -->
+<div class="aspect-square relative group bg-surface-dark overflow-hidden">
+<div class="w-full h-full bg-cover bg-center" data-alt="Close up of mobile phone showing Yabisso app" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAeFgFbuP0z-LX2rrNxKsxsUFciYZyyq3HzuODJHR8ge5Z4nXooieW9E9nnmsSCs6xCgNwHGppe87JAAVAUwbj36KAB8UjWgdPGpk-ZYz3dpqIR40xM0ezNrTed4szkkZ5PUhcyfP9s6fglUwoEHX6wtNUTitgnXWrT3qZXgjqCKs3UJP1h-9s7oJOFQW9ZX1VKIdYQkSFXrKt6K6IQCqNgKySu53KT_Q6S0vRxqbPeAA_1ubn7m3qIYFjsz4sP89qnv7UzVmTo');"></div>
+</div>
+<!-- Grid Item 5 -->
+<div class="aspect-square relative group bg-surface-dark overflow-hidden">
+<div class="w-full h-full bg-cover bg-center" data-alt="Group of friends laughing at a cafe" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuC2SjzuGzCAz8iefODvm5HB-lStpCm3TdWA2lNlCA75pIdtszPQSrwQIrTPCEFpg0xSTfu6UlwfGmy6L0Z1vzX56H8ujYbIxnb4j4n2o9zn9SIyVm_fkcNwFRlZFWM8-P1hVUmmg6pAvqyFwMEuJeWxEE-chepKvxqhN2xE7t8xzuY1zw4WzkzmkoMB2bI3qxQTbakKhyUUJUYnKHRAe-lrsfM6fqxaB-J_0b4i0ugVHMJA-tU6OsIqJ_HIuPyyKkc-m0pYxItl');"></div>
+</div>
+<!-- Grid Item 6 -->
+<div class="aspect-square relative group bg-surface-dark overflow-hidden">
+<div class="w-full h-full bg-cover bg-center" data-alt="Abstract art installation with neon lights" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuC4hxg0KRvBtN1MZ2lOh9tpZaQvLK7hFMoSDjTmGD-QJA7SD1Z1l6SMa9l6aSnwbIx5Kt7BF0IkpYeQIFGf2Qxo7FVff7jpEXkmadHrGGJSnHq4fx-gO1Pfm7C4r7rQp8G7XAMAyCVXRTr3X5j5Eu1-3nbWhZ8YGbDXkQJNWqYHOr8T2ii3TxiwTFd42WPLJMhUBwZ0ltqtS_wKVN7wmDb760_nJVhC2eLZhWuaZ9vU2UksPol1-jJxlgTQXeOxnrEGkpixfPic');"></div>
+</div>
+<!-- Grid Item 7 -->
+<div class="aspect-square relative group bg-surface-dark overflow-hidden">
+<div class="w-full h-full bg-cover bg-center" data-alt="Night skyline of a modern African city" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBfOWQk8zTHbGRb-z1OzjV0saxvoQwVe3c3KbYOBpFPJwjC3jlgZT7VxWCnQLreT9sCkL41xAzabRq42IGH3D5NsE2ZQ23-s-8PKChRe-SzFIKwVQVk1Kh4oAr7NDPh5ugqbmHmdK4ak7u9eSLNEZBhaYGZMwnPBLd2Gxo-7kK73fsLuJULDST41NXEYfLx5DJ0aFyFnH2Yu96V5gXN2UtVQhKpmm8jZ9_hBn713ZVzSD4XlxMOvnWuyl3UXl1N5PdieOcgC25k');"></div>
+</div>
+<!-- Grid Item 8 -->
+<div class="aspect-square relative group bg-surface-dark overflow-hidden">
+<div class="w-full h-full bg-cover bg-center" data-alt="Workspace with multiple monitors and coding gear" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBGhplHnhHIDCVxo_FPU2fI6Fe3rzMIek-N-47nBBoJSsURiZSzFW-WTMuaHhLItNamN2dVKsSDVo2np3pzNfeWjRxxS-pleFVLsQR7BdA9MW_xo5vM6AebjZb5eTqiVQg_2yzympdzHUh1mZWxoJDTfRjRGYKwojuiLA0J57YPq_wmkXhwOWQ8pVZFq9btoYMQVr-n4BC0eGwOCpLLcuDDGcYCgjXjAosWnK8Nf2F12vJQFkEMvDrD9aYUhMuaAk40PQ2OAIgb');"></div>
+</div>
+<!-- Grid Item 9 -->
+<div class="aspect-square relative group bg-surface-dark overflow-hidden">
+<div class="w-full h-full bg-cover bg-center" data-alt="Plate of Jollof rice beautifully plated" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDiCVfHhbG9YjXbl22e_bK5OSff1x-RBqj2Pr0sKDqRV6gsFJ11g_1G3RVtlJg_taasO0_tKz5IXQfkxU3SNNuT7yDUWGLTZdqgxk0XDEGb14xMfAlnIbltrgsvlIiTNXF4z1KJyiTjw70Z-BkSV2LVFGGYpsbfVgE16o4m9f-bQVMlj5UJT0rl-npUNPgEw8dOIJeYSjzzBth_69ZMAdgG0a3wWGdgqPEQDrvr6KKvxbFcRdO3-opAxJ7q6eQlTmg7RV82zBTk');"></div>
+</div>
+<!-- Grid Item 10 -->
+<div class="aspect-square relative group bg-surface-dark overflow-hidden">
+<div class="w-full h-full bg-cover bg-center" data-alt="Conference hall filled with people" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDA1LZJQdG-Ao68nDihYhyMtBM7Fi_ZsB7O0LGtR9ibaQzmNBXfNYSf1bYhgC-N5YR68XYaXOOKh4KpinT43PFqN5cYF_K5r894zggbTSHe1qMMNMS5dElmUGN5MsvmtzU-lLs0FRDd7JCV24HoQ1-Qe_u-kFKu0tEfoPvnsWoi7EKVnK65jJLWN7aILa7OpbKlB0AjB-h1lxtu6CkPuoxlb_VRSEZKpwfSXS0S3N5Dk_DBwhd3pCVmsTgSRprXm38PEBKbVxN4');"></div>
+</div>
+<!-- Grid Item 11 -->
+<div class="aspect-square relative group bg-surface-dark overflow-hidden">
+<div class="w-full h-full bg-cover bg-center" data-alt="User holding a smartphone outdoors" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDTj-22Z5RTDTXJjVWSbyoXIh6kln45LOuE1Af87Ta5tC-dWFQeBx8anv57xkHHCwQdK9FBRFJ0bT7KIeZ1syqPSp6FmEmgdylH6ATBdpNs0jXjwFVmoxQbUxfACGdapT5YkQr4D3ltFYAw9iAHMan3HgNJQd59bPWTj_VCaxOYYe8TwVXNRr3oU9MLur7PIb8-tJyTbYqRZMOdRPE2E_A9O1sjdlBKiIaASwiyis7zuvFLOrAlkJj4L_cEJlFLGraWnwqbjsVn');"></div>
+</div>
+<!-- Grid Item 12 -->
+<div class="aspect-square relative group bg-surface-dark overflow-hidden">
+<div class="w-full h-full bg-cover bg-center" data-alt="Modern architecture building facade" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDk5SJ3Tc5X_VwZmdpoSrCJyibK9xnVGwAGja_ZyEg7W4plNlvww5mOQqxsTanuZCq61qg-zV-GtLo0_6bUavdbmVKVTcFI2kZe40whoyhP_SNE3LjCaAwdvEljSRhqbDyMi3j-lyGqem7rYkO1j4Fnxem9Y4YZaJKJm7_15p7GLLAUGeG_wW4Dj5Z-y6TcHhNL2AAzXS7T9zi0p40xRGg8d2WBv_zgc8NB3CB5rgJVVSA8cMl1jW_3EHpd9M-Er7uVbVhIdlOa');"></div>
+</div>
+</div>
+<!-- Loading Indicator at bottom of list -->
+<div class="py-8 flex justify-center w-full">
+<div class="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+</div>
+</div>
+</div>
+<!-- Bottom Navigation (Super App Style) -->
+<div class="fixed bottom-0 left-0 w-full bg-background-dark border-t border-white/5 px-6 py-3 pb-8 z-50 flex justify-between items-end backdrop-blur-lg bg-opacity-95">
+<button class="flex flex-col items-center gap-1 text-slate-500 hover:text-slate-300 w-12">
+<span class="material-symbols-outlined">home</span>
+<span class="text-[10px] font-medium">Home</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-slate-500 hover:text-slate-300 w-12">
+<span class="material-symbols-outlined">account_balance_wallet</span>
+<span class="text-[10px] font-medium">Wallet</span>
+</button>
+<!-- Center Action Button (Social) -->
+<button class="flex flex-col items-center gap-1 text-primary w-12 -mt-4">
+<div class="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center border border-primary/20 shadow-[0_0_15px_rgba(19,127,236,0.3)]">
+<span class="material-symbols-outlined text-primary fill-current">group</span>
+</div>
+<span class="text-[10px] font-bold">Social</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-slate-500 hover:text-slate-300 w-12">
+<span class="material-symbols-outlined">restaurant</span>
+<span class="text-[10px] font-medium">Food</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-slate-500 hover:text-slate-300 w-12">
+<span class="material-symbols-outlined">grid_view</span>
+<span class="text-[10px] font-medium">More</span>
+</button>
+</div>
+</body></html>

@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Yabisso Payment</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#111a22",
+                        "surface-dark": "#192633",
+                        "text-secondary": "#92adc9",
+                    },
+                    fontFamily: {
+                        "display": ["Plus Jakarta Sans", "sans-serif"],
+                        "body": ["Noto Sans", "sans-serif"],
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom Radio Button Styling */
+        .custom-radio {
+            appearance: none;
+            background-color: transparent;
+            margin: 0;
+            font: inherit;
+            color: currentColor;
+            width: 1.25em;
+            height: 1.25em;
+            border: 2px solid #324d67;
+            border-radius: 50%;
+            display: grid;
+            place-content: center;
+            transition: all 0.2s ease-in-out;
+        }
+
+        .custom-radio::before {
+            content: "";
+            width: 0.65em;
+            height: 0.65em;
+            border-radius: 50%;
+            transform: scale(0);
+            transition: 120ms transform ease-in-out;
+            box-shadow: inset 1em 1em #137fec;
+        }
+
+        .custom-radio:checked {
+            border-color: #137fec;
+        }
+
+        .custom-radio:checked::before {
+            transform: scale(1);
+        }
+        
+        .radio-label:has(.custom-radio:checked) {
+            border-color: #137fec;
+            background-color: rgba(19, 127, 236, 0.05);
+        }
+        
+        /* Hide scrollbar for clean mobile look */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-white font-display antialiased overflow-hidden">
+<div class="relative flex h-full max-h-screen w-full flex-col overflow-hidden">
+<!-- Top App Bar -->
+<div class="flex items-center bg-background-dark p-4 pb-2 justify-between shrink-0 z-10 border-b border-[#233648]">
+<div class="text-white flex size-12 shrink-0 items-center justify-start cursor-pointer hover:opacity-80 transition-opacity">
+<span class="material-symbols-outlined" style="font-size: 24px;">arrow_back</span>
+</div>
+<h2 class="text-white text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center pr-12">Select Payment</h2>
+</div>
+<!-- Scrollable Content -->
+<div class="flex-1 overflow-y-auto no-scrollbar pb-32">
+<!-- Trip Summary Section -->
+<div class="px-4 pt-6 pb-2">
+<h3 class="text-text-secondary text-sm font-semibold uppercase tracking-wider mb-3 px-1">Order Summary</h3>
+<div class="flex flex-col gap-4 rounded-xl bg-surface-dark p-4 shadow-lg border border-[#233648]">
+<!-- Route & Date -->
+<div class="flex justify-between items-start">
+<div class="flex flex-col gap-1">
+<div class="flex items-center gap-2 mb-1">
+<span class="px-2 py-1 rounded bg-primary/20 text-primary text-xs font-bold">FLIGHT</span>
+<span class="text-text-secondary text-xs">Yabisso Air</span>
+</div>
+<h4 class="text-white text-xl font-bold leading-tight">Lagos <span class="text-text-secondary mx-1">→</span> Abuja</h4>
+<p class="text-text-secondary text-sm font-medium mt-1">Fri, 24 Nov • 10:00 AM</p>
+</div>
+<!-- Abstract Map Image -->
+<div class="w-16 h-16 rounded-lg bg-cover bg-center opacity-80" data-alt="Abstract dark map showing route" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuD4N14fQfLIdAgxfU3YRpqaQH2Yyc76lRN3NlRWk84y12vMMwxcsAZWur444YdwZ1LACzvODZhWJH0bt2BCYk0rYxq2BO2UDlWTQ5On907N34CACmU49eky5J_3g-VY88GOwTuLMm0M-kcqOBvooIzGJHuHKn1zqTnfdiNfEULLJA0vsiObCNW4EkqKlX6CTidWXzt9Pjnt2Uf0sktikVjIE8xuMe7vCmxxeaiKP14nyv9XCddgQnomSvSaxDG6Tt5l_s1QCAhH');"></div>
+</div>
+<div class="h-px bg-[#233648] w-full my-1"></div>
+<!-- Price Total -->
+<div class="flex items-center justify-between">
+<span class="text-text-secondary text-sm">Total Price</span>
+<span class="text-white text-2xl font-bold">₦ 45,000</span>
+</div>
+</div>
+</div>
+<!-- Payment Methods Section -->
+<div class="px-4 pt-6">
+<h3 class="text-white text-lg font-bold leading-tight tracking-[-0.015em] pb-4 px-1">Payment Method</h3>
+<div class="flex flex-col gap-3">
+<!-- Wallet Option (Selected) -->
+<label class="radio-label cursor-pointer relative flex items-center gap-4 bg-surface-dark px-4 py-4 rounded-xl border border-[#324d67] transition-all hover:border-[#4a6b8a]">
+<div class="flex items-center gap-4 flex-1">
+<div class="text-white flex items-center justify-center rounded-lg bg-[#233648] shrink-0 size-12 shadow-inner">
+<span class="material-symbols-outlined text-primary" style="font-size: 24px;">account_balance_wallet</span>
+</div>
+<div class="flex flex-col justify-center">
+<p class="text-white text-base font-bold leading-normal">Yabisso Wallet</p>
+<p class="text-green-400 text-sm font-medium leading-normal">Balance: ₦ 120,000</p>
+</div>
+</div>
+<div class="shrink-0">
+<input checked="" class="custom-radio" name="payment_method" type="radio"/>
+</div>
+</label>
+<!-- Online Payment Option -->
+<label class="radio-label cursor-pointer relative flex items-center gap-4 bg-surface-dark px-4 py-4 rounded-xl border border-transparent transition-all hover:border-[#324d67]">
+<div class="flex items-center gap-4 flex-1">
+<div class="text-white flex items-center justify-center rounded-lg bg-[#233648] shrink-0 size-12">
+<span class="material-symbols-outlined text-white" style="font-size: 24px;">credit_card</span>
+</div>
+<div class="flex flex-col justify-center">
+<p class="text-white text-base font-medium leading-normal">Online Payment</p>
+<div class="flex items-center gap-2 mt-0.5">
+<p class="text-text-secondary text-sm font-normal">Visa, Mastercard, MoMo</p>
+</div>
+</div>
+</div>
+<div class="shrink-0">
+<input class="custom-radio" name="payment_method" type="radio"/>
+</div>
+</label>
+<!-- Offline SMS Option -->
+<label class="radio-label cursor-pointer relative flex items-center gap-4 bg-surface-dark px-4 py-4 rounded-xl border border-transparent transition-all hover:border-[#324d67]">
+<div class="flex items-center gap-4 flex-1">
+<div class="text-white flex items-center justify-center rounded-lg bg-[#233648] shrink-0 size-12 relative overflow-hidden">
+<span class="material-symbols-outlined text-white z-10" style="font-size: 24px;">sms</span>
+<!-- Subtle pulse effect bg for offline focus -->
+<div class="absolute inset-0 bg-yellow-500/10"></div>
+</div>
+<div class="flex flex-col justify-center">
+<div class="flex items-center gap-2">
+<p class="text-white text-base font-medium leading-normal">Pay via SMS</p>
+<span class="bg-[#233648] border border-yellow-600/30 text-yellow-500 text-[10px] px-1.5 py-0.5 rounded font-bold uppercase tracking-wide">Offline</span>
+</div>
+<p class="text-text-secondary text-sm font-normal leading-normal">Dial *123# • No internet needed</p>
+</div>
+</div>
+<div class="shrink-0">
+<input class="custom-radio" name="payment_method" type="radio"/>
+</div>
+</label>
+</div>
+</div>
+<!-- Additional Info -->
+<div class="px-8 py-8 flex items-center justify-center gap-2 opacity-60">
+<span class="material-symbols-outlined text-sm" style="font-size: 16px;">lock</span>
+<p class="text-xs text-center text-text-secondary">Payments are secured by 256-bit encryption</p>
+</div>
+<div class="h-10"></div> <!-- Spacer -->
+</div>
+<!-- Sticky Bottom Action Bar -->
+<div class="absolute bottom-0 left-0 right-0 bg-background-dark/95 backdrop-blur-md border-t border-[#233648] p-4 pb-8 z-50">
+<div class="max-w-md mx-auto w-full flex flex-col gap-3">
+<button class="w-full h-14 bg-primary hover:bg-blue-600 text-white rounded-full font-bold text-lg shadow-[0_0_15px_rgba(19,127,236,0.3)] flex items-center justify-center gap-2 transition-transform active:scale-[0.98]">
+<span>Pay ₦ 45,000</span>
+<span class="material-symbols-outlined" style="font-size: 20px;">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+</body></html>

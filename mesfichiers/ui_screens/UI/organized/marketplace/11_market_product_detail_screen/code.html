@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Market Product Detail - Yabisso</title>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@300;400;500;600;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "yabisso-red": "#ef4444",
+                        "yabisso-yellow": "#eab308",
+                        "yabisso-green": "#22c55e",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#111a22",
+                        "surface-dark": "#1c2630",
+                    },
+                    fontFamily: {
+                        "display": ["Work Sans", "sans-serif"],
+                        "body": ["Noto Sans", "sans-serif"],
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "2xl": "1rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom scrollbar hiding for clean UI */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white font-display overflow-x-hidden">
+<div class="relative flex min-h-screen w-full flex-col pb-28 max-w-md mx-auto shadow-2xl bg-background-dark">
+<!-- Navigation Header -->
+<div class="flex items-center justify-between p-4 sticky top-0 z-50 bg-[#111a22]/80 backdrop-blur-md">
+<button class="flex items-center justify-center size-10 rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<div class="flex items-center gap-3">
+<button class="flex items-center justify-center size-10 rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">favorite</span>
+</button>
+<button class="flex items-center justify-center size-10 rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors">
+<span class="material-symbols-outlined">share</span>
+</button>
+</div>
+</div>
+<!-- Hero Section: Media Carousel -->
+<div class="flex flex-col w-full px-4 pt-2">
+<!-- Main Display Image -->
+<div class="w-full aspect-[4/3] rounded-2xl bg-surface-dark overflow-hidden relative group">
+<div class="w-full h-full bg-center bg-contain bg-no-repeat transition-transform duration-500 hover:scale-105" data-alt="Purple iPhone 14 Pro Max showing dynamic island and home screen" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCKe5HwupevFnODnG9Cqbvp7LqWhql7jnRa9TQXv-mcy3KeNK-3sc7zHfyEN8oJyGWr_ZhzVH3SdiL5lGUzec8KloFPQleoVcfVnPIPaNjnmyG6-Ct-5DEOSH5BK3p6p1p-5NfeGcI-qiSBiV1n0fUZy5sqHhh7WA9hfmcsysyLuCgbQYQ7KQjZ-QXRgZr4ngciCrQP0W-jLHF2LHxCSXlNIZ5CRicCh2_dbmG_G6nyZ--GoGcCuA2JQoPUjL_GBXLQkFzyfH1A");'>
+</div>
+<!-- Pagination dots overlay -->
+<div class="absolute bottom-4 left-0 right-0 flex justify-center gap-2">
+<div class="w-2 h-2 rounded-full bg-white"></div>
+<div class="w-2 h-2 rounded-full bg-white/40"></div>
+<div class="w-2 h-2 rounded-full bg-white/40"></div>
+<div class="w-2 h-2 rounded-full bg-white/40"></div>
+</div>
+</div>
+<!-- Thumbnails -->
+<div class="flex gap-3 mt-4 overflow-x-auto no-scrollbar pb-2">
+<div class="shrink-0 w-20 h-20 rounded-lg border-2 border-primary bg-surface-dark bg-center bg-cover" data-alt="Front view of purple smartphone" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAsoYtGTh5b0EhT7iJmmrnH1rekbdtrCQrerr_aXSvjjR5sbKM0azWUiYWOhmcmGjlrs4ngBB6Km57SFW-yMWUNVGtO-aEtCl58BDyoOWO4HJo_JoDea0uhDVj6vzDQ6o3N0CCr-HtMSFNcM1_jdiPm6QydES13KMUGn5s1zIIJfxTz9Uk1rwQz-SbVOMm-dJmWSQtT7TEin4B9nHjGXCZ3OqnRcRy6oUGL3-9CBuZsbjQ0-3dYoY1tXrhtT-1k-UHOBP3Ym8_m");'></div>
+<div class="shrink-0 w-20 h-20 rounded-lg border border-white/10 bg-surface-dark bg-center bg-cover opacity-60" data-alt="Side view of purple smartphone showing camera bump" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDVAk8psIpLBWEGBZGAtV_P67ZXSI2GWR9UPQxqr4PQsVdu4barGZC2iqUuNXlnsIpGGlZIRh1CVQa59Jtvk7QXcxbZrTDZTFHnY7XeSESltSs_qIBQfe-eaSDrPd1_Z91v30bTc32wb0Qv029uvqgByni0kz5cMH-fuB3V2nxTC4kxIRIR4QxK7YK-tP7GAtgXPPFYP6ozPphdHwHGhPujqPe0aMzlA8Q5tDP4kxurUA-g7FqsofNPCtBKiA-AMR1iRja1C4vh");'></div>
+<div class="shrink-0 w-20 h-20 rounded-lg border border-white/10 bg-surface-dark bg-center bg-cover opacity-60" data-alt="Back view of purple smartphone held in hand" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuChf8tpIVoy590Fjp1gC32UIBeP6973dt2bKTlkYPUg_4TQzTv5ld4utHUEQHt2bz2CdNnjeqlGWJdinFsN-_dSjdfhks_0bWUSMfOihq1i6wWDYKkde-ODfGjuqBmGeZwgRxrOpuLsoU1O2wYqxkri1lSS3bRutGmDvPVOL9awhZFXou2ZJCuV44qTrQewQcXsGUE5QMNhtzc8b6CK25UL4ReAoeJvGSZpOWG8wJhakwWJ15W-PZYAx3jytmczN9hS4VSHhNDH");'></div>
+<div class="shrink-0 w-20 h-20 rounded-lg border border-white/10 bg-surface-dark bg-center bg-cover opacity-60 flex items-center justify-center" data-alt="Abstract gradient representing lifestyle context">
+<span class="material-symbols-outlined text-white/50 text-2xl">play_circle</span>
+</div>
+</div>
+</div>
+<!-- Product Info -->
+<div class="flex flex-col px-4 pt-6">
+<div class="flex items-start justify-between gap-4">
+<h1 class="text-white text-2xl font-bold leading-tight tracking-tight">iPhone 14 Pro Max - 256GB Deep Purple</h1>
+<div class="flex flex-col items-end shrink-0">
+<div class="px-2 py-1 rounded bg-surface-dark border border-white/10 text-xs font-medium text-white/80">
+                        In Stock
+                   </div>
+</div>
+</div>
+<!-- Rating Summary -->
+<div class="flex items-center gap-2 mt-3">
+<div class="flex items-center text-yabisso-yellow gap-0.5">
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="text-white font-bold text-base ml-1">4.8</span>
+</div>
+<span class="w-1 h-1 rounded-full bg-white/30"></span>
+<p class="text-primary text-sm font-medium underline underline-offset-2">120 reviews</p>
+<span class="w-1 h-1 rounded-full bg-white/30"></span>
+<p class="text-white/60 text-sm">Apple</p>
+</div>
+<!-- Description -->
+<div class="mt-4 p-4 bg-surface-dark rounded-xl">
+<p class="text-white/80 text-sm leading-relaxed font-body">
+                    Experience the new face of iPhone with Dynamic Island and Always-On display. Deep Purple finish. 6.7-inch Super Retina XDR display with ProMotion technology for a smoother experience.
+                </p>
+<button class="mt-2 text-primary text-sm font-semibold flex items-center gap-1">
+                    Read full specs <span class="material-symbols-outlined text-base">expand_more</span>
+</button>
+</div>
+</div>
+<!-- Available Sellers List -->
+<div class="flex flex-col px-4 mt-8">
+<h2 class="text-white text-lg font-bold mb-4 flex items-center gap-2">
+                Available Sellers <span class="bg-white/10 text-xs py-0.5 px-2 rounded-full font-normal">3</span>
+</h2>
+<div class="flex flex-col gap-4">
+<!-- Seller Card 1 (Selected) -->
+<label class="relative group cursor-pointer">
+<input checked="" class="peer sr-only" name="seller" type="radio"/>
+<div class="relative flex flex-col p-4 bg-surface-dark rounded-xl border border-transparent peer-checked:border-primary peer-checked:bg-[#1a232c] transition-all duration-200">
+<!-- Yabisso Brand Strip on Selected -->
+<div class="absolute top-0 left-0 bottom-0 w-1.5 rounded-l-xl bg-gradient-to-b from-primary via-yabisso-yellow to-yabisso-red opacity-0 peer-checked:opacity-100 transition-opacity"></div>
+<div class="flex justify-between items-start">
+<div class="flex gap-3">
+<div class="w-12 h-12 rounded-full bg-[#111a22] flex items-center justify-center border border-white/5">
+<span class="text-lg font-bold text-white">TH</span>
+</div>
+<div>
+<h3 class="text-white font-semibold flex items-center gap-1">
+                                        TechHub Lagos
+                                        <span class="material-symbols-outlined text-primary text-[16px]" style="font-variation-settings: 'FILL' 1;">verified</span>
+</h3>
+<div class="flex items-center gap-1 text-xs text-white/60 mt-0.5">
+<span class="material-symbols-outlined text-[14px]">location_on</span>
+                                        Lagos, NG
+                                    </div>
+</div>
+</div>
+<div class="flex flex-col items-end">
+<span class="text-xl font-bold text-white">$1,200</span>
+<span class="text-xs text-yabisso-green font-medium">Best Price</span>
+</div>
+</div>
+<div class="h-px bg-white/5 w-full my-3"></div>
+<div class="flex items-center justify-between text-sm">
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-1 text-white/90">
+<span class="material-symbols-outlined text-yabisso-yellow text-[16px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="font-bold">4.9</span>
+<span class="text-white/50 text-xs">(2.1k)</span>
+</div>
+<div class="flex items-center gap-1 text-white/90">
+<span class="material-symbols-outlined text-primary text-[16px]">local_shipping</span>
+<span>2 Days</span>
+</div>
+</div>
+<div class="size-5 rounded-full border-2 border-white/20 peer-checked:border-primary peer-checked:bg-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-white text-[14px] opacity-0 peer-checked:opacity-100">check</span>
+</div>
+</div>
+</div>
+</label>
+<!-- Seller Card 2 -->
+<label class="relative group cursor-pointer">
+<input class="peer sr-only" name="seller" type="radio"/>
+<div class="relative flex flex-col p-4 bg-surface-dark rounded-xl border border-transparent peer-checked:border-primary peer-checked:bg-[#1a232c] transition-all duration-200 opacity-80 hover:opacity-100">
+<!-- Brand Strip (Hidden unless checked) -->
+<div class="absolute top-0 left-0 bottom-0 w-1.5 rounded-l-xl bg-gradient-to-b from-primary via-yabisso-yellow to-yabisso-red opacity-0 peer-checked:opacity-100 transition-opacity"></div>
+<div class="flex justify-between items-start">
+<div class="flex gap-3">
+<div class="w-12 h-12 rounded-full bg-[#111a22] flex items-center justify-center border border-white/5">
+<span class="text-lg font-bold text-white">NE</span>
+</div>
+<div>
+<h3 class="text-white font-semibold flex items-center gap-1">
+                                        Nairobi Electronics
+                                    </h3>
+<div class="flex items-center gap-1 text-xs text-white/60 mt-0.5">
+<span class="material-symbols-outlined text-[14px]">location_on</span>
+                                        Nairobi, KE
+                                    </div>
+</div>
+</div>
+<div class="flex flex-col items-end">
+<span class="text-xl font-bold text-white">$1,250</span>
+</div>
+</div>
+<div class="h-px bg-white/5 w-full my-3"></div>
+<div class="flex items-center justify-between text-sm">
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-1 text-white/90">
+<span class="material-symbols-outlined text-yabisso-yellow text-[16px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="font-bold">4.5</span>
+<span class="text-white/50 text-xs">(850)</span>
+</div>
+<div class="flex items-center gap-1 text-white/90">
+<span class="material-symbols-outlined text-primary text-[16px]">local_shipping</span>
+<span>5 Days</span>
+</div>
+</div>
+<div class="size-5 rounded-full border-2 border-white/20 peer-checked:border-primary peer-checked:bg-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-white text-[14px] opacity-0 peer-checked:opacity-100">check</span>
+</div>
+</div>
+</div>
+</label>
+<!-- Seller Card 3 -->
+<label class="relative group cursor-pointer">
+<input class="peer sr-only" name="seller" type="radio"/>
+<div class="relative flex flex-col p-4 bg-surface-dark rounded-xl border border-transparent peer-checked:border-primary peer-checked:bg-[#1a232c] transition-all duration-200 opacity-80 hover:opacity-100">
+<!-- Brand Strip (Hidden unless checked) -->
+<div class="absolute top-0 left-0 bottom-0 w-1.5 rounded-l-xl bg-gradient-to-b from-primary via-yabisso-yellow to-yabisso-red opacity-0 peer-checked:opacity-100 transition-opacity"></div>
+<div class="flex justify-between items-start">
+<div class="flex gap-3">
+<div class="w-12 h-12 rounded-full bg-[#111a22] flex items-center justify-center border border-white/5">
+<span class="text-lg font-bold text-white">JG</span>
+</div>
+<div>
+<h3 class="text-white font-semibold flex items-center gap-1">
+                                        Joburg Gadgets
+                                    </h3>
+<div class="flex items-center gap-1 text-xs text-white/60 mt-0.5">
+<span class="material-symbols-outlined text-[14px]">location_on</span>
+                                        Johannesburg, SA
+                                    </div>
+</div>
+</div>
+<div class="flex flex-col items-end">
+<span class="text-xl font-bold text-white">$1,220</span>
+</div>
+</div>
+<div class="h-px bg-white/5 w-full my-3"></div>
+<div class="flex items-center justify-between text-sm">
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-1 text-white/90">
+<span class="material-symbols-outlined text-yabisso-yellow text-[16px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="font-bold">4.2</span>
+<span class="text-white/50 text-xs">(120)</span>
+</div>
+<div class="flex items-center gap-1 text-white/90">
+<span class="material-symbols-outlined text-primary text-[16px]">local_shipping</span>
+<span>3 Days</span>
+</div>
+</div>
+<div class="size-5 rounded-full border-2 border-white/20 peer-checked:border-primary peer-checked:bg-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-white text-[14px] opacity-0 peer-checked:opacity-100">check</span>
+</div>
+</div>
+</div>
+</label>
+</div>
+</div>
+<!-- Sticky Footer -->
+<div class="fixed bottom-0 left-0 right-0 z-50 p-4 bg-[#111a22]/95 backdrop-blur-lg border-t border-white/5 max-w-md mx-auto">
+<div class="flex items-center justify-between gap-4">
+<div class="flex flex-col">
+<p class="text-xs text-white/60">Total Price</p>
+<p class="text-2xl font-black text-white tracking-tight">$1,200</p>
+</div>
+<button class="flex-1 bg-white hover:bg-gray-100 text-[#111a22] font-bold py-3.5 px-6 rounded-lg text-base shadow-lg transition-transform active:scale-95 flex items-center justify-center gap-2">
+<span>Buy Now</span>
+<span class="material-symbols-outlined text-[20px]">arrow_forward</span>
+</button>
+</div>
+<!-- Bottom safe area indicator for iOS -->
+<div class="h-1 w-32 bg-white/20 rounded-full mx-auto mt-4"></div>
+</div>
+</div>
+</body></html>

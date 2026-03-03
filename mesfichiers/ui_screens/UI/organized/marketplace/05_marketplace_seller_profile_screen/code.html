@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Seller Profile - Yabisso</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "yabisso-red": "#EF4444",
+                        "yabisso-yellow": "#F59E0B",
+                        "yabisso-green": "#10B981",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#111a22",
+                        "surface-dark": "#1c2630",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "2xl": "1rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom scrollbar for horizontal product categories */
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display antialiased text-slate-900 dark:text-white">
+<div class="relative flex h-full w-full max-w-md mx-auto flex-col overflow-hidden min-h-screen">
+<!-- TopAppBar -->
+<div class="sticky top-0 z-50 flex items-center bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-md p-4 pb-2 justify-between border-b dark:border-white/5 border-black/5">
+<div class="text-slate-900 dark:text-white flex size-12 shrink-0 items-center justify-start cursor-pointer transition-colors hover:text-primary">
+<span class="material-symbols-outlined text-[24px]">arrow_back_ios</span>
+</div>
+<h2 class="text-slate-900 dark:text-white text-lg font-bold leading-tight tracking-tight flex-1 text-center">Seller Profile</h2>
+<div class="flex w-12 items-center justify-end">
+<button class="flex items-center justify-center bg-transparent text-slate-900 dark:text-white hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-[24px]">share</span>
+</button>
+</div>
+</div>
+<!-- Scrollable Content -->
+<div class="flex-1 overflow-y-auto">
+<!-- ProfileHeader -->
+<div class="flex px-4 pt-6 pb-2 @container">
+<div class="flex w-full flex-col gap-4 items-center">
+<div class="flex gap-4 flex-col items-center">
+<!-- Avatar with Yabisso brand colors gradient ring -->
+<div class="p-[3px] rounded-full bg-gradient-to-tr from-yabisso-green via-yabisso-yellow to-yabisso-red">
+<div class="bg-center bg-no-repeat bg-cover rounded-full h-28 w-28 border-4 border-background-light dark:border-background-dark" data-alt="Portrait of the shop owner, a smiling young African man in a casual shirt" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCfpvZsHH1XIyBLpxjFmgyua5d1mvHMh9bHnWXAzcj8Xr4EMxtv3ocA3blxi_qpyla-6eFNmDmP8KWXaeSrNswuEbefX9XueOKTxJrYsvobyRaWshHQ_UANYRaH32AppLFVRBaBYRr4jL6_cd8uzOpReHpJzSTQob3jcVAHe7RHnnhxaXaT8UoJN2fCupkOA3i8CuwNxS6hN-A4iSekuqNCVXHe_biFi-hHRqVbnLPFa0xg27aNfIuqe9Mf_FMHjYtjn2ONms60");'>
+</div>
+</div>
+<div class="flex flex-col items-center justify-center">
+<div class="flex items-center gap-2">
+<h1 class="text-slate-900 dark:text-white text-2xl font-bold leading-tight tracking-tight text-center">Kofi's Electronics</h1>
+<span class="material-symbols-outlined text-primary text-[20px]" title="Verified Seller">verified</span>
+</div>
+<div class="flex items-center gap-1 mt-1">
+<span class="material-symbols-outlined text-yabisso-green text-[14px] animate-pulse">circle</span>
+<p class="text-slate-500 dark:text-[#92adc9] text-sm font-medium leading-normal text-center">Lagos, Nigeria • Online now</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- ProfileStats -->
+<div class="flex flex-wrap gap-3 px-4 py-4">
+<div class="flex min-w-[100px] flex-1 basis-[fit-content] flex-col gap-1 rounded-xl bg-white dark:bg-surface-dark p-3 items-center text-center shadow-sm">
+<p class="text-slate-900 dark:text-white tracking-tight text-xl font-bold leading-tight flex items-center gap-1">
+                        4.9 <span class="material-symbols-outlined text-yabisso-yellow text-[20px] fill-1">star</span>
+</p>
+<p class="text-slate-500 dark:text-[#92adc9] text-xs font-medium uppercase tracking-wide">Rating</p>
+</div>
+<div class="flex min-w-[100px] flex-1 basis-[fit-content] flex-col gap-1 rounded-xl bg-white dark:bg-surface-dark p-3 items-center text-center shadow-sm">
+<p class="text-slate-900 dark:text-white tracking-tight text-xl font-bold leading-tight">524</p>
+<p class="text-slate-500 dark:text-[#92adc9] text-xs font-medium uppercase tracking-wide">Sold</p>
+</div>
+<div class="flex min-w-[100px] flex-1 basis-[fit-content] flex-col gap-1 rounded-xl bg-white dark:bg-surface-dark p-3 items-center text-center shadow-sm">
+<p class="text-slate-900 dark:text-white tracking-tight text-xl font-bold leading-tight">2 yrs</p>
+<p class="text-slate-500 dark:text-[#92adc9] text-xs font-medium uppercase tracking-wide">Joined</p>
+</div>
+</div>
+<!-- ButtonGroup -->
+<div class="flex justify-center px-4 pb-2">
+<div class="flex flex-1 gap-3 w-full">
+<!-- White Action Button -->
+<button class="flex-1 cursor-pointer items-center justify-center overflow-hidden rounded-xl h-12 px-4 bg-white text-background-dark font-bold shadow-sm hover:bg-gray-100 transition-colors flex gap-2">
+<span class="material-symbols-outlined text-[20px]">chat</span>
+<span class="truncate">Contact Seller</span>
+</button>
+<!-- Primary Blue Button -->
+<button class="flex-1 cursor-pointer items-center justify-center overflow-hidden rounded-xl h-12 px-4 bg-primary text-white font-bold shadow-lg shadow-primary/20 hover:bg-primary/90 transition-colors flex gap-2">
+<span class="material-symbols-outlined text-[20px]">add</span>
+<span class="truncate">Follow</span>
+</button>
+</div>
+</div>
+<!-- Accordions (Bio) -->
+<div class="flex flex-col px-4 py-2">
+<details class="flex flex-col rounded-xl border border-slate-200 dark:border-[#324d67] bg-white dark:bg-surface-dark px-4 py-1 group transition-all duration-300">
+<summary class="flex cursor-pointer items-center justify-between gap-6 py-3 list-none">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-slate-400 dark:text-slate-500">storefront</span>
+<p class="text-slate-900 dark:text-white text-sm font-semibold">About Shop &amp; Policies</p>
+</div>
+<span class="material-symbols-outlined text-slate-400 dark:text-white transition-transform group-open:rotate-180">expand_more</span>
+</summary>
+<div class="pb-3 pt-1 border-t border-slate-100 dark:border-white/5 mt-1">
+<p class="text-slate-600 dark:text-[#92adc9] text-sm font-normal leading-relaxed">
+                            Your one-stop shop for authentic gadgets, phones, and accessories in Lagos. 
+                            <br/><br/>
+                            🚚 Fast delivery within 24h.<br/>
+                            🛡️ 7-day return policy on defective items.<br/>
+                            📍 Shop 12, Computer Village, Ikeja.
+                        </p>
+</div>
+</details>
+</div>
+<!-- Product Section -->
+<div class="mt-4 bg-white dark:bg-[#0c1218] rounded-t-3xl pt-6 min-h-[500px] shadow-[0_-4px_20px_rgba(0,0,0,0.1)] dark:shadow-[0_-4px_20px_rgba(0,0,0,0.3)]">
+<!-- Category Tabs -->
+<div class="flex items-center px-4 gap-6 mb-6 overflow-x-auto hide-scrollbar">
+<button class="flex flex-col items-center gap-1 min-w-fit">
+<span class="text-slate-900 dark:text-white font-bold text-base">All Items</span>
+<span class="h-1 w-full bg-primary rounded-full"></span>
+</button>
+<button class="flex flex-col items-center gap-1 min-w-fit group">
+<span class="text-slate-500 dark:text-slate-400 font-medium text-base group-hover:text-slate-700 dark:group-hover:text-slate-200 transition-colors">Best Sellers</span>
+<span class="h-1 w-0 bg-transparent rounded-full group-hover:w-full group-hover:bg-slate-200 dark:group-hover:bg-slate-700 transition-all"></span>
+</button>
+<button class="flex flex-col items-center gap-1 min-w-fit group">
+<span class="text-slate-500 dark:text-slate-400 font-medium text-base group-hover:text-slate-700 dark:group-hover:text-slate-200 transition-colors">New Arrival</span>
+<span class="h-1 w-0 bg-transparent rounded-full group-hover:w-full group-hover:bg-slate-200 dark:group-hover:bg-slate-700 transition-all"></span>
+</button>
+</div>
+<!-- Product Grid -->
+<div class="grid grid-cols-2 gap-4 px-4 pb-20">
+<!-- Product Card 1 -->
+<div class="group relative flex flex-col gap-3 rounded-xl bg-slate-50 dark:bg-surface-dark p-2 pb-3 transition-transform active:scale-[0.98]">
+<div class="relative aspect-square w-full overflow-hidden rounded-lg bg-white dark:bg-black/20">
+<div class="absolute right-2 top-2 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-black/40 backdrop-blur-sm text-white hover:bg-yabisso-red transition-colors cursor-pointer">
+<span class="material-symbols-outlined text-[18px]">favorite</span>
+</div>
+<div class="h-full w-full bg-center bg-no-repeat bg-cover group-hover:scale-105 transition-transform duration-500" data-alt="Modern wireless over-ear headphones in silver and black on a dark background" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBo0_RPGW_m6KBYRSEWcKoEgdFoRzqFEiVlULdRGQyKxJYLRRUCuEbF6_9xCH27ru4kgmT4cWOwAobkIR77CFwUpxNhX1BGL8IYwiL-VNFd7OhtEnwKfOJSadgO06yBoH1iKzgAgl1XgTnBLRrYfPxOiQm2j5I3Agt2upr3QJsk8Tu051J5bbbbmmY-qj-OpGem7OYYSjhLZ0zMfJhCr6UeqoBZC2r8fBglQrDdqSd1BFafMnogBXHscsxWWxsT7hvAe1R4hxWQ");'>
+</div>
+</div>
+<div class="flex flex-col gap-1 px-1">
+<div class="flex items-center gap-1 text-yabisso-yellow text-xs font-bold">
+<span class="material-symbols-outlined text-[14px] fill-1">star</span> 4.8
+                            </div>
+<h3 class="text-slate-900 dark:text-white text-sm font-medium leading-snug line-clamp-2 h-10">Premium Noise Cancelling Wireless Headphones</h3>
+<p class="text-primary text-base font-bold">₦ 45,000</p>
+</div>
+</div>
+<!-- Product Card 2 -->
+<div class="group relative flex flex-col gap-3 rounded-xl bg-slate-50 dark:bg-surface-dark p-2 pb-3 transition-transform active:scale-[0.98]">
+<div class="relative aspect-square w-full overflow-hidden rounded-lg bg-white dark:bg-black/20">
+<div class="absolute right-2 top-2 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-black/40 backdrop-blur-sm text-white hover:bg-yabisso-red transition-colors cursor-pointer">
+<span class="material-symbols-outlined text-[18px]">favorite</span>
+</div>
+<div class="absolute left-2 top-2 z-10 rounded bg-yabisso-red px-2 py-0.5 text-[10px] font-bold text-white uppercase tracking-wide">Sale</div>
+<div class="h-full w-full bg-center bg-no-repeat bg-cover group-hover:scale-105 transition-transform duration-500" data-alt="Smart watch with black band and bright screen displaying fitness data" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBj1-0T_1_zoUBQWGhPZW318TolZXABUppo1Q3Y4F9s-nm9ymhWmHTFXw06XRMOKLB8fKoDP4HQsSwombYTUMa0ER_cAxE6dMF-Kk5h0AHUew-uDGmZlHznNx1K2b9gvOfzDwvc3KdTuBOcbdqL1_d_Cd8C1Ude0B1r411y-jraREhvR8Ym5FSMz_8BBkAFy4038hLIIEfbs12ESWs7vLwyj__rjGzE3fU9G1BkKTffs8fVkvm2-K-b7dD0XI_a1lI9mOsJMYI-");'>
+</div>
+</div>
+<div class="flex flex-col gap-1 px-1">
+<div class="flex items-center gap-1 text-yabisso-yellow text-xs font-bold">
+<span class="material-symbols-outlined text-[14px] fill-1">star</span> 4.5
+                            </div>
+<h3 class="text-slate-900 dark:text-white text-sm font-medium leading-snug line-clamp-2 h-10">Series 7 Smart Watch - Midnight Black</h3>
+<div class="flex items-center gap-2">
+<p class="text-primary text-base font-bold">₦ 12,000</p>
+<p class="text-slate-400 text-xs line-through">₦ 18k</p>
+</div>
+</div>
+</div>
+<!-- Product Card 3 -->
+<div class="group relative flex flex-col gap-3 rounded-xl bg-slate-50 dark:bg-surface-dark p-2 pb-3 transition-transform active:scale-[0.98]">
+<div class="relative aspect-square w-full overflow-hidden rounded-lg bg-white dark:bg-black/20">
+<div class="absolute right-2 top-2 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-black/40 backdrop-blur-sm text-white hover:bg-yabisso-red transition-colors cursor-pointer">
+<span class="material-symbols-outlined text-[18px]">favorite</span>
+</div>
+<div class="h-full w-full bg-center bg-no-repeat bg-cover group-hover:scale-105 transition-transform duration-500" data-alt="Modern white gaming controller on a colorful blue background" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBpbNru1n6GYEh5SFsTKppj6Mod5d1t7F1MgTuICWkWvwxCyO9aU-gLsaMsEgeJ3lXDs5wgB1OW9ScuLlzTMCc1liU0IZZ7QSB7ZHAGwUQQXM9C5l5WEiSF0pViwg_RNKlfBcbzqiPKErOuvAarBq_VAGkAUYBlq99AXzusQLPRT5fEcjsh1e-c3n_-WRDgTb7WVlP8cWqnQf21DNu1fjpvLS1xXNBTNtiAkygCWaoxW_tQ5nmEW-_QCszo_b4skHDa4djNlW7a");'>
+</div>
+</div>
+<div class="flex flex-col gap-1 px-1">
+<div class="flex items-center gap-1 text-yabisso-yellow text-xs font-bold">
+<span class="material-symbols-outlined text-[14px] fill-1">star</span> 5.0
+                            </div>
+<h3 class="text-slate-900 dark:text-white text-sm font-medium leading-snug line-clamp-2 h-10">Pro Gaming Controller Wireless</h3>
+<p class="text-primary text-base font-bold">₦ 25,000</p>
+</div>
+</div>
+<!-- Product Card 4 -->
+<div class="group relative flex flex-col gap-3 rounded-xl bg-slate-50 dark:bg-surface-dark p-2 pb-3 transition-transform active:scale-[0.98]">
+<div class="relative aspect-square w-full overflow-hidden rounded-lg bg-white dark:bg-black/20">
+<div class="absolute right-2 top-2 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-black/40 backdrop-blur-sm text-white hover:bg-yabisso-red transition-colors cursor-pointer">
+<span class="material-symbols-outlined text-[18px]">favorite</span>
+</div>
+<div class="h-full w-full bg-center bg-no-repeat bg-cover group-hover:scale-105 transition-transform duration-500" data-alt="Orange portable bluetooth speaker on a table" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCjhCEmJO0U-lAnztO8_O5z5p5yDAMMOUqcxFfQYYO-3YEqkOetHPvf7uSmXGsH95UWMaCbjA-DWRXYR1WA60ynsI7v66M_ZbqRjpiavug6rtH7w5-pQh8BZQlWXzu_MY6QzK4ilcKjKql4nCo8fh6rJi8kVbUdKkNScv56e94RzEjYzd-DWQ9rEUwNsPxhgX_5owPmskX9URm5NUAzBbmpdFrU5bs0jbki8MMS6FgjQF5fc0cjH0xA9xoLE6BbuxNkkl6mvs4g");'>
+</div>
+</div>
+<div class="flex flex-col gap-1 px-1">
+<div class="flex items-center gap-1 text-yabisso-yellow text-xs font-bold">
+<span class="material-symbols-outlined text-[14px] fill-1">star</span> 4.2
+                            </div>
+<h3 class="text-slate-900 dark:text-white text-sm font-medium leading-snug line-clamp-2 h-10">Mini Bluetooth Speaker Bass Boost</h3>
+<p class="text-primary text-base font-bold">₦ 8,500</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</body></html>

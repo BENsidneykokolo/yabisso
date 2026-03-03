@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Dating Safety &amp; Report Popup</title>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                    },
+                    fontFamily: {
+                        "display": ["Be Vietnam Pro", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom scrollbar for webkit */
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #324d67;
+            border-radius: 4px;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display antialiased overflow-hidden flex justify-center items-center h-screen w-full relative">
+<!-- Background Map Image / Context Mockup -->
+<div class="absolute inset-0 z-0 opacity-20 pointer-events-none filter blur-sm">
+<img class="w-full h-full object-cover" data-alt="Abstract vibrant geometric pattern dark background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBKHcTnZlFrehzovQlVio5_yKiGu3ie_ZyaLvBlpZlyQISN8dqRP4IHXl2w16mBTg5iXtqFdDPAjJalPAtLjoeGq3FNXbsfmOfz7Ewvp2dVFefxyCwt4nuUKhm7xcwGEKMZWa2GYBsDKWP1Hhg8DpQWSOfOFQma1Z7NkgSzctSMHqOr4FdubTPaOBkKF3__eakVZiVhkZyo5viJnYxSTy80aLLXK0qpRcKWKw-s58KFg8LQ7plPngChG1zQpwp1We0LuiLMpKxF"/>
+</div>
+<!-- Main Mobile Container -->
+<div class="relative w-full max-w-md h-full max-h-[850px] bg-background-light dark:bg-black/80 flex flex-col shadow-2xl overflow-hidden rounded-[0px] md:rounded-3xl border border-white/5 backdrop-blur-sm">
+<!-- Mock Content Behind Overlay -->
+<div class="flex-1 flex flex-col p-4 opacity-30 pointer-events-none">
+<div class="w-full h-64 rounded-xl bg-gray-800 mb-4 overflow-hidden relative">
+<img class="w-full h-full object-cover" data-alt="Portrait of a woman smiling" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBjSn6TcAoOgAD8ktp26pBZYhcqEEa3zZq_ic0CxtsZ8qyDMNO9_e7oIul2i3UigEDnarFqAX1ThJwywr1JkCxe7rXW3jhslicDRYN4Vp8i3O775rD65f5LNCaGGmhJo1bSKK8JFZ1kYo-oihOIcksnXdbHVSv_baTH8TWyJivW_wQmvlEeZQSr_98VYX3S7gLq6pCSrlZ8JnU3FLmCi4JXG3kse5XGa-NDS5c51LeAfPZ7DZ9pQwS7Ygf9Kr0wDmiEzAApfPqI"/>
+</div>
+<div class="h-8 w-1/2 bg-gray-800 rounded-lg mb-2"></div>
+<div class="h-4 w-3/4 bg-gray-800 rounded-lg mb-6"></div>
+<div class="flex gap-4">
+<div class="h-14 w-14 rounded-full bg-gray-800"></div>
+<div class="h-14 w-14 rounded-full bg-gray-800"></div>
+</div>
+</div>
+<!-- Bottom Sheet Modal -->
+<div class="absolute bottom-0 left-0 right-0 z-50 flex flex-col justify-end h-full pointer-events-none">
+<!-- Backdrop fade -->
+<div class="absolute inset-0 bg-black/60 backdrop-blur-[2px] pointer-events-auto"></div>
+<!-- Sheet Content -->
+<div class="relative w-full bg-[#111a22] rounded-t-[32px] shadow-[0_-8px_30px_rgba(0,0,0,0.5)] flex flex-col max-h-[90vh] overflow-hidden pointer-events-auto border-t border-white/10">
+<!-- Drag Handle -->
+<div class="flex flex-col items-center pt-3 pb-2 bg-[#111a22] sticky top-0 z-10">
+<div class="h-1.5 w-12 rounded-full bg-[#324d67]/50"></div>
+</div>
+<!-- Header -->
+<div class="px-6 pb-2 pt-2 text-center relative">
+<div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-primary/10 mb-3 text-primary">
+<span class="material-symbols-outlined text-[28px]">security</span>
+</div>
+<h2 class="text-white text-2xl font-bold leading-tight mb-1">Safety &amp; Support</h2>
+<p class="text-gray-400 text-sm font-normal">Your safety is our priority. Actions are anonymous.</p>
+</div>
+<!-- Scrollable Body -->
+<div class="flex-1 overflow-y-auto px-6 py-4 space-y-6">
+<!-- Primary Options -->
+<div class="space-y-3">
+<!-- Option 1: Report -->
+<label class="group relative flex items-center p-4 rounded-2xl border border-[#324d67]/50 bg-[#192633]/50 cursor-pointer transition-all hover:bg-[#192633] has-[:checked]:border-primary has-[:checked]:bg-primary/5">
+<input checked="" class="peer sr-only" name="action_type" type="radio"/>
+<div class="flex items-center justify-center w-10 h-10 rounded-full bg-[#324d67]/30 text-white mr-4 group-hover:bg-[#324d67]/50 peer-checked:bg-primary peer-checked:text-white transition-colors">
+<span class="material-symbols-outlined">flag</span>
+</div>
+<div class="flex-1">
+<h3 class="text-white font-semibold text-base">Report Sarah</h3>
+<p class="text-gray-400 text-xs mt-0.5">Fake profile, harassment, or spam</p>
+</div>
+<div class="w-5 h-5 rounded-full border-2 border-gray-500 peer-checked:border-primary peer-checked:bg-primary flex items-center justify-center transition-all">
+<span class="material-symbols-outlined text-white text-[14px] opacity-0 peer-checked:opacity-100">check</span>
+</div>
+</label>
+<!-- Option 2: Block -->
+<label class="group relative flex items-center p-4 rounded-2xl border border-[#324d67]/50 bg-[#192633]/50 cursor-pointer transition-all hover:bg-[#192633] has-[:checked]:border-red-500 has-[:checked]:bg-red-500/5">
+<input class="peer sr-only" name="action_type" type="radio"/>
+<div class="flex items-center justify-center w-10 h-10 rounded-full bg-[#324d67]/30 text-white mr-4 group-hover:bg-[#324d67]/50 peer-checked:bg-red-500 peer-checked:text-white transition-colors">
+<span class="material-symbols-outlined">block</span>
+</div>
+<div class="flex-1">
+<h3 class="text-white font-semibold text-base">Block Sarah</h3>
+<p class="text-gray-400 text-xs mt-0.5">They won't be able to contact you</p>
+</div>
+<div class="w-5 h-5 rounded-full border-2 border-gray-500 peer-checked:border-red-500 peer-checked:bg-red-500 flex items-center justify-center transition-all">
+<span class="material-symbols-outlined text-white text-[14px] opacity-0 peer-checked:opacity-100">check</span>
+</div>
+</label>
+<!-- Option 3: Safety Tips -->
+<label class="group relative flex items-center p-4 rounded-2xl border border-[#324d67]/50 bg-[#192633]/50 cursor-pointer transition-all hover:bg-[#192633] has-[:checked]:border-yellow-500 has-[:checked]:bg-yellow-500/5">
+<input class="peer sr-only" name="action_type" type="radio"/>
+<div class="flex items-center justify-center w-10 h-10 rounded-full bg-[#324d67]/30 text-white mr-4 group-hover:bg-[#324d67]/50 peer-checked:bg-yellow-500 peer-checked:text-black transition-colors">
+<span class="material-symbols-outlined">lightbulb</span>
+</div>
+<div class="flex-1">
+<h3 class="text-white font-semibold text-base">View Safety Tips</h3>
+<p class="text-gray-400 text-xs mt-0.5">Learn how to stay safe on Yabisso</p>
+</div>
+<div class="w-5 h-5 rounded-full border-2 border-gray-500 peer-checked:border-yellow-500 peer-checked:bg-yellow-500 flex items-center justify-center transition-all">
+<span class="material-symbols-outlined text-black text-[14px] opacity-0 peer-checked:opacity-100 font-bold">check</span>
+</div>
+</label>
+</div>
+<!-- Dynamic Report Content (Always visible for demo purposes, logically would toggle) -->
+<div class="space-y-4 pt-2 animate-in fade-in slide-in-from-bottom-2 duration-300">
+<h4 class="text-white text-sm font-semibold uppercase tracking-wider text-opacity-80 ml-1">Reason for reporting</h4>
+<!-- Reason Tags -->
+<div class="flex flex-wrap gap-2">
+<label class="cursor-pointer">
+<input class="peer sr-only" name="reason" type="radio"/>
+<span class="inline-flex items-center px-4 py-2 rounded-full bg-[#192633] border border-[#324d67] text-gray-300 text-sm font-medium transition-all hover:bg-[#233546] peer-checked:bg-primary/20 peer-checked:border-primary peer-checked:text-primary">
+                                    Fake Profile
+                                </span>
+</label>
+<label class="cursor-pointer">
+<input class="peer sr-only" name="reason" type="radio"/>
+<span class="inline-flex items-center px-4 py-2 rounded-full bg-[#192633] border border-[#324d67] text-gray-300 text-sm font-medium transition-all hover:bg-[#233546] peer-checked:bg-primary/20 peer-checked:border-primary peer-checked:text-primary">
+                                    Harassment
+                                </span>
+</label>
+<label class="cursor-pointer">
+<input class="peer sr-only" name="reason" type="radio"/>
+<span class="inline-flex items-center px-4 py-2 rounded-full bg-[#192633] border border-[#324d67] text-gray-300 text-sm font-medium transition-all hover:bg-[#233546] peer-checked:bg-primary/20 peer-checked:border-primary peer-checked:text-primary">
+                                    Scam
+                                </span>
+</label>
+<label class="cursor-pointer">
+<input class="peer sr-only" name="reason" type="radio"/>
+<span class="inline-flex items-center px-4 py-2 rounded-full bg-[#192633] border border-[#324d67] text-gray-300 text-sm font-medium transition-all hover:bg-[#233546] peer-checked:bg-primary/20 peer-checked:border-primary peer-checked:text-primary">
+                                    Inappropriate
+                                </span>
+</label>
+</div>
+<!-- Text Area -->
+<div class="relative mt-2">
+<label class="block">
+<span class="sr-only">Additional details</span>
+<textarea class="w-full bg-[#192633] border border-[#324d67] rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary text-sm min-h-[100px] resize-none" placeholder="Tell us more about what happened (optional)..."></textarea>
+</label>
+</div>
+</div>
+</div>
+<!-- Footer Actions -->
+<div class="p-6 bg-[#111a22] border-t border-[#324d67]/30">
+<button class="w-full h-14 bg-white hover:bg-gray-100 active:scale-[0.98] text-black rounded-full font-bold text-base shadow-lg transition-transform flex items-center justify-center gap-2 mb-3">
+                        Submit Report
+                    </button>
+<button class="w-full h-12 bg-transparent text-gray-400 hover:text-white rounded-full font-medium text-base transition-colors">
+                        Cancel
+                    </button>
+</div>
+<!-- Decorative Pattern Bottom -->
+<div class="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-primary via-purple-500 to-yellow-500 opacity-50"></div>
+</div>
+</div>
+</div>
+</body></html>

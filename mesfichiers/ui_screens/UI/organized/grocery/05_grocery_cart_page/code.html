@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Grocery Cart</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#46ec13",
+                        "primary-dark": "#36bd0f",
+                        "secondary": "#f4a261", // Terracotta/Warm tone for accents
+                        "background-light": "#f9fcf8",
+                        "background-dark": "#142210",
+                        "surface-light": "#ffffff",
+                        "surface-dark": "#1e3316",
+                        "text-main-light": "#111b0d",
+                        "text-main-dark": "#ecfdf5",
+                        "text-sub-light": "#5e9a4c",
+                        "text-sub-dark": "#8acf75",
+                    },
+                    fontFamily: {
+                        "display": ["Lexend", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "2xl": "2rem", "full": "9999px"},
+                    boxShadow: {
+                        'soft': '0 4px 20px -2px rgba(0, 0, 0, 0.05)',
+                        'card': '0 2px 10px rgba(0, 0, 0, 0.03)',
+                        'float': '0 10px 40px -10px rgba(70, 236, 19, 0.3)',
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom Scrollbar hide */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display antialiased text-text-main-light dark:text-text-main-dark transition-colors duration-200">
+<div class="relative flex h-full min-h-screen w-full flex-col max-w-md mx-auto bg-background-light dark:bg-background-dark overflow-x-hidden shadow-2xl">
+<!-- Top App Bar -->
+<header class="sticky top-0 z-30 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-sm p-4 pb-2 flex items-center justify-between border-b border-gray-100 dark:border-white/5">
+<button class="flex size-10 shrink-0 items-center justify-center rounded-full active:bg-gray-100 dark:active:bg-white/10 transition-colors">
+<span class="material-symbols-outlined text-[28px]">arrow_back</span>
+</button>
+<h2 class="text-xl font-bold leading-tight tracking-[-0.015em] flex-1 text-center pr-10">My Cart</h2>
+</header>
+<!-- Offline Banner -->
+<div class="px-4 mt-2">
+<div class="flex flex-col gap-3 rounded-2xl bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-800/30 p-4 shadow-sm">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded-full bg-amber-100 dark:bg-amber-800/40 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-amber-600 dark:text-amber-400">wifi_off</span>
+</div>
+<div class="flex flex-col">
+<p class="text-base font-bold text-amber-900 dark:text-amber-100 leading-tight">You are offline</p>
+<p class="text-sm text-amber-700 dark:text-amber-300/80 leading-normal mt-0.5">Order will sync when online</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Scrollable Content -->
+<main class="flex-1 overflow-y-auto px-4 py-4 pb-40">
+<!-- Products List -->
+<div class="flex flex-col gap-4">
+<!-- Item 1 -->
+<article class="flex gap-3 bg-surface-light dark:bg-surface-dark p-3 rounded-2xl shadow-card border border-gray-50 dark:border-white/5 items-center">
+<div class="relative shrink-0">
+<div class="bg-center bg-no-repeat bg-cover rounded-xl size-20 bg-gray-100 dark:bg-white/5" data-alt="bunch of ripe yellow plantains" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuA1KzQ3yhq-XA-poofv9NEIDxlyR6tc-LLO1_mig-NiXHLSJyT-H1qyHQvpCwtNwEmMgwQSITeVPZXw_EhdJqSs0csGl9tdwBvkKq5Cb_WyClDzlVey8WGltMAz8wzkkX7Hl4z3oaXUFljKR6eEQLhEZJXNXu72RjNX1ArDgUQpKx9xePuzbmB1Q0WkxqnV-Ul6CtqaPtFhIcsErFwscZQH_LNR5c4exlC4Y4Dh71QGVhRemUGZ_lXBoX7vTqbL3tub0BcnU-uD");'></div>
+</div>
+<div class="flex flex-1 flex-col justify-center gap-1 min-w-0">
+<h3 class="text-lg font-bold truncate">Ripe Plantains</h3>
+<p class="text-text-sub-light dark:text-text-sub-dark text-sm font-medium">$2.50 / bunch</p>
+</div>
+<div class="shrink-0 flex items-center gap-3 bg-background-light dark:bg-background-dark rounded-full p-1 border border-gray-100 dark:border-white/10">
+<button aria-label="Decrease quantity" class="size-8 flex items-center justify-center rounded-full bg-white dark:bg-surface-dark shadow-sm text-gray-500 hover:text-red-500 active:scale-95 transition-all">
+<span class="material-symbols-outlined text-lg">remove</span>
+</button>
+<span class="w-4 text-center font-bold text-lg">1</span>
+<button aria-label="Increase quantity" class="size-8 flex items-center justify-center rounded-full bg-primary text-black shadow-md shadow-primary/30 active:scale-95 transition-all">
+<span class="material-symbols-outlined text-lg font-bold">add</span>
+</button>
+</div>
+</article>
+<!-- Item 2 -->
+<article class="flex gap-3 bg-surface-light dark:bg-surface-dark p-3 rounded-2xl shadow-card border border-gray-50 dark:border-white/5 items-center">
+<div class="relative shrink-0">
+<div class="bg-center bg-no-repeat bg-cover rounded-xl size-20 bg-gray-100 dark:bg-white/5" data-alt="large white yam tuber" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuC4-A2uywOe8ZYUfIO9Bdtw8TWl1ytam_A65aAi70iBCBTScrcVMgvlFzgk3FaPwTfzv62m6KNlYP1GawkyTX99ufRVOsf1G1Cgcir6lpnTfixQKVzYWoACd9u85MgmDBxbebqNtwQVAVSWXt2QkdCi1jA1WN6dLad9e5RAqOsjCvFI0FYOLE3P9rXv7tgaEpt0POpTMOfIYF987fVKgOvZevRZkh_WMhpZ0IPdqYqvxHbKwWbv80b9T5XRy1bza7sAAfkDNO6v");'></div>
+<!-- Low stock badge -->
+<div class="absolute -top-2 -left-2 bg-secondary text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm border-2 border-surface-light dark:border-surface-dark">LOW STOCK</div>
+</div>
+<div class="flex flex-1 flex-col justify-center gap-1 min-w-0">
+<h3 class="text-lg font-bold truncate">White Yam Tuber</h3>
+<p class="text-text-sub-light dark:text-text-sub-dark text-sm font-medium">$5.00 / tuber</p>
+</div>
+<div class="shrink-0 flex items-center gap-3 bg-background-light dark:bg-background-dark rounded-full p-1 border border-gray-100 dark:border-white/10">
+<button aria-label="Decrease quantity" class="size-8 flex items-center justify-center rounded-full bg-white dark:bg-surface-dark shadow-sm text-gray-500 hover:text-red-500 active:scale-95 transition-all">
+<span class="material-symbols-outlined text-lg">remove</span>
+</button>
+<span class="w-4 text-center font-bold text-lg">2</span>
+<button aria-label="Increase quantity" class="size-8 flex items-center justify-center rounded-full bg-primary text-black shadow-md shadow-primary/30 active:scale-95 transition-all">
+<span class="material-symbols-outlined text-lg font-bold">add</span>
+</button>
+</div>
+</article>
+<!-- Item 3 -->
+<article class="flex gap-3 bg-surface-light dark:bg-surface-dark p-3 rounded-2xl shadow-card border border-gray-50 dark:border-white/5 items-center">
+<div class="relative shrink-0">
+<div class="bg-center bg-no-repeat bg-cover rounded-xl size-20 bg-gray-100 dark:bg-white/5" data-alt="fresh red tomatoes" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAE829l0-qUygJWEdYryeGsNcXQik8-m_CbeJX7Toj8jX5kkiKUzaUxBCOEpDNIuim4us3H2PWRtkej4pkIhcXYVYv1J51uNA5skRwodaTtlYzaZD-SAFTvBx2E4qPAl9zc9ip0F-WTfDyNpLvecXENQAqebYOZqwQNTxn11UClAwzR7GmYyC72JNaoooXf8K9TBpFHeTw9pkh3GUMVOBrfIPGKI5YY2O-G9rm9NhItRlBzA0JG-OugRdVYsavdPyofRXfs_t8x");'></div>
+</div>
+<div class="flex flex-1 flex-col justify-center gap-1 min-w-0">
+<h3 class="text-lg font-bold truncate">Fresh Tomatoes</h3>
+<p class="text-text-sub-light dark:text-text-sub-dark text-sm font-medium">$3.20 / kg</p>
+</div>
+<div class="shrink-0 flex items-center gap-3 bg-background-light dark:bg-background-dark rounded-full p-1 border border-gray-100 dark:border-white/10">
+<button aria-label="Decrease quantity" class="size-8 flex items-center justify-center rounded-full bg-white dark:bg-surface-dark shadow-sm text-gray-500 hover:text-red-500 active:scale-95 transition-all">
+<span class="material-symbols-outlined text-lg">remove</span>
+</button>
+<span class="w-4 text-center font-bold text-lg">1</span>
+<button aria-label="Increase quantity" class="size-8 flex items-center justify-center rounded-full bg-primary text-black shadow-md shadow-primary/30 active:scale-95 transition-all">
+<span class="material-symbols-outlined text-lg font-bold">add</span>
+</button>
+</div>
+</article>
+</div>
+<!-- Payment Method -->
+<div class="mt-8">
+<h3 class="text-lg font-bold mb-3 px-1">How to Pay?</h3>
+<div class="flex gap-3 overflow-x-auto no-scrollbar pb-2 snap-x">
+<!-- Option 1: Wallet -->
+<label class="snap-start cursor-pointer group relative flex flex-col items-center gap-2 min-w-[100px] p-3 rounded-2xl bg-surface-light dark:bg-surface-dark border-2 border-transparent has-[:checked]:border-primary has-[:checked]:bg-primary/5 transition-all shadow-sm">
+<input checked="" class="sr-only" name="payment" type="radio"/>
+<div class="size-12 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 flex items-center justify-center">
+<span class="material-symbols-outlined text-2xl">account_balance_wallet</span>
+</div>
+<span class="text-sm font-bold text-center">Wallet</span>
+<div class="absolute top-2 right-2 size-4 rounded-full bg-primary text-white opacity-0 group-has-[:checked]:opacity-100 flex items-center justify-center transition-opacity">
+<span class="material-symbols-outlined text-[10px] font-bold text-black">check</span>
+</div>
+</label>
+<!-- Option 2: Cash -->
+<label class="snap-start cursor-pointer group relative flex flex-col items-center gap-2 min-w-[100px] p-3 rounded-2xl bg-surface-light dark:bg-surface-dark border-2 border-transparent has-[:checked]:border-primary has-[:checked]:bg-primary/5 transition-all shadow-sm">
+<input class="sr-only" name="payment" type="radio"/>
+<div class="size-12 rounded-full bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 flex items-center justify-center">
+<span class="material-symbols-outlined text-2xl">payments</span>
+</div>
+<span class="text-sm font-bold text-center">Cash</span>
+<div class="absolute top-2 right-2 size-4 rounded-full bg-primary text-white opacity-0 group-has-[:checked]:opacity-100 flex items-center justify-center transition-opacity">
+<span class="material-symbols-outlined text-[10px] font-bold text-black">check</span>
+</div>
+</label>
+<!-- Option 3: QR Pay -->
+<label class="snap-start cursor-pointer group relative flex flex-col items-center gap-2 min-w-[100px] p-3 rounded-2xl bg-surface-light dark:bg-surface-dark border-2 border-transparent has-[:checked]:border-primary has-[:checked]:bg-primary/5 transition-all shadow-sm">
+<input class="sr-only" name="payment" type="radio"/>
+<div class="size-12 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 flex items-center justify-center">
+<span class="material-symbols-outlined text-2xl">qr_code_scanner</span>
+</div>
+<span class="text-sm font-bold text-center">QR Pay</span>
+<div class="absolute top-2 right-2 size-4 rounded-full bg-primary text-white opacity-0 group-has-[:checked]:opacity-100 flex items-center justify-center transition-opacity">
+<span class="material-symbols-outlined text-[10px] font-bold text-black">check</span>
+</div>
+</label>
+</div>
+</div>
+<!-- Price Breakdown -->
+<div class="mt-6 p-4 bg-surface-light dark:bg-surface-dark rounded-2xl shadow-sm border border-gray-50 dark:border-white/5">
+<div class="flex justify-between items-center mb-2">
+<span class="text-text-sub-light dark:text-text-sub-dark">Subtotal</span>
+<span class="font-bold">$15.70</span>
+</div>
+<div class="flex justify-between items-center mb-4">
+<span class="text-text-sub-light dark:text-text-sub-dark">Delivery Fee</span>
+<span class="font-bold">$1.00</span>
+</div>
+<div class="h-px bg-gray-100 dark:bg-white/10 w-full mb-4"></div>
+<div class="flex justify-between items-end">
+<span class="text-lg font-bold">Total</span>
+<span class="text-2xl font-bold text-primary-dark dark:text-primary">$16.70</span>
+</div>
+</div>
+</main>
+<!-- Fixed Bottom Actions -->
+<div class="fixed bottom-[88px] left-0 right-0 max-w-md mx-auto p-4 bg-gradient-to-t from-background-light via-background-light to-transparent dark:from-background-dark dark:via-background-dark pointer-events-none z-10 flex justify-center">
+<!-- Floating CTA Container - pointer events auto re-enabled on button -->
+<button class="pointer-events-auto w-full bg-surface-light dark:bg-surface-dark text-text-main-light dark:text-white border-2 border-primary shadow-float h-14 rounded-2xl flex items-center justify-between px-2 pl-6 group active:scale-[0.98] transition-all">
+<span class="font-bold text-lg">Order Now</span>
+<div class="h-10 px-5 rounded-xl bg-primary flex items-center justify-center group-active:bg-primary-dark transition-colors">
+<span class="material-symbols-outlined text-black font-bold">arrow_forward</span>
+</div>
+</button>
+</div>
+<!-- Bottom Navigation Bar (Placeholder for consistency) -->
+<nav class="fixed bottom-0 z-20 w-full max-w-md mx-auto bg-surface-light dark:bg-surface-dark border-t border-gray-100 dark:border-white/5 pb-5 pt-3 px-6 flex justify-between items-end text-xs font-medium text-gray-400 dark:text-gray-500">
+<div class="flex flex-col items-center gap-1">
+<span class="material-symbols-outlined text-2xl">home</span>
+<span>Home</span>
+</div>
+<div class="flex flex-col items-center gap-1 text-primary dark:text-primary">
+<span class="material-symbols-outlined text-2xl font-bold fill-current">shopping_cart</span>
+<span>Cart</span>
+</div>
+<div class="flex flex-col items-center gap-1">
+<div class="relative">
+<span class="material-symbols-outlined text-2xl">notifications</span>
+<span class="absolute top-0 right-0 size-2 bg-red-500 rounded-full"></span>
+</div>
+<span>Alerts</span>
+</div>
+<div class="flex flex-col items-center gap-1">
+<span class="material-symbols-outlined text-2xl">person</span>
+<span>Profile</span>
+</div>
+</nav>
+</div>
+</body></html>

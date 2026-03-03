@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Music Player - Yabisso</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Spline+Sans:wght@300;400;500;600;700&amp;family=Noto+Sans:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Config -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                        "surface-dark": "#192633",
+                        "brand-red": "#ef4444",
+                        "brand-yellow": "#eab308",
+                        "brand-green": "#22c55e",
+                    },
+                    fontFamily: {
+                        "display": ["Spline Sans", "Noto Sans", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "1rem", 
+                        "lg": "1.5rem", 
+                        "xl": "2rem", 
+                        "2xl": "2.5rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white font-display overflow-hidden">
+<div class="relative flex h-full min-h-screen w-full flex-col overflow-y-auto pb-[90px]">
+<!-- Top App Bar -->
+<div class="flex items-center p-4 pb-2 justify-between sticky top-0 z-10">
+<button class="text-slate-900 dark:text-white flex size-12 shrink-0 items-center justify-center rounded-full hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
+<span class="material-symbols-outlined text-[24px]">arrow_back</span>
+</button>
+<h2 class="text-slate-900 dark:text-white text-lg font-bold leading-tight tracking-[-0.015em]">Now Playing</h2>
+<button class="text-slate-900 dark:text-white flex size-12 shrink-0 items-center justify-center rounded-full hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
+<span class="material-symbols-outlined text-[24px]">more_vert</span>
+</button>
+</div>
+<!-- Main Content -->
+<div class="flex-1 flex flex-col px-6 pt-4 gap-6 w-full max-w-lg mx-auto">
+<!-- Album Art Card -->
+<div class="w-full aspect-square relative group">
+<!-- Abstract shadow/glow representing brand colors subtly -->
+<div class="absolute inset-4 rounded-xl blur-2xl opacity-40 bg-gradient-to-tr from-brand-red via-brand-yellow to-brand-green group-hover:opacity-60 transition-opacity duration-700"></div>
+<div class="relative w-full h-full bg-center bg-no-repeat bg-cover rounded-[2rem] shadow-2xl ring-1 ring-white/10" data-alt="Album cover art featuring a stylized portrait of an African artist with vibrant, warm colors" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAJaLbehI0sl-Rs5UFdjifnFBruk9oy1vc64QIOSr4L6WuyrR2F78z0uuDHAh8bsxmbBi4lHMcgtycQTb9Lt8pL888Galv0SoDePphS_mxgpR2lcfhrqcc8ptlXB_M5ao-OivJzJqUpYnddCbv9MLUqNBTS_790QaFDZvoOOl09QIC8mdI2KHgFSi1t3gb2AKUNmGMOITmOtfiPrtMpXzQulZkf7wUTMUHcJgJlwN0-5DL9uPD9dDKz9RDXW3fD0g6uMQl1MJfx");'>
+</div>
+</div>
+<!-- Track Info -->
+<div class="flex flex-col items-start gap-1">
+<div class="flex items-center justify-between w-full">
+<h1 class="text-2xl md:text-3xl font-bold leading-tight tracking-tight">On the Low</h1>
+<button class="text-primary hover:text-primary/80 transition-colors">
+<span class="material-symbols-outlined filled text-[28px]" style="font-variation-settings: 'FILL' 1;">favorite</span>
+</button>
+</div>
+<p class="text-slate-500 dark:text-[#92adc9] text-lg font-medium">Burna Boy</p>
+</div>
+<!-- Actions Bar (Specialized) -->
+<div class="grid grid-cols-3 gap-3">
+<!-- Download Button (White Styled) -->
+<button class="flex flex-col items-center gap-2 group">
+<div class="flex h-12 w-full items-center justify-center rounded-full bg-white text-black shadow-lg shadow-white/10 hover:bg-gray-100 transition-transform active:scale-95">
+<span class="material-symbols-outlined text-[22px]">download_for_offline</span>
+</div>
+<span class="text-xs font-medium text-slate-500 dark:text-slate-400">Download</span>
+</button>
+<!-- Lyrics Button -->
+<button class="flex flex-col items-center gap-2 group">
+<div class="flex h-12 w-full items-center justify-center rounded-full bg-slate-200 dark:bg-surface-dark text-slate-900 dark:text-white hover:bg-slate-300 dark:hover:bg-[#233648] transition-transform active:scale-95">
+<span class="material-symbols-outlined text-[22px]">lyrics</span>
+</div>
+<span class="text-xs font-medium text-slate-500 dark:text-slate-400">Lyrics</span>
+</button>
+<!-- Mesh Share Button (Primary Highlight) -->
+<button class="flex flex-col items-center gap-2 group">
+<div class="relative flex h-12 w-full items-center justify-center rounded-full bg-primary/20 text-primary border border-primary/30 hover:bg-primary/30 transition-transform active:scale-95 overflow-hidden">
+<div class="absolute inset-0 bg-primary/10 blur-sm"></div>
+<span class="material-symbols-outlined text-[22px] relative z-10">share_reviews</span>
+</div>
+<span class="text-xs font-medium text-primary">Mesh Share</span>
+</button>
+</div>
+<!-- Slider / Progress -->
+<div class="flex flex-col gap-2 mt-2">
+<div class="group relative flex h-4 w-full cursor-pointer items-center">
+<!-- Track Background -->
+<div class="h-1.5 w-full rounded-full bg-slate-200 dark:bg-[#324d67]"></div>
+<!-- Progress Fill -->
+<div class="absolute h-1.5 w-[35%] rounded-full bg-primary group-hover:bg-primary/90"></div>
+<!-- Thumb (Only visible on hover or always for mobile) -->
+<div class="absolute left-[35%] h-4 w-4 -translate-x-2 rounded-full bg-white shadow-md ring-2 ring-primary transition-transform group-active:scale-125"></div>
+</div>
+<div class="flex w-full items-center justify-between px-0.5">
+<p class="text-xs font-medium text-slate-500 dark:text-[#92adc9]">1:45</p>
+<p class="text-xs font-medium text-slate-500 dark:text-[#92adc9]">3:05</p>
+</div>
+</div>
+<!-- Playback Controls -->
+<div class="flex items-center justify-between px-4 pb-8">
+<button class="text-slate-400 dark:text-[#586e85] hover:text-slate-900 dark:hover:text-white transition-colors p-2">
+<span class="material-symbols-outlined text-[28px]">shuffle</span>
+</button>
+<div class="flex items-center gap-6">
+<button class="text-slate-900 dark:text-white hover:text-primary transition-colors active:scale-90 transform duration-150">
+<span class="material-symbols-outlined text-[42px] filled" style="font-variation-settings: 'FILL' 1;">skip_previous</span>
+</button>
+<button class="flex items-center justify-center size-20 rounded-full bg-primary text-white shadow-xl shadow-primary/30 hover:bg-primary/90 hover:scale-105 active:scale-95 transition-all duration-200">
+<span class="material-symbols-outlined text-[48px] filled" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+</button>
+<button class="text-slate-900 dark:text-white hover:text-primary transition-colors active:scale-90 transform duration-150">
+<span class="material-symbols-outlined text-[42px] filled" style="font-variation-settings: 'FILL' 1;">skip_next</span>
+</button>
+</div>
+<button class="text-slate-400 dark:text-[#586e85] hover:text-slate-900 dark:hover:text-white transition-colors p-2">
+<span class="material-symbols-outlined text-[28px]">repeat</span>
+</button>
+</div>
+</div>
+<!-- Bottom Navigation Bar -->
+<nav class="fixed bottom-0 left-0 right-0 z-50 bg-white/90 dark:bg-[#111a22]/90 backdrop-blur-lg border-t border-slate-200 dark:border-white/5 pb-5 pt-3 px-6">
+<div class="flex justify-between items-center max-w-lg mx-auto">
+<button class="flex flex-col items-center gap-1 text-slate-400 dark:text-slate-500 hover:text-primary dark:hover:text-primary">
+<span class="material-symbols-outlined text-[24px]">home</span>
+<span class="text-[10px] font-medium">Home</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-slate-400 dark:text-slate-500 hover:text-primary dark:hover:text-primary">
+<span class="material-symbols-outlined text-[24px]">search</span>
+<span class="text-[10px] font-medium">Search</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-primary dark:text-primary">
+<span class="material-symbols-outlined text-[24px] filled" style="font-variation-settings: 'FILL' 1;">library_music</span>
+<span class="text-[10px] font-medium">Library</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-slate-400 dark:text-slate-500 hover:text-brand-yellow dark:hover:text-brand-yellow">
+<span class="material-symbols-outlined text-[24px]">diamond</span>
+<span class="text-[10px] font-medium">Premium</span>
+</button>
+</div>
+</nav>
+</div>
+</body></html>

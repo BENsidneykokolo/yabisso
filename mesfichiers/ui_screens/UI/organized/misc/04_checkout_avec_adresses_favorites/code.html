@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Yabisso Checkout</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#111a22", 
+                        "surface-dark": "#1c2a38", 
+                        "accent-green": "#10b981",
+                        "accent-yellow": "#f59e0b",
+                        "accent-red": "#ef4444",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "2xl": "1rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-white antialiased">
+<div class="relative flex h-full min-h-screen w-full flex-col overflow-x-hidden pb-24">
+<!-- TopAppBar -->
+<div class="sticky top-0 z-10 flex items-center bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-md p-4 pb-2 justify-between border-b border-gray-200 dark:border-gray-800">
+<div class="text-slate-900 dark:text-white flex size-12 shrink-0 items-center justify-start cursor-pointer">
+<span class="material-symbols-outlined text-2xl">arrow_back</span>
+</div>
+<h2 class="text-slate-900 dark:text-white text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center pr-12">Paiement</h2>
+</div>
+<!-- PageIndicators -->
+<div class="flex w-full flex-row items-center justify-center gap-2 py-6">
+<div class="h-1.5 w-8 rounded-full bg-surface-dark dark:bg-slate-700"></div>
+<div class="h-1.5 w-8 rounded-full bg-surface-dark dark:bg-slate-700"></div>
+<div class="h-1.5 w-8 rounded-full bg-primary"></div>
+</div>
+<!-- Address Section -->
+<div class="px-4 pb-2">
+<h3 class="text-slate-900 dark:text-white text-lg font-bold leading-tight tracking-[-0.015em] pb-3">Adresse de Livraison</h3>
+<div class="flex flex-col gap-3">
+<!-- Maison -->
+<label class="flex items-center gap-4 bg-white dark:bg-surface-dark p-4 rounded-xl justify-between shadow-sm cursor-pointer border border-primary relative overflow-hidden">
+<div class="flex items-center gap-4 z-10">
+<div class="text-primary flex items-center justify-center rounded-full bg-primary/10 shrink-0 size-12">
+<span class="material-symbols-outlined">home</span>
+</div>
+<div class="flex flex-col justify-center">
+<div class="flex items-center gap-2">
+<p class="text-slate-900 dark:text-white text-base font-semibold">Maison</p>
+<span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-primary/20 text-primary border border-primary/30">YB-987-AX</span>
+</div>
+<p class="text-slate-500 dark:text-[#92adc9] text-sm font-normal line-clamp-1">Rue 1.023, Quartier Bastos, Yaoundé</p>
+</div>
+</div>
+<div class="shrink-0 z-10">
+<input checked="" class="size-5 border-gray-300 text-primary focus:ring-primary bg-transparent" name="address" type="radio"/>
+</div>
+<div class="absolute inset-0 bg-primary/5 dark:bg-primary/10"></div>
+</label>
+<!-- Travail -->
+<label class="flex items-center gap-4 bg-white dark:bg-surface-dark p-4 rounded-xl justify-between shadow-sm cursor-pointer border border-transparent hover:border-gray-700">
+<div class="flex items-center gap-4">
+<div class="text-slate-400 flex items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 shrink-0 size-12">
+<span class="material-symbols-outlined">work</span>
+</div>
+<div class="flex flex-col justify-center">
+<div class="flex items-center gap-2">
+<p class="text-slate-900 dark:text-white text-base font-semibold">Travail</p>
+<span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-slate-500/20 text-slate-400 border border-slate-500/30">YB-123-BZ</span>
+</div>
+<p class="text-slate-500 dark:text-[#92adc9] text-sm font-normal line-clamp-1">Immeuble CAA, Avenue Marchand</p>
+</div>
+</div>
+<div class="shrink-0">
+<input class="size-5 border-gray-500 text-primary focus:ring-primary bg-transparent" name="address" type="radio"/>
+</div>
+</label>
+<button class="mt-1 text-primary text-sm font-semibold flex items-center gap-1 hover:underline w-fit self-end">
+<span class="material-symbols-outlined text-sm">settings</span>
+    Gérer les adresses
+  </button>
+</div>
+</div>
+<!-- Payment Section -->
+<div class="px-4 pt-6 pb-2">
+<h3 class="text-slate-900 dark:text-white text-lg font-bold leading-tight tracking-[-0.015em] pb-3">Mode de Paiement</h3>
+<div class="flex flex-col gap-3">
+<!-- Wallet Option -->
+<label class="flex items-center gap-4 bg-white dark:bg-surface-dark p-4 rounded-xl justify-between shadow-sm cursor-pointer border border-primary relative overflow-hidden group">
+<div class="flex items-center gap-4 z-10">
+<div class="text-white flex items-center justify-center rounded-full bg-primary shrink-0 size-10">
+<span class="material-symbols-outlined text-[20px]">account_balance_wallet</span>
+</div>
+<div class="flex flex-col justify-center">
+<p class="text-slate-900 dark:text-white text-base font-medium leading-normal">Portefeuille Yabisso</p>
+<p class="text-slate-500 dark:text-[#92adc9] text-sm font-normal leading-normal">Solde : <span class="text-primary font-bold">$450.00</span></p>
+</div>
+</div>
+<div class="shrink-0 z-10">
+<input checked="" class="size-5 border-gray-300 text-primary focus:ring-primary bg-transparent" name="payment" type="radio"/>
+</div>
+<div class="absolute inset-0 bg-primary/5 dark:bg-primary/10"></div>
+</label>
+<!-- Mobile Money Option -->
+<label class="flex items-center gap-4 bg-white dark:bg-surface-dark p-4 rounded-xl justify-between shadow-sm cursor-pointer border border-transparent hover:border-gray-200 dark:hover:border-gray-700 group">
+<div class="flex items-center gap-4">
+<div class="text-accent-green flex items-center justify-center rounded-full bg-accent-green/10 shrink-0 size-10">
+<span class="material-symbols-outlined text-[20px]">smartphone</span>
+</div>
+<div class="flex flex-col justify-center">
+<div class="flex items-center gap-2">
+<p class="text-slate-900 dark:text-white text-base font-medium leading-normal">Paiement Mobile</p>
+<span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-green-500/20 text-green-400 border border-green-500/30 uppercase tracking-wide">Prêt Hors-ligne</span>
+</div>
+<p class="text-slate-500 dark:text-[#92adc9] text-sm font-normal leading-normal">M-Pesa, Airtel Money</p>
+</div>
+</div>
+<div class="shrink-0">
+<input class="size-5 border-gray-500 text-primary focus:ring-primary bg-transparent" name="payment" type="radio"/>
+</div>
+</label>
+<!-- Card Option -->
+<label class="flex items-center gap-4 bg-white dark:bg-surface-dark p-4 rounded-xl justify-between shadow-sm cursor-pointer border border-transparent hover:border-gray-200 dark:hover:border-gray-700 group">
+<div class="flex items-center gap-4">
+<div class="text-accent-yellow flex items-center justify-center rounded-full bg-accent-yellow/10 shrink-0 size-10">
+<span class="material-symbols-outlined text-[20px]">credit_card</span>
+</div>
+<div class="flex flex-col justify-center">
+<p class="text-slate-900 dark:text-white text-base font-medium leading-normal">Carte de Crédit</p>
+<p class="text-slate-500 dark:text-[#92adc9] text-sm font-normal leading-normal">**** 4242</p>
+</div>
+</div>
+<div class="shrink-0">
+<input class="size-5 border-gray-500 text-primary focus:ring-primary bg-transparent" name="payment" type="radio"/>
+</div>
+</label>
+</div>
+</div>
+<!-- Order Summary -->
+<div class="px-4 pt-6 pb-2">
+<h3 class="text-slate-900 dark:text-white text-lg font-bold leading-tight tracking-[-0.015em] pb-3">Résumé de la Commande</h3>
+<div class="bg-white dark:bg-surface-dark rounded-xl p-4 flex flex-col gap-4 shadow-sm">
+<!-- Item 1 -->
+<div class="flex gap-3 items-center">
+<div class="size-16 rounded-lg bg-gray-100 dark:bg-gray-800 overflow-hidden shrink-0 relative">
+<img alt="modern wireless headphones on simple background" class="object-cover w-full h-full" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCchntFWAuT-XnocLJ9GCml95154_J2wOCFBQG7m9N8xm4L3_M21vFNZcUvvh4BMJp5Pq_ueclsZj9e-kVATvfOKHyGiNnrnKfRMZ6oFqX9NKjztkXiEChbzhS4qYKPdyrEgJIYJbxNwxQCe-7WAGQsseHDXV9KvW-761juS-p7pERAeqLJboXWBSeVq6jhNpFLekJg2tqzhAM10qbtNLbc0oel1cjfXK0Pc0-ioZr6LwQtDb-3J6DP7As2NqV4X1r24bRi8sDi"/>
+</div>
+<div class="flex-1 min-w-0">
+<p class="text-slate-900 dark:text-white font-medium truncate">Premium Wireless Headphones</p>
+<p class="text-slate-500 dark:text-gray-400 text-sm">Black • Qty 1</p>
+</div>
+<div class="text-slate-900 dark:text-white font-semibold">$50.00</div>
+</div>
+<!-- Item 2 -->
+<div class="flex gap-3 items-center">
+<div class="size-16 rounded-lg bg-gray-100 dark:bg-gray-800 overflow-hidden shrink-0 relative">
+<img alt="smart watch digital screen interface" class="object-cover w-full h-full" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAN1yXJBKJGtp-3TDxOl6op6M6GF3e-BFaYA5vG7fYuqb8rjFdYhewObAYTi14kKwlnPYG4cVzR0cIsCNWVKX4W3JNw4kztrcg2Hk1-cPx--9q8xbORY4mIovrvqsW8hFDtkYw74mvviGw760UU2HB3O0T5ZE_oWc4sOJ7gqISlY_RQPxCoDNAjDds-Thw70RN_-AeUY5UrIW8LeV6XOO1q7dPot0laf9_qPgYpnWg8x3eG7OL3ZVzxU01_ek7CoZTzuQDX66PI"/>
+</div>
+<div class="flex-1 min-w-0">
+<p class="text-slate-900 dark:text-white font-medium truncate">Series 7 Smart Watch</p>
+<p class="text-slate-500 dark:text-gray-400 text-sm">Silver • Qty 1</p>
+</div>
+<div class="text-slate-900 dark:text-white font-semibold">$120.00</div>
+</div>
+<!-- Divider -->
+<div class="h-px bg-gray-100 dark:bg-gray-700 my-1"></div>
+<!-- Calculations -->
+<div class="flex flex-col gap-2 text-sm">
+<div class="flex justify-between text-slate-500 dark:text-gray-400">
+<span>Sous-total</span>
+<span>$170.00</span>
+</div>
+<div class="flex justify-between text-slate-500 dark:text-gray-400">
+<span>Frais de livraison</span>
+<span>$5.00</span>
+</div>
+<div class="flex justify-between text-slate-500 dark:text-gray-400">
+<span>Taxes</span>
+<span>$0.00</span>
+</div>
+<div class="flex justify-between text-slate-900 dark:text-white font-bold text-lg mt-2">
+<span>Total</span>
+<span>$175.00</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Extra spacing for scroll -->
+<div class="h-8"></div>
+<!-- Sticky Footer -->
+<div class="fixed bottom-0 left-0 right-0 bg-white dark:bg-surface-dark border-t border-gray-100 dark:border-gray-800 p-4 pb-8 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] z-50">
+<div class="max-w-md mx-auto flex flex-col gap-3">
+<div class="flex justify-between items-end mb-1">
+<span class="text-sm text-slate-500 dark:text-gray-400">Montant Total</span>
+<span class="text-xl font-bold text-slate-900 dark:text-white">$175.00</span>
+</div>
+<button class="w-full h-12 bg-white text-surface-dark font-bold rounded-xl flex items-center justify-center gap-2 hover:bg-gray-100 active:scale-[0.98] transition-all shadow-lg shadow-white/5 border border-transparent">
+<span>Confirmer l'achat</span>
+<span class="material-symbols-outlined text-lg">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+</body></html>

@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Yabisso Market Home</title>
+<link href="https://fonts.googleapis.com/css2?family=Spline+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "accent-red": "#ef4444",
+                        "accent-green": "#22c55e",
+                        "accent-yellow": "#eab308",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                        "surface-dark": "#1a2632",
+                        "surface-light": "#ffffff",
+                    },
+                    fontFamily: {
+                        "display": ["Spline Sans", "sans-serif"]
+                    },
+                    borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "2xl": "1rem", "full": "9999px" },
+                },
+            },
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display antialiased text-slate-900 dark:text-white pb-24 selection:bg-primary selection:text-white">
+<div class="relative flex min-h-screen w-full flex-col overflow-x-hidden">
+<!-- Header Section -->
+<div class="sticky top-0 z-40 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-md pt-2">
+<div class="flex items-center px-4 py-3 justify-between">
+<div class="flex items-center gap-3">
+<div class="relative">
+<div class="bg-center bg-no-repeat bg-cover rounded-full size-10 border-2 border-primary" data-alt="Portrait of a user named Alex" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCUDhRSO0NAD9wEbbpc7ZF9-gGcPeINUqHa3PDESYH2aUnfFD83HaLEVHUByE4g25fHBjOfwoMuOqdI4hpfYgTDVfTXU2c3IUA04aFmLDrdxz3UeUSHW2Ax9b5HiND3ez42OLwec0API3D7Zv21i2STHW3yfAJOHVgb612ZELxeqNE0QxLhtwafc8jquV3iNuAWHflRff6tMW8evIQ-IGp9QbsJqYq90XkQAlZGkV9njyVPr2b5cpZ4o_7VOkg5vPD06fcHf1eM");'></div>
+<div class="absolute bottom-0 right-0 size-3 bg-accent-green rounded-full border-2 border-background-dark"></div>
+</div>
+<div class="flex flex-col">
+<h2 class="text-slate-900 dark:text-white text-lg font-bold leading-tight">Bonjour, Alex</h2>
+<span class="text-xs text-slate-500 dark:text-slate-400">Abidjan, CI</span>
+</div>
+</div>
+<button class="relative flex size-10 items-center justify-center rounded-full bg-surface-light dark:bg-surface-dark text-slate-900 dark:text-white shadow-sm">
+<span class="material-symbols-outlined text-[24px]">notifications</span>
+<span class="absolute top-2 right-2 size-2 bg-accent-red rounded-full"></span>
+</button>
+</div>
+<!-- Status Chips (Offline First Indicators) -->
+<div class="flex gap-2 px-4 pb-4 overflow-x-auto no-scrollbar">
+<div class="flex h-7 items-center justify-center gap-x-1.5 rounded-full bg-accent-green/10 dark:bg-accent-green/20 pl-2 pr-3 border border-accent-green/20">
+<span class="material-symbols-outlined text-accent-green text-[16px] font-bold">wifi</span>
+<p class="text-accent-green text-xs font-bold leading-normal">Online</p>
+</div>
+<div class="flex h-7 items-center justify-center gap-x-1.5 rounded-full bg-surface-light dark:bg-surface-dark pl-2 pr-3 border border-slate-200 dark:border-slate-700">
+<span class="material-symbols-outlined text-primary text-[16px]">cloud_done</span>
+<p class="text-slate-600 dark:text-slate-300 text-xs font-medium leading-normal">Synced</p>
+</div>
+</div>
+<!-- Search Bar -->
+<div class="px-4 pb-2">
+<label class="flex flex-col w-full">
+<div class="flex w-full items-center rounded-xl h-12 bg-surface-light dark:bg-surface-dark border border-slate-200 dark:border-slate-700 shadow-sm transition-all focus-within:border-primary focus-within:ring-1 focus-within:ring-primary">
+<span class="material-symbols-outlined text-slate-400 pl-4 text-[24px]">search</span>
+<input class="flex w-full bg-transparent border-none focus:ring-0 text-slate-900 dark:text-white placeholder:text-slate-500 h-full px-3 text-base" placeholder="Rechercher un produit..." value=""/>
+<button class="pr-4 text-primary hover:text-primary/80 transition-colors">
+<span class="material-symbols-outlined text-[24px]">mic</span>
+</button>
+</div>
+</label>
+</div>
+</div>
+<!-- Scrollable Content -->
+<div class="flex flex-col gap-6 pt-4">
+<!-- Hero Carousel (Deals) -->
+<div class="flex overflow-x-auto snap-x snap-mandatory px-4 gap-4 pb-2 [-ms-scrollbar-style:none] [scrollbar-width:none] [&amp;::-webkit-scrollbar]:hidden">
+<!-- Card 1 -->
+<div class="snap-center relative flex h-40 w-full min-w-[85%] shrink-0 flex-col justify-end overflow-hidden rounded-2xl bg-slate-800 shadow-lg group">
+<div class="absolute inset-0 bg-center bg-cover transition-transform duration-500 group-hover:scale-105" data-alt="Gradient background with abstract colorful patterns" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuB38x6u9eQXIHPRamQC554_j0AbPfnEznuHn8MrXGhtSnQycBQ2jPdkPjKwRnbY_YEe9fMl2tMFZeb7JMoyyUOOZnDBBxSRsOYrY5RJQggYtW5tOHqmyw4otzHlUNaegf6I0-KcDoCXt79_dDt_q-EAGfyhibdG87BboKooeVBs7jqor_KSStkexpHDtvCdy59dYaLyqKSHe6MTatIDYYPfJ38MmRP8Wbu4Wr9Q_M1Ljobxq4WfPkIABR1CaxUcoP4pTQ4aUDxD");'></div>
+<div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent"></div>
+<div class="relative p-4">
+<span class="inline-block px-2 py-0.5 rounded bg-accent-red text-white text-[10px] font-bold mb-1">PROMO -50%</span>
+<h3 class="text-white text-xl font-bold leading-tight">Grande Vente</h3>
+<p class="text-slate-300 text-sm">Électronique &amp; Accessoires</p>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="snap-center relative flex h-40 w-full min-w-[85%] shrink-0 flex-col justify-end overflow-hidden rounded-2xl bg-slate-800 shadow-lg group">
+<div class="absolute inset-0 bg-center bg-cover transition-transform duration-500 group-hover:scale-105" data-alt="Abstract tech background with blue circuit lines" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAPavAteh4W5EWCJqE1ykxJzmLRtXiVv1FUt27nxFiOwyFraXhmYwaFrNqpTxs_Iu8oX9nxuhA09JfmWXUVoHzxp0uqL24HBEwO8vFpSYq2hgk9d6jgPNiGnVMkUfsjoekqvt956J3z-tpgW8Yakf3GCHhza8u1A5Xkt9yO9fMZ11_kVIvps50x9QWcqyUCMzJgkWFXsmo4Ogi6Ti5sy6TSk2rE76qU3a2B2guy6uj03hh3Uv-fzIbTR0Yayx9RhbAJRa5_QZ5V");'></div>
+<div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent"></div>
+<div class="relative p-4">
+<span class="inline-block px-2 py-0.5 rounded bg-accent-yellow text-black text-[10px] font-bold mb-1">NOUVEAU</span>
+<h3 class="text-white text-xl font-bold leading-tight">Tech Deals</h3>
+<p class="text-slate-300 text-sm">Arrivages récents</p>
+</div>
+</div>
+</div>
+<!-- Categories -->
+<div class="flex flex-col gap-3 px-4">
+<div class="flex items-center justify-between">
+<h3 class="text-slate-900 dark:text-white text-lg font-bold leading-tight">Catégories</h3>
+<button class="text-primary text-sm font-medium">Voir tout</button>
+</div>
+<div class="grid grid-cols-4 gap-4">
+<div class="flex flex-col items-center gap-2 group cursor-pointer">
+<div class="flex size-14 items-center justify-center rounded-2xl bg-surface-light dark:bg-surface-dark border border-slate-200 dark:border-slate-700 shadow-sm group-hover:border-primary transition-colors">
+<span class="material-symbols-outlined text-primary text-[28px]">smartphone</span>
+</div>
+<span class="text-xs font-medium text-slate-600 dark:text-slate-300">Téléphones</span>
+</div>
+<div class="flex flex-col items-center gap-2 group cursor-pointer">
+<div class="flex size-14 items-center justify-center rounded-2xl bg-surface-light dark:bg-surface-dark border border-slate-200 dark:border-slate-700 shadow-sm group-hover:border-accent-yellow transition-colors">
+<span class="material-symbols-outlined text-accent-yellow text-[28px]">checkroom</span>
+</div>
+<span class="text-xs font-medium text-slate-600 dark:text-slate-300">Mode</span>
+</div>
+<div class="flex flex-col items-center gap-2 group cursor-pointer">
+<div class="flex size-14 items-center justify-center rounded-2xl bg-surface-light dark:bg-surface-dark border border-slate-200 dark:border-slate-700 shadow-sm group-hover:border-accent-green transition-colors">
+<span class="material-symbols-outlined text-accent-green text-[28px]">chair</span>
+</div>
+<span class="text-xs font-medium text-slate-600 dark:text-slate-300">Maison</span>
+</div>
+<div class="flex flex-col items-center gap-2 group cursor-pointer">
+<div class="flex size-14 items-center justify-center rounded-2xl bg-surface-light dark:bg-surface-dark border border-slate-200 dark:border-slate-700 shadow-sm group-hover:border-accent-red transition-colors">
+<span class="material-symbols-outlined text-accent-red text-[28px]">face</span>
+</div>
+<span class="text-xs font-medium text-slate-600 dark:text-slate-300">Beauté</span>
+</div>
+</div>
+</div>
+<!-- Featured Products -->
+<div class="flex flex-col gap-3 px-4 pb-4">
+<h3 class="text-slate-900 dark:text-white text-lg font-bold leading-tight">Populaires</h3>
+<div class="grid grid-cols-2 gap-4">
+<!-- Product Card 1 -->
+<div class="flex flex-col overflow-hidden rounded-xl bg-surface-light dark:bg-surface-dark border border-slate-200 dark:border-slate-700 shadow-sm">
+<div class="relative aspect-square w-full bg-slate-100 dark:bg-slate-800">
+<div class="absolute inset-0 bg-center bg-cover bg-no-repeat" data-alt="Blue generic smartphone front view" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDMG5RFrJZSBcsB_7DS8jij9LVy7pNaxrfO3HUR3tcmWOJVLQE5PRNG_4OsZz1sGetjMfax_9AScNsmSnY63pnUHXGB2EMGqmSfQesq6_VWMssaKwOxZMF9SPpRGRfydaQZqBloUpHvV3_1EJ4wkUNlxmbQD1zxn1nO2NlEh07exUYNFbLyAAvS7sE5Gy66qxZzto3bp_nrPzUsTWngmXYvAly35o_H8iwRVQF9HBNylS2uCJ7jOwJJhq0jGcwjLLaVrQSR1y-X");'></div>
+<button class="absolute top-2 right-2 flex size-8 items-center justify-center rounded-full bg-black/20 backdrop-blur-sm text-white hover:bg-accent-red hover:text-white transition-colors">
+<span class="material-symbols-outlined text-[18px]">favorite</span>
+</button>
+</div>
+<div class="flex flex-col p-3 gap-1">
+<p class="text-xs text-slate-500 font-medium">Apple</p>
+<h4 class="text-sm font-bold text-slate-900 dark:text-white line-clamp-1">iPhone 13 Pro</h4>
+<div class="flex items-center justify-between mt-1">
+<span class="text-primary font-bold text-sm">450k FCFA</span>
+<button class="flex size-8 items-center justify-center rounded-full bg-primary text-white hover:bg-primary/90">
+<span class="material-symbols-outlined text-[18px]">add</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Product Card 2 -->
+<div class="flex flex-col overflow-hidden rounded-xl bg-surface-light dark:bg-surface-dark border border-slate-200 dark:border-slate-700 shadow-sm">
+<div class="relative aspect-square w-full bg-slate-100 dark:bg-slate-800">
+<div class="absolute inset-0 bg-center bg-cover bg-no-repeat" data-alt="Side profile of a running shoe" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAwpsft7HJW0HA31AOceewD6cXK9mJ-JgLP0hWbzoa6PKmUDHTeHc8-Q-qJVXWclCYBLZHlvxFRw13UD1XwYZxbmNPy9JsCPAbsZ3t_9GrUTDu0akTvsNdhZReRChhHJR3nX2mkClglvVwoIJmk_2jwekqA7fgOQ-Vjav7HzlJnioz2uQkaADsnUgOfstVFDZI0ntFjelqA1b9Q82NBepoIJeGWKwEjHTdh0Ye7OzDNHjBlm0DToWvWkK8fEHWcPdhhtgPj1AKm");'></div>
+<button class="absolute top-2 right-2 flex size-8 items-center justify-center rounded-full bg-black/20 backdrop-blur-sm text-white hover:bg-accent-red hover:text-white transition-colors">
+<span class="material-symbols-outlined text-[18px]">favorite</span>
+</button>
+</div>
+<div class="flex flex-col p-3 gap-1">
+<p class="text-xs text-slate-500 font-medium">Nike</p>
+<h4 class="text-sm font-bold text-slate-900 dark:text-white line-clamp-1">Air Zoom Pegasus</h4>
+<div class="flex items-center justify-between mt-1">
+<span class="text-primary font-bold text-sm">65k FCFA</span>
+<button class="flex size-8 items-center justify-center rounded-full bg-primary text-white hover:bg-primary/90">
+<span class="material-symbols-outlined text-[18px]">add</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Product Card 3 -->
+<div class="flex flex-col overflow-hidden rounded-xl bg-surface-light dark:bg-surface-dark border border-slate-200 dark:border-slate-700 shadow-sm">
+<div class="relative aspect-square w-full bg-slate-100 dark:bg-slate-800">
+<div class="absolute inset-0 bg-center bg-cover bg-no-repeat" data-alt="Modern smart watch with black strap" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDcm6pCHcBlXgbXmvLY467nvnau9-GZLKFa1bNNpXdZ390Uj-DC97XnKEc7I9gTITf5iU_lS1uCwPB56pPSrWT4NgvCws6Hk1kXXkXOSRR0Ci4sVxo8WAbGzs-bFFYffXFabv3FSuWo8xwh8g5Ymo70rrqqPAF-dN7sMJK7wn761Oe5wR_vgqFfxEXRgA9OZi-rmlZRX2Hr1L9gYvkselolqSyZzr3HH2TIfiA9f9bWqPTlMwCsUvhsfF2mBBsph-yjJoD-LOxa");'></div>
+<button class="absolute top-2 right-2 flex size-8 items-center justify-center rounded-full bg-black/20 backdrop-blur-sm text-white hover:bg-accent-red hover:text-white transition-colors">
+<span class="material-symbols-outlined text-[18px]">favorite</span>
+</button>
+</div>
+<div class="flex flex-col p-3 gap-1">
+<p class="text-xs text-slate-500 font-medium">Samsung</p>
+<h4 class="text-sm font-bold text-slate-900 dark:text-white line-clamp-1">Galaxy Watch 5</h4>
+<div class="flex items-center justify-between mt-1">
+<span class="text-primary font-bold text-sm">120k FCFA</span>
+<button class="flex size-8 items-center justify-center rounded-full bg-primary text-white hover:bg-primary/90">
+<span class="material-symbols-outlined text-[18px]">add</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Product Card 4 -->
+<div class="flex flex-col overflow-hidden rounded-xl bg-surface-light dark:bg-surface-dark border border-slate-200 dark:border-slate-700 shadow-sm">
+<div class="relative aspect-square w-full bg-slate-100 dark:bg-slate-800">
+<div class="absolute inset-0 bg-center bg-cover bg-no-repeat" data-alt="Traditional African print fabric pattern" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCkziFzE3dL88oU9rUljiHMwjah_yTf9aK1P0oEibyMt6QLy1TLEhpfNy3VyrZDDtNO8Lkc1mvHVdVCYJhF-6CjtggOcdHKhrxV2nCqVfkbRKq8PScT4OHSpte5hBG4WRsNOT-Vps_yHYPQJBYJd_vgKHzbEL8r7Qeg0XB4tHZvROBNcWHmJ7mBGy0iF52lz2OABJ83lnP65u7-L-ulM68AsG9D2ORVprHn2N4RN-JQYD1t8cSlI2bonJWMQyVz-QFSUBaiWKCl");'></div>
+<button class="absolute top-2 right-2 flex size-8 items-center justify-center rounded-full bg-black/20 backdrop-blur-sm text-white hover:bg-accent-red hover:text-white transition-colors">
+<span class="material-symbols-outlined text-[18px]">favorite</span>
+</button>
+</div>
+<div class="flex flex-col p-3 gap-1">
+<p class="text-xs text-slate-500 font-medium">Local</p>
+<h4 class="text-sm font-bold text-slate-900 dark:text-white line-clamp-1">Pagne Wax Premium</h4>
+<div class="flex items-center justify-between mt-1">
+<span class="text-primary font-bold text-sm">15k FCFA</span>
+<button class="flex size-8 items-center justify-center rounded-full bg-primary text-white hover:bg-primary/90">
+<span class="material-symbols-outlined text-[18px]">add</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Floating Action Button (Voice) -->
+<button class="fixed bottom-24 right-4 z-50 flex size-14 items-center justify-center rounded-full bg-primary text-white shadow-xl shadow-primary/30 transition-transform active:scale-95 animate-bounce-slow">
+<span class="material-symbols-outlined text-[28px]">mic</span>
+</button>
+<!-- Bottom Navigation -->
+<div class="fixed bottom-0 z-50 w-full bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-lg border-t border-slate-200 dark:border-slate-800 pb-safe pt-2">
+<div class="flex items-center justify-around pb-2">
+<button class="flex flex-col items-center gap-1 p-2 text-primary">
+<span class="material-symbols-outlined filled text-[24px]">storefront</span>
+<span class="text-[10px] font-medium">Market</span>
+</button>
+<button class="flex flex-col items-center gap-1 p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+<span class="material-symbols-outlined text-[24px]">shopping_bag</span>
+<span class="text-[10px] font-medium">Panier</span>
+</button>
+<button class="flex flex-col items-center gap-1 p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+<span class="material-symbols-outlined text-[24px]">account_balance_wallet</span>
+<span class="text-[10px] font-medium">Wallet</span>
+</button>
+<button class="flex flex-col items-center gap-1 p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+<span class="material-symbols-outlined text-[24px]">package_2</span>
+<span class="text-[10px] font-medium">Commandes</span>
+</button>
+<button class="flex flex-col items-center gap-1 p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+<span class="material-symbols-outlined text-[24px]">person</span>
+<span class="text-[10px] font-medium">Profil</span>
+</button>
+</div>
+</div>
+</div>
+</body></html>

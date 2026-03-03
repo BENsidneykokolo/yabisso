@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Series Player Screen - Yabisso</title>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Spline+Sans:wght@300;400;500;600;700&amp;family=Noto+Sans:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Config -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                        "yabisso-red": "#ef4444",
+                        "yabisso-yellow": "#eab308",
+                        "yabisso-green": "#22c55e",
+                    },
+                    fontFamily: {
+                        "display": ["Spline Sans", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom Scrollbar hide */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        
+        /* Range Slider Styling */
+        input[type=range] {
+            -webkit-appearance: none; 
+            background: transparent; 
+        }
+        
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 16px;
+            width: 16px;
+            border-radius: 50%;
+            background: #137fec;
+            cursor: pointer;
+            margin-top: -6px; 
+            box-shadow: 0 0 0 4px rgba(19, 127, 236, 0.3);
+        }
+
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 4px;
+            cursor: pointer;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 2px;
+        }
+        
+        input[type=range]:focus::-webkit-slider-runnable-track {
+            background: rgba(255, 255, 255, 0.5);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display antialiased overflow-x-hidden">
+<div class="relative flex min-h-screen w-full flex-col bg-[#111a22] max-w-md mx-auto shadow-2xl overflow-hidden">
+<!-- Video Player Container (Sticky Top) -->
+<div class="relative w-full bg-black group/player z-20">
+<!-- Video Aspect Ratio Container -->
+<div class="relative aspect-video w-full overflow-hidden bg-gray-900">
+<!-- Main Video Image -->
+<div class="absolute inset-0 bg-cover bg-center" data-alt="Cinematic shot of characters walking through a futuristic African cityscape at sunset" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDvRg559syuUN5Q8_faH3sJX_mhUABhQdK6x4Bq9UqYihaAOmsIX7RVe8gt1i7h5S4jnFR7yGnQkPO_VP-CrfNGRcZ8FgZPcWzM5R6aEoYRdhJ55niB34NovUxtqz8upRmFL9MnHpReVnNIz8ChR4VYXU7xqHHenTe5ks3vC51y4zdULtnGh8qnUT-ct3YEeDbYhwOhBQhEaZVk9QziioozZVd-hEADJ4w59N_V6DOqWqNGid8Fb-G1BKSNBUZ-64I5PioMg7u6");'>
+</div>
+<!-- Dark Gradient Overlay for Controls -->
+<div class="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black/80"></div>
+<!-- Top Controls -->
+<div class="absolute top-0 left-0 right-0 p-4 flex items-center justify-between z-30">
+<button class="text-white p-1 rounded-full hover:bg-white/10 transition-colors">
+<span class="material-symbols-outlined">expand_more</span>
+</button>
+<div class="flex gap-4 text-white">
+<button class="p-1 rounded-full hover:bg-white/10 transition-colors">
+<span class="material-symbols-outlined text-[20px]">closed_caption</span>
+</button>
+<button class="p-1 rounded-full hover:bg-white/10 transition-colors">
+<span class="material-symbols-outlined text-[20px]">cast</span>
+</button>
+<button class="p-1 rounded-full hover:bg-white/10 transition-colors">
+<span class="material-symbols-outlined text-[20px]">settings</span>
+</button>
+</div>
+</div>
+<!-- Center Controls (Play/Pause/Seek) -->
+<div class="absolute inset-0 flex items-center justify-center gap-8 z-20">
+<button class="text-white/80 hover:text-white transition-colors p-2">
+<span class="material-symbols-outlined text-4xl">replay_10</span>
+</button>
+<button class="flex items-center justify-center rounded-full size-16 bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white transition-all transform active:scale-95">
+<span class="material-symbols-outlined text-4xl ml-1">play_arrow</span>
+</button>
+<button class="text-white/80 hover:text-white transition-colors p-2">
+<span class="material-symbols-outlined text-4xl">forward_10</span>
+</button>
+</div>
+<!-- Bottom Controls (Scrubber) -->
+<div class="absolute bottom-0 left-0 right-0 px-4 pb-3 z-30 flex flex-col gap-2">
+<div class="flex items-center justify-between text-xs font-medium text-white/90 tracking-wide">
+<span>12:34</span>
+<span class="text-white/60">42:10</span>
+</div>
+<!-- Custom Seek Bar -->
+<div class="relative w-full h-4 flex items-center group/seek cursor-pointer">
+<div class="absolute w-full h-1 bg-white/30 rounded-full overflow-hidden">
+<div class="h-full bg-primary w-[30%] rounded-full"></div>
+</div>
+<!-- Thumb -->
+<div class="absolute left-[30%] size-3 bg-white rounded-full shadow-lg scale-100 transition-transform"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Content Body -->
+<div class="flex-1 flex flex-col p-5 pb-10 gap-6 overflow-y-auto no-scrollbar relative z-10">
+<!-- Series Header Info -->
+<div class="flex flex-col gap-1 animate-fade-in-up">
+<div class="flex items-start justify-between">
+<div>
+<h2 class="text-white text-xl font-bold leading-tight tracking-[-0.015em]">S1:E4 - The Journey Begins</h2>
+<div class="flex items-center gap-2 mt-1">
+<span class="text-primary font-semibold text-sm">New Episode</span>
+<span class="text-gray-400 text-xs">•</span>
+<span class="text-gray-400 text-sm">Sci-Fi</span>
+<span class="text-gray-400 text-xs">•</span>
+<span class="text-gray-400 text-sm">2024</span>
+</div>
+</div>
+<!-- Like/Add button -->
+<button class="text-gray-400 hover:text-white">
+<span class="material-symbols-outlined">add_circle</span>
+</button>
+</div>
+</div>
+<!-- Download CTA (Prominent White) -->
+<div class="w-full">
+<button class="w-full flex items-center justify-center gap-2 h-12 bg-white hover:bg-gray-100 active:bg-gray-200 text-black rounded-lg font-bold text-sm tracking-wide transition-colors shadow-lg">
+<span class="material-symbols-outlined text-[20px]">download</span>
+<span>Download Episode</span>
+</button>
+<p class="text-center text-xs text-gray-500 mt-2">350 MB • Expires in 30 days</p>
+</div>
+<!-- Description -->
+<div class="bg-[#1a2632] p-4 rounded-xl border border-white/5">
+<p class="text-gray-300 text-sm leading-relaxed">
+                    As the sun sets over the Neo-Lagos skyline, Kaelo discovers an ancient artifact that could change the energy crisis forever. But he isn't the only one looking for it.
+                </p>
+<div class="flex items-center gap-4 mt-4 pt-4 border-t border-white/5">
+<div class="flex -space-x-2">
+<img class="w-8 h-8 rounded-full border-2 border-[#1a2632]" data-alt="Portrait of actor 1" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDAX7Hng1qpMQEsG0bXHtF1Yxu9X3b4BijVfwbMkJIWoca5fwDgroVMDLGIT6xWowJsZwsXVaU9e8FYctMg-wRIAclufL077t7fYzb1CiV7-NFR0e1_DroYsQGAFzaAt4rZkDvxeHHySIk1Lcp1e8knNJkJvxDvDhCdp90lXCX6La0PtTzWt2MKHzvOoZSaNo1lLScnQeVeHbpVH0mynVKn9gLkLviUUpmviJsDFOdKffldh-owtr7qPOg1YM1Yz1C9YkrGxq1r"/>
+<img class="w-8 h-8 rounded-full border-2 border-[#1a2632]" data-alt="Portrait of actor 2" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCo03qE4pHQR26c2xW1aceuQZPyxEh1zu8Az_O7TjJAgLv-4DXuX9MYBqdPpR0271DXEmG0i_uv9fcVVqJPmeRM3FffTxCLljvqPZE78Y54LSVByv87wtaidn993wjgcCsH2CEf0drIggUPFpCUaQMBshFVyfeCgRhVuGG6DCPecFwjEFw0fIs6O7lNtTjR2-lZ2bmIaiEczzznyN2KWAKvPzPPCOqVyqJZyaaXVsbtXlnpQKR__RDOeNH6EzlnbRVSbvQ9sN4D"/>
+<img class="w-8 h-8 rounded-full border-2 border-[#1a2632]" data-alt="Portrait of actor 3" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDcW0jC8ghFubB0x-Q1OtSpYmcWIPPiev9AIi-VfipkFvs4YCQ7gUci1sWOvzupQ-ro-yhNrW2ixGM_PrbOXRbS5WjWiJBx4f3Q7uVLAmWXSY24mFB1ryLAnkYmFZRox3sZJOR3uYJRfHy5Ir1qkPKySmeWL4OIcEwEIw_TRLmfZLWyZ42c8otKxRSq8BGXcYsZMdC19K6n0pUs1pQL6soo8TA2lfM0iAKd8oYFvzM_hiL9Jt29e9rA2hRJyw7_UD-6dvRFNKc1"/>
+</div>
+<span class="text-xs text-gray-400 font-medium">Cast &amp; Crew</span>
+<span class="material-symbols-outlined text-gray-500 text-sm ml-auto">chevron_right</span>
+</div>
+</div>
+<!-- Up Next Section -->
+<div class="flex flex-col gap-3">
+<div class="flex items-center justify-between">
+<h3 class="text-white text-base font-bold">Up Next</h3>
+<!-- Yabisso Brand Dots -->
+<div class="flex gap-1">
+<div class="w-1.5 h-1.5 rounded-full bg-primary"></div>
+<div class="w-1.5 h-1.5 rounded-full bg-yabisso-red"></div>
+<div class="w-1.5 h-1.5 rounded-full bg-yabisso-yellow"></div>
+<div class="w-1.5 h-1.5 rounded-full bg-yabisso-green"></div>
+</div>
+</div>
+<!-- Next Episode Card -->
+<div class="flex gap-3 items-center group cursor-pointer p-2 rounded-lg hover:bg-white/5 transition-colors">
+<div class="relative w-28 aspect-video rounded-md overflow-hidden bg-gray-800 shrink-0">
+<img class="object-cover w-full h-full opacity-80 group-hover:opacity-100 transition-opacity" data-alt="Dark moody scene of a server room with green lights" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC_2EycbbmukslqughrY9naxR5nMnxtkiWZ4PEOs6rgWWO-cjvTi0mq3FRRUWc2S-kncfcjSZMrcThQhgUrHiQ3uWwDIRjmsP-b56CRkYhPqZJqoN0JH4nPE63bEtCYUJhCjJPkwKZMbEEh4ON4QbhOLD14weRcytoaC7X2acuwxiaCZEHjt5F0J4RkxnW8W7ogZpPKCTbwIbEShHfX8doOHVHVwadwaaoohQVGLhzFmqYCNJp56Do35Vg4Pir_O0jQ7u7DJDi0"/>
+<div class="absolute inset-0 flex items-center justify-center">
+<div class="bg-black/50 rounded-full p-1">
+<span class="material-symbols-outlined text-white text-sm">play_arrow</span>
+</div>
+</div>
+</div>
+<div class="flex-1 min-w-0">
+<h4 class="text-white text-sm font-medium truncate">S1:E5 - The Blackout</h4>
+<p class="text-gray-400 text-xs mt-1">45m</p>
+</div>
+<button class="text-gray-500 hover:text-white">
+<span class="material-symbols-outlined">download</span>
+</button>
+</div>
+<!-- Next Episode Card 2 -->
+<div class="flex gap-3 items-center group cursor-pointer p-2 rounded-lg hover:bg-white/5 transition-colors">
+<div class="relative w-28 aspect-video rounded-md overflow-hidden bg-gray-800 shrink-0">
+<img class="object-cover w-full h-full opacity-80 group-hover:opacity-100 transition-opacity" data-alt="Abstract view of a library with books floating" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBEpvvAIXClltsmJ3-f7QyllW2Hje8hxD189-9FbXwfIo4Je_adTNxgxXBRaLV9fmeW6mxEzU7EHtl8reAGn4FqNPWMK5KVFyYZcjstrmr7j1f6d2RCGyEYg9Gq3GtV2oz4XzcIRSRw4X9NfbLA3hFF2jdQqcoyZVDQIA38R1-9zbXC9XcM-2mvhi0UV4x7QjF6PmC_USpFT4uM2i8foYPnKvlylPelUTJWJ4AehLK8zHsTfrltDkPs1xDSzXIYRUAEZaj_5wKp"/>
+<div class="absolute inset-0 flex items-center justify-center">
+<div class="bg-black/50 rounded-full p-1">
+<span class="material-symbols-outlined text-white text-sm">play_arrow</span>
+</div>
+</div>
+</div>
+<div class="flex-1 min-w-0">
+<h4 class="text-white text-sm font-medium truncate">S1:E6 - Knowledge Keeper</h4>
+<p class="text-gray-400 text-xs mt-1">41m</p>
+</div>
+<button class="text-gray-500 hover:text-white">
+<span class="material-symbols-outlined">download</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Bottom Tab Bar (Contextual) -->
+<div class="bg-[#111a22] border-t border-white/5 px-6 py-4 flex justify-between items-center text-xs text-gray-400">
+<div class="flex flex-col items-center gap-1 text-primary">
+<span class="material-symbols-outlined font-variation-settings-fill">play_circle</span>
+<span>Watch</span>
+</div>
+<div class="flex flex-col items-center gap-1 hover:text-white transition-colors">
+<span class="material-symbols-outlined">grid_view</span>
+<span>Episodes</span>
+</div>
+<div class="flex flex-col items-center gap-1 hover:text-white transition-colors">
+<span class="material-symbols-outlined">forum</span>
+<span>Discuss</span>
+</div>
+<div class="flex flex-col items-center gap-1 hover:text-white transition-colors">
+<span class="material-symbols-outlined">more_horiz</span>
+<span>More</span>
+</div>
+</div>
+</div>
+</body></html>

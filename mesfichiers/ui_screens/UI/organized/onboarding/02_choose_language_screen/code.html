@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Yabisso - Choose Language</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "primary-dark": "#0b6bcb",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#111a22", // Matching the component example background
+                        "surface-dark": "#1c2630",
+                        "brand-green": "#009B4D",
+                        "brand-yellow": "#FFD200",
+                        "brand-red": "#CE1126",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>::-webkit-scrollbar {
+            width: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #324d67;
+            border-radius: 4px;
+        }.language-card {
+            transition: all 0.2s ease-in-out;
+        }
+        .language-radio:checked ~ .language-content {
+            color: #ffffff;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="font-display antialiased bg-white dark:bg-background-dark text-slate-900 dark:text-white transition-colors duration-200">
+<div class="relative flex h-full min-h-screen w-full flex-col overflow-x-hidden">
+<div class="h-1.5 w-full bg-gradient-to-r from-brand-green via-brand-yellow to-brand-red"></div>
+<div class="sticky top-0 z-20 flex items-center bg-white/95 dark:bg-background-dark/95 backdrop-blur-sm p-4 pb-2 justify-between border-b border-transparent dark:border-white/5">
+<button class="text-slate-900 dark:text-white flex size-10 shrink-0 items-center justify-center rounded-full hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
+<span class="material-symbols-outlined text-[24px]">arrow_back</span>
+</button>
+<h2 class="text-slate-900 dark:text-white text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center pr-10">Language</h2>
+</div>
+<div class="flex-1 flex flex-col w-full max-w-md mx-auto">
+<div class="px-4 pt-6 pb-2">
+<h1 class="text-slate-900 dark:text-white tracking-tight text-[32px] font-extrabold leading-tight text-left mb-2">Welcome to Yabisso</h1>
+<p class="text-slate-500 dark:text-slate-400 text-base font-normal leading-normal">
+                    Please select your preferred language to customize your experience.
+                </p>
+</div>
+<div class="flex flex-col gap-3 p-4 pb-24" style="--radio-dot-svg: url('data:image/svg+xml,%3csvg viewBox=%270 0 16 16%27 fill=%27rgb(19,127,236)%27 xmlns=%27http://www.w3.org/2000/svg%27%3e%3ccircle cx=%278%27 cy=%278%27 r=%273.5%27/%3e%3c/svg%3e');">
+<label class="group relative flex items-center gap-4 rounded-xl border border-slate-200 dark:border-[#324d67] bg-white dark:bg-[#1a242d] p-4 cursor-pointer hover:border-primary/50 dark:hover:border-primary/50 transition-all shadow-sm language-card has-[:checked]:border-primary dark:has-[:checked]:border-primary has-[:checked]:bg-blue-50/50 dark:has-[:checked]:bg-[#137fec]/10">
+<input checked="" class="peer sr-only language-radio" name="language_selection" type="radio" value="en-UK"/>
+<div class="flex items-center justify-center h-6 w-6 rounded-full border-2 border-slate-300 dark:border-[#4b5563] peer-checked:border-primary peer-checked:bg-[image:--radio-dot-svg] bg-center bg-no-repeat bg-[length:100%_100%] transition-all"></div>
+<div class="flex grow flex-col language-content">
+<p class="text-slate-900 dark:text-white text-base font-semibold leading-normal">English (United Kingdom)</p>
+<p class="text-slate-500 dark:text-slate-400 text-sm">English</p>
+</div>
+<span class="text-2xl">🇬🇧</span>
+</label>
+<label class="group relative flex items-center gap-4 rounded-xl border border-slate-200 dark:border-[#324d67] bg-white dark:bg-[#1a242d] p-4 cursor-pointer hover:border-primary/50 dark:hover:border-primary/50 transition-all shadow-sm language-card has-[:checked]:border-primary dark:has-[:checked]:border-primary has-[:checked]:bg-blue-50/50 dark:has-[:checked]:bg-[#137fec]/10">
+<input class="peer sr-only language-radio" name="language_selection" type="radio" value="fr-FR"/>
+<div class="flex items-center justify-center h-6 w-6 rounded-full border-2 border-slate-300 dark:border-[#4b5563] peer-checked:border-primary peer-checked:bg-[image:--radio-dot-svg] bg-center bg-no-repeat bg-[length:100%_100%] transition-all"></div>
+<div class="flex grow flex-col language-content">
+<p class="text-slate-900 dark:text-white text-base font-semibold leading-normal">Français (France)</p>
+<p class="text-slate-500 dark:text-slate-400 text-sm">French</p>
+</div>
+<span class="text-2xl">🇫🇷</span>
+</label>
+<label class="group relative flex items-center gap-4 rounded-xl border border-slate-200 dark:border-[#324d67] bg-white dark:bg-[#1a242d] p-4 cursor-pointer hover:border-primary/50 dark:hover:border-primary/50 transition-all shadow-sm language-card has-[:checked]:border-primary dark:has-[:checked]:border-primary has-[:checked]:bg-blue-50/50 dark:has-[:checked]:bg-[#137fec]/10">
+<input class="peer sr-only language-radio" name="language_selection" type="radio" value="sw-TZ"/>
+<div class="flex items-center justify-center h-6 w-6 rounded-full border-2 border-slate-300 dark:border-[#4b5563] peer-checked:border-primary peer-checked:bg-[image:--radio-dot-svg] bg-center bg-no-repeat bg-[length:100%_100%] transition-all"></div>
+<div class="flex grow flex-col language-content">
+<p class="text-slate-900 dark:text-white text-base font-semibold leading-normal">Kiswahili (East Africa)</p>
+<p class="text-slate-500 dark:text-slate-400 text-sm">Swahili</p>
+</div>
+<span class="text-2xl">🇹🇿</span>
+</label>
+<label class="group relative flex items-center gap-4 rounded-xl border border-slate-200 dark:border-[#324d67] bg-white dark:bg-[#1a242d] p-4 cursor-pointer hover:border-primary/50 dark:hover:border-primary/50 transition-all shadow-sm language-card has-[:checked]:border-primary dark:has-[:checked]:border-primary has-[:checked]:bg-blue-50/50 dark:has-[:checked]:bg-[#137fec]/10">
+<input class="peer sr-only language-radio" name="language_selection" type="radio" value="am-ET"/>
+<div class="flex items-center justify-center h-6 w-6 rounded-full border-2 border-slate-300 dark:border-[#4b5563] peer-checked:border-primary peer-checked:bg-[image:--radio-dot-svg] bg-center bg-no-repeat bg-[length:100%_100%] transition-all"></div>
+<div class="flex grow flex-col language-content">
+<p class="text-slate-900 dark:text-white text-base font-semibold leading-normal">አማርኛ (Ethiopia)</p>
+<p class="text-slate-500 dark:text-slate-400 text-sm">Amharic</p>
+</div>
+<span class="text-2xl">🇪🇹</span>
+</label>
+<label class="group relative flex items-center gap-4 rounded-xl border border-slate-200 dark:border-[#324d67] bg-white dark:bg-[#1a242d] p-4 cursor-pointer hover:border-primary/50 dark:hover:border-primary/50 transition-all shadow-sm language-card has-[:checked]:border-primary dark:has-[:checked]:border-primary has-[:checked]:bg-blue-50/50 dark:has-[:checked]:bg-[#137fec]/10">
+<input class="peer sr-only language-radio" name="language_selection" type="radio" value="ha-NG"/>
+<div class="flex items-center justify-center h-6 w-6 rounded-full border-2 border-slate-300 dark:border-[#4b5563] peer-checked:border-primary peer-checked:bg-[image:--radio-dot-svg] bg-center bg-no-repeat bg-[length:100%_100%] transition-all"></div>
+<div class="flex grow flex-col language-content">
+<p class="text-slate-900 dark:text-white text-base font-semibold leading-normal">Harshen Hausa (West Africa)</p>
+<p class="text-slate-500 dark:text-slate-400 text-sm">Hausa</p>
+</div>
+<span class="text-2xl">🇳🇬</span>
+</label>
+<label class="group relative flex items-center gap-4 rounded-xl border border-slate-200 dark:border-[#324d67] bg-white dark:bg-[#1a242d] p-4 cursor-pointer hover:border-primary/50 dark:hover:border-primary/50 transition-all shadow-sm language-card has-[:checked]:border-primary dark:has-[:checked]:border-primary has-[:checked]:bg-blue-50/50 dark:has-[:checked]:bg-[#137fec]/10">
+<input class="peer sr-only language-radio" name="language_selection" type="radio" value="yo-NG"/>
+<div class="flex items-center justify-center h-6 w-6 rounded-full border-2 border-slate-300 dark:border-[#4b5563] peer-checked:border-primary peer-checked:bg-[image:--radio-dot-svg] bg-center bg-no-repeat bg-[length:100%_100%] transition-all"></div>
+<div class="flex grow flex-col language-content">
+<p class="text-slate-900 dark:text-white text-base font-semibold leading-normal">Èdè Yorùbá (Nigeria)</p>
+<p class="text-slate-500 dark:text-slate-400 text-sm">Yoruba</p>
+</div>
+<span class="text-2xl">🇳🇬</span>
+</label>
+</div>
+</div>
+<div class="fixed bottom-0 left-0 right-0 p-4 bg-white/95 dark:bg-background-dark/95 backdrop-blur-xl border-t border-slate-200 dark:border-[#324d67] z-30">
+<div class="max-w-md mx-auto w-full">
+<button class="w-full flex cursor-pointer items-center justify-center overflow-hidden rounded-xl h-14 px-5 bg-white text-slate-900 hover:bg-slate-50 transition-colors font-bold leading-normal tracking-[0.015em] shadow-lg active:scale-[0.98] transform duration-100">
+<span class="truncate">Continue</span>
+</button>
+</div>
+</div>
+<div class="fixed inset-0 z-[-1] pointer-events-none opacity-40 dark:opacity-20" style="background: radial-gradient(circle at 100% 0%, rgba(19,127,236,0.15) 0%, transparent 25%), radial-gradient(circle at 0% 100%, rgba(206,17,38,0.05) 0%, transparent 25%);">
+</div>
+</div>
+</body></html>

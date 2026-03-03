@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Notebook Home Screen</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "accent-green": "#22c55e",
+                        "accent-yellow": "#eab308",
+                        "accent-red": "#ef4444",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#111a22", // Deep charcoal
+                        "surface-dark": "#1e2936", // Lighter charcoal for cards
+                        "subtle-text": "#92adc9",
+                    },
+                    fontFamily: {
+                        "display": ["Be Vietnam Pro", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "1rem", "lg": "1.5rem", "xl": "2rem", "2xl": "3rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-dark font-display text-white overflow-hidden">
+<div class="relative flex h-full min-h-screen w-full flex-col overflow-y-auto pb-24">
+<!-- Header -->
+<div class="sticky top-0 z-20 bg-background-dark/95 backdrop-blur-md px-4 pt-6 pb-2">
+<div class="flex items-center justify-between mb-4">
+<div class="flex items-center gap-3">
+<div class="bg-center bg-no-repeat bg-cover rounded-full size-10 ring-2 ring-primary/20" data-alt="User profile avatar showing a smiling person" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCeYKqWJ5MEaCrYkH287KkzOOQViu7zmhcUO0HLp4yBsXnOzIXALLcMnAkqKDu6lXfp25zkfawvInNZdo74aeZNYeObcfv7nOtXUVgvXZRPGDnKyep_Twka186vtaFdkW6VhOcdMcNuYj6-hzXIGT_-ensSFbejRt7MB0KH5r9hcHJtBPa44JC5KHxcnCXidHt2Z72sW6MnUbmcLzsP9aXgfwy9tWtszm2EJLGEXvEQ-9hxJxR-r1ZvYmq8d97ExtMHppExCrRR");'>
+</div>
+<div class="flex flex-col">
+<span class="text-xs text-subtle-text font-medium">Good Morning,</span>
+<h2 class="text-white text-lg font-bold leading-tight">Kwame</h2>
+</div>
+</div>
+<div class="flex items-center gap-2 bg-surface-dark px-3 py-1.5 rounded-full border border-white/5">
+<span class="material-symbols-outlined text-accent-green text-[18px]">cloud_done</span>
+<span class="text-xs font-medium text-subtle-text">Synced</span>
+</div>
+</div>
+<!-- Search Bar -->
+<div class="relative w-full">
+<div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-subtle-text">search</span>
+</div>
+<input class="block w-full pl-11 pr-12 py-3.5 bg-surface-dark border-none rounded-2xl text-white placeholder-subtle-text focus:ring-2 focus:ring-primary focus:bg-surface-dark/80 transition-all text-sm font-medium shadow-sm" placeholder="Search your notes..." type="text"/>
+<div class="absolute inset-y-0 right-0 pr-3 flex items-center">
+<button class="p-2 rounded-full hover:bg-white/10 transition-colors text-primary flex items-center justify-center">
+<span class="material-symbols-outlined filled">mic</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Filter Chips -->
+<div class="px-4 py-2 overflow-x-auto no-scrollbar">
+<div class="flex gap-3 min-w-max">
+<button class="flex h-9 items-center gap-x-2 rounded-full bg-primary px-5 shadow-lg shadow-primary/20 transition-transform active:scale-95">
+<span class="text-white text-sm font-bold">All</span>
+</button>
+<button class="flex h-9 items-center gap-x-2 rounded-full bg-surface-dark border border-white/5 px-5 hover:bg-white/5 transition-colors">
+<span class="material-symbols-outlined text-subtle-text text-[18px]">description</span>
+<span class="text-subtle-text text-sm font-medium">Text</span>
+</button>
+<button class="flex h-9 items-center gap-x-2 rounded-full bg-surface-dark border border-white/5 px-5 hover:bg-white/5 transition-colors">
+<span class="material-symbols-outlined text-subtle-text text-[18px]">mic</span>
+<span class="text-subtle-text text-sm font-medium">Voice</span>
+</button>
+<button class="flex h-9 items-center gap-x-2 rounded-full bg-surface-dark border border-white/5 px-5 hover:bg-white/5 transition-colors">
+<span class="material-symbols-outlined text-subtle-text text-[18px]">star</span>
+<span class="text-subtle-text text-sm font-medium">Favorites</span>
+</button>
+</div>
+</div>
+<!-- Section Title -->
+<div class="px-4 mt-6 mb-2 flex justify-between items-end">
+<h3 class="text-white text-base font-bold">Recent Notes</h3>
+<button class="text-primary text-xs font-medium hover:text-primary/80">View all</button>
+</div>
+<!-- Notes List -->
+<div class="flex flex-col gap-3 px-4 pb-4">
+<!-- Note Item: Text (Synced) -->
+<div class="group relative flex items-center gap-4 bg-surface-dark p-4 rounded-2xl active:scale-[0.99] transition-all border border-white/5 hover:border-primary/30 cursor-pointer shadow-sm">
+<div class="flex items-center justify-center rounded-xl bg-primary/10 shrink-0 size-12 text-primary group-hover:bg-primary group-hover:text-white transition-colors">
+<span class="material-symbols-outlined">description</span>
+</div>
+<div class="flex flex-col flex-1 min-w-0">
+<div class="flex justify-between items-start">
+<p class="text-white text-base font-semibold truncate pr-2">Market Shopping List</p>
+<span class="text-xs text-subtle-text whitespace-nowrap">10:00 AM</span>
+</div>
+<p class="text-subtle-text text-sm font-normal line-clamp-1 mt-0.5">Tomatoes, Jollof rice spice, onions, fresh pepper...</p>
+<div class="flex items-center gap-2 mt-2">
+<div class="size-2 rounded-full bg-accent-green"></div>
+<span class="text-[10px] text-subtle-text/70 uppercase tracking-wider font-bold">Synced</span>
+</div>
+</div>
+</div>
+<!-- Note Item: Voice (Pending) -->
+<div class="group relative flex items-center gap-4 bg-surface-dark p-4 rounded-2xl active:scale-[0.99] transition-all border border-white/5 hover:border-primary/30 cursor-pointer shadow-sm">
+<div class="flex items-center justify-center rounded-xl bg-accent-red/10 shrink-0 size-12 text-accent-red group-hover:bg-accent-red group-hover:text-white transition-colors">
+<span class="material-symbols-outlined">mic</span>
+</div>
+<div class="flex flex-col flex-1 min-w-0">
+<div class="flex justify-between items-start">
+<p class="text-white text-base font-semibold truncate pr-2">Project Yabisso Pitch</p>
+<span class="text-xs text-subtle-text whitespace-nowrap">Yesterday</span>
+</div>
+<!-- Waveform visual placeholder -->
+<div class="flex items-center gap-1 h-4 mt-1.5 w-32 opacity-60">
+<div class="w-1 h-2 bg-subtle-text rounded-full"></div>
+<div class="w-1 h-3 bg-subtle-text rounded-full"></div>
+<div class="w-1 h-4 bg-primary rounded-full"></div>
+<div class="w-1 h-2 bg-subtle-text rounded-full"></div>
+<div class="w-1 h-3 bg-primary rounded-full"></div>
+<div class="w-1 h-4 bg-primary rounded-full"></div>
+<div class="w-1 h-2 bg-subtle-text rounded-full"></div>
+<div class="w-1 h-1 bg-subtle-text rounded-full"></div>
+<span class="text-xs text-white ml-2">0:45s</span>
+</div>
+<div class="flex items-center gap-2 mt-2">
+<div class="size-2 rounded-full bg-accent-yellow animate-pulse"></div>
+<span class="text-[10px] text-subtle-text/70 uppercase tracking-wider font-bold">Syncing...</span>
+</div>
+</div>
+</div>
+<!-- Note Item: Text (Synced) -->
+<div class="group relative flex items-center gap-4 bg-surface-dark p-4 rounded-2xl active:scale-[0.99] transition-all border border-white/5 hover:border-primary/30 cursor-pointer shadow-sm">
+<div class="flex items-center justify-center rounded-xl bg-primary/10 shrink-0 size-12 text-primary group-hover:bg-primary group-hover:text-white transition-colors">
+<span class="material-symbols-outlined">description</span>
+</div>
+<div class="flex flex-col flex-1 min-w-0">
+<div class="flex justify-between items-start">
+<p class="text-white text-base font-semibold truncate pr-2">Wifi Passwords</p>
+<span class="text-xs text-subtle-text whitespace-nowrap">Mon</span>
+</div>
+<p class="text-subtle-text text-sm font-normal line-clamp-1 mt-0.5">Office: Yabisso_Secure_2024, Home: Welcome123</p>
+<div class="flex items-center gap-2 mt-2">
+<div class="size-2 rounded-full bg-accent-green"></div>
+<span class="text-[10px] text-subtle-text/70 uppercase tracking-wider font-bold">Synced</span>
+</div>
+</div>
+</div>
+<!-- Note Item: Voice (Synced) -->
+<div class="group relative flex items-center gap-4 bg-surface-dark p-4 rounded-2xl active:scale-[0.99] transition-all border border-white/5 hover:border-primary/30 cursor-pointer shadow-sm">
+<div class="flex items-center justify-center rounded-xl bg-accent-red/10 shrink-0 size-12 text-accent-red group-hover:bg-accent-red group-hover:text-white transition-colors">
+<span class="material-symbols-outlined">mic</span>
+</div>
+<div class="flex flex-col flex-1 min-w-0">
+<div class="flex justify-between items-start">
+<p class="text-white text-base font-semibold truncate pr-2">Quick thought on UI</p>
+<span class="text-xs text-subtle-text whitespace-nowrap">Mon</span>
+</div>
+<!-- Waveform visual placeholder -->
+<div class="flex items-center gap-1 h-4 mt-1.5 w-32 opacity-60">
+<div class="w-1 h-3 bg-subtle-text rounded-full"></div>
+<div class="w-1 h-2 bg-subtle-text rounded-full"></div>
+<div class="w-1 h-4 bg-subtle-text rounded-full"></div>
+<div class="w-1 h-2 bg-subtle-text rounded-full"></div>
+<span class="text-xs text-white ml-2">0:12s</span>
+</div>
+<div class="flex items-center gap-2 mt-2">
+<div class="size-2 rounded-full bg-accent-green"></div>
+<span class="text-[10px] text-subtle-text/70 uppercase tracking-wider font-bold">Synced</span>
+</div>
+</div>
+</div>
+<!-- Note Item: Text (Synced) -->
+<div class="group relative flex items-center gap-4 bg-surface-dark p-4 rounded-2xl active:scale-[0.99] transition-all border border-white/5 hover:border-primary/30 cursor-pointer shadow-sm">
+<div class="flex items-center justify-center rounded-xl bg-primary/10 shrink-0 size-12 text-primary group-hover:bg-primary group-hover:text-white transition-colors">
+<span class="material-symbols-outlined">description</span>
+</div>
+<div class="flex flex-col flex-1 min-w-0">
+<div class="flex justify-between items-start">
+<p class="text-white text-base font-semibold truncate pr-2">Weekend Plans</p>
+<span class="text-xs text-subtle-text whitespace-nowrap">Last Week</span>
+</div>
+<p class="text-subtle-text text-sm font-normal line-clamp-1 mt-0.5">Visit the art gallery in downtown, then dinner.</p>
+<div class="flex items-center gap-2 mt-2">
+<div class="size-2 rounded-full bg-accent-green"></div>
+<span class="text-[10px] text-subtle-text/70 uppercase tracking-wider font-bold">Synced</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Floating Action Button -->
+<button class="fixed z-30 bottom-24 right-5 size-14 bg-primary text-white rounded-full shadow-lg shadow-primary/40 flex items-center justify-center hover:scale-110 active:scale-95 transition-all">
+<span class="material-symbols-outlined text-[32px]">add</span>
+</button>
+<!-- Bottom Navigation -->
+<div class="fixed bottom-0 z-40 w-full bg-background-dark/90 backdrop-blur-lg border-t border-white/5 pb-5 pt-3">
+<div class="grid grid-cols-4 h-full">
+<button class="flex flex-col items-center justify-center gap-1 text-subtle-text hover:text-white transition-colors">
+<span class="material-symbols-outlined text-[26px]">home</span>
+<span class="text-[10px] font-medium">Home</span>
+</button>
+<button class="flex flex-col items-center justify-center gap-1 text-subtle-text hover:text-white transition-colors">
+<span class="material-symbols-outlined text-[26px]">account_balance_wallet</span>
+<span class="text-[10px] font-medium">Wallet</span>
+</button>
+<button class="relative flex flex-col items-center justify-center gap-1 text-primary transition-colors">
+<div class="absolute -top-3 w-8 h-1 bg-primary rounded-full shadow-[0_0_10px_rgba(19,127,236,0.5)]"></div>
+<span class="material-symbols-outlined filled text-[26px]">book</span>
+<span class="text-[10px] font-medium">Notebook</span>
+</button>
+<button class="flex flex-col items-center justify-center gap-1 text-subtle-text hover:text-white transition-colors">
+<span class="material-symbols-outlined text-[26px]">person</span>
+<span class="text-[10px] font-medium">Profile</span>
+</button>
+</div>
+</div>
+</body></html>

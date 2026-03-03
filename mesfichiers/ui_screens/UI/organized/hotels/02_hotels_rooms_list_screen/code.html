@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Yabisso - Hotel Rooms</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                        "card-dark": "#192633",
+                        "yabisso-green": "#22c55e",
+                        "yabisso-yellow": "#eab308",
+                        "yabisso-red": "#ef4444",
+                    },
+                    fontFamily: {
+                        "display": ["Plus Jakarta Sans", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "2xl": "1rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom scrollbar hiding for horizontal scroll areas */
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white font-display antialiased min-h-screen flex flex-col">
+<!-- Sticky Header -->
+<div class="sticky top-0 z-50 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-800">
+<div class="flex items-center p-4 justify-between h-16">
+<button class="flex items-center justify-center size-10 rounded-full hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors text-slate-900 dark:text-white">
+<span class="material-symbols-outlined">arrow_back_ios_new</span>
+</button>
+<div class="flex flex-col items-center flex-1 mx-2">
+<h2 class="text-base font-bold leading-tight tracking-tight text-center truncate w-48 sm:w-auto">Radisson Blu Dakar</h2>
+<p class="text-slate-500 dark:text-[#92adc9] text-xs font-medium leading-normal">12-14 Aug • 2 Guests</p>
+</div>
+<button class="flex items-center justify-center size-10 rounded-full hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors text-slate-900 dark:text-white">
+<span class="material-symbols-outlined">search</span>
+</button>
+</div>
+<!-- Filter Chips -->
+<div class="flex gap-3 px-4 pb-3 overflow-x-auto hide-scrollbar snap-x">
+<button class="snap-start flex h-8 shrink-0 items-center justify-center gap-x-2 rounded-full bg-primary text-white pl-3 pr-4 shadow-sm shadow-primary/20">
+<span class="material-symbols-outlined text-[18px]">view_list</span>
+<p class="text-xs font-bold whitespace-nowrap">All Rooms</p>
+</button>
+<button class="snap-start flex h-8 shrink-0 items-center justify-center gap-x-2 rounded-full bg-white dark:bg-card-dark border border-slate-200 dark:border-slate-700 pl-3 pr-4 active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-[18px] text-yabisso-green">credit_card</span>
+<p class="text-slate-700 dark:text-slate-300 text-xs font-semibold whitespace-nowrap">Free Cancellation</p>
+</button>
+<button class="snap-start flex h-8 shrink-0 items-center justify-center gap-x-2 rounded-full bg-white dark:bg-card-dark border border-slate-200 dark:border-slate-700 pl-3 pr-4 active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-[18px] text-yabisso-yellow">coffee</span>
+<p class="text-slate-700 dark:text-slate-300 text-xs font-semibold whitespace-nowrap">Breakfast Included</p>
+</button>
+<button class="snap-start flex h-8 shrink-0 items-center justify-center gap-x-2 rounded-full bg-white dark:bg-card-dark border border-slate-200 dark:border-slate-700 pl-3 pr-4 active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-[18px] text-primary">star</span>
+<p class="text-slate-700 dark:text-slate-300 text-xs font-semibold whitespace-nowrap">Suites</p>
+</button>
+</div>
+</div>
+<!-- Main Content: Room List -->
+<div class="flex-1 flex flex-col p-4 gap-5">
+<!-- Room Card 1: Standard -->
+<div class="@container">
+<div class="flex flex-col rounded-2xl bg-white dark:bg-card-dark shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden">
+<!-- Image Section with Overlay Badge -->
+<div class="relative w-full aspect-video bg-slate-200 dark:bg-slate-800">
+<img alt="Hotel Room" class="w-full h-full object-cover" data-alt="Modern hotel room with queen bed and soft lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCv-Zp1cstXwMdkP-jSuYCTZFeEnF9CHA8hKsYUxv86_Ke3XfUIL2-hA8aBzpEJyWtvgX7p87GqBFD55usLrIDiI7q9Kd5K1JatewrLXQh5fboiWeE6oRc3xAR8U1BadeLWEYlZPwuphsiS7eMuKIk9JQljRKwuUjtK4ew43OS9TZ8FocoLkrlPl8pZLKUcVhOE28Rv5LLQF2BQ8rr6X_uQKL2o5Q-cWM5TmaARTGLpV329hv7_2KAQonr0VCUWA_V1TDAdiBZ1"/>
+<div class="absolute top-3 right-3 bg-black/60 backdrop-blur-md px-2 py-1 rounded-md flex items-center gap-1">
+<span class="material-symbols-outlined text-white text-[14px]">photo_camera</span>
+<span class="text-white text-xs font-medium">1/5</span>
+</div>
+<div class="absolute bottom-3 left-3 flex gap-2">
+<span class="px-2 py-1 rounded-md bg-yabisso-green/90 backdrop-blur-sm text-white text-[10px] font-bold uppercase tracking-wider">Available</span>
+</div>
+</div>
+<!-- Content -->
+<div class="flex flex-col p-4 gap-3">
+<div class="flex justify-between items-start">
+<div>
+<h3 class="text-lg font-bold text-slate-900 dark:text-white leading-tight">Standard Queen Room</h3>
+<p class="text-slate-500 dark:text-slate-400 text-sm mt-1">25m² • City View</p>
+</div>
+<div class="flex flex-col items-end">
+<span class="text-xl font-bold text-primary">$85</span>
+<span class="text-xs text-slate-500 dark:text-slate-400">per night</span>
+</div>
+</div>
+<!-- Amenities -->
+<div class="flex gap-4 border-t border-b border-slate-100 dark:border-slate-700/50 py-3">
+<div class="flex flex-col items-center gap-1">
+<span class="material-symbols-outlined text-slate-400 text-[20px]">wifi</span>
+<span class="text-[10px] text-slate-500 dark:text-slate-400">Wifi</span>
+</div>
+<div class="flex flex-col items-center gap-1">
+<span class="material-symbols-outlined text-slate-400 text-[20px]">ac_unit</span>
+<span class="text-[10px] text-slate-500 dark:text-slate-400">A/C</span>
+</div>
+<div class="flex flex-col items-center gap-1">
+<span class="material-symbols-outlined text-slate-400 text-[20px]">shower</span>
+<span class="text-[10px] text-slate-500 dark:text-slate-400">Shower</span>
+</div>
+<div class="flex flex-col items-center gap-1">
+<span class="material-symbols-outlined text-yabisso-green text-[20px]">check_circle</span>
+<span class="text-[10px] text-yabisso-green font-medium">Free Cancel</span>
+</div>
+</div>
+<!-- Action -->
+<button class="w-full mt-1 bg-primary hover:bg-blue-600 text-white font-semibold py-3 rounded-xl transition-all active:scale-[0.98] flex items-center justify-center gap-2 shadow-lg shadow-primary/25">
+<span>Select Room</span>
+<span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Room Card 2: Premium (Yellow/Promo) -->
+<div class="@container">
+<div class="flex flex-col rounded-2xl bg-white dark:bg-card-dark shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden ring-1 ring-yabisso-yellow/30">
+<div class="relative w-full aspect-video bg-slate-200 dark:bg-slate-800">
+<img alt="Hotel Suite" class="w-full h-full object-cover" data-alt="Luxury ocean view suite with balcony" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB6_mDGHSFgYoQgELKOZhQI9MDyO8mKP0NtA3yViZie9bfmCLO4EGkIqos1zcxWPO-eQbeaZkyOcS7fOmy2eVNpxObBGD3GdFYm4KBLIo6bx0mvgL4dBNeEST1oQ_24elyqQ3DfF7Sz9IALWIHVRlJA2rNaOMBBlvtgYbaLFMRP-1eSGcbufwVz_mZsluFPpwK3FTQ_uw6PTI367aSr4xJIms_cV6J9vVznzNIPZIfcqj9Rj0G58Zy7KRUh_GOOabDCnjo-VErx"/>
+<div class="absolute top-0 left-0 bg-yabisso-yellow text-black font-bold text-xs px-3 py-1 rounded-br-lg z-10">
+                        Best Value
+                    </div>
+</div>
+<div class="flex flex-col p-4 gap-3">
+<div class="flex justify-between items-start">
+<div>
+<h3 class="text-lg font-bold text-slate-900 dark:text-white leading-tight">Ocean View Suite</h3>
+<p class="text-slate-500 dark:text-slate-400 text-sm mt-1">40m² • Balcony • King Bed</p>
+</div>
+<div class="flex flex-col items-end">
+<span class="text-xl font-bold text-primary">$140</span>
+<span class="text-xs text-slate-500 dark:text-slate-400">per night</span>
+</div>
+</div>
+<div class="flex gap-4 border-t border-b border-slate-100 dark:border-slate-700/50 py-3">
+<div class="flex items-center gap-2 px-2 py-1 rounded bg-yabisso-yellow/10 border border-yabisso-yellow/20">
+<span class="material-symbols-outlined text-yabisso-yellow text-[16px]">coffee</span>
+<span class="text-xs font-bold text-yabisso-yellow">Breakfast Included</span>
+</div>
+</div>
+<div class="flex gap-4 px-1">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-slate-400 text-[18px]">bathtub</span>
+<span class="text-xs text-slate-500 dark:text-slate-400">Bathtub</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-slate-400 text-[18px]">kitchen</span>
+<span class="text-xs text-slate-500 dark:text-slate-400">Minibar</span>
+</div>
+</div>
+<button class="w-full mt-2 bg-primary hover:bg-blue-600 text-white font-semibold py-3 rounded-xl transition-all active:scale-[0.98] flex items-center justify-center gap-2 shadow-lg shadow-primary/25">
+<span>Select Room</span>
+<span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Room Card 3: Executive (Urgency) -->
+<div class="@container">
+<div class="flex flex-col rounded-2xl bg-white dark:bg-card-dark shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden">
+<div class="relative w-full aspect-video bg-slate-200 dark:bg-slate-800">
+<img alt="Executive Room" class="w-full h-full object-cover" data-alt="Modern hotel interior dark blue theme" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCjQOHimYntfzMuKTYGmw7_8Y4n715ra9XVnYXfE0I7dv8Zv-tBgev3wuqRip2-FcCTFNWdziWhFMKod0a45rYSUyMyp1h6onw24XN_SGVQ3A1jwhgWxO8-Eccagx_8NBjPmeHZS9iVZO_5xCpiI5C72idx8_AOihnUjmS5EPnetwblz_P4SiYkjbVelcJ4qk-TzEPXSknq1D0lSVhdC5dZLLHGQ22x8A26nBLDCj2_MXqsKekrog9LXu1aw329oqWRCnt1ihY8"/>
+<div class="absolute bottom-3 left-3 flex gap-2">
+<span class="px-2 py-1 rounded-md bg-yabisso-red/90 backdrop-blur-sm text-white text-[10px] font-bold uppercase tracking-wider flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px]">local_fire_department</span> Only 1 left
+                         </span>
+</div>
+</div>
+<div class="flex flex-col p-4 gap-3">
+<div class="flex justify-between items-start">
+<div>
+<h3 class="text-lg font-bold text-slate-900 dark:text-white leading-tight">Executive King Room</h3>
+<p class="text-slate-500 dark:text-slate-400 text-sm mt-1">30m² • High Floor</p>
+</div>
+<div class="flex flex-col items-end">
+<span class="text-xl font-bold text-primary">$110</span>
+<span class="text-xs text-slate-500 dark:text-slate-400">per night</span>
+</div>
+</div>
+<!-- Info text -->
+<div class="flex items-center gap-2 py-1">
+<span class="material-symbols-outlined text-slate-400 text-[18px]">info</span>
+<p class="text-sm text-slate-400">No prepayment needed today</p>
+</div>
+<div class="grid grid-cols-2 gap-2 mt-1">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-slate-400 text-[18px]">desk</span>
+<span class="text-xs text-slate-500 dark:text-slate-400">Work Desk</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-slate-400 text-[18px]">king_bed</span>
+<span class="text-xs text-slate-500 dark:text-slate-400">King Bed</span>
+</div>
+</div>
+<button class="w-full mt-2 bg-primary hover:bg-blue-600 text-white font-semibold py-3 rounded-xl transition-all active:scale-[0.98] flex items-center justify-center gap-2 shadow-lg shadow-primary/25">
+<span>Select Room</span>
+<span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Bottom Spacer -->
+<div class="h-6"></div>
+</div>
+</body></html>

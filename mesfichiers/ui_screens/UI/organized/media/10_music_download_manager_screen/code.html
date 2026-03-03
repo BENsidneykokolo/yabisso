@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Music Download Manager</title>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;700&amp;family=Spline+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                        "brand-red": "#ef4444",
+                        "brand-yellow": "#eab308",
+                        "brand-green": "#22c55e",
+                    },
+                    fontFamily: {
+                        "display": ["Spline Sans", "Noto Sans", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        /* Hide scrollbar for Chrome, Safari and Opera */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        /* Hide scrollbar for IE, Edge and Firefox */
+        .no-scrollbar {
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white font-display min-h-screen flex flex-col overflow-hidden">
+<!-- Main Content Area -->
+<div class="flex-1 flex flex-col h-full overflow-hidden relative pb-[88px]"> <!-- Padding bottom for nav bar -->
+<!-- Top App Bar -->
+<header class="flex items-center px-4 py-4 justify-between sticky top-0 z-10 bg-background-light/90 dark:bg-background-dark/90 backdrop-blur-md">
+<button class="text-slate-900 dark:text-white flex size-10 shrink-0 items-center justify-center rounded-full hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<h2 class="text-lg font-bold leading-tight flex-1 text-center">My Downloads</h2>
+<button class="flex size-10 shrink-0 items-center justify-center rounded-full hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors">
+<span class="material-symbols-outlined">filter_list</span>
+</button>
+</header>
+<!-- Scrollable Content -->
+<main class="flex-1 overflow-y-auto no-scrollbar px-4 pb-4">
+<!-- Storage Usage Card -->
+<div class="mb-6">
+<div class="flex flex-col gap-4 rounded-[2rem] bg-white dark:bg-[#192633] p-5 shadow-sm border border-slate-200 dark:border-slate-800">
+<div class="flex items-center justify-between">
+<div class="flex flex-col gap-1">
+<p class="text-slate-500 dark:text-[#92adc9] text-xs font-semibold tracking-wider uppercase">Storage Usage</p>
+<div class="flex items-baseline gap-1">
+<span class="text-2xl font-bold">2.4 GB</span>
+<span class="text-sm text-slate-400 dark:text-[#92adc9]">used of 128 GB</span>
+</div>
+</div>
+<button class="flex items-center justify-center rounded-full h-9 px-4 bg-slate-100 dark:bg-[#233648] text-slate-900 dark:text-white gap-2 text-sm font-bold transition-transform active:scale-95">
+<span class="material-symbols-outlined text-[18px]">settings</span>
+<span>Manage</span>
+</button>
+</div>
+<!-- Storage Bar Visualization -->
+<div class="flex flex-col gap-2">
+<div class="h-3 w-full bg-slate-100 dark:bg-[#111a22] rounded-full overflow-hidden flex">
+<!-- Gradient representing Brand Colors -->
+<div class="h-full w-[25%] bg-gradient-to-r from-primary via-brand-yellow to-brand-green rounded-full"></div>
+</div>
+<div class="flex justify-between text-xs font-medium text-slate-400 dark:text-[#64748b]">
+<span class="flex items-center gap-1.5"><span class="size-2 rounded-full bg-brand-green"></span> Music (25%)</span>
+<span class="flex items-center gap-1.5"><span class="size-2 rounded-full bg-slate-700"></span> Free (75%)</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Action Buttons -->
+<div class="flex gap-3 mb-6">
+<button class="flex-1 h-12 flex items-center justify-center gap-2 bg-primary hover:bg-blue-600 text-white rounded-full text-sm font-bold tracking-wide shadow-lg shadow-blue-500/20 transition-all active:scale-95">
+<span class="material-symbols-outlined filled">shuffle</span>
+                    Shuffle Play
+                </button>
+<button class="flex-1 h-12 flex items-center justify-center gap-2 bg-slate-200 dark:bg-[#233648] hover:bg-slate-300 dark:hover:bg-[#2d4256] text-slate-900 dark:text-white rounded-full text-sm font-bold tracking-wide transition-all active:scale-95">
+<span class="material-symbols-outlined">delete_sweep</span>
+                    Clear All
+                </button>
+</div>
+<!-- List Header -->
+<div class="flex items-center justify-between mb-2 px-1">
+<h3 class="text-slate-900 dark:text-white text-base font-bold">Downloaded Songs</h3>
+<span class="text-xs font-medium text-slate-500 dark:text-[#92adc9]">142 Tracks</span>
+</div>
+<!-- Song List -->
+<div class="flex flex-col gap-1">
+<!-- Item 1 -->
+<div class="group flex items-center gap-4 p-2 rounded-2xl hover:bg-slate-100 dark:hover:bg-[#192633] transition-colors cursor-pointer">
+<div class="relative shrink-0">
+<div class="bg-center bg-no-repeat bg-cover rounded-2xl size-14 shadow-md" data-alt="Abstract colorful gradient album art" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAHLaAoqSWfRTab3d3O0cju-3HKXb0jFNj5qurioiiXBqQuGrLTNCdGcQ07XmG_JdND1VHOH8ELDWZ_c32ue6uA26oMzTzNMIA41e-lYRSLU8u35c_9D24Trhzgc45Nynf2w7aF9BXDVAEh83OIQxLbrHA_TlBc2z-KhMlzsq-3Ob6hkzNtA946ujC7Vn5GWdTcYMfCXcEWF1JePUlDhFmplX_8W5Q5_e0x5nDQilkTNCriTCCl0GbjSxCZIfLz1bRlRPGLNzyw");'></div>
+<div class="absolute -bottom-1 -right-1 bg-background-light dark:bg-background-dark rounded-full p-[2px]">
+<span class="material-symbols-outlined text-brand-green text-[16px] bg-white dark:bg-[#192633] rounded-full">check_circle</span>
+</div>
+</div>
+<div class="flex flex-col flex-1 justify-center min-w-0">
+<p class="text-slate-900 dark:text-white text-base font-bold truncate">Water</p>
+<p class="text-slate-500 dark:text-[#92adc9] text-sm truncate">Tyla • 8.4 MB</p>
+</div>
+<button class="size-10 flex items-center justify-center text-slate-400 dark:text-slate-500 hover:text-primary transition-colors">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</div>
+<!-- Item 2 -->
+<div class="group flex items-center gap-4 p-2 rounded-2xl hover:bg-slate-100 dark:hover:bg-[#192633] transition-colors cursor-pointer">
+<div class="relative shrink-0">
+<div class="bg-center bg-no-repeat bg-cover rounded-2xl size-14 shadow-md" data-alt="Orange and black geometric album art" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBwuqzqpakzp5MVoMKMP-cYNk7GPx1f3QhgYWABQvDunuu6B5rLRLaGPGHfKd8ctmXB4u1qG2eIr8TJYp-pPjNPuPWLNyK8j-i09FGoGkFEX7eguUdCHyq_Vo_PNLPD_2ivG4PArWbPgzeeVJ2gRmHu4MCVEriq5BQSarYPZRAOou69bIptrc1UH9iCx6lINCN15M0WBiZUE0RTOp4aFvp1OlKPMBYCiBPXBqCCGrB5HHo1NtTtCJ4r1Fjm3dpZXkFDwjdlMFsj");'></div>
+<div class="absolute -bottom-1 -right-1 bg-background-light dark:bg-background-dark rounded-full p-[2px]">
+<span class="material-symbols-outlined text-brand-green text-[16px] bg-white dark:bg-[#192633] rounded-full">check_circle</span>
+</div>
+</div>
+<div class="flex flex-col flex-1 justify-center min-w-0">
+<p class="text-slate-900 dark:text-white text-base font-bold truncate">Unavailable</p>
+<p class="text-slate-500 dark:text-[#92adc9] text-sm truncate">Davido • 6.2 MB</p>
+</div>
+<button class="size-10 flex items-center justify-center text-slate-400 dark:text-slate-500 hover:text-primary transition-colors">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</div>
+<!-- Item 3 -->
+<div class="group flex items-center gap-4 p-2 rounded-2xl hover:bg-slate-100 dark:hover:bg-[#192633] transition-colors cursor-pointer">
+<div class="relative shrink-0">
+<div class="bg-center bg-no-repeat bg-cover rounded-2xl size-14 shadow-md" data-alt="Dark moody red album art" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuA3sgJXu8HDvfQ-IuqWUDGLoqVYO7vzNcDUKuzbOudKwzGmuQUxq7vKHd_HomuwYPyucmzXb5paBQtTVpXSSTpl4B2eeeFosIh51pq-5L9ySTU9oDdefq6DgyT1YQiu3xjFdXhvYFVE86LNVMekxo4kDga2-9GgLe9UhYuRwB1K45xfRd7QR7giTwwYoKplk9vOTFZTo5F7sdUyMCe0C1epvlDb9Qo6jZUZj3yeaboOtD0GpcWzUr86QWCNix59dI8HXwR0w8DC");'></div>
+<div class="absolute -bottom-1 -right-1 bg-background-light dark:bg-background-dark rounded-full p-[2px]">
+<span class="material-symbols-outlined text-brand-green text-[16px] bg-white dark:bg-[#192633] rounded-full">check_circle</span>
+</div>
+</div>
+<div class="flex flex-col flex-1 justify-center min-w-0">
+<p class="text-slate-900 dark:text-white text-base font-bold truncate">Last Last</p>
+<p class="text-slate-500 dark:text-[#92adc9] text-sm truncate">Burna Boy • 7.1 MB</p>
+</div>
+<button class="size-10 flex items-center justify-center text-slate-400 dark:text-slate-500 hover:text-primary transition-colors">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</div>
+<!-- Item 4 -->
+<div class="group flex items-center gap-4 p-2 rounded-2xl hover:bg-slate-100 dark:hover:bg-[#192633] transition-colors cursor-pointer">
+<div class="relative shrink-0">
+<div class="bg-center bg-no-repeat bg-cover rounded-2xl size-14 shadow-md" data-alt="Blue abstract wave album art" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBWAU0jJukgpRfh8tsRFISnClt3RugQXFllLJHGVNpIhxuKeeXbY5C5VWR-2g_6TJeyDDTQkRQbZeXSoB3oAnFSPDMwXE1IkzZXgjlV8M2KLTgal56PzQnqC_hw2UiqF5lVxGoGo__0Luxd0Y7J3C7eLoeSS-pP82gSRWZ4Cwa7CNHmxYVoXTnLQ2JFp162t7ptRdcricYmjDpmdaJqlE6jDYhvX2lSojsfFwVbtp5epNWC18siQZyU3KClQRobl7-5Nr1Nw4eq");'></div>
+<div class="absolute -bottom-1 -right-1 bg-background-light dark:bg-background-dark rounded-full p-[2px]">
+<span class="material-symbols-outlined text-brand-green text-[16px] bg-white dark:bg-[#192633] rounded-full">check_circle</span>
+</div>
+</div>
+<div class="flex flex-col flex-1 justify-center min-w-0">
+<p class="text-slate-900 dark:text-white text-base font-bold truncate">Essence</p>
+<p class="text-slate-500 dark:text-[#92adc9] text-sm truncate">WizKid ft. Tems • 9.3 MB</p>
+</div>
+<button class="size-10 flex items-center justify-center text-slate-400 dark:text-slate-500 hover:text-primary transition-colors">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</div>
+<!-- Item 5 -->
+<div class="group flex items-center gap-4 p-2 rounded-2xl hover:bg-slate-100 dark:hover:bg-[#192633] transition-colors cursor-pointer">
+<div class="relative shrink-0">
+<div class="bg-center bg-no-repeat bg-cover rounded-2xl size-14 shadow-md" data-alt="Purple neon grid album art" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCcrstbdp99J4WUNCWw-jKXuLAjdYhP0ksfujEf-sqfUEis2xsnq4iEVRFphCTPX3LFQLJt1Dwt4Jnn3kQ83XPleLMSQ7k1v6cSLs39Ip0-Mnfq7YEP79UEsZVQFDYTjNMZjn9x3UgT5T_7E838qhPdYXPomYTL4ZsDzUNGT1gGyfQSbHzcXcy7XRGePaSanYh3L3oOOIEY27QbQh2MaoObZEn88dwjLXImW1dptE-wZblKcbSnlD2ne4D7muRvsum5n6kIvNt1");'></div>
+</div>
+<div class="flex flex-col flex-1 justify-center min-w-0">
+<p class="text-slate-900 dark:text-white text-base font-bold truncate">Calm Down</p>
+<p class="text-slate-500 dark:text-[#92adc9] text-sm truncate">Rema • 5.8 MB</p>
+</div>
+<button class="size-10 flex items-center justify-center text-slate-400 dark:text-slate-500 hover:text-primary transition-colors">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</div>
+<!-- Item 6 (Extra for scroll) -->
+<div class="group flex items-center gap-4 p-2 rounded-2xl hover:bg-slate-100 dark:hover:bg-[#192633] transition-colors cursor-pointer">
+<div class="relative shrink-0">
+<div class="bg-center bg-no-repeat bg-cover rounded-2xl size-14 shadow-md" data-alt="Minimalist grey texture album art" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuA8CuKmL_xTOEbRMePvE8Snv-VnLk0Unt1UCjTgIZY1VTn7K7cMwyamQgVyl5k2bW4wlw7CE9dWQYzhrvqOHZobMSEQdw3l15nS-W5Cjz6TvN_p7nAU-DBG17JaadVpRG4vP1nZQyQ3bd3Clxbvd4qe5Ll7mx3i41s8Qc0Cb-C-EhJm-rbHu4vdh7nfdJZ1C6nV0YzloABcTp8iSfaqIaFaXossCrsKH0svNKh0cbxMmaDrg5sdp8zfKdFwl13X16cZf31NHfRS");'></div>
+<div class="absolute -bottom-1 -right-1 bg-background-light dark:bg-background-dark rounded-full p-[2px]">
+<span class="material-symbols-outlined text-brand-green text-[16px] bg-white dark:bg-[#192633] rounded-full">check_circle</span>
+</div>
+</div>
+<div class="flex flex-col flex-1 justify-center min-w-0">
+<p class="text-slate-900 dark:text-white text-base font-bold truncate">Finesse</p>
+<p class="text-slate-500 dark:text-[#92adc9] text-sm truncate">Pheelz &amp; Buju • 4.5 MB</p>
+</div>
+<button class="size-10 flex items-center justify-center text-slate-400 dark:text-slate-500 hover:text-primary transition-colors">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</div>
+</div>
+</main>
+<!-- Bottom Navigation -->
+<nav class="absolute bottom-0 w-full bg-white dark:bg-[#101922] border-t border-slate-200 dark:border-slate-800 pb-6 pt-2 px-6 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] z-20">
+<div class="flex justify-between items-center">
+<!-- Home -->
+<button class="flex flex-col items-center gap-1 text-slate-400 dark:text-[#64748b] hover:text-primary dark:hover:text-primary transition-colors">
+<span class="material-symbols-outlined">home</span>
+<span class="text-[10px] font-medium">Home</span>
+</button>
+<!-- Wallet -->
+<button class="flex flex-col items-center gap-1 text-slate-400 dark:text-[#64748b] hover:text-primary dark:hover:text-primary transition-colors">
+<span class="material-symbols-outlined">account_balance_wallet</span>
+<span class="text-[10px] font-medium">Wallet</span>
+</button>
+<!-- Music (Active) -->
+<button class="flex flex-col items-center gap-1 text-primary">
+<div class="bg-primary/10 rounded-full px-4 py-1">
+<span class="material-symbols-outlined filled">music_note</span>
+</div>
+<span class="text-[10px] font-bold">Music</span>
+</button>
+<!-- Profile -->
+<button class="flex flex-col items-center gap-1 text-slate-400 dark:text-[#64748b] hover:text-primary dark:hover:text-primary transition-colors">
+<span class="material-symbols-outlined">person</span>
+<span class="text-[10px] font-medium">Profile</span>
+</button>
+</div>
+</nav>
+</div>
+</body></html>

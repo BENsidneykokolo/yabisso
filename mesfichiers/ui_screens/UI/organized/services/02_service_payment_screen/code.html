@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Service Payment Screen</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Noto+Sans:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Theme Configuration -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                        "surface-dark": "#1b2531",
+                        "surface-light": "#ffffff",
+                        "yabisso-yellow": "#FFC107",
+                        "yabisso-green": "#4CAF50",
+                        "yabisso-red": "#EF5350",
+                    },
+                    fontFamily: {
+                        "display": ["Plus Jakarta Sans", "sans-serif"],
+                        "body": ["Noto Sans", "sans-serif"],
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "2xl": "1rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom scrollbar hiding */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-white antialiased selection:bg-primary selection:text-white">
+<div class="relative flex h-full min-h-screen w-full flex-col overflow-x-hidden max-w-md mx-auto shadow-2xl bg-background-light dark:bg-background-dark">
+<!-- Header -->
+<div class="sticky top-0 z-20 flex items-center bg-background-light/90 dark:bg-background-dark/90 backdrop-blur-md p-4 pb-2 justify-between border-b border-gray-200 dark:border-gray-800">
+<button class="text-slate-900 dark:text-white flex size-10 shrink-0 items-center justify-center rounded-full active:bg-gray-200 dark:active:bg-gray-800 transition-colors">
+<span class="material-symbols-outlined text-2xl">arrow_back_ios_new</span>
+</button>
+<h2 class="text-slate-900 dark:text-white text-lg font-bold leading-tight tracking-tight flex-1 text-center pr-10">Payment Method</h2>
+</div>
+<!-- Main Content -->
+<div class="flex-1 overflow-y-auto no-scrollbar pb-32">
+<!-- Order Summary Card -->
+<div class="p-4 pt-6">
+<div class="flex items-stretch justify-between gap-4 rounded-2xl bg-white dark:bg-surface-dark p-3 shadow-sm border border-gray-100 dark:border-gray-800">
+<div class="flex flex-col justify-center gap-1.5 flex-[2_2_0px] pl-1">
+<span class="text-slate-500 dark:text-slate-400 text-xs font-semibold uppercase tracking-wider">Service</span>
+<p class="text-slate-900 dark:text-white text-lg font-bold leading-tight">Home Cleaning - Premium</p>
+<p class="text-primary text-base font-bold leading-normal mt-1">Total: FCFA 15,000</p>
+</div>
+<div class="w-24 h-24 bg-center bg-no-repeat bg-cover rounded-xl flex-shrink-0 relative overflow-hidden" data-alt="Modern living room being cleaned, bright and tidy" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDxchtVvIrSCz0xym1ZGHL5PCfoJB_tVagzcPYBDqafJweV5yKkrYN2YWzbj1ve-IaiQBS1TjmDYO9x-OrVQq5GEcwJrazQik0zw1Vyo3ttIcU5pNmKWOFTMuTS8z6XoNjTPaZkzRESaehBlwUmA3PG-4ITTGCPSN8OKWDUXPBkcdvALoCG_VJKw8WK76mYE_p2D0GuOViuU4LvHKD4ncmosUTdP-rwjWroS9o_OYulOxsq-mFcHDHAkOwhCVH_u35_60U9qhan");'>
+<div class="absolute inset-0 bg-black/10"></div>
+</div>
+</div>
+</div>
+<div class="h-2"></div>
+<!-- Section Title -->
+<h2 class="text-slate-900 dark:text-white tracking-tight text-xl font-bold leading-tight px-5 text-left pb-4 pt-2">Select Payment Method</h2>
+<!-- Payment Options List -->
+<div class="flex flex-col gap-3 px-4" role="radiogroup">
+<!-- Option 1: Wallet (Active) -->
+<label class="relative flex items-center gap-4 rounded-2xl bg-white dark:bg-surface-dark px-4 py-4 justify-between border-2 border-primary cursor-pointer transition-all shadow-md shadow-primary/10">
+<div class="flex items-center gap-4">
+<div class="text-white flex items-center justify-center rounded-xl bg-gradient-to-br from-primary to-blue-600 shrink-0 size-12 shadow-inner">
+<span class="material-symbols-outlined">account_balance_wallet</span>
+</div>
+<div class="flex flex-col justify-center">
+<div class="flex items-center gap-2">
+<p class="text-slate-900 dark:text-white text-base font-bold leading-normal">Yabisso Wallet</p>
+<span class="px-2 py-0.5 rounded-full bg-yabisso-green/20 text-yabisso-green text-[10px] font-bold uppercase tracking-wide border border-yabisso-green/20">Fastest</span>
+</div>
+<p class="text-slate-500 dark:text-slate-400 text-sm font-medium leading-normal mt-0.5">Balance: <span class="text-slate-900 dark:text-gray-200">FCFA 45,200</span></p>
+</div>
+</div>
+<div class="shrink-0">
+<div class="flex size-6 items-center justify-center rounded-full border-[6px] border-primary bg-white"></div>
+<input checked="" class="hidden" name="payment_method" type="radio" value="wallet"/>
+</div>
+</label>
+<!-- Option 2: Online Payment -->
+<label class="relative flex items-center gap-4 rounded-2xl bg-white dark:bg-surface-dark px-4 py-4 justify-between border border-gray-200 dark:border-gray-700/50 hover:border-gray-300 dark:hover:border-gray-600 cursor-pointer transition-all">
+<div class="flex items-center gap-4">
+<div class="text-slate-400 dark:text-gray-400 flex items-center justify-center rounded-xl bg-gray-100 dark:bg-[#232d3a] shrink-0 size-12">
+<span class="material-symbols-outlined">credit_card</span>
+</div>
+<div class="flex flex-col justify-center">
+<p class="text-slate-900 dark:text-white text-base font-semibold leading-normal">Online Payment</p>
+<p class="text-slate-500 dark:text-slate-400 text-xs font-normal leading-normal mt-0.5">Card or Mobile Money</p>
+<div class="flex gap-2 mt-1.5 opacity-60">
+<!-- Simple CSS shapes representing card logos for clean UI -->
+<div class="h-3 w-5 bg-orange-500 rounded-sm"></div>
+<div class="h-3 w-5 bg-yellow-400 rounded-sm"></div>
+<div class="h-3 w-5 bg-blue-800 rounded-sm"></div>
+</div>
+</div>
+</div>
+<div class="shrink-0">
+<div class="flex size-6 items-center justify-center rounded-full border-2 border-gray-300 dark:border-gray-600 bg-transparent"></div>
+<input class="hidden" name="payment_method" type="radio" value="online"/>
+</div>
+</label>
+<!-- Option 3: SMS / Offline -->
+<label class="relative flex items-center gap-4 rounded-2xl bg-white dark:bg-surface-dark px-4 py-4 justify-between border border-gray-200 dark:border-gray-700/50 hover:border-gray-300 dark:hover:border-gray-600 cursor-pointer transition-all">
+<div class="flex items-center gap-4">
+<div class="text-slate-400 dark:text-gray-400 flex items-center justify-center rounded-xl bg-gray-100 dark:bg-[#232d3a] shrink-0 size-12">
+<span class="material-symbols-outlined">sms</span>
+</div>
+<div class="flex flex-col justify-center">
+<div class="flex items-center gap-2">
+<p class="text-slate-900 dark:text-white text-base font-semibold leading-normal">Pay via SMS</p>
+<span class="px-2 py-0.5 rounded-full bg-yabisso-yellow/20 text-yabisso-yellow text-[10px] font-bold uppercase tracking-wide border border-yabisso-yellow/20">Offline</span>
+</div>
+<p class="text-slate-500 dark:text-slate-400 text-xs font-normal leading-normal mt-0.5 max-w-[160px]">No internet needed. Dial shortcode automatically.</p>
+</div>
+</div>
+<div class="shrink-0">
+<div class="flex size-6 items-center justify-center rounded-full border-2 border-gray-300 dark:border-gray-600 bg-transparent"></div>
+<input class="hidden" name="payment_method" type="radio" value="sms"/>
+</div>
+</label>
+</div>
+<!-- Security Note -->
+<div class="flex items-center justify-center gap-1.5 mt-8 opacity-40">
+<span class="material-symbols-outlined text-sm">lock</span>
+<span class="text-xs font-medium">Payments are 256-bit encrypted</span>
+</div>
+</div>
+<!-- Sticky Footer -->
+<div class="fixed bottom-0 left-0 right-0 max-w-md mx-auto z-30">
+<!-- Gradient fade above footer -->
+<div class="h-12 w-full bg-gradient-to-b from-transparent to-background-light dark:to-background-dark pointer-events-none"></div>
+<div class="bg-background-light dark:bg-background-dark p-4 pt-2 pb-6 border-t border-gray-200 dark:border-gray-800">
+<div class="flex justify-between items-end mb-4 px-1">
+<div class="text-sm text-slate-500 dark:text-slate-400">Total to pay</div>
+<div class="text-2xl font-bold text-slate-900 dark:text-white">FCFA 15,000</div>
+</div>
+<button class="w-full flex items-center justify-center gap-2 h-14 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-base font-bold shadow-lg active:scale-[0.98] transition-transform">
+<span>Confirm Payment</span>
+<span class="material-symbols-outlined text-lg">check_circle</span>
+</button>
+</div>
+</div>
+</div>
+</body></html>

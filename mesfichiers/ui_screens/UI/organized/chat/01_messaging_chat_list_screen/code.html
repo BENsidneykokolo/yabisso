@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Yabisso Messaging</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;family=Noto+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec", // Yabisso Blue
+                        "secondary": "#EAB308", // Yabisso Yellow
+                        "success": "#22C55E", // Yabisso Green
+                        "error": "#EF4444", // Yabisso Red
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922", // Deep charcoal/black
+                        "surface-dark": "#1c2732", // Slightly lighter for cards
+                        "text-secondary": "#92adc9",
+                    },
+                    fontFamily: {
+                        "display": ["Plus Jakarta Sans", "sans-serif"],
+                        "body": ["Noto Sans", "sans-serif"],
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-white antialiased selection:bg-primary selection:text-white">
+<div class="relative flex h-full min-h-screen w-full flex-col overflow-x-hidden pb-24">
+<!-- Top App Bar -->
+<div class="sticky top-0 z-30 flex items-center bg-background-light dark:bg-background-dark p-4 pb-2 justify-between border-b border-gray-200 dark:border-gray-800/50 backdrop-blur-md bg-opacity-95 dark:bg-opacity-95">
+<div class="flex size-12 shrink-0 items-center gap-3">
+<div class="relative">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 border-2 border-transparent hover:border-primary transition-colors cursor-pointer" data-alt="User profile avatar showing a smiling young man" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAc4ECpU7MROc9Gqh7-xcWBlpmkNNxRY1lP8lMW3j0Q1_JlZqRZf0Vz8tOS5F1SGr-Gx53ir94hGel8B-ElZZcy4I-ABf0NXfClFP85x6BVRI3HGW2vqwXNguL4ilEGuNewd9m0tHxAk4daC8n6mSlQhPlRDOyxKs2GV5rB8-M00Mz3fGOvM2fDd16pKKHNhslDQSHyc_Xu4AxYY97KmVjgw8LB3Q9JTDDCmqohaz1eCigsmIwKxFOMItyxoxxXc-O-cWcF-MfQ");'>
+</div>
+<!-- Online Status Dot -->
+<div class="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-success border-2 border-background-light dark:border-background-dark"></div>
+</div>
+</div>
+<h2 class="text-slate-900 dark:text-white text-xl font-bold leading-tight tracking-tight flex-1 px-2">Messages</h2>
+<div class="flex items-center justify-end gap-3">
+<button class="flex items-center justify-center rounded-full size-10 bg-surface-dark/50 hover:bg-surface-dark text-text-secondary hover:text-white transition-colors">
+<span class="material-symbols-outlined" style="font-size: 24px;">search</span>
+</button>
+<!-- Sync Status Indicator -->
+<button class="flex items-center justify-center rounded-full size-10 bg-primary/10 text-primary">
+<span class="material-symbols-outlined" style="font-size: 24px;">cloud_done</span>
+</button>
+</div>
+</div>
+<!-- Search Bar (Inline style per request, adjusted for theme) -->
+<div class="px-4 py-3">
+<label class="flex flex-col h-12 w-full group">
+<div class="flex w-full flex-1 items-stretch rounded-xl h-full bg-white dark:bg-surface-dark border border-gray-200 dark:border-gray-700/50 focus-within:border-primary focus-within:ring-1 focus-within:ring-primary transition-all">
+<div class="text-text-secondary flex items-center justify-center pl-4 pr-2">
+<span class="material-symbols-outlined" style="font-size: 24px;">search</span>
+</div>
+<input class="flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-r-xl bg-transparent text-slate-900 dark:text-white focus:outline-0 border-none h-full placeholder:text-text-secondary px-2 text-base font-normal leading-normal" placeholder="Search chats, services, or contacts..." value=""/>
+</div>
+</label>
+</div>
+<!-- Story Carousel -->
+<div class="w-full overflow-x-auto no-scrollbar px-4 py-2 mb-2">
+<div class="flex min-w-max flex-row items-start justify-start gap-5">
+<!-- My Status -->
+<div class="flex flex-col items-center justify-center gap-2 w-[72px] cursor-pointer group">
+<div class="relative w-[64px] h-[64px]">
+<div class="absolute inset-0 rounded-full border-2 border-dashed border-text-secondary group-hover:border-primary p-0.5"></div>
+<div class="w-full h-full bg-center bg-no-repeat bg-cover rounded-full border-2 border-background-light dark:border-background-dark" data-alt="User's own profile picture for adding status" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBhg0hgkmxocaeNnxiAcMqmoAQk93ByDgxk5UhKRIYtqgdKLvzwNKHOp5yZvpb6LKcBOa4mtuBMbOL2qZuEWcu8ow4ifyOekUU-0JRAIle8zC9kg5cdFU8_moG7qIMIYDf6QTS9iVd0eOn1QjhjooJJXZjxTWh2EqCggsJoMhxDJ9adhWCgW3wHwERdl4i6fcrydJTHUpOmCVqXRwOaya_XppBNQYcAku8CarU8m_yh4rMWLiukB6FP-XEX7uenDb71h226thEn");'>
+<div class="absolute bottom-0 right-0 bg-primary text-white rounded-full p-1 border-2 border-background-dark flex items-center justify-center">
+<span class="material-symbols-outlined" style="font-size: 14px; font-weight: 700;">add</span>
+</div>
+</div>
+</div>
+<p class="text-slate-600 dark:text-gray-400 text-xs font-medium leading-normal text-center w-full truncate">My Status</p>
+</div>
+<!-- Story Item 1 -->
+<div class="flex flex-col items-center justify-center gap-2 w-[72px] cursor-pointer">
+<div class="relative w-[64px] h-[64px] rounded-full p-[2px] bg-gradient-to-tr from-secondary via-primary to-success">
+<div class="w-full h-full bg-center bg-no-repeat bg-cover rounded-full border-2 border-background-light dark:border-background-dark" data-alt="Portrait of Kwame smiling" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuA9SD_YcoQEt_9G46fKXVkqsd7kYHCwzQyfIV8eeWqk4kKgCrOEatii4flH6aH1exTDua6kUnsOHLDkzIJ-ilXXspt1TB8mpQDHpTpUgCibgWjyUVWBrEIQsYVvK2CGwNs0MFOqkMe3v5Rtj_Hi-LJnYI-EzX72p3ytMEDRxKiD_vJgY3WtMAznY_GN0WVs0myZ_VuTr48_WUHxyvzwIL8kwvY1d3GwO0Ql2-kUL1YOlh206PWrp2WNW1-m-dHpJ16UUjqel9Ma");'></div>
+</div>
+<p class="text-slate-600 dark:text-white text-xs font-medium leading-normal text-center w-full truncate">Kwame</p>
+</div>
+<!-- Story Item 2 -->
+<div class="flex flex-col items-center justify-center gap-2 w-[72px] cursor-pointer">
+<div class="relative w-[64px] h-[64px] rounded-full p-[2px] bg-gradient-to-tr from-secondary via-primary to-success">
+<div class="w-full h-full bg-center bg-no-repeat bg-cover rounded-full border-2 border-background-light dark:border-background-dark" data-alt="Portrait of Amina looking confident" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCj8nvT4IkM97VTlZ6SZymE1pFi41fyKXIncIXINzB33IuBHWv3969fX_svkHupU9E5P6c31edKybeFKBL2PiaOYhsvDMwrAeJHlM6kWgFJm-dlJ3l56K9Keh2O_v9OBW4G1vLQbOUej436AkayFWx8mNI9yj1AXX6_htI9g5vjfFN-q7J1JebsZKFInEpipBhtWSyMNE7qpEd2ZlmPAYRCaIeksjPUFj0s3UqFcYmIw_6OjiLPH2OuR4YCewoqCTqr_eSIujcx");'></div>
+</div>
+<p class="text-slate-600 dark:text-white text-xs font-medium leading-normal text-center w-full truncate">Amina</p>
+</div>
+<!-- Story Item 3 (Viewed) -->
+<div class="flex flex-col items-center justify-center gap-2 w-[72px] cursor-pointer">
+<div class="relative w-[64px] h-[64px] rounded-full p-[2px] bg-gray-300 dark:bg-gray-700">
+<div class="w-full h-full bg-center bg-no-repeat bg-cover rounded-full border-2 border-background-light dark:border-background-dark" data-alt="Logo of a shop called Jumia" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDWRu4Nfd2Gg3lChbs8-d_4r21mtQD0zeEH5g4V_C7yak6A5asBcU3Vex4d220e4XN0QkXQ108CeeJmyNDEp8nics7D0I1rOzcehGRCyN1aABmrP8MPtvOMJ-lXDgfCBqbUszRlrNkXaOI6nbnmYDC9LIdMofFEroozAvni3PPR8C-3UGviy_gikiqb5-vTyW_tPdTFZq0UFvMAoK6sIbzjMEQnKneqKnRVjlx6GKE7FAR6oxKpuNOe7IzHDyikN1h1FiE4ZPn3");'></div>
+</div>
+<p class="text-slate-600 dark:text-gray-400 text-xs font-medium leading-normal text-center w-full truncate">Jumia Shop</p>
+</div>
+<!-- Story Item 4 -->
+<div class="flex flex-col items-center justify-center gap-2 w-[72px] cursor-pointer">
+<div class="relative w-[64px] h-[64px] rounded-full p-[2px] bg-gradient-to-tr from-secondary via-primary to-success">
+<div class="w-full h-full bg-center bg-no-repeat bg-cover rounded-full border-2 border-background-light dark:border-background-dark" data-alt="Portrait of Kofi" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCY5QEkrIX97kv2M3qpxEY4Jw46krMV238sQYiq_PijaHlhsRnYsWBFNB6apIqj7IcoR1HfFZd9fz3HLCZ9XKWviaftQuQap_Yb93ntWgztHcJpzNvxdBWKMp16M7OIDywCd1znk7P_6QSO38PxFGBwpppU73HR2HxEpPqYnroNPT4dGMy9Hs2xTCgtx5tSGLYhaBWD0B9paaZwZumg55HH7aeqWWtX3eelZnUruUNDx2DL3EObDaEPs7E5LyayIdMYLzKLg8ZS");'></div>
+</div>
+<p class="text-slate-600 dark:text-white text-xs font-medium leading-normal text-center w-full truncate">Kofi</p>
+</div>
+</div>
+</div>
+<div class="h-px bg-gray-200 dark:bg-gray-800 w-full mb-2"></div>
+<!-- Chat List -->
+<div class="flex flex-col w-full">
+<!-- Item 1: Unread Message -->
+<div class="group relative flex items-center gap-4 px-4 py-3 hover:bg-gray-100 dark:hover:bg-surface-dark/50 transition-colors cursor-pointer">
+<!-- Avatar -->
+<div class="relative">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full h-14 w-14" data-alt="Logo of Jumia Food support" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuA6YAaAvAypzjGCjUjo5tolgBXtVNhdiezL_-WiEYKjrLkqtPtZY9ERA7jKW3wVqDl-ZoSOWT5gCZWhJ718W9c2q3uTVWkrTkhLMb9BImWdrD_EG2SGk8xFR60L3n_TNkUil0w68D42nWwEBuQEsnYBX7PnJ4xVtNU-MKiQ-o74C_qE1dGm1ziyIHt_hClDYNqeexCQoWKWw_9YBKJV1ZhtPC6xeieUrf4kO2m-V-Ms90ldepvZMgXweuAR7ARzaAXG8oAmze54");'></div>
+<div class="absolute bottom-0 right-0 h-3.5 w-3.5 rounded-full bg-success border-2 border-background-light dark:border-background-dark"></div>
+</div>
+<div class="flex flex-1 flex-col justify-center min-w-0">
+<div class="flex justify-between items-baseline mb-0.5">
+<p class="text-slate-900 dark:text-white text-base font-bold leading-normal truncate">Jumia Food Support</p>
+<p class="text-primary text-xs font-semibold shrink-0">10:30 AM</p>
+</div>
+<div class="flex justify-between items-center">
+<p class="text-slate-600 dark:text-gray-300 text-sm font-medium leading-normal truncate pr-2">Your delivery is arriving in 5 mins! 🛵</p>
+<div class="flex items-center justify-center h-5 min-w-[20px] px-1.5 rounded-full bg-primary text-white text-[10px] font-bold">2</div>
+</div>
+</div>
+</div>
+<!-- Item 2: Active Conversation (Read) -->
+<div class="group relative flex items-center gap-4 px-4 py-3 hover:bg-gray-100 dark:hover:bg-surface-dark/50 transition-colors cursor-pointer">
+<div class="relative">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full h-14 w-14" data-alt="Portrait of Kwame Osei" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBRfgI6Txdx4rN1SimJsDpLwgooSP6BL-h_M4EN3sJt_5VsARaNQMOUolWginhxjc9vTLMejYX2CPfnkcUJPXZNPk4wI8Ofq2DAtBMQdYzapSq6NV_5stMugNI-orAYw7NP4ZmlU6Pgv5wsENymtkR3Y3WPkvzwkQu3GOxsdYWt9cOxhETPgorCYjlbrrFnpGf9Hw66gmhjd1o1M6co_OuGF-UEy_sxwIZHqs9UB_yFbyza_YB2rC-nt6f1F35DrSWNOAwrd509");'></div>
+</div>
+<div class="flex flex-1 flex-col justify-center min-w-0">
+<div class="flex justify-between items-baseline mb-0.5">
+<p class="text-slate-900 dark:text-white text-base font-semibold leading-normal truncate">Kwame Osei</p>
+<p class="text-text-secondary text-xs font-normal shrink-0">2 min</p>
+</div>
+<div class="flex justify-between items-center">
+<div class="flex items-center gap-1 overflow-hidden">
+<span class="material-symbols-outlined text-primary text-[18px]">done_all</span>
+<p class="text-text-secondary text-sm font-normal leading-normal truncate">Did the transfer go through?</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Item 3: Pending Sync (Offline First Indicator) -->
+<div class="group relative flex items-center gap-4 px-4 py-3 bg-secondary/5 dark:bg-transparent hover:bg-gray-100 dark:hover:bg-surface-dark/50 transition-colors cursor-pointer">
+<div class="relative">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full h-14 w-14 grayscale-[20%]" data-alt="Portrait of Amina J." style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCawxcCWhQ7VB56AkBRKqByuVy0pd3K3tEJlc8P1WrkUE7bSSfgNhFTXUYbgR7oOgDBWZfcYCdTobDlyYsP2odNHVMXmSbZmchLoDB6_UW5pcAw04tfiV_yc_dVUiB2c-itbMjOrpU77I76DH0ufrpuPcu7HVVO2cpk3zxMgDpyc2-B0TSSExBtTPUemr0xo6xXL4HXzjDPjIT4V77bY8s0Qepsw9WLzsnyCz5tV9xUP4wwT229EOJLGB1YPjCvSXUTJBKxj-Jk");'></div>
+</div>
+<div class="flex flex-1 flex-col justify-center min-w-0">
+<div class="flex justify-between items-baseline mb-0.5">
+<p class="text-slate-900 dark:text-white text-base font-semibold leading-normal truncate">Amina J.</p>
+<p class="text-text-secondary text-xs font-normal shrink-0">Now</p>
+</div>
+<div class="flex justify-between items-center">
+<div class="flex items-center gap-1 overflow-hidden">
+<span class="material-symbols-outlined text-secondary text-[16px] animate-pulse">schedule</span>
+<p class="text-slate-500 dark:text-gray-400 text-sm font-normal leading-normal truncate italic">I'll be there in 5.</p>
+</div>
+<span class="text-[10px] text-secondary font-medium px-1.5 py-0.5 bg-secondary/10 rounded">Sending...</span>
+</div>
+</div>
+</div>
+<!-- Item 4: Regular Read Message -->
+<div class="group relative flex items-center gap-4 px-4 py-3 hover:bg-gray-100 dark:hover:bg-surface-dark/50 transition-colors cursor-pointer">
+<div class="relative">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full h-14 w-14" data-alt="Portrait of Kofi Boateng" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDwM6LhM_DZGNGwsDDJB1EWVld0ZRdMH6xnPZGohWS7sVhgpHA2m4tUfrfHrZbr6zmDEn8tEn_2gCmGUvoz-KLSBa9T2pkMMsuzKcXCL_nte-t9VdT8EUhntu_1ro2AmeDG9x5MS2z-u2hnOFusnw6j51KjDDoYJdIRg6rdsJgbqcKoz2GN2rh-10xbcN_f70FxRDPDmhcgMc6mT0bQt7I8lk4GzH7bsB01zUB3Advewv9vdoEUCUAyT32JsWY7zWggIjRLcbTk");'></div>
+</div>
+<div class="flex flex-1 flex-col justify-center min-w-0">
+<div class="flex justify-between items-baseline mb-0.5">
+<p class="text-slate-900 dark:text-white text-base font-semibold leading-normal truncate">Kofi Boateng</p>
+<p class="text-text-secondary text-xs font-normal shrink-0">Yesterday</p>
+</div>
+<div class="flex justify-between items-center">
+<div class="flex items-center gap-1 overflow-hidden">
+<span class="material-symbols-outlined text-text-secondary text-[18px]">done_all</span>
+<p class="text-text-secondary text-sm font-normal leading-normal truncate">Thanks for the update!</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Item 5: Group Chat -->
+<div class="group relative flex items-center gap-4 px-4 py-3 hover:bg-gray-100 dark:hover:bg-surface-dark/50 transition-colors cursor-pointer">
+<div class="relative">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full h-14 w-14" data-alt="Icon representing Tech Hub Accra community" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCO7eGlsGG90KSy5p4-R1OKf-KB6gudmSARyGdLQagFfFtVL3KyB0oBwxUkPVhPeqwc9YmfpLguou3ONMlTst5NWOfZYomcNde0kWru7mciiY4_NKP1ZUHXM7cVmCLy1_SPeUJYlciTyKjennOZkzPSuF5795oxN-Ka1nMeIaBbkLLrEi9dYp1D27dNu71D6gLgt8dsCFiOl1yGXY4Gpds_QXQF_J-Tp61TI8Z3gBxYkBn55p0MmLsNnNrM3qjfV93w7N1raNye");'></div>
+</div>
+<div class="flex flex-1 flex-col justify-center min-w-0">
+<div class="flex justify-between items-baseline mb-0.5">
+<p class="text-slate-900 dark:text-white text-base font-semibold leading-normal truncate">Tech Hub Accra 🇬🇭</p>
+<p class="text-text-secondary text-xs font-normal shrink-0">Yesterday</p>
+</div>
+<div class="flex justify-between items-center">
+<div class="flex items-center gap-1 overflow-hidden">
+<p class="text-text-secondary text-sm font-normal leading-normal truncate"><span class="text-slate-700 dark:text-gray-300 font-medium">Emmanuel:</span> Are we still meeting at 6pm?</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Item 6: Failed Message -->
+<div class="group relative flex items-center gap-4 px-4 py-3 hover:bg-gray-100 dark:hover:bg-surface-dark/50 transition-colors cursor-pointer">
+<div class="relative">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full h-14 w-14" data-alt="Portrait of Sarah" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuA1IzAiB9ItIzJB3aJCqjfaP-_PsuioNferzkE_dPJMh-jsbZ__C9TyNBDeNO-eTxopUnRkDnto5Gh0YVqH1Aj0nVbsmjq1QgM-mfKPYehse-oRVoMPXblCmoxI-Wz6r0QdG-ESyV7F7x69tLmHEDl-7-xXtADzfwtxoece2r8iDoaDiUW6Pc_bnd4OjGTKQavRL3AZrPZXidi4Kxbsrl75QIqH7LnotAQquJov_NiDiaiE20_HzcWCSPw5VdbQdOEdMgm3KMxM");'></div>
+</div>
+<div class="flex flex-1 flex-col justify-center min-w-0">
+<div class="flex justify-between items-baseline mb-0.5">
+<p class="text-slate-900 dark:text-white text-base font-semibold leading-normal truncate">Sarah N.</p>
+<p class="text-error text-xs font-semibold shrink-0">Failed</p>
+</div>
+<div class="flex justify-between items-center">
+<div class="flex items-center gap-1 overflow-hidden">
+<span class="material-symbols-outlined text-error text-[18px]">error</span>
+<p class="text-text-secondary text-sm font-normal leading-normal truncate">Image not sent. Tap to retry.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Floating Action Button -->
+<button class="fixed bottom-24 right-4 z-20 flex items-center justify-center rounded-2xl size-14 bg-primary text-white shadow-lg hover:bg-blue-600 active:scale-95 transition-all">
+<span class="material-symbols-outlined" style="font-size: 28px;">chat_add_on</span>
+</button>
+<!-- Bottom Navigation Bar -->
+<div class="fixed bottom-0 z-40 w-full bg-background-light dark:bg-background-dark border-t border-gray-200 dark:border-gray-800 pb-safe pt-2">
+<div class="flex items-center justify-around h-[60px] pb-2">
+<button class="flex flex-col items-center justify-center gap-1 w-full text-text-secondary hover:text-primary transition-colors">
+<span class="material-symbols-outlined" style="font-size: 24px;">home</span>
+<span class="text-[10px] font-medium">Home</span>
+</button>
+<button class="flex flex-col items-center justify-center gap-1 w-full text-text-secondary hover:text-primary transition-colors">
+<span class="material-symbols-outlined" style="font-size: 24px;">account_balance_wallet</span>
+<span class="text-[10px] font-medium">Wallet</span>
+</button>
+<button class="flex flex-col items-center justify-center gap-1 w-full text-primary transition-colors">
+<div class="relative">
+<span class="material-symbols-outlined filled" style="font-size: 24px; font-variation-settings: 'FILL' 1;">chat</span>
+<span class="absolute -top-1 -right-1 flex h-2.5 w-2.5">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-primary"></span>
+</span>
+</div>
+<span class="text-[10px] font-medium">Chats</span>
+</button>
+<button class="flex flex-col items-center justify-center gap-1 w-full text-text-secondary hover:text-primary transition-colors">
+<span class="material-symbols-outlined" style="font-size: 24px;">shopping_bag</span>
+<span class="text-[10px] font-medium">Shop</span>
+</button>
+<button class="flex flex-col items-center justify-center gap-1 w-full text-text-secondary hover:text-primary transition-colors">
+<span class="material-symbols-outlined" style="font-size: 24px;">person</span>
+<span class="text-[10px] font-medium">Profile</span>
+</button>
+</div>
+</div>
+</div>
+</body></html>

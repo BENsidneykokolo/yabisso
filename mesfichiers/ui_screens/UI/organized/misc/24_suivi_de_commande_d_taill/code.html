@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="fr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                    },
+                    fontFamily: {
+                        "display": ["Inter"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<title>Suivi de Commande - Yabisso</title>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white font-display min-h-screen flex flex-col">
+<!-- Header Section -->
+<header class="sticky top-0 z-50 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md border-b border-primary/10 px-4 py-4 flex items-center justify-between">
+<button class="flex items-center justify-center size-10 rounded-full hover:bg-primary/10 transition-colors">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<div class="flex flex-col items-center">
+<h1 class="text-lg font-bold leading-tight tracking-tight">Suivi #YAB-2409</h1>
+<div class="flex items-center gap-1.5 mt-0.5">
+<span class="size-2 rounded-full bg-green-500 animate-pulse"></span>
+<p class="text-[10px] uppercase font-bold tracking-widest text-primary">Synchronisé à l'instant</p>
+</div>
+</div>
+<button class="flex items-center justify-center size-10 rounded-full hover:bg-primary/10 transition-colors">
+<span class="material-symbols-outlined">help_outline</span>
+</button>
+</header>
+<main class="flex-1 overflow-y-auto pb-24">
+<!-- Map Section -->
+<div class="relative w-full h-72 bg-slate-200 dark:bg-slate-800">
+<img alt="Carte de Kinshasa" class="w-full h-full object-cover opacity-60 dark:opacity-40 grayscale" data-alt="Carte sombre de la ville de Kinshasa avec un itinéraire de livraison" data-location="Kinshasa, DR Congo" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCY-hjTi-G2xYJnPuhR2hcTJa81Q6CzkYVHKCwh_WgYOCtq6ho0_xX_tlEXfGDUg1gUDT_qKN7Rq5hNG-FRPJebsyJs_KXhWQHcERy3LxK60v_DfBFnk_l9aLo1F63g-Qisdiw5De_wEg_KxT78KJBpMrnGldbX77jRCHvaTOLeEfbvzd6uUehAmdAVXcm_MtCGXzvQt8-BL3Uu40TcJdcfPeAM-YLMPvrV-5eUM8_P3aswat48LJS01BLh-NKvPzoOvkzSPJie"/>
+<!-- Delivery Pin (Destination) -->
+<div class="absolute top-1/4 left-1/3 flex flex-col items-center">
+<div class="bg-primary text-white p-2 rounded-xl shadow-lg shadow-primary/40">
+<span class="material-symbols-outlined text-sm">home</span>
+</div>
+<div class="w-0.5 h-4 bg-primary"></div>
+</div>
+<!-- Courier Pin (Moving) -->
+<div class="absolute bottom-1/4 right-1/4 flex flex-col items-center">
+<div class="relative">
+<div class="absolute inset-0 bg-primary rounded-full animate-ping opacity-75"></div>
+<div class="relative bg-white dark:bg-primary p-2 rounded-full shadow-xl">
+<span class="material-symbols-outlined text-primary dark:text-white text-base">moped</span>
+</div>
+</div>
+<p class="mt-1 bg-white dark:bg-slate-800 text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm">Kofi A. (3 min)</p>
+</div>
+</div>
+<!-- Delivery Status Card -->
+<div class="px-4 -mt-6 relative z-10">
+<div class="bg-white dark:bg-[#192633] rounded-xl p-5 shadow-xl border border-primary/5">
+<h3 class="text-sm font-bold uppercase tracking-wider text-primary/80 mb-6">Statut de la livraison</h3>
+<div class="space-y-6 relative">
+<!-- Vertical Line -->
+<div class="absolute left-[11px] top-2 bottom-2 w-0.5 bg-slate-200 dark:bg-slate-700"></div>
+<!-- Step 1 -->
+<div class="flex gap-4 relative">
+<div class="z-10 bg-primary size-6 rounded-full flex items-center justify-center text-white">
+<span class="material-symbols-outlined text-sm font-bold">check</span>
+</div>
+<div>
+<p class="text-sm font-bold">Commande passée</p>
+<p class="text-xs text-slate-500 dark:text-slate-400">12 Sep, 10:30</p>
+</div>
+</div>
+<!-- Step 2 -->
+<div class="flex gap-4 relative">
+<div class="z-10 bg-primary size-6 rounded-full flex items-center justify-center text-white">
+<span class="material-symbols-outlined text-sm font-bold">check</span>
+</div>
+<div>
+<p class="text-sm font-bold">Paiement confirmé</p>
+<p class="text-xs text-slate-500 dark:text-slate-400">12 Sep, 10:32</p>
+</div>
+</div>
+<!-- Step 3 (Active) -->
+<div class="flex gap-4 relative">
+<div class="z-10 bg-white dark:bg-primary border-2 border-primary size-6 rounded-full flex items-center justify-center text-primary dark:text-white">
+<span class="material-symbols-outlined text-sm font-bold animate-pulse">local_shipping</span>
+</div>
+<div>
+<p class="text-sm font-bold text-primary">En cours de livraison</p>
+<p class="text-xs font-medium text-slate-500">Arrivée prévue dans 15 min</p>
+</div>
+</div>
+<!-- Step 4 (Pending) -->
+<div class="flex gap-4 relative">
+<div class="z-10 bg-slate-100 dark:bg-slate-800 size-6 rounded-full flex items-center justify-center text-slate-400">
+<span class="material-symbols-outlined text-sm">inventory_2</span>
+</div>
+<div>
+<p class="text-sm font-bold text-slate-400">Livraison prévue</p>
+<p class="text-xs text-slate-500">En attente d'arrivée</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Courier Card -->
+<div class="px-4 mt-6">
+<div class="bg-white dark:bg-[#192633] rounded-xl p-4 flex items-center justify-between border border-primary/5">
+<div class="flex items-center gap-4">
+<div class="size-14 rounded-full overflow-hidden bg-slate-200 border-2 border-primary/20">
+<img alt="Kofi A." class="w-full h-full object-cover" data-alt="Portrait de Kofi le livreur souriant" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCDmnDggn76RjFswS8C99G3LqipiWiL3uezHRi3anukVRLRzsa5jL47_Q7j-Fl7jUNRw9H12DnwJyZcUfwnh9O_oUmKE5W1Rx0knPQfM3QwI074j37bxWuNTuI4Bu6klrqlJajKNSlumxYAPs_tzbz9WgvOcjLpcNryqmu2qOszLStaDb5k_BfTyi9YuflMPFA2xqe2gZpACybWtMvhGDjlXSJRNtRlK0pdIxPqe-oVUoxw9jRof0WXMrmEnUxAB5eu_Kq6HMfI"/>
+</div>
+<div>
+<div class="flex items-center gap-2">
+<h4 class="font-bold">Kofi A.</h4>
+<span class="flex items-center gap-0.5 bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 px-1.5 py-0.5 rounded text-[10px] font-bold">
+<span class="material-symbols-outlined text-[12px] fill-1">star</span> 4.9
+                            </span>
+</div>
+<p class="text-xs text-slate-500 dark:text-slate-400">Moto Bajaj • <span class="text-primary font-medium">En route</span></p>
+</div>
+</div>
+<div class="flex gap-2">
+<button class="size-10 rounded-full bg-primary/10 text-primary flex items-center justify-center hover:bg-primary hover:text-white transition-all">
+<span class="material-symbols-outlined text-lg">call</span>
+</button>
+<button class="size-10 rounded-full bg-primary/10 text-primary flex items-center justify-center hover:bg-primary hover:text-white transition-all">
+<span class="material-symbols-outlined text-lg">chat</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Order Summary & Address -->
+<div class="px-4 mt-6 space-y-4">
+<div class="bg-white dark:bg-[#192633] rounded-xl overflow-hidden border border-primary/5">
+<div class="p-4 border-b border-slate-100 dark:border-slate-800">
+<h3 class="text-sm font-bold uppercase tracking-wider text-primary/80">Récapitulatif</h3>
+</div>
+<div class="p-4 flex gap-4">
+<div class="size-20 rounded-lg bg-slate-100 dark:bg-slate-800 flex-shrink-0">
+<img alt="Casque Sony" class="w-full h-full object-cover rounded-lg" data-alt="Casque Sony WH-1000XM4 noir" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB6bMYE-uZlwoWOGcJtmIV0ikthEKNGdH-Jcb9FubTgphVBzpfw0uxZ53fiiTMHyigeH1cID7p4FcQIstW7h3NU6mnZLo4d8s3RLX-q3Nd_zcUJ9mJedv6CGwqPieC06OxVmoVZY7LNIOk3cGCdnX626QnWvvkdEDxYuQssOLterWi3KD386UU33PGPY-_8Qk26Oaww4c8IE8ELidwQWSx3W9Z6T1ahYd13lJOzPMiR25V7rw06DI1xGBLR_8In5a7NKQ2b8her"/>
+</div>
+<div class="flex flex-col justify-between flex-1">
+<div>
+<h5 class="text-sm font-bold leading-tight">Casque Sony WH-1000XM4</h5>
+<p class="text-xs text-slate-500">Quantité: 1</p>
+</div>
+<p class="text-primary font-bold">185 000 XAF</p>
+</div>
+</div>
+</div>
+<div class="bg-white dark:bg-[#192633] rounded-xl p-4 border border-primary/5 flex gap-4">
+<div class="size-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-primary flex-shrink-0">
+<span class="material-symbols-outlined">location_on</span>
+</div>
+<div>
+<h5 class="text-xs font-bold uppercase text-slate-500 tracking-wide">Adresse de livraison</h5>
+<p class="text-sm font-medium mt-1 leading-relaxed">12 Avenue des Ambassades, Gombe, Kinshasa</p>
+</div>
+</div>
+</div>
+</main>
+<!-- Bottom Navigation Bar -->
+<nav class="fixed bottom-0 left-0 right-0 bg-white dark:bg-[#192633] border-t border-slate-200 dark:border-[#233648] px-2 pb-5 pt-2 flex justify-between items-center z-50">
+<a class="flex flex-1 flex-col items-center gap-1 group" href="#">
+<span class="material-symbols-outlined text-slate-400 dark:text-[#92adc9] group-hover:text-primary transition-colors">home</span>
+<span class="text-[10px] font-medium text-slate-400 dark:text-[#92adc9]">Accueil</span>
+</a>
+<a class="flex flex-1 flex-col items-center gap-1 group" href="#">
+<span class="material-symbols-outlined text-slate-400 dark:text-[#92adc9] group-hover:text-primary transition-colors">account_balance_wallet</span>
+<span class="text-[10px] font-medium text-slate-400 dark:text-[#92adc9]">Portefeuille</span>
+</a>
+<a class="flex flex-1 flex-col items-center gap-1 group relative -top-4" href="#">
+<div class="bg-primary size-14 rounded-full flex items-center justify-center shadow-lg shadow-primary/30 text-white">
+<span class="material-symbols-outlined text-2xl fill-1">smart_toy</span>
+</div>
+<span class="text-[10px] font-bold text-primary mt-1">Chatbot IA</span>
+</a>
+<a class="flex flex-1 flex-col items-center gap-1 group" href="#">
+<span class="material-symbols-outlined text-slate-400 dark:text-[#92adc9] group-hover:text-primary transition-colors">grid_view</span>
+<span class="text-[10px] font-medium text-slate-400 dark:text-[#92adc9]">Services</span>
+</a>
+<a class="flex flex-1 flex-col items-center gap-1 group" href="#">
+<span class="material-symbols-outlined text-slate-400 dark:text-[#92adc9] group-hover:text-primary transition-colors">account_circle</span>
+<span class="text-[10px] font-medium text-slate-400 dark:text-[#92adc9]">Profil</span>
+</a>
+</nav>
+</body></html>

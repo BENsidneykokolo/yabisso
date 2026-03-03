@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Product Card Component</title>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Theme Configuration -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+            extend: {
+                colors: {
+                "primary": "#137fec",
+                "background-light": "#f6f7f8",
+                "background-dark": "#101922",
+                "card-dark": "#1c252e",
+                "yabisso-red": "#ef4444",
+                "yabisso-yellow": "#eab308",
+                "yabisso-green": "#22c55e",
+                },
+                fontFamily: {
+                "display": ["Space Grotesk", "sans-serif"]
+                },
+                borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "2xl": "1rem", "full": "9999px"},
+            },
+            },
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display antialiased text-slate-900 dark:text-white min-h-screen flex justify-center">
+<!-- Mobile Container -->
+<div class="w-full max-w-md min-h-screen bg-background-light dark:bg-background-dark relative shadow-2xl overflow-hidden pb-20">
+<!-- Header -->
+<div class="sticky top-0 z-10 bg-background-light/90 dark:bg-background-dark/90 backdrop-blur-md px-5 py-4 flex items-center justify-between border-b border-slate-200 dark:border-slate-800">
+<div>
+<h1 class="text-xl font-bold tracking-tight">Marketplace</h1>
+<p class="text-xs text-slate-500 dark:text-slate-400">Discover local tech deals</p>
+</div>
+<div class="flex gap-3">
+<button class="p-2 rounded-full hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors">
+<span class="material-symbols-outlined">search</span>
+</button>
+<button class="p-2 rounded-full hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors relative">
+<span class="material-symbols-outlined">shopping_bag</span>
+<span class="absolute top-1 right-1 w-2.5 h-2.5 bg-yabisso-red rounded-full border-2 border-background-light dark:border-background-dark"></span>
+</button>
+</div>
+</div>
+<!-- Scrollable Content -->
+<div class="p-4 space-y-6">
+<!-- Section: Featured (Horizontal / Large Card) -->
+<section>
+<div class="flex items-center justify-between mb-3 px-1">
+<h2 class="text-lg font-bold">Featured Today</h2>
+<a class="text-sm text-primary font-medium hover:underline" href="#">See All</a>
+</div>
+<!-- Large Horizontal Card -->
+<div class="group relative flex flex-col sm:flex-row w-full bg-white dark:bg-card-dark rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 overflow-hidden active:scale-[0.98] transition-transform duration-200">
+<!-- Image Side -->
+<div class="relative w-full sm:w-2/5 aspect-video sm:aspect-square bg-slate-200 dark:bg-slate-800">
+<div class="absolute inset-0 bg-center bg-cover" data-alt="Close up of a modern smartwatch with black band on a dark surface" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAyCZs3ZthH5V-E9rZIqstycBHusPUsilygAuj6qHu8g179HQ9xLEt3JDSbqhZvmgmqua-II-qAiOMUQEqNTdOLoQDbk7o6_n3NVpxDmo-X2kf03ta7W_taBUtGdXRj0ShVajTE2x4bIyy8SHfl2Hlip-FzfYNy_mxrKiOnoqFGd3S6CwLV4g9UKsHd2p5PaZTA_X-RpIK79Ua63vYXUqeLAwxKjAae4PxmRpnMvdaiwSRJOu5wuW3GC0lC3jfmhiaM687d4Hy-");'></div>
+<!-- Offline Badge -->
+<div class="absolute top-3 left-3 flex items-center gap-1 bg-black/60 backdrop-blur-md text-white text-[10px] font-bold px-2 py-1 rounded-full border border-white/10 shadow-lg">
+<span class="material-symbols-outlined text-yabisso-green text-[14px]">bolt</span>
+<span>OFFLINE READY</span>
+</div>
+</div>
+<!-- Content Side -->
+<div class="flex flex-col justify-between p-4 flex-1">
+<div>
+<div class="flex justify-between items-start">
+<span class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Wearables</span>
+<div class="flex gap-1">
+<span class="w-2 h-2 rounded-full bg-yabisso-blue"></span>
+<span class="w-2 h-2 rounded-full bg-yabisso-red"></span>
+</div>
+</div>
+<h3 class="text-lg font-bold leading-tight mb-2 text-slate-900 dark:text-white line-clamp-2">Nomad Pro Smart Watch - Midnight Black</h3>
+<!-- Rating -->
+<div class="flex items-center gap-1 mb-3">
+<span class="material-symbols-outlined text-yabisso-yellow text-[16px] fill-current">star</span>
+<span class="text-xs font-bold text-slate-700 dark:text-slate-300">4.8</span>
+<span class="text-xs text-slate-400">(120 sold)</span>
+</div>
+</div>
+<div class="flex items-end justify-between mt-2">
+<div class="flex flex-col">
+<span class="text-xs text-slate-400 line-through">₦ 55,000</span>
+<span class="text-xl font-bold text-primary">₦ 45,000</span>
+</div>
+<button class="flex items-center justify-center w-10 h-10 rounded-full bg-primary text-white shadow-lg shadow-primary/30 active:bg-blue-600 transition-colors">
+<span class="material-symbols-outlined">add</span>
+</button>
+</div>
+</div>
+</div>
+</section>
+<!-- Section: Grid (Vertical Cards) -->
+<section>
+<div class="flex items-center justify-between mb-3 px-1">
+<h2 class="text-lg font-bold">New Arrivals</h2>
+</div>
+<!-- Grid Layout -->
+<div class="grid grid-cols-2 gap-4">
+<!-- Card 1 -->
+<div class="bg-white dark:bg-card-dark rounded-xl shadow-sm border border-slate-100 dark:border-slate-800 overflow-hidden flex flex-col h-full active:scale-[0.98] transition-transform duration-200">
+<div class="relative aspect-square bg-slate-200 dark:bg-slate-800">
+<div class="absolute inset-0 bg-center bg-cover" data-alt="Blue wireless headphones on a yellow background" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuB9N-81d5eR3tT_hvUpSlqaX-Fz-Ubuuu73rqqaCHdbaRxWZAZjBFLv3UPleuoEcHrxwxOqykJCEhJ6XXqzJnz2W_z1EsBsh4uc8QNs373DeJmAT3nbrfwBGEh6e0UZCuHSy45pwOi_UWRhYY64pRQeaSg1SQboGxO8Vzz-EbrAixcg7OBlDZrPZifMxmk9rMpGcbGaqze1Wl-t7N3fBeo2pP8OSvczWG1_hCkWXpG7kYg8X-rEqjt1EnXokGfL604kNQFHsrmR");'></div>
+<!-- Offline Badge (Icon only for small cards) -->
+<div class="absolute top-2 left-2 w-7 h-7 flex items-center justify-center bg-black/60 backdrop-blur-md rounded-full border border-white/10">
+<span class="material-symbols-outlined text-yabisso-green text-[16px]">bolt</span>
+</div>
+<!-- Discount Badge -->
+<div class="absolute top-2 right-2 bg-yabisso-red text-white text-[10px] font-bold px-1.5 py-0.5 rounded shadow-sm">
+                                -15%
+                            </div>
+</div>
+<div class="p-3 flex flex-col flex-grow">
+<p class="text-[10px] text-slate-500 dark:text-slate-400 font-medium mb-1">Audio</p>
+<h3 class="text-sm font-bold leading-tight mb-2 text-slate-900 dark:text-white line-clamp-2">Sony WH-1000XM4 Noise Canceling</h3>
+<div class="mt-auto pt-2 flex items-center justify-between">
+<span class="text-sm font-bold text-slate-900 dark:text-white">₦ 120k</span>
+<button class="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-700 text-primary hover:bg-primary hover:text-white transition-colors">
+<span class="material-symbols-outlined text-[18px]">add_shopping_cart</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="bg-white dark:bg-card-dark rounded-xl shadow-sm border border-slate-100 dark:border-slate-800 overflow-hidden flex flex-col h-full active:scale-[0.98] transition-transform duration-200">
+<div class="relative aspect-square bg-slate-200 dark:bg-slate-800">
+<div class="absolute inset-0 bg-center bg-cover" data-alt="White modern minimalist wrist watch on a white surface" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAf0xSbLww1hCDMupmx_u08GGFjU2CaXOSY9Tq8k-SgRl8DgWt1Bw2D464eCs6UvEiiKB8JOlZW9TdsRAWGDplJ0T-u3pg5wuC5TzoD5thrNQCsymkzU7K8ndiBuUUQBxkr6s0ibh0IdV8CFoJa7kHO2ybYH7XH69VnVlrdINrNwdjDlh-Wp6RV7KxuYo9d0QUuZJ_5iUmQxv87-_4AX4BGUVRtG_oGNIDhohbXenql_vy7HCCXJiVrYHJq75E5zKHrAIIuTjXa");'></div>
+<!-- Status: Low Stock (Yellow) -->
+<div class="absolute bottom-2 left-2 right-2 px-2 py-1 bg-background-dark/80 backdrop-blur-sm rounded flex items-center gap-1.5 border border-white/5">
+<span class="w-1.5 h-1.5 rounded-full bg-yabisso-yellow animate-pulse"></span>
+<span class="text-[10px] text-white font-medium">Low Stock</span>
+</div>
+</div>
+<div class="p-3 flex flex-col flex-grow">
+<p class="text-[10px] text-slate-500 dark:text-slate-400 font-medium mb-1">Accessories</p>
+<h3 class="text-sm font-bold leading-tight mb-2 text-slate-900 dark:text-white line-clamp-2">Minimalist Analog Watch Series 5</h3>
+<div class="mt-auto pt-2 flex items-center justify-between">
+<span class="text-sm font-bold text-slate-900 dark:text-white">₦ 25k</span>
+<button class="w-8 h-8 flex items-center justify-center rounded-lg bg-primary text-white hover:bg-blue-600 transition-colors">
+<span class="material-symbols-outlined text-[18px]">add</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Card 3 -->
+<div class="bg-white dark:bg-card-dark rounded-xl shadow-sm border border-slate-100 dark:border-slate-800 overflow-hidden flex flex-col h-full active:scale-[0.98] transition-transform duration-200">
+<div class="relative aspect-square bg-slate-200 dark:bg-slate-800">
+<div class="absolute inset-0 bg-center bg-cover" data-alt="Polaroid instant camera on a pink background" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBxAFTAbabAkML8xEiLWb8W4CXuBM7jUT-uUKYtL4iabklkgalPrgKDeIEQlfHGashCgZ8g2ml9nAslGDYKC63pufXGXST2asXwnd_-yD0GZGwTOF28Boo4ltihmtYVod1okZd0TMDb_BPWhrOnGY-DoXOP9IjTfi_KWxj67T-U4ERWhHxYzUBL6DC2FxPsDC0IrZEgXuUL7pi7QyLO_fJmchpH0EzvPQW62-gdd4v2bStsawcw3zgRlqqp5KX38rTMXwoUAH5t");'></div>
+<!-- Offline Badge -->
+<div class="absolute top-2 left-2 w-7 h-7 flex items-center justify-center bg-black/60 backdrop-blur-md rounded-full border border-white/10">
+<span class="material-symbols-outlined text-yabisso-green text-[16px]">bolt</span>
+</div>
+</div>
+<div class="p-3 flex flex-col flex-grow">
+<p class="text-[10px] text-slate-500 dark:text-slate-400 font-medium mb-1">Cameras</p>
+<h3 class="text-sm font-bold leading-tight mb-2 text-slate-900 dark:text-white line-clamp-2">Instax Mini 11 Instant Camera</h3>
+<div class="mt-auto pt-2 flex items-center justify-between">
+<span class="text-sm font-bold text-slate-900 dark:text-white">₦ 85k</span>
+<button class="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-700 text-primary hover:bg-primary hover:text-white transition-colors">
+<span class="material-symbols-outlined text-[18px]">add_shopping_cart</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Card 4 (Horizontal List Item Style inside Grid column for variety) -->
+<div class="col-span-2 bg-white dark:bg-card-dark rounded-xl shadow-sm border border-slate-100 dark:border-slate-800 overflow-hidden flex flex-row active:scale-[0.98] transition-transform duration-200">
+<div class="w-24 relative bg-slate-200 dark:bg-slate-800 shrink-0">
+<div class="absolute inset-0 bg-center bg-cover" data-alt="Black gaming controller on a dark surface with neon light reflections" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCDab0h65CY1ccGcahjR-jIv5bGp4SVkO6TRF3VQE5zwkeQF-Hzxgw1kbW9Do9nvtbf0MjfpxQroSgBng_X-U0wojAsaWtP2qVcua-W4ep_-tiDOZBxeMCuzjef__SZK0UMzf3Giuu-ceCt-vHL1fWFvOLWYbAqp4LjLH-ZbIQqL7rws0kPDilKzB7xY84AsaIpTimQDiYlgjvt3TYYtzyesQMYJayrLdHqM9jVpDAd5hPL2RhHgtGtwA1liLaMVHMcDBk16DnD");'></div>
+</div>
+<div class="p-3 flex flex-col justify-center w-full">
+<div class="flex justify-between items-start">
+<div>
+<h3 class="text-sm font-bold text-slate-900 dark:text-white">Pro Gaming Controller</h3>
+<p class="text-[10px] text-yabisso-green flex items-center gap-1 mt-0.5">
+<span class="material-symbols-outlined text-[12px]">wifi_off</span>
+                                        Offline Available
+                                    </p>
+</div>
+<div class="bg-primary/10 text-primary rounded px-2 py-1 text-xs font-bold">
+                                    ₦ 35k
+                                </div>
+</div>
+</div>
+</div>
+</div>
+</section>
+</div>
+<!-- Bottom Navigation Mockup -->
+<div class="absolute bottom-0 w-full bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-lg border-t border-slate-200 dark:border-slate-800 pb-6 pt-2 px-6 flex justify-between items-center z-20">
+<div class="flex flex-col items-center gap-1 text-slate-400">
+<span class="material-symbols-outlined">home</span>
+<span class="text-[10px]">Home</span>
+</div>
+<div class="flex flex-col items-center gap-1 text-primary">
+<span class="material-symbols-outlined fill-current">storefront</span>
+<span class="text-[10px] font-medium">Shop</span>
+</div>
+<div class="flex flex-col items-center gap-1 text-slate-400">
+<span class="material-symbols-outlined">wallet</span>
+<span class="text-[10px]">Wallet</span>
+</div>
+<div class="flex flex-col items-center gap-1 text-slate-400">
+<span class="material-symbols-outlined">person</span>
+<span class="text-[10px]">Profile</span>
+</div>
+</div>
+</div>
+</body></html>

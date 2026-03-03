@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Yabisso Dating Home</title>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "secondary-red": "#ef4444",
+                        "secondary-green": "#22c55e",
+                        "secondary-yellow": "#eab308",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                        "surface-dark": "#192633",
+                    },
+                    fontFamily: {
+                        "display": ["Be Vietnam Pro", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "2xl": "2rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom scrollbar hiding for clean UI */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white font-display antialiased selection:bg-primary selection:text-white overflow-hidden">
+<div class="relative flex h-full max-h-screen w-full flex-col overflow-hidden max-w-md mx-auto shadow-2xl bg-background-light dark:bg-background-dark">
+<!-- Top App Bar -->
+<header class="flex items-center justify-between px-4 py-3 z-20 bg-background-light/90 dark:bg-background-dark/90 backdrop-blur-md sticky top-0">
+<button class="flex size-10 items-center justify-center rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors">
+<span class="material-symbols-outlined text-slate-600 dark:text-slate-300">arrow_back</span>
+</button>
+<h1 class="text-lg font-bold tracking-tight">Yabisso Dating</h1>
+<button class="flex size-10 items-center justify-center rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors relative">
+<span class="material-symbols-outlined text-slate-600 dark:text-slate-300">tune</span>
+<span class="absolute top-2 right-2 size-2 bg-secondary-red rounded-full ring-2 ring-background-light dark:ring-background-dark"></span>
+</button>
+</header>
+<!-- Main Content: Card Stack -->
+<main class="flex-1 flex flex-col items-center justify-center px-4 pt-2 pb-4 relative w-full h-full">
+<!-- Background Stack Card (Decoration for depth) -->
+<div class="absolute w-[90%] h-[60%] bg-surface-dark/50 rounded-2xl -z-10 bottom-6 translate-y-4 scale-95 border border-white/5"></div>
+<div class="absolute w-[94%] h-[60%] bg-surface-dark rounded-2xl -z-0 bottom-10 translate-y-2 scale-[0.97] shadow-lg border border-white/5"></div>
+<!-- Active Swipe Card -->
+<div class="relative w-full h-full max-h-[600px] bg-surface-dark rounded-2xl overflow-hidden shadow-2xl border border-white/10 group cursor-pointer select-none">
+<!-- Card Image -->
+<div class="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105" data-alt="Portrait of a young smiling African woman with braided hair wearing stylish glasses outdoors" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuC7eZMAUBc8fX89vMlayPtVZXzkX0Y9X5C-TAc68JbglaS3T-hV77NN4GyCBLyXAzbaLJEt8y4MXUcF5pUEo_eIWxkbphB9m6HqTLe_ez4rxFkP-_GqmR0NtiHgti8-PDczWc9JxpxjLq1kRpg_Hjo0iF-ge0wVBE7slpZCfqfuZvtgVpuOcMWgkLZcd6j9Zh0clyuCUVK-rmZG9QhVnG25TO3g59L4EVsywzPXmEil4iueYUSpoD7eAY0x8s9ZUh6YGv8S2hut");'>
+</div>
+<!-- Gradient Overlay -->
+<div class="absolute inset-0 bg-gradient-to-t from-background-dark via-transparent to-transparent opacity-90"></div>
+<div class="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-transparent opacity-60"></div>
+<!-- Offline Badge -->
+<div class="absolute top-4 left-4 z-10">
+<div class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/40 backdrop-blur-md border border-white/10 shadow-sm">
+<span class="material-symbols-outlined text-secondary-yellow text-[16px] fill-current">bolt</span>
+<span class="text-xs font-bold text-white tracking-wide uppercase">Available Offline</span>
+</div>
+</div>
+<!-- Distance Badge -->
+<div class="absolute top-4 right-4 z-10">
+<div class="flex items-center gap-1 px-3 py-1.5 rounded-full bg-black/40 backdrop-blur-md border border-white/10">
+<span class="material-symbols-outlined text-white text-[14px]">near_me</span>
+<span class="text-xs font-medium text-white">3 km</span>
+</div>
+</div>
+<!-- User Info Overlay -->
+<div class="absolute bottom-0 left-0 w-full p-5 flex flex-col gap-2 z-20">
+<div class="flex items-end gap-2">
+<h2 class="text-3xl font-bold text-white leading-none">Amara, 24</h2>
+<span class="text-green-400 mb-1 material-symbols-outlined text-[12px] filled">circle</span>
+</div>
+<div class="flex items-center gap-1 text-slate-200">
+<span class="material-symbols-outlined text-[18px]">location_on</span>
+<span class="text-sm font-medium">Lagos, Nigeria</span>
+</div>
+<div class="flex flex-wrap gap-2 mt-2">
+<span class="px-3 py-1 rounded-full bg-white/10 backdrop-blur-sm text-xs font-medium text-white border border-white/5">UX Designer</span>
+<span class="px-3 py-1 rounded-full bg-white/10 backdrop-blur-sm text-xs font-medium text-white border border-white/5">Music Lover 🎵</span>
+<span class="px-3 py-1 rounded-full bg-white/10 backdrop-blur-sm text-xs font-medium text-white border border-white/5">Jollof Rice 🍛</span>
+</div>
+</div>
+</div>
+<!-- Action Buttons (Floating) -->
+<div class="w-full flex items-center justify-between px-6 pt-6 pb-2">
+<!-- Skip Button -->
+<button class="flex flex-col items-center justify-center gap-1 group/btn">
+<div class="size-14 rounded-full border border-secondary-red/30 bg-background-dark/50 backdrop-blur-sm flex items-center justify-center text-secondary-red shadow-lg transition-all active:scale-95 hover:bg-secondary-red hover:text-white hover:border-secondary-red hover:shadow-secondary-red/20">
+<span class="material-symbols-outlined text-[32px]">close</span>
+</div>
+<span class="text-[10px] font-bold uppercase tracking-wider text-slate-500 group-hover/btn:text-secondary-red transition-colors">Skip</span>
+</button>
+<!-- Voice Intro Button (Primary Action) -->
+<button class="flex flex-col items-center justify-center gap-1 group/btn -mt-2">
+<div class="size-16 rounded-full bg-primary flex items-center justify-center text-white shadow-xl shadow-primary/30 ring-4 ring-background-dark transition-all active:scale-95 hover:scale-105 relative overflow-hidden">
+<div class="absolute inset-0 bg-gradient-to-tr from-white/20 to-transparent opacity-0 group-hover/btn:opacity-100 transition-opacity"></div>
+<span class="material-symbols-outlined text-[32px]">mic</span>
+</div>
+<span class="text-[10px] font-bold uppercase tracking-wider text-primary">Intro</span>
+</button>
+<!-- Like Button -->
+<button class="flex flex-col items-center justify-center gap-1 group/btn">
+<div class="size-14 rounded-full border border-secondary-green/30 bg-background-dark/50 backdrop-blur-sm flex items-center justify-center text-secondary-green shadow-lg transition-all active:scale-95 hover:bg-secondary-green hover:text-white hover:border-secondary-green hover:shadow-secondary-green/20">
+<span class="material-symbols-outlined text-[32px]">favorite</span>
+</div>
+<span class="text-[10px] font-bold uppercase tracking-wider text-slate-500 group-hover/btn:text-secondary-green transition-colors">Like</span>
+</button>
+</div>
+</main>
+<!-- Bottom Navigation Bar -->
+<nav class="flex justify-around items-center bg-surface-dark border-t border-white/5 px-2 py-3 pb-6 safe-area-pb">
+<a class="flex flex-col items-center gap-1 p-2 w-16 group" href="#">
+<div class="relative">
+<span class="material-symbols-outlined text-primary text-[26px]">style</span>
+<span class="absolute -top-1 -right-1 size-2 bg-secondary-red rounded-full"></span>
+</div>
+<span class="text-[10px] font-medium text-primary">Explore</span>
+</a>
+<a class="flex flex-col items-center gap-1 p-2 w-16 group text-slate-500 hover:text-slate-300 transition-colors" href="#">
+<span class="material-symbols-outlined text-[26px]">star</span>
+<span class="text-[10px] font-medium">Likes</span>
+</a>
+<a class="flex flex-col items-center gap-1 p-2 w-16 group text-slate-500 hover:text-slate-300 transition-colors" href="#">
+<div class="relative">
+<span class="material-symbols-outlined text-[26px]">chat_bubble</span>
+<span class="absolute -top-1 -right-1 flex size-4 items-center justify-center bg-secondary-green rounded-full text-[9px] font-bold text-white ring-2 ring-surface-dark">2</span>
+</div>
+<span class="text-[10px] font-medium">Chats</span>
+</a>
+<a class="flex flex-col items-center gap-1 p-2 w-16 group text-slate-500 hover:text-slate-300 transition-colors" href="#">
+<span class="material-symbols-outlined text-[26px]">person</span>
+<span class="text-[10px] font-medium">Profile</span>
+</a>
+</nav>
+</div>
+</body></html>

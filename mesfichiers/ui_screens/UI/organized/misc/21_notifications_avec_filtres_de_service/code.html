@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="fr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Yabisso - Notifications</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                        "yabisso-green": "#0bda5b",
+                        "yabisso-yellow": "#ffcc00",
+                        "yabisso-red": "#ff4b4b",
+                        "surface-dark": "#1a2632",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .active-fill {
+            font-variation-settings: 'FILL' 1;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen flex flex-col">
+<!-- Header -->
+<header class="sticky top-0 z-50 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800">
+<div class="flex items-center justify-between px-4 h-16">
+<div class="flex items-center gap-3">
+<button class="p-2 -ml-2 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-full transition-colors">
+<span class="material-symbols-outlined text-2xl">arrow_back</span>
+</button>
+<h1 class="text-xl font-bold tracking-tight">Notifications</h1>
+</div>
+<button class="p-2 -mr-1 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-full transition-colors">
+<span class="material-symbols-outlined text-2xl">tune</span>
+</button><button class="text-primary text-sm font-semibold hover:opacity-80 transition-opacity ml-auto">
+                Tout marquer comme lu
+            </button>
+</div>
+<!-- Filter Tabs -->
+<div class="flex px-4 gap-6 overflow-x-auto no-scrollbar border-b-0">
+<button class="flex flex-col items-center pt-2 pb-3 border-b-2 border-primary">
+<span class="text-sm font-bold text-slate-900 dark:text-white">Tout</span>
+</button>
+<button class="flex flex-col items-center pt-2 pb-3 border-b-2 border-transparent text-slate-500 dark:text-slate-400">
+<span class="text-sm font-bold">Commandes</span>
+</button>
+<button class="flex flex-col items-center pt-2 pb-3 border-b-2 border-transparent text-slate-500 dark:text-slate-400">
+<span class="text-sm font-bold">Portefeuille</span>
+</button>
+<button class="flex flex-col items-center pt-2 pb-3 border-b-2 border-transparent text-slate-500 dark:text-slate-400">
+<span class="text-sm font-bold">Social</span>
+</button>
+</div><div class="flex px-4 gap-2 pb-4 overflow-x-auto no-scrollbar mt-2">
+<button class="px-4 py-1.5 rounded-full bg-primary text-white text-xs font-semibold whitespace-nowrap">
+        Aujourd'hui
+    </button>
+<button class="px-4 py-1.5 rounded-full bg-slate-100 dark:bg-surface-dark text-slate-600 dark:text-slate-400 text-xs font-medium whitespace-nowrap border border-slate-200 dark:border-slate-800">
+        Hier
+    </button>
+<button class="px-4 py-1.5 rounded-full bg-slate-100 dark:bg-surface-dark text-slate-600 dark:text-slate-400 text-xs font-medium whitespace-nowrap border border-slate-200 dark:border-slate-800">
+        Plus ancien
+    </button>
+</div><div class="flex px-4 gap-2 pb-4 overflow-x-auto no-scrollbar">
+<button class="px-4 py-1.5 rounded-full bg-primary text-white text-xs font-semibold whitespace-nowrap">
+        Tout
+    </button>
+<button class="px-4 py-1.5 rounded-full bg-slate-100 dark:bg-surface-dark text-slate-600 dark:text-slate-400 text-xs font-medium whitespace-nowrap border border-slate-200 dark:border-slate-800">
+        Transport
+    </button>
+<button class="px-4 py-1.5 rounded-full bg-slate-100 dark:bg-surface-dark text-slate-600 dark:text-slate-400 text-xs font-medium whitespace-nowrap border border-slate-200 dark:border-slate-800">
+        Portefeuille
+    </button>
+<button class="px-4 py-1.5 rounded-full bg-slate-100 dark:bg-surface-dark text-slate-600 dark:text-slate-400 text-xs font-medium whitespace-nowrap border border-slate-200 dark:border-slate-800">
+        Boutique
+    </button>
+<button class="px-4 py-1.5 rounded-full bg-slate-100 dark:bg-surface-dark text-slate-600 dark:text-slate-400 text-xs font-medium whitespace-nowrap border border-slate-200 dark:border-slate-800">
+        Social
+    </button>
+</div>
+</header>
+<!-- Content Area -->
+<main class="flex-1 overflow-y-auto pb-24">
+<!-- Section: Aujourd'hui -->
+<div class="px-4 py-4">
+<h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-4">Aujourd'hui</h3>
+<div class="space-y-1">
+<!-- Order Notification -->
+<div class="flex items-start gap-4 p-3 -mx-3 rounded-xl bg-primary/5 dark:bg-primary/10 border-l-4 border-primary">
+<div class="shrink-0 size-12 rounded-lg bg-yabisso-yellow/20 flex items-center justify-center text-yabisso-yellow">
+<span class="material-symbols-outlined text-2xl active-fill">shopping_bag</span>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex justify-between items-start mb-0.5">
+<h4 class="text-sm font-bold text-slate-900 dark:text-white truncate">Commande #YAB-2409 livrée !</h4>
+<span class="text-[11px] text-primary font-medium shrink-0">Il y a 2 min</span>
+</div>
+<p class="text-sm text-slate-600 dark:text-slate-400 line-clamp-2">Bon appétit. Votre livreur vient de déposer votre colis.</p>
+</div>
+<div class="shrink-0 pt-1">
+<div class="size-2.5 rounded-full bg-primary"></div>
+</div>
+</div>
+<!-- Wallet Notification -->
+<div class="flex items-start gap-4 p-3 -mx-3 rounded-xl hover:bg-slate-100 dark:hover:bg-surface-dark transition-colors">
+<div class="shrink-0 size-12 rounded-lg bg-yabisso-green/20 flex items-center justify-center text-yabisso-green">
+<span class="material-symbols-outlined text-2xl active-fill">account_balance_wallet</span>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex justify-between items-start mb-0.5">
+<h4 class="text-sm font-bold text-slate-900 dark:text-white truncate">Paiement reçu</h4>
+<span class="text-[11px] text-slate-500 dark:text-slate-500 shrink-0">Il y a 15 min</span>
+</div>
+<p class="text-sm text-slate-600 dark:text-slate-400 line-clamp-2">Vous avez reçu <span class="font-semibold text-yabisso-green">5 000 XAF</span> de Sarah.</p>
+</div>
+</div>
+<!-- Social Notification -->
+<div class="flex items-start gap-4 p-3 -mx-3 rounded-xl hover:bg-slate-100 dark:hover:bg-surface-dark transition-colors">
+<div class="shrink-0 size-12 rounded-lg bg-primary/20 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-2xl active-fill">favorite</span>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex justify-between items-start mb-0.5">
+<h4 class="text-sm font-bold text-slate-900 dark:text-white truncate">Nouveau Like</h4>
+<span class="text-[11px] text-slate-500 dark:text-slate-500 shrink-0">Il y a 1h</span>
+</div>
+<p class="text-sm text-slate-600 dark:text-slate-400 line-clamp-2">Amara a aimé votre vidéo Loba.</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Section: Hier -->
+<div class="px-4 py-2">
+<h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-4">Hier</h3>
+<div class="space-y-1">
+<!-- System Notification -->
+<div class="flex items-start gap-4 p-3 -mx-3 rounded-xl hover:bg-slate-100 dark:hover:bg-surface-dark transition-colors">
+<div class="shrink-0 size-12 rounded-lg bg-yabisso-red/20 flex items-center justify-center text-yabisso-red">
+<span class="material-symbols-outlined text-2xl active-fill">download</span>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex justify-between items-start mb-0.5">
+<h4 class="text-sm font-bold text-slate-900 dark:text-white truncate">Mise à jour système</h4>
+<span class="text-[11px] text-slate-500 dark:text-slate-500 shrink-0">Hier, 14:20</span>
+</div>
+<p class="text-sm text-slate-600 dark:text-slate-400 line-clamp-2">Nouveau pack 'Épicerie' disponible en téléchargement.</p>
+</div>
+</div>
+<!-- Another Social Notification -->
+<div class="flex items-start gap-4 p-3 -mx-3 rounded-xl hover:bg-slate-100 dark:hover:bg-surface-dark transition-colors">
+<div class="shrink-0 size-12 rounded-lg bg-primary/20 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-2xl active-fill">person_add</span>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex justify-between items-start mb-0.5">
+<h4 class="text-sm font-bold text-slate-900 dark:text-white truncate">Nouvel ami</h4>
+<span class="text-[11px] text-slate-500 dark:text-slate-500 shrink-0">Hier, 09:10</span>
+</div>
+<p class="text-sm text-slate-600 dark:text-slate-400 line-clamp-2">Jean-Paul vous a envoyé une demande d'ami.</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Empty State Hint (Hidden for now) -->
+<div class="hidden flex flex-col items-center justify-center py-20 px-10 text-center">
+<div class="size-20 bg-slate-100 dark:bg-surface-dark rounded-full flex items-center justify-center mb-4">
+<span class="material-symbols-outlined text-4xl text-slate-400">notifications_off</span>
+</div>
+<h4 class="text-lg font-bold mb-2">Aucune notification</h4>
+<p class="text-sm text-slate-500">Nous vous tiendrons au courant dès que quelque chose de nouveau arrive.</p>
+</div>
+</main>
+<!-- Bottom Navigation Bar -->
+<nav class="fixed bottom-0 left-0 right-0 bg-background-light dark:bg-surface-dark border-t border-slate-200 dark:border-slate-800 px-2 pb-6 pt-2 z-50">
+<div class="max-w-md mx-auto flex justify-between items-center">
+<a class="flex flex-col items-center gap-1 flex-1 text-slate-400" href="#">
+<span class="material-symbols-outlined text-2xl">home</span>
+<span class="text-[10px] font-medium">Accueil</span>
+</a>
+<a class="flex flex-col items-center gap-1 flex-1 text-slate-400" href="#">
+<span class="material-symbols-outlined text-2xl">account_balance_wallet</span>
+<span class="text-[10px] font-medium">Portefeuille</span>
+</a>
+<a class="flex flex-col items-center gap-1 flex-1 text-primary" href="#">
+<div class="size-12 rounded-full bg-primary/10 flex items-center justify-center -mt-6 border-4 border-background-light dark:border-background-dark">
+<span class="material-symbols-outlined text-2xl active-fill">smart_toy</span>
+</div>
+<span class="text-[10px] font-bold text-primary">AI Chat</span>
+</a>
+<a class="flex flex-col items-center gap-1 flex-1 text-slate-400" href="#">
+<span class="material-symbols-outlined text-2xl">grid_view</span>
+<span class="text-[10px] font-medium">Services</span>
+</a>
+<a class="flex flex-col items-center gap-1 flex-1 text-slate-400" href="#">
+<span class="material-symbols-outlined text-2xl">person</span>
+<span class="text-[10px] font-medium">Profil</span>
+</a>
+</div>
+</nav>
+<!-- Style overrides for custom scrollbar -->
+<style>
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</body></html>

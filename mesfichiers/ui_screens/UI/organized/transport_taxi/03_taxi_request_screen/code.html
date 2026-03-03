@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Yabisso Taxi Request</title>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Theme Configuration -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                        "surface-dark": "#192633",
+                        "yabisso-yellow": "#FFD700",
+                        "yabisso-green": "#22C55E",
+                        "yabisso-red": "#EF4444",
+                    },
+                    fontFamily: {
+                        "display": ["Plus Jakarta Sans", "Noto Sans", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "2xl": "1rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display h-screen flex flex-col overflow-hidden text-white group/design-root">
+<!-- Top AppBar Overlay -->
+<div class="absolute top-0 left-0 right-0 z-20 p-4 pt-12 flex items-center justify-between bg-gradient-to-b from-black/90 to-transparent pointer-events-none">
+<button class="flex items-center justify-center size-12 rounded-full bg-surface-dark/60 backdrop-blur-md border border-white/10 hover:bg-surface-dark text-white pointer-events-auto shadow-lg transition-colors">
+<span class="material-symbols-outlined" data-weight="regular">arrow_back</span>
+</button>
+<h2 class="text-white text-lg font-bold leading-tight tracking-[-0.015em] drop-shadow-md">Request Ride</h2>
+<div class="flex h-12 items-center justify-end pointer-events-auto">
+<div class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-surface-dark/60 backdrop-blur-md border border-white/10 shadow-lg">
+<span class="w-2 h-2 rounded-full bg-yabisso-green animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.6)]"></span>
+<span class="text-xs font-bold text-white tracking-wide">Online</span>
+</div>
+</div>
+</div>
+<!-- Map Background -->
+<div class="absolute inset-0 z-0 bg-surface-dark">
+<div class="w-full h-full bg-cover bg-center opacity-70 grayscale-[30%] contrast-[1.1]" data-alt="Dark styled abstract map pattern of an African city streets at night" data-location="Lagos" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCZq_h5aNi84eqVX_nBCD0xthSzyHwhAYa-iK6IMH_p637LAzrQRdc-qq7RwN_an2V3zY46yVZhMncGj8lP-O_kSk761D8pz-WiRLnSByubajfHEGuiVqcbbHfYBZiVZGBf4zgGSvT1KlQ_m5Vi9c3sEGhlvzJ7hD7UqsOyHTQChbLsSFkPLAWSigSYReQbdXiAgEjXwSy3Al4HC7z85srKKAr7L1C0pekGfSQOiezX9tVCIU_QCDZrXxAiXMya6OO-sNnEHkc8');">
+</div>
+<!-- Gradient overlay for better text readability at the top and blending at bottom -->
+<div class="absolute inset-0 bg-gradient-to-b from-background-dark/30 via-transparent to-background-dark/90"></div>
+</div>
+<!-- Main Content Area (Floating Inputs) -->
+<div class="relative z-10 flex-1 flex flex-col pt-28 px-4 pointer-events-none">
+<!-- Location Input Card -->
+<div class="bg-surface-dark/95 backdrop-blur-xl rounded-xl p-4 shadow-[0_8px_30px_rgba(0,0,0,0.3)] border border-white/10 pointer-events-auto">
+<div class="flex gap-4">
+<!-- Timeline Visual -->
+<div class="flex flex-col items-center pt-3 pb-1">
+<div class="w-3 h-3 rounded-full bg-primary ring-4 ring-primary/20 shadow-[0_0_10px_rgba(19,127,236,0.5)]"></div>
+<div class="w-0.5 flex-1 bg-gradient-to-b from-primary via-white/20 to-yabisso-red my-1 border-r border-dashed border-white/30 min-h-[40px]"></div>
+<div class="w-3 h-3 rounded-sm bg-yabisso-red shadow-[0_0_10px_rgba(239,68,68,0.5)]"></div>
+</div>
+<!-- Inputs -->
+<div class="flex-1 flex flex-col gap-1">
+<!-- Pickup -->
+<div class="flex flex-col border-b border-white/10 pb-3 relative">
+<label class="text-[10px] uppercase tracking-wider text-primary font-bold mb-1">Pickup Point</label>
+<div class="flex items-center justify-between h-8">
+<span class="text-white font-semibold text-base truncate">Current Location</span>
+<span class="material-symbols-outlined text-primary text-[20px] bg-primary/10 p-1 rounded-md">my_location</span>
+</div>
+</div>
+<!-- Destination -->
+<div class="flex flex-col pt-2">
+<label class="text-[10px] uppercase tracking-wider text-yabisso-red font-bold mb-1">Destination</label>
+<div class="flex items-center h-8">
+<input class="w-full bg-transparent border-none p-0 text-white placeholder-white/40 focus:ring-0 text-lg font-semibold leading-normal" placeholder="Where to?" type="text"/>
+<span class="material-symbols-outlined text-white/40 text-[20px]">search</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Map Controls (Recenter) -->
+<div class="flex justify-end mt-4 pointer-events-auto">
+<button class="flex size-12 items-center justify-center rounded-full bg-surface-dark shadow-[0_4px_12px_rgba(0,0,0,0.3)] border border-white/5 active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-white" data-weight="regular">near_me</span>
+</button>
+</div>
+</div>
+<!-- Bottom Sheet (Controls) -->
+<div class="relative z-20 bg-background-dark rounded-t-3xl shadow-[0_-8px_30px_rgba(0,0,0,0.5)] border-t border-white/5 pb-8 pt-2">
+<!-- Drag Handle -->
+<div class="w-full flex justify-center py-4">
+<div class="w-12 h-1 rounded-full bg-white/20"></div>
+</div>
+<div class="px-5 space-y-6">
+<!-- Connection Mode Segmented Buttons -->
+<div class="flex p-1.5 bg-[#0b1117] rounded-xl border border-white/5 shadow-inner">
+<label class="flex-1 relative cursor-pointer group">
+<input checked="" class="peer sr-only" name="mode" type="radio" value="internet"/>
+<div class="flex items-center justify-center gap-2 py-3 rounded-[0.6rem] transition-all duration-300 peer-checked:bg-surface-dark peer-checked:shadow-[0_2px_8px_rgba(0,0,0,0.5)] peer-checked:text-white peer-checked:border peer-checked:border-white/10 text-white/40 hover:text-white/70">
+<span class="material-symbols-outlined text-[20px] fill-current">wifi</span>
+<div class="flex flex-col items-start leading-none">
+<span class="text-sm font-bold">Data</span>
+<span class="text-[10px] font-medium opacity-70">Fastest</span>
+</div>
+</div>
+</label>
+<label class="flex-1 relative cursor-pointer group">
+<input class="peer sr-only" name="mode" type="radio" value="sms"/>
+<div class="flex items-center justify-center gap-2 py-3 rounded-[0.6rem] transition-all duration-300 peer-checked:bg-yabisso-yellow peer-checked:shadow-[0_2px_8px_rgba(255,215,0,0.3)] peer-checked:text-black text-white/40 hover:text-white/70">
+<span class="material-symbols-outlined text-[20px] fill-current">sms</span>
+<div class="flex flex-col items-start leading-none">
+<span class="text-sm font-bold">SMS</span>
+<span class="text-[10px] font-medium opacity-70 peer-checked:opacity-100">Offline</span>
+</div>
+</div>
+</label>
+</div>
+<!-- Options Row (Passengers & Estimate) -->
+<div class="flex items-stretch justify-between gap-4">
+<!-- Passenger Counter -->
+<div class="flex flex-col gap-1.5">
+<span class="text-xs text-white/50 font-medium ml-1">Passengers</span>
+<div class="flex items-center bg-surface-dark rounded-xl border border-white/5 h-12 shadow-sm">
+<button class="w-10 h-full flex items-center justify-center text-white/70 hover:text-white hover:bg-white/5 rounded-l-xl transition-colors">
+<span class="material-symbols-outlined text-[20px]">remove</span>
+</button>
+<span class="w-8 text-center font-bold text-white text-base">1</span>
+<button class="w-10 h-full flex items-center justify-center text-white/70 hover:text-white hover:bg-white/5 rounded-r-xl transition-colors">
+<span class="material-symbols-outlined text-[20px]">add</span>
+</button>
+</div>
+</div>
+<!-- Price Estimate Card -->
+<div class="flex-1 bg-surface-dark/50 border border-white/5 rounded-xl p-2 px-4 flex flex-col justify-center items-end">
+<p class="text-xs text-primary font-bold uppercase tracking-wide mb-0.5 flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">sell</span>
+                        Est. Fare
+                    </p>
+<p class="text-2xl font-extrabold text-white tracking-tight leading-none">1,500 <span class="text-xs font-bold text-white/40 align-top mt-1 inline-block">FCFA</span></p>
+</div>
+</div>
+<!-- Primary Action Button -->
+<div class="pt-2">
+<button class="group w-full bg-white hover:bg-gray-100 text-background-dark h-14 rounded-xl flex items-center justify-center gap-3 shadow-[0_0_20px_rgba(255,255,255,0.15)] transition-all active:scale-[0.98]">
+<span class="text-lg font-extrabold tracking-wide uppercase">Request Taxi</span>
+<div class="size-6 bg-background-dark rounded-full flex items-center justify-center group-hover:translate-x-1 transition-transform">
+<span class="material-symbols-outlined text-white text-[16px] font-bold">arrow_forward</span>
+</div>
+</button>
+<div class="flex items-center justify-center gap-2 mt-4 opacity-50">
+<span class="material-symbols-outlined text-[16px]">schedule</span>
+<p class="text-xs text-white font-medium">Est. driver arrival: <span class="text-white font-bold">3-5 mins</span></p>
+</div>
+</div>
+</div>
+</div>
+</body></html>

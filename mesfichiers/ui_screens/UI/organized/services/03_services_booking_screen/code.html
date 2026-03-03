@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Service Booking - Yabisso</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "yabisso-red": "#ef4444",
+                        "yabisso-green": "#22c55e",
+                        "yabisso-yellow": "#eab308",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#111a22",
+                        "surface-dark": "#192633",
+                        "surface-highlight": "#233648",
+                        "text-secondary": "#92adc9",
+                    },
+                    fontFamily: {
+                        "display": ["Plus Jakarta Sans", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "2xl": "1rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        /* Hide scrollbar for Chrome, Safari and Opera */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        /* Hide scrollbar for IE, Edge and Firefox */
+        .no-scrollbar {
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-white overflow-x-hidden pb-32">
+<!-- Header -->
+<div class="sticky top-0 z-50 flex items-center bg-background-dark/95 backdrop-blur-md p-4 pb-2 justify-between border-b border-surface-highlight">
+<div class="text-white flex size-12 shrink-0 items-center justify-center rounded-full active:bg-surface-highlight transition-colors cursor-pointer" data-icon="ArrowLeft" data-size="24px" data-weight="regular">
+<span class="material-symbols-outlined text-[24px]">arrow_back</span>
+</div>
+<h2 class="text-white text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center pr-12">Book Service</h2>
+</div>
+<!-- Connectivity Status Banner (Simulation) -->
+<div class="bg-surface-highlight/50 px-4 py-2 flex items-center justify-center gap-2">
+<div class="size-2 rounded-full bg-yabisso-green animate-pulse"></div>
+<span class="text-xs font-medium text-text-secondary">Online Mode Active</span>
+</div>
+<!-- Main Content -->
+<div class="flex flex-col gap-6 p-4">
+<!-- Service Summary Card -->
+<div class="flex items-stretch justify-between gap-4 rounded-xl bg-surface-dark p-4 shadow-lg border border-surface-highlight/50">
+<div class="flex flex-[2_2_0px] flex-col justify-between gap-3">
+<div class="flex flex-col gap-1">
+<p class="text-text-secondary text-xs font-bold uppercase tracking-wider text-primary">Selected Service</p>
+<h3 class="text-white text-lg font-bold leading-tight">Home Cleaning Standard</h3>
+<p class="text-text-secondary text-sm font-medium">2 Bedroom Apt • 2 Hrs</p>
+</div>
+<div class="flex items-center gap-2">
+<span class="text-xl font-bold text-white">25,000 <span class="text-sm font-medium text-text-secondary">XAF</span></span>
+</div>
+</div>
+<div class="w-24 bg-center bg-no-repeat bg-cover rounded-lg aspect-square shrink-0" data-alt="Modern living room clean interior" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDKpt_jREEVTd3J5WIefVwECxyVBRLTbozFK3UwZ3y32I6BMc3pVDdWGMbUgCWx9xvf-EJYUuGHmb6q-qBx85leuGMBt6BEGlc6q1JHfaG1LZrSDfXFpa6pdRSawWUsl6N7L4JlXZH4-bOxO3n9frQ61TFd8rds32lVGJbyDeIFiHoynXf5WsInpn4_NDemsFfTlbVKe38blo2so2ZwtJTHNqgbaQytZrNVIjXCoeqwW0jFsKhmgaAO7JV7A_jVZD3T3_zJtM0N");'></div>
+</div>
+<!-- Date Selection -->
+<div class="flex flex-col gap-3">
+<div class="flex items-center justify-between px-1">
+<h3 class="text-white text-base font-bold">August 2023</h3>
+<button class="text-primary text-sm font-medium">See Calendar</button>
+</div>
+<!-- Horizontal Date Scroller -->
+<div class="flex gap-3 overflow-x-auto no-scrollbar pb-1">
+<!-- Active Item -->
+<button class="flex flex-col items-center justify-center min-w-[4.5rem] h-20 rounded-2xl bg-primary text-white shadow-[0_0_15px_rgba(19,127,236,0.4)] shrink-0 border border-primary transition-all">
+<span class="text-sm font-medium opacity-80">Mon</span>
+<span class="text-2xl font-bold">14</span>
+</button>
+<!-- Inactive Items -->
+<button class="flex flex-col items-center justify-center min-w-[4.5rem] h-20 rounded-2xl bg-surface-dark text-text-secondary border border-surface-highlight shrink-0 active:scale-95 transition-transform">
+<span class="text-sm font-medium">Tue</span>
+<span class="text-xl font-bold text-white">15</span>
+</button>
+<button class="flex flex-col items-center justify-center min-w-[4.5rem] h-20 rounded-2xl bg-surface-dark text-text-secondary border border-surface-highlight shrink-0 active:scale-95 transition-transform">
+<span class="text-sm font-medium">Wed</span>
+<span class="text-xl font-bold text-white">16</span>
+</button>
+<button class="flex flex-col items-center justify-center min-w-[4.5rem] h-20 rounded-2xl bg-surface-dark text-text-secondary border border-surface-highlight shrink-0 active:scale-95 transition-transform">
+<span class="text-sm font-medium">Thu</span>
+<span class="text-xl font-bold text-white">17</span>
+</button>
+<button class="flex flex-col items-center justify-center min-w-[4.5rem] h-20 rounded-2xl bg-surface-dark text-text-secondary border border-surface-highlight shrink-0 active:scale-95 transition-transform">
+<span class="text-sm font-medium">Fri</span>
+<span class="text-xl font-bold text-white">18</span>
+</button>
+</div>
+</div>
+<!-- Time Selection -->
+<div class="flex flex-col gap-3">
+<h3 class="text-white text-base font-bold px-1">Available Time</h3>
+<div class="flex flex-wrap gap-3">
+<button class="flex h-10 items-center justify-center px-5 rounded-full bg-surface-dark border border-surface-highlight text-text-secondary text-sm font-medium hover:bg-surface-highlight transition-colors">
+                    09:00 AM
+                </button>
+<button class="flex h-10 items-center justify-center px-5 rounded-full bg-primary/20 border border-primary text-primary text-sm font-bold shadow-[0_0_10px_rgba(19,127,236,0.2)]">
+<span class="material-symbols-outlined text-[18px] mr-1">check</span> 10:00 AM
+                </button>
+<button class="flex h-10 items-center justify-center px-5 rounded-full bg-surface-dark border border-surface-highlight text-text-secondary text-sm font-medium hover:bg-surface-highlight transition-colors">
+                    11:30 AM
+                </button>
+<button class="flex h-10 items-center justify-center px-5 rounded-full bg-surface-dark border border-surface-highlight text-text-secondary text-sm font-medium hover:bg-surface-highlight transition-colors">
+                    02:00 PM
+                </button>
+</div>
+</div>
+<!-- Provider Selection -->
+<div class="flex flex-col gap-3 pt-2">
+<div class="flex items-center justify-between px-1">
+<h3 class="text-white text-base font-bold">Choose Provider</h3>
+<span class="text-text-secondary text-xs">Sorted by Rating</span>
+</div>
+<div class="flex gap-4 overflow-x-auto no-scrollbar pb-2">
+<!-- Provider Card 1 (Selected) -->
+<div class="relative min-w-[200px] p-3 rounded-xl bg-surface-dark border-2 border-primary flex flex-col gap-3">
+<div class="absolute top-3 right-3 text-primary">
+<span class="material-symbols-outlined fill-1">radio_button_checked</span>
+</div>
+<div class="flex items-center gap-3">
+<div class="size-10 rounded-full bg-cover bg-center" data-alt="Portrait of a service provider smiling" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuC-f4QHKS9HrqrN2CLpjQFbJdd1MgdLmSx5giPE6iYEuVoWZnDxg347ReOXbkESDADVkvJ9IGALHLzXcCeGarbCkmkt-reGqwc8nPPjpPCDsGq4JQPBM2IaGuexXUVJ-4JHJgu7PfRbBwzmnaA6bKR6WewWh2VX3fk5ta0T-pV07Qi_jzpbS3TSh-U-vMAo5bSv42UYjg0OeSa40eHBhxePFf6K8Q79ApYvn28Y3J9VH9BIMPAKNkxDLl0R1zdoDSiDPW9QuJH1');"></div>
+<div>
+<p class="text-white text-sm font-bold">Kojo Services</p>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-yabisso-yellow text-[14px] fill-1">star</span>
+<span class="text-white text-xs font-bold">4.9</span>
+<span class="text-text-secondary text-[10px]">(124)</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Provider Card 2 -->
+<div class="relative min-w-[200px] p-3 rounded-xl bg-surface-dark border border-surface-highlight flex flex-col gap-3 opacity-60 grayscale hover:grayscale-0 hover:opacity-100 transition-all">
+<div class="absolute top-3 right-3 text-text-secondary">
+<span class="material-symbols-outlined">radio_button_unchecked</span>
+</div>
+<div class="flex items-center gap-3">
+<div class="size-10 rounded-full bg-cover bg-center" data-alt="Portrait of another service provider" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBFYFcEl-aToWyg1DMiiFm7Nzkiv7T7ziOATQ2__UhZMAPfuneDQQsKQLCJDM9z0Kj2M4kouesIL-uucMKcTVTxPr_1hhDd_bWPe56fz98pzQRxzejXwGjm4VUHyynmv5_TFhpMTD42Ou5ttv-Zn99BgmmwWjVNpsWyaBXm2Qh54zsKUynYlGubr3A_SM0P2UrD3eamxX2y_fOjVybsXBNYRzxZLN82NN-t6W-rCIyRK9xjjbyM0QWMKtXLGZGLygx65F514OHH');"></div>
+<div>
+<p class="text-white text-sm font-bold">Mama Clean</p>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-yabisso-yellow text-[14px] fill-1">star</span>
+<span class="text-white text-xs font-bold">4.7</span>
+<span class="text-text-secondary text-[10px]">(89)</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Payment Method -->
+<div class="flex flex-col gap-3 pt-2">
+<h3 class="text-white text-base font-bold px-1">Payment Method</h3>
+<div class="flex flex-col gap-3">
+<!-- Wallet Option -->
+<label class="flex items-center justify-between p-4 rounded-xl bg-surface-dark border border-surface-highlight cursor-pointer group hover:border-primary/50 transition-colors">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">account_balance_wallet</span>
+</div>
+<div class="flex flex-col">
+<span class="text-white text-sm font-bold">Yabisso Wallet</span>
+<span class="text-yabisso-green text-xs font-medium">Balance: 50,000 XAF</span>
+</div>
+</div>
+<div class="relative flex items-center">
+<input checked="" class="peer h-5 w-5 cursor-pointer appearance-none rounded-full border border-slate-500 checked:border-primary transition-all" name="payment" type="radio"/>
+<span class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-3 bg-primary rounded-full opacity-0 peer-checked:opacity-100 transition-opacity pointer-events-none"></span>
+</div>
+</label>
+<!-- Pay on Arrival -->
+<label class="flex items-center justify-between p-4 rounded-xl bg-surface-dark border border-surface-highlight cursor-pointer group hover:border-primary/50 transition-colors">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded-lg bg-yabisso-yellow/10 flex items-center justify-center text-yabisso-yellow">
+<span class="material-symbols-outlined">payments</span>
+</div>
+<div class="flex flex-col">
+<span class="text-white text-sm font-bold">Pay on Arrival</span>
+<span class="text-text-secondary text-xs">Cash or Mobile Money</span>
+</div>
+</div>
+<div class="relative flex items-center">
+<input class="peer h-5 w-5 cursor-pointer appearance-none rounded-full border border-slate-500 checked:border-primary transition-all" name="payment" type="radio"/>
+<span class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-3 bg-primary rounded-full opacity-0 peer-checked:opacity-100 transition-opacity pointer-events-none"></span>
+</div>
+</label>
+</div>
+</div>
+<!-- Offline Fallback Notice -->
+<div class="mt-2 p-4 rounded-xl bg-surface-highlight/40 border border-dashed border-text-secondary/30 flex gap-3 items-start">
+<span class="material-symbols-outlined text-text-secondary mt-0.5">wifi_off</span>
+<div class="flex flex-col gap-1">
+<h4 class="text-white text-sm font-bold">No internet? No problem.</h4>
+<p class="text-text-secondary text-xs leading-relaxed">
+                    If connection fails, switch to <span class="text-white font-medium">SMS Booking</span>. We'll generate a code for you to send via your mobile carrier.
+                </p>
+</div>
+</div>
+</div>
+<!-- Sticky Bottom Action Bar -->
+<div class="fixed bottom-0 left-0 right-0 bg-background-dark/95 backdrop-blur-xl border-t border-surface-highlight p-4 pb-8 shadow-[0_-4px_20px_rgba(0,0,0,0.3)]">
+<div class="flex items-center justify-between gap-4 max-w-md mx-auto">
+<div class="flex flex-col">
+<span class="text-text-secondary text-xs font-medium">Total Amount</span>
+<span class="text-2xl font-bold text-white">25,000 <span class="text-sm text-text-secondary">XAF</span></span>
+</div>
+<button class="flex-1 h-12 bg-white hover:bg-gray-100 text-background-dark text-base font-bold rounded-xl flex items-center justify-center gap-2 transition-colors shadow-lg shadow-white/5">
+<span>Confirm Booking</span>
+<span class="material-symbols-outlined text-[20px]">arrow_forward</span>
+</button>
+</div>
+<!-- Offline Button State (Hidden by default, showing here for completeness of requirement) -->
+<!-- 
+        <button class="w-full h-12 mt-3 bg-surface-highlight border border-white/10 text-white text-base font-bold rounded-xl flex items-center justify-center gap-2 transition-colors">
+            <span class="material-symbols-outlined text-[20px]">sms</span>
+            <span>Generate Offline SMS</span>
+        </button>
+        -->
+</div>
+</body></html>

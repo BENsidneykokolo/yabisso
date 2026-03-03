@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Yabisso - Refund Request</title>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Noto+Sans:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Theme Config -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922", // Deep charcoal/black
+                        "yabisso-red": "#FF4B4B",
+                        "yabisso-yellow": "#FFD166",
+                        "yabisso-green": "#06D6A0",
+                        "surface-dark": "#192633", // Slightly lighter for cards
+                    },
+                    fontFamily: {
+                        "display": ["Space Grotesk", "sans-serif"],
+                        "body": ["Noto Sans", "sans-serif"],
+                    },
+                    borderRadius: {"DEFAULT": "1rem", "lg": "1.5rem", "xl": "2rem", "2xl": "2.5rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom scrollbar hide for clean mobile look */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-white selection:bg-primary selection:text-white">
+<!-- Main Container -->
+<div class="relative flex h-full min-h-screen w-full flex-col overflow-x-hidden max-w-md mx-auto shadow-2xl">
+<!-- TopAppBar -->
+<header class="sticky top-0 z-50 flex items-center bg-background-dark/95 backdrop-blur-md p-4 pb-2 justify-between border-b border-white/5">
+<button class="text-white flex size-10 shrink-0 items-center justify-center rounded-full hover:bg-white/10 transition-colors">
+<span class="material-symbols-outlined text-2xl">arrow_back_ios_new</span>
+</button>
+<h2 class="text-white text-lg font-bold leading-tight tracking-wide flex-1 text-center pr-10">Refund Request</h2>
+</header>
+<!-- Scrollable Content -->
+<main class="flex-1 flex flex-col gap-6 p-4 pb-32">
+<!-- Ticket Summary Card -->
+<section>
+<div class="flex flex-col gap-4 rounded-xl bg-surface-dark p-4 shadow-lg border border-white/5">
+<div class="flex items-stretch justify-between gap-4">
+<div class="flex flex-col gap-1 flex-[2_2_0px] justify-center">
+<span class="inline-flex items-center gap-1 w-fit rounded-full bg-primary/20 px-2 py-0.5 text-xs font-medium text-primary mb-1">
+<span class="material-symbols-outlined text-[12px]">confirmation_number</span>
+                                Standard Ticket
+                            </span>
+<p class="text-white text-lg font-bold leading-tight">Afro-Nation Fest 2024</p>
+<div class="flex items-center gap-1 mt-1 text-[#92adc9] text-sm">
+<span class="material-symbols-outlined text-[16px]">calendar_month</span>
+<span>Sat, Oct 12 • 18:00</span>
+</div>
+<div class="flex items-center gap-1 text-[#92adc9] text-sm">
+<span class="material-symbols-outlined text-[16px]">location_on</span>
+<span class="truncate">Eko Atlantic City</span>
+</div>
+</div>
+<div class="w-24 bg-center bg-no-repeat bg-cover rounded-lg aspect-[3/4] shrink-0 border border-white/10 relative overflow-hidden group" data-alt="Vibrant concert crowd with stage lights at night" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCwuhyQLIp6BkujAcQ0PlVbfYpxjeAW4zcIaWllHMbFmr37AzPNFT2PM-pQ17qXIoqnikVTT7TZ_k6Rn6yhP5HdnsSX-xC8El3fFG_1wqYjKj-EMYeElNLIW8Nr0DA1hhYOvCL9U1QGIbUsU4N_oAzKgBiC6rKLpQaidLJfZG7w0dIuPY6oiKYkbEngglNlqyJqg9Wfn7C52H3jP5-ssmhu0SO2MC1tQeiUMdsM_a8za7qKJG_0_Kr-R20DEakDMpt5lOgs3sFU");'>
+<div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+</div>
+</div>
+</div>
+</section>
+<!-- Policy Alert Banner -->
+<section>
+<div class="flex flex-col gap-3 rounded-xl bg-[#2A2215] border border-yabisso-yellow/30 p-4 relative overflow-hidden">
+<!-- Decorative background element -->
+<div class="absolute -right-4 -top-4 text-yabisso-yellow/5">
+<span class="material-symbols-outlined text-[100px]">warning</span>
+</div>
+<div class="flex items-start gap-3 relative z-10">
+<span class="material-symbols-outlined text-yabisso-yellow shrink-0 mt-0.5">info</span>
+<div class="flex flex-col gap-1">
+<p class="text-white text-base font-bold leading-tight">Cancellation Policy</p>
+<p class="text-[#d1d5db] text-sm font-normal leading-relaxed">
+                                Cancellation is allowed until <span class="text-white font-medium">2 hours</span> before the event starts. A 5% processing fee applies to all refunds.
+                            </p>
+</div>
+</div>
+</div>
+</section>
+<!-- Refund Breakdown (DescriptionList) -->
+<section>
+<div class="rounded-xl bg-surface-dark p-5 border border-white/5">
+<h3 class="text-white text-base font-bold mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">payments</span>
+                        Refund Breakdown
+                    </h3>
+<div class="flex flex-col gap-3">
+<div class="flex justify-between items-center border-b border-white/5 pb-3">
+<p class="text-[#92adc9] text-sm font-medium">Ticket Price (x1)</p>
+<p class="text-white text-base font-normal">₦ 15,000</p>
+</div>
+<div class="flex justify-between items-center border-b border-white/5 pb-3">
+<p class="text-[#92adc9] text-sm font-medium">Processing Fee (5%)</p>
+<p class="text-yabisso-red text-base font-normal">- ₦ 750</p>
+</div>
+<div class="flex justify-between items-center pt-1">
+<p class="text-white text-base font-bold">Refund Total</p>
+<p class="text-yabisso-green text-xl font-bold">₦ 14,250</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Reason Selector -->
+<section>
+<h3 class="text-white tracking-tight text-lg font-bold leading-tight mb-3 px-1">Why are you cancelling?</h3>
+<div class="flex flex-col gap-2" role="radiogroup">
+<!-- Option 1 -->
+<label class="group cursor-pointer relative flex items-center justify-between rounded-xl bg-surface-dark border border-white/5 p-4 transition-all hover:bg-white/5 has-[:checked]:border-primary has-[:checked]:bg-primary/10">
+<span class="text-white text-sm font-medium">Change of plans / Schedule conflict</span>
+<input checked="" class="peer sr-only" name="reason" type="radio"/>
+<div class="size-5 rounded-full border-2 border-[#92adc9] peer-checked:border-primary peer-checked:bg-primary flex items-center justify-center transition-colors">
+<div class="size-2 rounded-full bg-white opacity-0 peer-checked:opacity-100"></div>
+</div>
+</label>
+<!-- Option 2 -->
+<label class="group cursor-pointer relative flex items-center justify-between rounded-xl bg-surface-dark border border-white/5 p-4 transition-all hover:bg-white/5 has-[:checked]:border-primary has-[:checked]:bg-primary/10">
+<span class="text-white text-sm font-medium">Found a better price</span>
+<input class="peer sr-only" name="reason" type="radio"/>
+<div class="size-5 rounded-full border-2 border-[#92adc9] peer-checked:border-primary peer-checked:bg-primary flex items-center justify-center transition-colors">
+<div class="size-2 rounded-full bg-white opacity-0 peer-checked:opacity-100"></div>
+</div>
+</label>
+<!-- Option 3 -->
+<label class="group cursor-pointer relative flex items-center justify-between rounded-xl bg-surface-dark border border-white/5 p-4 transition-all hover:bg-white/5 has-[:checked]:border-primary has-[:checked]:bg-primary/10">
+<span class="text-white text-sm font-medium">Event location is too far</span>
+<input class="peer sr-only" name="reason" type="radio"/>
+<div class="size-5 rounded-full border-2 border-[#92adc9] peer-checked:border-primary peer-checked:bg-primary flex items-center justify-center transition-colors">
+<div class="size-2 rounded-full bg-white opacity-0 peer-checked:opacity-100"></div>
+</div>
+</label>
+<!-- Option 4 -->
+<label class="group cursor-pointer relative flex items-center justify-between rounded-xl bg-surface-dark border border-white/5 p-4 transition-all hover:bg-white/5 has-[:checked]:border-primary has-[:checked]:bg-primary/10">
+<span class="text-white text-sm font-medium">Other</span>
+<input class="peer sr-only" name="reason" type="radio"/>
+<div class="size-5 rounded-full border-2 border-[#92adc9] peer-checked:border-primary peer-checked:bg-primary flex items-center justify-center transition-colors">
+<div class="size-2 rounded-full bg-white opacity-0 peer-checked:opacity-100"></div>
+</div>
+</label>
+</div>
+</section>
+</main>
+<!-- Fixed Action Bar -->
+<div class="fixed bottom-0 left-0 right-0 z-40 bg-background-dark/80 backdrop-blur-xl border-t border-white/10 p-4 pb-8 max-w-md mx-auto">
+<div class="flex flex-col gap-3">
+<button class="flex w-full cursor-pointer items-center justify-center rounded-full h-14 px-6 bg-white active:scale-[0.98] transition-transform shadow-[0_0_15px_rgba(255,255,255,0.1)]">
+<span class="text-background-dark text-base font-bold tracking-tight">Confirm Cancellation</span>
+</button>
+<button class="flex w-full cursor-pointer items-center justify-center rounded-full h-12 px-6 bg-transparent text-white border border-white/20 hover:bg-white/5 active:scale-[0.98] transition-all">
+<span class="text-sm font-medium">Keep My Ticket</span>
+</button>
+</div>
+</div>
+</div>
+</body></html>

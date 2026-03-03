@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Super Admin Wallet &amp; Points Control</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&amp;family=Noto+Sans:wght@300;400;500;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Theme Configuration -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#46ec13",
+                        "background-light": "#f6f8f6",
+                        "background-dark": "#142210",
+                        "surface-light": "#ffffff",
+                        "surface-dark": "#1c2e18",
+                    },
+                    fontFamily: {
+                        "display": ["Lexend", "sans-serif"],
+                        "body": ["Noto Sans", "sans-serif"],
+                    },
+                    borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Lexend', sans-serif;
+        }
+        .material-symbols-outlined {
+            font-variation-settings:
+            'FILL' 0,
+            'wght' 400,
+            'GRAD' 0,
+            'opsz' 24
+        }
+        /* Hide scrollbar for clean horizontal scroll */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-[#111b0d] dark:text-white transition-colors duration-200">
+<div class="relative flex min-h-screen w-full flex-col overflow-hidden">
+<!-- Top App Bar -->
+<header class="sticky top-0 z-40 flex items-center justify-between bg-background-light/90 dark:bg-background-dark/90 backdrop-blur-md p-4 pb-2 border-b border-gray-200 dark:border-white/10">
+<button class="flex size-10 shrink-0 items-center justify-center rounded-full hover:bg-gray-200 dark:hover:bg-white/10 transition-colors">
+<span class="material-symbols-outlined text-[#111b0d] dark:text-white">menu</span>
+</button>
+<h2 class="text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center">Wallet Control</h2>
+<button class="flex size-10 items-center justify-center rounded-full hover:bg-gray-200 dark:hover:bg-white/10 transition-colors relative">
+<span class="material-symbols-outlined text-[#111b0d] dark:text-white">notifications</span>
+<span class="absolute top-2 right-2 size-2 bg-primary rounded-full border border-background-light dark:border-background-dark"></span>
+</button>
+</header>
+<!-- Main Content Area -->
+<main class="flex-1 flex flex-col gap-6 p-4 pb-24">
+<!-- Minting Section (Primary Action) -->
+<section class="bg-surface-light dark:bg-surface-dark rounded-xl p-5 shadow-sm border border-gray-100 dark:border-white/5">
+<div class="flex items-center gap-3 mb-4">
+<div class="p-2 bg-primary/20 rounded-lg">
+<span class="material-symbols-outlined text-green-700 dark:text-primary">add_circle</span>
+</div>
+<div>
+<h3 class="font-bold text-lg leading-none">Global Minting</h3>
+<p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Create new supply for the ecosystem</p>
+</div>
+</div>
+<div class="space-y-4">
+<div class="relative">
+<label class="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Total Supply to Create</label>
+<div class="flex items-center rounded-xl bg-background-light dark:bg-black/20 border border-gray-200 dark:border-white/10 overflow-hidden focus-within:ring-2 focus-within:ring-primary/50 transition-all">
+<input class="w-full bg-transparent border-none py-4 pl-4 pr-12 text-2xl font-bold placeholder-gray-300 dark:placeholder-gray-600 focus:ring-0" placeholder="0.00" type="number"/>
+<div class="absolute right-4 flex items-center pointer-events-none text-gray-500">
+<span class="font-bold text-sm">PTS</span>
+</div>
+</div>
+</div>
+<button class="w-full h-14 bg-primary hover:bg-[#3cd610] active:scale-[0.98] transition-all rounded-xl flex items-center justify-center gap-2 text-[#111b0d] font-bold text-lg shadow-[0_4px_14px_0_rgba(70,236,19,0.39)]">
+<span class="material-symbols-outlined">mintmark</span>
+                        Mint Points
+                    </button>
+</div>
+</section>
+<!-- Transfer & Allocation -->
+<section class="bg-surface-light dark:bg-surface-dark rounded-xl p-5 shadow-sm border border-gray-100 dark:border-white/5">
+<div class="flex items-center justify-between mb-4">
+<h3 class="font-bold text-lg">Allocation</h3>
+<span class="text-xs font-medium px-2 py-1 bg-gray-100 dark:bg-white/10 rounded-lg text-gray-600 dark:text-gray-300">Balance: ∞</span>
+</div>
+<!-- Recipient Type Tabs -->
+<div class="flex p-1 bg-background-light dark:bg-black/20 rounded-lg mb-4">
+<button class="flex-1 py-2 rounded-md text-xs font-bold bg-white dark:bg-surface-dark shadow-sm text-center transition-all">Admin</button>
+<button class="flex-1 py-2 rounded-md text-xs font-bold text-gray-500 dark:text-gray-400 hover:text-[#111b0d] dark:hover:text-white text-center transition-all">Kiosque</button>
+<button class="flex-1 py-2 rounded-md text-xs font-bold text-gray-500 dark:text-gray-400 hover:text-[#111b0d] dark:hover:text-white text-center transition-all">User</button>
+</div>
+<div class="space-y-3">
+<!-- Search User -->
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-[20px]">search</span>
+<input class="w-full h-12 rounded-xl bg-background-light dark:bg-black/20 border border-gray-200 dark:border-white/10 pl-10 pr-4 text-sm focus:border-primary focus:ring-0" placeholder="Find Main Admin ID..." type="text"/>
+</div>
+<!-- Amount -->
+<div class="flex gap-3">
+<div class="flex-1 relative">
+<input class="w-full h-12 rounded-xl bg-background-light dark:bg-black/20 border border-gray-200 dark:border-white/10 pl-4 pr-4 text-sm focus:border-primary focus:ring-0" placeholder="Amount" type="number"/>
+</div>
+<button class="h-12 px-6 bg-[#111b0d] dark:bg-white text-white dark:text-[#111b0d] rounded-xl font-bold text-sm flex items-center gap-2 active:scale-95 transition-transform">
+                            Send
+                            <span class="material-symbols-outlined text-[18px]">send</span>
+</button>
+</div>
+</div>
+</section>
+<!-- Security Actions Grid -->
+<div class="grid grid-cols-2 gap-4">
+<button class="flex flex-col items-center justify-center gap-2 p-4 rounded-xl bg-red-50 dark:bg-red-900/10 border border-red-100 dark:border-red-900/30 group active:bg-red-100 transition-colors">
+<div class="p-3 bg-red-100 dark:bg-red-900/30 rounded-full group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-red-600 dark:text-red-400">ac_unit</span>
+</div>
+<span class="text-sm font-bold text-red-700 dark:text-red-300">Freeze Wallet</span>
+</button>
+<button class="flex flex-col items-center justify-center gap-2 p-4 rounded-xl bg-blue-50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-900/30 group active:bg-blue-100 transition-colors">
+<div class="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-full group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-blue-600 dark:text-blue-400">lock_reset</span>
+</div>
+<span class="text-sm font-bold text-blue-700 dark:text-blue-300">Recover Wallet</span>
+</button>
+</div>
+<!-- Transaction History -->
+<section>
+<div class="flex items-center justify-between px-1 mb-3">
+<h3 class="font-bold text-lg">Recent Activity</h3>
+<a class="text-sm text-primary font-medium hover:underline" href="#">View All</a>
+</div>
+<div class="flex flex-col gap-3">
+<!-- Item 1: Mint -->
+<div class="flex items-center justify-between p-3 rounded-xl bg-surface-light dark:bg-surface-dark border border-gray-100 dark:border-white/5">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded-full bg-primary/10 flex items-center justify-center">
+<span class="material-symbols-outlined text-green-600 dark:text-primary text-[20px]">add</span>
+</div>
+<div>
+<p class="text-sm font-bold">Minted Supply</p>
+<p class="text-xs text-gray-500">Super Admin • 10:42 AM</p>
+</div>
+</div>
+<span class="text-green-600 dark:text-primary font-bold text-sm">+50,000</span>
+</div>
+<!-- Item 2: Transfer -->
+<div class="flex items-center justify-between p-3 rounded-xl bg-surface-light dark:bg-surface-dark border border-gray-100 dark:border-white/5">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded-full bg-gray-100 dark:bg-white/5 flex items-center justify-center">
+<span class="material-symbols-outlined text-gray-600 dark:text-gray-300 text-[20px]">arrow_outward</span>
+</div>
+<div>
+<p class="text-sm font-bold">Transfer to Kiosque #4</p>
+<p class="text-xs text-gray-500">Allocation • 09:15 AM</p>
+</div>
+</div>
+<span class="text-[#111b0d] dark:text-white font-bold text-sm">-2,500</span>
+</div>
+<!-- Item 3: Freeze -->
+<div class="flex items-center justify-between p-3 rounded-xl bg-surface-light dark:bg-surface-dark border border-gray-100 dark:border-white/5">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded-full bg-red-100 dark:bg-red-900/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-red-600 dark:text-red-400 text-[20px]">block</span>
+</div>
+<div>
+<p class="text-sm font-bold">Wallet Frozen</p>
+<p class="text-xs text-gray-500">User ID: 8821 • Yesterday</p>
+</div>
+</div>
+<span class="text-gray-400 text-xs font-medium">Action</span>
+</div>
+</div>
+</section>
+</main>
+<!-- Sidebar / Navigation Drawer (Off-screen/Integrated simulation) -->
+<!-- In a real implementation this would be toggled via JS. 
+             Here we display the bottom nav which is more common for "phone" form factors,
+             but since sidebar was requested, we will assume the hamburger menu opens a drawer.
+             Below is a bottom nav for quick access. -->
+<nav class="fixed bottom-0 left-0 w-full bg-surface-light dark:bg-surface-dark border-t border-gray-200 dark:border-white/10 pb-6 pt-3 px-6 flex justify-between z-50">
+<a class="flex flex-col items-center gap-1 text-gray-400 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="text-[10px] font-medium">Home</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-gray-400 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">group</span>
+<span class="text-[10px] font-medium">Users</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-primary" href="#">
+<div class="size-10 bg-primary/20 rounded-full flex items-center justify-center -mt-4 border-4 border-background-light dark:border-background-dark">
+<span class="material-symbols-outlined text-primary">account_balance_wallet</span>
+</div>
+<span class="text-[10px] font-bold">Wallet</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-gray-400 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">history</span>
+<span class="text-[10px] font-medium">Logs</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-gray-400 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="text-[10px] font-medium">Settings</span>
+</a>
+</nav>
+</div>
+</body></html>

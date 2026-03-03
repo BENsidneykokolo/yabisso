@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Super Admin User Management</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&amp;family=Noto+Sans:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#46ec13",
+                        "background-light": "#f6f8f6",
+                        "background-dark": "#142210",
+                        "surface-light": "#ffffff",
+                        "surface-dark": "#1c2e18",
+                    },
+                    fontFamily: {
+                        "display": ["Lexend", "sans-serif"],
+                        "body": ["Noto Sans", "sans-serif"],
+                    },
+                    borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "2xl": "2rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+        .scrollbar-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-white antialiased transition-colors duration-200">
+<div class="relative flex h-full min-h-screen w-full flex-col overflow-hidden pb-24">
+<!-- Top App Bar -->
+<header class="sticky top-0 z-20 flex items-center justify-between bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-md p-4 pb-2 border-b border-gray-200 dark:border-gray-800">
+<button class="flex size-10 items-center justify-center rounded-full text-slate-900 dark:text-white hover:bg-black/5 dark:hover:bg-white/10 transition">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<h2 class="text-lg font-bold leading-tight tracking-tight flex-1 text-center pr-10">User Management</h2>
+<button class="absolute right-4 flex items-center justify-center size-10 rounded-full bg-primary/10 text-primary dark:bg-primary/20">
+<span class="material-symbols-outlined">person_add</span>
+</button>
+</header>
+<!-- Search Bar -->
+<div class="px-4 py-3 z-10">
+<div class="flex w-full items-center rounded-xl bg-surface-light dark:bg-surface-dark shadow-sm border border-gray-100 dark:border-gray-800 h-12">
+<div class="flex items-center justify-center pl-4 text-slate-400 dark:text-slate-500">
+<span class="material-symbols-outlined">search</span>
+</div>
+<input class="flex w-full flex-1 bg-transparent px-3 text-base font-normal text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-0 border-none h-full" placeholder="Search name, phone, or ID..."/>
+<button class="flex items-center justify-center pr-4 text-primary">
+<span class="material-symbols-outlined">qr_code_scanner</span>
+</button>
+</div>
+</div>
+<!-- Filter Chips -->
+<div class="flex gap-2 px-4 pb-2 overflow-x-auto scrollbar-hide w-full">
+<button class="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-full bg-primary px-4 shadow-md shadow-primary/20 transition-transform active:scale-95">
+<span class="text-slate-900 text-sm font-semibold">All Users</span>
+</button>
+<button class="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-full bg-surface-light dark:bg-surface-dark border border-gray-200 dark:border-gray-700 px-4 transition-transform active:scale-95">
+<span class="text-slate-600 dark:text-slate-300 text-sm font-medium">Active</span>
+</button>
+<button class="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-full bg-surface-light dark:bg-surface-dark border border-gray-200 dark:border-gray-700 px-4 transition-transform active:scale-95">
+<span class="text-slate-600 dark:text-slate-300 text-sm font-medium">Blocked</span>
+</button>
+<button class="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-full bg-surface-light dark:bg-surface-dark border border-gray-200 dark:border-gray-700 px-4 transition-transform active:scale-95">
+<span class="text-slate-600 dark:text-slate-300 text-sm font-medium">Pending</span>
+</button>
+</div>
+<!-- Section Header -->
+<div class="flex items-center justify-between px-4 pt-4 pb-2">
+<h3 class="text-slate-900 dark:text-white text-base font-bold">Total Users (1,248)</h3>
+<button class="text-primary text-sm font-medium flex items-center gap-1">
+                Sort by <span class="material-symbols-outlined text-sm">sort</span>
+</button>
+</div>
+<!-- User List -->
+<div class="flex flex-col gap-3 px-4 pb-32">
+<!-- List Item 1 -->
+<div class="group relative flex items-center justify-between gap-4 rounded-xl bg-surface-light dark:bg-surface-dark p-3 shadow-sm border border-transparent hover:border-primary/30 transition-all active:scale-[0.99]">
+<div class="flex items-center gap-3">
+<div class="relative">
+<img class="aspect-square h-12 w-12 rounded-full object-cover" data-alt="Profile picture of a man with glasses" src="https://lh3.googleusercontent.com/aida-public/AB6AXuClXcdrtaKwaVU-J_EfLNIwS66i-EUxgwckxMcOinhKOkyJba2PgLfqsS9gBEzBVTc4c8Yl5bDeRRLLPoLjaHBkgHuvBGjZ-VEAI-ZbgGTBYerErdtxuBLGLQovCk6UVdMShhZyWD8ahDAX3w6dn58VIeYt_26VQVHle_3qucXhy44L_tP-dOtofF-WxQaUOdgE8UGgzNMhSJ0BLxgJ3fX-saEZD3IjAb1nuf_lSmcCQl_N_ukFyHWwNJzuE7MSGpfN8wuq7J2j"/>
+<div class="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-primary border-2 border-surface-light dark:border-surface-dark"></div>
+</div>
+<div class="flex flex-col">
+<p class="text-slate-900 dark:text-white text-base font-semibold leading-tight">Johnathan Doe</p>
+<p class="text-slate-500 dark:text-slate-400 text-xs font-medium mt-0.5">ID: YB-88291 • +1 234...</p>
+</div>
+</div>
+<div class="flex flex-col items-end">
+<p class="text-primary text-base font-bold">5,200 pts</p>
+<span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 bg-slate-100 dark:bg-white/5 px-1.5 py-0.5 rounded mt-1">Active</span>
+</div>
+</div>
+<!-- List Item 2 -->
+<div class="group relative flex items-center justify-between gap-4 rounded-xl bg-surface-light dark:bg-surface-dark p-3 shadow-sm border border-transparent hover:border-primary/30 transition-all active:scale-[0.99]">
+<div class="flex items-center gap-3">
+<div class="relative">
+<img class="aspect-square h-12 w-12 rounded-full object-cover" data-alt="Profile picture of a smiling woman" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCtYWcXBKtqgmDbF-oeJbkJp9GS6iHHdWdOozJjrZvRb4wAhqDz2Ho1jZECusrHQ6rUR1bcho6fniGsE-r8GPQeiZ3ynZIIFHqU5uq99KtWEFQl0cYIiLn-vRwltpwuOAf37lysR10iMMnlGGXCQwAImd2NlzJWTOET1SXsd4vIHGIGt4hIVBJq8u7art-StD8ANnme0wvdkHKtkWnsn_gZl77TMdeRvP6s5Q0ObS7If1UHoJLF63NueOu3udPsH_q2vLfWpZ4_"/>
+<div class="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-red-500 border-2 border-surface-light dark:border-surface-dark"></div>
+</div>
+<div class="flex flex-col">
+<p class="text-slate-900 dark:text-white text-base font-semibold leading-tight">Sarah Miller</p>
+<p class="text-slate-500 dark:text-slate-400 text-xs font-medium mt-0.5">ID: YB-99120 • +1 987...</p>
+</div>
+</div>
+<div class="flex flex-col items-end">
+<p class="text-slate-400 dark:text-slate-500 text-base font-bold">0 pts</p>
+<span class="text-[10px] font-bold uppercase tracking-wider text-red-500 bg-red-500/10 px-1.5 py-0.5 rounded mt-1">Blocked</span>
+</div>
+</div>
+<!-- List Item 3 -->
+<div class="group relative flex items-center justify-between gap-4 rounded-xl bg-surface-light dark:bg-surface-dark p-3 shadow-sm border border-transparent hover:border-primary/30 transition-all active:scale-[0.99]">
+<div class="flex items-center gap-3">
+<div class="relative">
+<img class="aspect-square h-12 w-12 rounded-full object-cover" data-alt="Profile picture of a man in a suit" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCIIE40XFDpyaVCtindFSRUPqTQxDymUGtbTMTCLiBMpXCifY-jf3aJSJGHVx1G6h-Zt-hfkJmjs2S60uiDLY9o8_N3WaMsNxZp8SfFf4LXjDIH8L2kz43z-tgHEQOg7_nyqp3Y7ULLDNMoLy8btbVVjyGeMLEUSt3jx8kDVRoCPyWmkj5VWKZ53jRXi8ECbUeoxQQvDZRFkIqPI60mABmmkOaapSZxp4VsgVrdfj1ksPU3AaXvYCBe1fqXuwhIzbOv89ubKDG6"/>
+<div class="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-amber-400 border-2 border-surface-light dark:border-surface-dark"></div>
+</div>
+<div class="flex flex-col">
+<p class="text-slate-900 dark:text-white text-base font-semibold leading-tight">Michael Chen</p>
+<p class="text-slate-500 dark:text-slate-400 text-xs font-medium mt-0.5">ID: YB-11209 • +1 555...</p>
+</div>
+</div>
+<div class="flex flex-col items-end">
+<p class="text-primary text-base font-bold">12,450 pts</p>
+<span class="text-[10px] font-bold uppercase tracking-wider text-amber-500 bg-amber-500/10 px-1.5 py-0.5 rounded mt-1">Review</span>
+</div>
+</div>
+<!-- List Item 4 -->
+<div class="group relative flex items-center justify-between gap-4 rounded-xl bg-surface-light dark:bg-surface-dark p-3 shadow-sm border border-transparent hover:border-primary/30 transition-all active:scale-[0.99]">
+<div class="flex items-center gap-3">
+<div class="relative">
+<img class="aspect-square h-12 w-12 rounded-full object-cover" data-alt="Profile picture of a person with short hair" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCWPS4smnJMVYNjgewVSW_lnBKqljYBTORXJz1_tMoOq5TLC7zw04wAOymxGsY85qT97DK4sMZDTpe70qrwDhw9Ihp_4tTWxn3K9aVKUp_T3bPIBzziveLC-SUBkxA_pk-Rj920XmCyCohgPZ3-bZIJy1vBPJPWmDq6N_BVX7debuK2PBg3ZLbvGa9lqfWBqAtQjooOavvUacwlQhjOAe7jfR6SCs_QTC8Dt75quRo8M7oQTOf2fBBDjJz3aWX0cke9dZBAyV4T"/>
+<div class="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-primary border-2 border-surface-light dark:border-surface-dark"></div>
+</div>
+<div class="flex flex-col">
+<p class="text-slate-900 dark:text-white text-base font-semibold leading-tight">Alex Rivera</p>
+<p class="text-slate-500 dark:text-slate-400 text-xs font-medium mt-0.5">ID: YB-33421 • +1 222...</p>
+</div>
+</div>
+<div class="flex flex-col items-end">
+<p class="text-primary text-base font-bold">890 pts</p>
+<span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 bg-slate-100 dark:bg-white/5 px-1.5 py-0.5 rounded mt-1">Active</span>
+</div>
+</div>
+<!-- List Item 5 -->
+<div class="group relative flex items-center justify-between gap-4 rounded-xl bg-surface-light dark:bg-surface-dark p-3 shadow-sm border border-transparent hover:border-primary/30 transition-all active:scale-[0.99]">
+<div class="flex items-center gap-3">
+<div class="relative">
+<img class="aspect-square h-12 w-12 rounded-full object-cover" data-alt="Profile picture of a young woman" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBmgS9UMC3_ToauHwHvrW_3DwvdGOdvmAfZKwWoAqAHTAcT63NXXko7Uq4EN8sv6ftfc7okh6jlxGc9XX3TA8jkNG0VV54qHcrUNvE89FzWYQ-UfhfZxQgK6uZfBAaxxJDjESTqJFp5J2X7YtVHLm_aQeGx7KoMpNDdMGaDN6QQA8o7Qegukl00lCWRBHJT-2bsddC85BV5-HzoiEdBCngYQDVleNZ7AH_Qihn2yT2ejN_09aLfxVnzqy6HI8z8sixI12Ba_9wx"/>
+<div class="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-primary border-2 border-surface-light dark:border-surface-dark"></div>
+</div>
+<div class="flex flex-col">
+<p class="text-slate-900 dark:text-white text-base font-semibold leading-tight">Jessica Wong</p>
+<p class="text-slate-500 dark:text-slate-400 text-xs font-medium mt-0.5">ID: YB-55102 • +1 333...</p>
+</div>
+</div>
+<div class="flex flex-col items-end">
+<p class="text-primary text-base font-bold">2,100 pts</p>
+<span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 bg-slate-100 dark:bg-white/5 px-1.5 py-0.5 rounded mt-1">Active</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Bottom Sheet / Detail View Overlay -->
+<!-- This overlay simulates an open user detail view -->
+<div class="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm flex items-end justify-center animate-fade-in">
+<div class="relative w-full max-w-md bg-surface-light dark:bg-surface-dark rounded-t-3xl shadow-2xl transform transition-transform duration-300 max-h-[90vh] overflow-y-auto">
+<!-- Handle -->
+<div class="sticky top-0 z-50 flex justify-center pt-3 pb-1 bg-surface-light dark:bg-surface-dark rounded-t-3xl">
+<div class="h-1.5 w-12 rounded-full bg-gray-300 dark:bg-gray-600"></div>
+</div>
+<!-- Profile Header -->
+<div class="flex flex-col items-center px-6 pb-6 pt-2">
+<div class="relative mb-4">
+<img class="aspect-square h-24 w-24 rounded-full object-cover border-4 border-white dark:border-gray-800 shadow-lg" data-alt="Detail view of profile picture" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDEAS1rKiaoJpKb8avO6XbCzljz8aRbh5pWUVtY66pxCSjy9_ZI7hCXeur8zBNreONJ_H5sDQicq1XfyoLeQIgdl4Lj7H1dRGRfKJYNOy_LfbK9ZbpWmmekyHDgUCnzmcFCQKuITdIunzy-kAi24EM1etAINej-mX2pwF3LllZvjH_65EldxBA9toBiNI46uxpvkeZMF4_E_dj-sCb7yW4MQ3pljbrtNDzmWKsKmBqrtXHJaYGjq786qwKQWsGoJcmDCYnJ-1C6"/>
+<div class="absolute bottom-1 right-1 h-5 w-5 rounded-full bg-primary border-2 border-white dark:border-gray-800"></div>
+</div>
+<h2 class="text-2xl font-bold text-slate-900 dark:text-white">Johnathan Doe</h2>
+<div class="mt-1 flex items-center gap-2">
+<span class="rounded-md bg-primary/10 px-2 py-0.5 text-xs font-bold text-primary dark:bg-primary/20">ACTIVE</span>
+<span class="text-sm text-slate-500 dark:text-slate-400">ID: YB-88291</span>
+</div>
+<p class="mt-1 text-sm text-slate-400 dark:text-slate-500 font-medium">+1 234 567 890 • Joined Oct 2023</p>
+</div>
+<!-- Wallet Summary Card -->
+<div class="px-6 mb-6">
+<div class="rounded-2xl bg-gradient-to-br from-gray-900 to-gray-800 dark:from-[#2a4522] dark:to-[#1a2c15] p-5 text-white shadow-lg relative overflow-hidden">
+<div class="relative z-10 flex justify-between items-start">
+<div>
+<p class="text-sm font-medium text-gray-300 dark:text-primary/80 mb-1">Total Balance</p>
+<h3 class="text-3xl font-bold text-primary">5,200 <span class="text-lg text-white font-medium">pts</span></h3>
+</div>
+<div class="bg-white/10 p-2 rounded-lg backdrop-blur-sm">
+<span class="material-symbols-outlined text-primary">account_balance_wallet</span>
+</div>
+</div>
+<div class="mt-6 flex gap-4">
+<div class="flex-1 rounded-lg bg-white/5 p-2">
+<p class="text-xs text-gray-400">Last Transaction</p>
+<p class="font-semibold text-white">+500 pts</p>
+</div>
+<div class="flex-1 rounded-lg bg-white/5 p-2">
+<p class="text-xs text-gray-400">Pending</p>
+<p class="font-semibold text-white">0 pts</p>
+</div>
+</div>
+<!-- Decorative circle -->
+<div class="absolute -right-6 -bottom-10 h-32 w-32 rounded-full bg-primary/10 blur-2xl"></div>
+</div>
+</div>
+<!-- Action Grid -->
+<div class="px-6 pb-10">
+<h4 class="mb-3 text-sm font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">Quick Actions</h4>
+<div class="grid grid-cols-2 gap-3">
+<button class="flex flex-col items-center justify-center gap-2 rounded-xl bg-surface-light dark:bg-white/5 p-4 border border-gray-100 dark:border-white/5 shadow-sm active:scale-95 transition-transform hover:bg-gray-50 dark:hover:bg-white/10">
+<span class="material-symbols-outlined text-3xl text-primary">sync</span>
+<span class="text-sm font-semibold text-slate-700 dark:text-slate-200">Force Sync</span>
+</button>
+<button class="flex flex-col items-center justify-center gap-2 rounded-xl bg-surface-light dark:bg-white/5 p-4 border border-gray-100 dark:border-white/5 shadow-sm active:scale-95 transition-transform hover:bg-gray-50 dark:hover:bg-white/10">
+<span class="material-symbols-outlined text-3xl text-amber-500">lock_reset</span>
+<span class="text-sm font-semibold text-slate-700 dark:text-slate-200">Reset Access</span>
+</button>
+<button class="flex flex-col items-center justify-center gap-2 rounded-xl bg-surface-light dark:bg-white/5 p-4 border border-gray-100 dark:border-white/5 shadow-sm active:scale-95 transition-transform hover:bg-gray-50 dark:hover:bg-white/10">
+<span class="material-symbols-outlined text-3xl text-blue-500">history</span>
+<span class="text-sm font-semibold text-slate-700 dark:text-slate-200">History</span>
+</button>
+<button class="flex flex-col items-center justify-center gap-2 rounded-xl bg-surface-light dark:bg-white/5 p-4 border border-red-100 dark:border-red-900/30 shadow-sm active:scale-95 transition-transform hover:bg-red-50 dark:hover:bg-red-900/20 group">
+<span class="material-symbols-outlined text-3xl text-red-500 group-hover:text-red-600">block</span>
+<span class="text-sm font-semibold text-red-600 dark:text-red-400">Block User</span>
+</button>
+</div>
+<div class="mt-6 flex justify-center">
+<button class="w-full rounded-xl bg-slate-900 dark:bg-white py-4 font-bold text-white dark:text-slate-900 shadow-lg active:scale-[0.98] transition-transform">
+                        Close Profile
+                    </button>
+</div>
+</div>
+</div>
+</div>
+</body></html>

@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+
+<html lang="fr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Yabisso Push Notification - Lock Screen</title>
+<!-- BEGIN: Tailwind Configuration -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'ios-dark': '#000000',
+            'ios-card': 'rgba(28, 28, 30, 0.7)',
+            'yabisso-brand': '#FFD700', // Gold/Yellow vibe often associated with African tech branding
+          }
+        }
+      }
+    }
+  </script>
+<!-- END: Tailwind Configuration -->
+<!-- BEGIN: Global Styles -->
+<style data-purpose="layout-styles">
+    body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: #000;
+    }
+    .blur-backdrop {
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+    }
+    /* Mimicking the smooth curve of iOS notification bubbles */
+    .ios-notification-curve {
+      border-radius: 22px;
+    }
+  </style>
+<!-- END: Global Styles -->
+</head>
+<body class="bg-ios-dark flex items-center justify-center min-h-screen">
+<!-- BEGIN: Mobile Device Frame Simulation -->
+<main class="relative w-[375px] h-[812px] bg-cover bg-center overflow-hidden border-[8px] border-zinc-800 rounded-[60px] shadow-2xl" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCoc0Gsb-q9xiy4m6pip9bdx4-5gkaHblQA173jh0chzUgCB2NvZM5YJwiy7oCB-WsaK5i1bdkFn_uTGfXFQXaDCJVEmX3OumLAVHvZQr9b2SQQrPlJybALSS8p_j3cJs2OKE3eV-Zn_wSUis9FjzQtj7SsobPXugcTYd4NAgwDcONYqBCif8NUNUfuuuOBKBN-L-hVCp_w4tzWqBBdhUyFQ5Gn2TLauEsPyBSNaGkrqamxwMXbGnqGIvA6gCgAVDe5beoPnwWN');">
+<!-- BEGIN: Lock Screen Header (Time/Date) -->
+<header class="mt-16 text-center text-white" data-purpose="ios-lockscreen-header">
+<h1 class="text-7xl font-thin tracking-tight">10:45</h1>
+<p class="text-xl font-medium mt-2">Lundi 24 Mai</p>
+</header>
+<!-- END: Lock Screen Header -->
+<!-- BEGIN: Notification Container -->
+<section class="absolute top-1/4 left-0 w-full px-4 pt-10" data-purpose="notification-center">
+<!-- BEGIN: Push Notification Card -->
+<article class="ios-notification-curve blur-backdrop bg-ios-card border border-white/10 p-4 shadow-lg flex flex-col gap-2 transition-transform hover:scale-[1.02] active:scale-[0.98]" data-purpose="yabisso-push-notification">
+<!-- App Icon and Header Info -->
+<header class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<!-- Simulated App Icon -->
+<div class="w-6 h-6 bg-yabisso-brand rounded-md flex items-center justify-center overflow-hidden">
+<span class="text-[10px] font-black text-black">Y</span>
+</div>
+<span class="text-xs font-semibold text-gray-300 tracking-wide uppercase">YABISSO</span>
+</div>
+<span class="text-[10px] text-gray-400">maintenant</span>
+</header>
+<!-- Notification Content -->
+<div class="flex flex-col">
+<h2 class="text-white font-bold text-[15px] leading-tight">Commande expédiée</h2>
+<p class="text-gray-200 text-[14px] leading-snug mt-1">
+            Votre colis a quitté l'entrepôt et est en route vers le centre de distribution.
+          </p>
+</div>
+</article>
+<!-- END: Push Notification Card -->
+</section>
+<!-- END: Notification Container -->
+<!-- BEGIN: iOS Bottom Bar -->
+<footer class="absolute bottom-4 left-1/2 -translate-x-1/2 w-32 h-1.5 bg-white/40 rounded-full"></footer>
+<!-- END: iOS Bottom Bar -->
+<!-- BEGIN: Bottom Interaction Icons -->
+<div class="absolute bottom-12 w-full px-12 flex justify-between items-center">
+<div class="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center blur-backdrop">
+<!-- Flashlight Icon placeholder -->
+<svg class="h-6 w-6 text-white" fill="none" stroke="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M13 10V3L4 14h7v7l9-11h-7z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</div>
+<div class="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center blur-backdrop">
+<!-- Camera Icon placeholder -->
+<svg class="h-6 w-6 text-white" fill="none" stroke="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+<path d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</div>
+</div>
+<!-- END: Bottom Interaction Icons -->
+</main>
+<!-- END: Mobile Device Frame Simulation -->
+</body></html>

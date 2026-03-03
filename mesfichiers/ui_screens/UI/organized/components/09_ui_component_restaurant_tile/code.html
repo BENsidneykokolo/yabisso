@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Restaurant Tile Component</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Icons -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Theme Config -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                        "card-dark": "#192633",
+                        "accent-green": "#10B981",
+                        "accent-yellow": "#F59E0B",
+                        "accent-red": "#EF4444",
+                    },
+                    fontFamily: {
+                        "display": ["Space Grotesk", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        /* Custom scrollbar for horizontal lists */
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-gray-900 dark:text-white antialiased overflow-x-hidden">
+<div class="max-w-md mx-auto min-h-screen relative flex flex-col">
+<!-- Header for Context -->
+<header class="p-5 flex justify-between items-center bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md sticky top-0 z-20">
+<div>
+<p class="text-xs font-medium text-primary uppercase tracking-wider mb-1">Delivering to</p>
+<div class="flex items-center gap-1">
+<span class="text-lg font-bold">Lagos, Victoria Island</span>
+<span class="material-symbols-outlined text-primary text-[1.2rem]">expand_more</span>
+</div>
+</div>
+<button class="relative p-2 rounded-full bg-card-dark text-white">
+<span class="material-symbols-outlined text-[1.5rem]">notifications</span>
+<span class="absolute top-2 right-2 w-2.5 h-2.5 bg-accent-red rounded-full border-2 border-card-dark"></span>
+</button>
+</header>
+<!-- Main Feed -->
+<main class="flex-1 p-4 space-y-6">
+<!-- Title -->
+<div class="flex justify-between items-end">
+<h2 class="text-2xl font-bold">Restaurants near you</h2>
+<a class="text-primary text-sm font-medium hover:underline" href="#">See all</a>
+</div>
+<!-- COMPONENT 1: Standard Vertical Restaurant Tile (Offline-First Ready) -->
+<!-- This is the primary component requested -->
+<article class="group relative flex flex-col w-full rounded-2xl overflow-hidden bg-white dark:bg-card-dark shadow-sm dark:shadow-[0_4px_20px_rgba(0,0,0,0.4)] transition-transform active:scale-[0.98]">
+<!-- Hero Image Section -->
+<div class="relative h-48 w-full bg-gray-200 dark:bg-gray-800">
+<div class="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105" data-alt="Close up of spicy jollof rice with grilled chicken" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuACZaY6ZxlFOZvV4brjbS1lYGAas4HCFnacOcK_zAbfx-qQ4TE3ust-4j8dMivoAMHpsIMM8XGIZFSI-xT6Lr7iJTJtYFvDNqOdchOjwpG5MSwdxw6Lzb2aD5W9fss7Q75zVhOVOG3Jbdl1Z_W3ic-Uhd3ii1x0ZjIYCws9d-v1RWh_jVMamCLvit_7B_SSeE5eW2KZmTrOj8WzXu0HozLUA1E7kFAiKvXrZke6yTq6Uetu2hJjiJGP3uwNiVOI1rvNAYlDuo1r');">
+</div>
+<!-- Gradient Overlay for text contrast if needed, subtle here -->
+<div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-80"></div>
+<!-- Top Tags -->
+<div class="absolute top-3 left-3 flex gap-2">
+<span class="px-2 py-1 rounded-lg bg-accent-green/90 backdrop-blur-sm text-white text-xs font-bold shadow-sm">
+                            Open Now
+                        </span>
+<!-- Promo Tag (Optional) -->
+<span class="px-2 py-1 rounded-lg bg-primary/90 backdrop-blur-sm text-white text-xs font-bold shadow-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">local_offer</span> 20% OFF
+                        </span>
+</div>
+<!-- Favorite Button -->
+<button class="absolute top-3 right-3 p-2 rounded-full bg-black/40 backdrop-blur-md text-white hover:bg-primary hover:text-white transition-colors">
+<span class="material-symbols-outlined text-[20px] leading-none" style="font-variation-settings: 'FILL' 0;">favorite</span>
+</button>
+</div>
+<!-- Content Section -->
+<div class="p-4 pt-10 relative">
+<!-- Floating Logo Badge -->
+<div class="absolute -top-8 left-4 w-16 h-16 rounded-xl border-4 border-white dark:border-card-dark bg-gray-800 shadow-md overflow-hidden">
+<img alt="Mama Africa Logo" class="w-full h-full object-cover" data-alt="Restaurant logo with initials MK on orange background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuANTS_UNO86hoJOTY2JCnMbrQSdFzo80t3PUGsibQmc7qPwMxbmES6mc0stu9UhW1hj5BkvzJiMtbkVNx-0TRdWqR-ZMGvFyYA9ZyiLYPJXWmlyP-WNrQxm-KoplvfdAeA_8GVEyXTCBWYy2aBs7xdnaaYEFzR0uobx-ZfXFVnpBxBGuVJxXJWmHC_z9cXDyUWOsg0FgVEBTSZHYKpJYcQ7wYPfvsneYi6_WTyTOLNXOlSsAnrH_RzIw9T1iRZBpyYPceJ7ZDHW"/>
+</div>
+<!-- Header Row -->
+<div class="flex justify-between items-start mb-1">
+<div class="flex-1 pr-2">
+<h3 class="text-xl font-bold leading-tight text-gray-900 dark:text-white">Mama's Kitchen</h3>
+<p class="text-sm text-gray-500 dark:text-gray-400 mt-1 line-clamp-1">West African • Grill • Spicy</p>
+</div>
+<div class="flex flex-col items-end gap-1">
+<div class="flex items-center gap-1 bg-gray-100 dark:bg-white/5 px-2 py-1 rounded-lg">
+<span class="material-symbols-outlined text-accent-yellow text-[16px]">star</span>
+<span class="text-sm font-bold">4.8</span>
+<span class="text-xs text-gray-400">(204)</span>
+</div>
+</div>
+</div>
+<!-- Info Divider -->
+<div class="h-px w-full bg-gray-100 dark:bg-gray-700/50 my-3"></div>
+<!-- Metadata Row -->
+<div class="flex items-center justify-between text-sm">
+<div class="flex items-center gap-4 text-gray-600 dark:text-gray-300">
+<!-- Time -->
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-primary text-[18px]">schedule</span>
+<span class="font-medium">25-35 min</span>
+</div>
+<!-- Price -->
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-primary text-[18px]">payments</span>
+<span class="font-medium">$$$</span>
+</div>
+</div>
+<!-- Delivery Info -->
+<div class="flex items-center gap-1.5 text-accent-green font-medium text-xs bg-accent-green/10 px-2 py-1 rounded-md">
+<span class="material-symbols-outlined text-[14px]">pedal_bike</span>
+                            Free Delivery
+                        </div>
+</div>
+</div>
+</article>
+<!-- COMPONENT 2: Compact/Horizontal Tile (Variation for lists) -->
+<article class="flex w-full bg-white dark:bg-card-dark rounded-xl overflow-hidden shadow-sm dark:shadow-[0_4px_20px_rgba(0,0,0,0.2)] h-32 active:scale-[0.99] transition-transform">
+<!-- Image -->
+<div class="w-32 h-full relative shrink-0">
+<div class="absolute inset-0 bg-cover bg-center" data-alt="Juicy beef burger with cheese and lettuce" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuC3Fg28zPuzhNprVsnu7Md6mGkWxEpe0UaqDFCyV0As50Kf1qrr23oeuKWo-_vBG_8IggOv-FKlBfjL44hA8ynCSqk1o7ELwl42zDk7N85cx2YjfGIuyvXFfxpZiYUbgxVe4Nh_xRzL6AgPxqzeW9agEaq37fRztvKn2sD_dWKKJaecJO9HwGLlGoy9HTww4si0iaiPugMo_45w9rQzY_WB_cC3JMC3aCDuAzrIB7O65y62naxTRFzA-uqm0ky5Ew6RkU0tCjsA');"></div>
+<div class="absolute inset-0 bg-black/20"></div>
+<!-- Logo Overlay Small -->
+<div class="absolute bottom-2 left-2 w-8 h-8 rounded-full border-2 border-white dark:border-card-dark bg-white overflow-hidden">
+<img alt="Burger Barn Logo" class="w-full h-full object-cover" data-alt="Blue logo with initials BB" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC-WDd6a2VRKEecHJreaRBRIwfObLRIWy-mCrPz2vYJGAASOZDkC0mk03YIs5jJcjX28NYqNtrxqKaPCHbAOUNASRa3M4mCWrqk1kegcksn_gLZ0Vyq5-cF5DSUhIJyhguv5_f54irzzAsgkBQNNfiTgsp7hppThvCWtbTEoh2HbEcOFuKah_gLxZbKHgK9wXpY8bt6cZcAqgQBjedOVebjciQ_riPru36Jq9BQvx4UZRUV9K0UZukwPSFTSMfi3HQJ76WaE2Tp"/>
+</div>
+</div>
+<!-- Details -->
+<div class="flex-1 p-3 flex flex-col justify-between">
+<div>
+<div class="flex justify-between items-start">
+<h3 class="text-lg font-bold text-gray-900 dark:text-white leading-tight">Burger Barn</h3>
+<span class="text-xs font-bold bg-gray-100 dark:bg-white/10 px-1.5 py-0.5 rounded text-gray-500 dark:text-gray-300">4.5 ★</span>
+</div>
+<p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">American • Fast Food</p>
+</div>
+<div class="flex items-end justify-between mt-2">
+<div class="flex flex-col gap-0.5">
+<div class="flex items-center gap-1 text-xs text-gray-600 dark:text-gray-300">
+<span class="material-symbols-outlined text-[14px] text-primary">schedule</span>
+                                15-25 min
+                            </div>
+<div class="flex items-center gap-1 text-xs text-gray-600 dark:text-gray-300">
+<span class="material-symbols-outlined text-[14px] text-accent-green">local_shipping</span>
+                                $2.50
+                            </div>
+</div>
+<button class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[18px]">add</span>
+</button>
+</div>
+</div>
+</article>
+<!-- COMPONENT 3: "Featured" or "Closed" State Variation -->
+<article class="group relative flex flex-col w-full rounded-2xl overflow-hidden bg-white dark:bg-card-dark shadow-sm dark:shadow-[0_4px_20px_rgba(0,0,0,0.4)] opacity-75 grayscale-[0.5] hover:opacity-100 hover:grayscale-0 transition-all">
+<div class="relative h-48 w-full">
+<div class="absolute inset-0 bg-cover bg-center" data-alt="Assorted sushi platter on a wooden board" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDaTXfnvZ70E0fbqaBlZbWr1fjOH2Zd-SnBrvGf8uQ1dQkErzS3_jQEWJmO6jNsbDePwPg-onwoyfiKop2rliyVYa0u6pPe8upsdji9i_NKiacWx8695DS6td8eNuOmQ0IvV2eiwqdO_erglONS7IwQD5nVobQyOanc18Dj1uwvS0mkGmnqgOcaT4xtYWBwwapbeJIJVOmAItI6ZMyz9x6Un_a_vzuMsp2tOwsV69khu6G5VKSsnnHYj-b7KGvE12cOc-OZZ6iT');">
+</div>
+<div class="absolute inset-0 bg-black/50"></div>
+<!-- Closed Status -->
+<div class="absolute inset-0 flex items-center justify-center">
+<div class="bg-black/70 backdrop-blur-md px-4 py-2 rounded-full border border-white/10 flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-accent-red animate-pulse"></span>
+<span class="text-white font-bold text-sm tracking-wide">Closed • Opens at 5PM</span>
+</div>
+</div>
+</div>
+<div class="p-4 relative">
+<div class="flex justify-between items-start">
+<div>
+<h3 class="text-xl font-bold text-gray-900 dark:text-white">Tokyo Nights</h3>
+<p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Japanese • Sushi • Asian</p>
+</div>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-accent-yellow text-[16px]">star</span>
+<span class="text-sm font-bold">4.9</span>
+</div>
+</div>
+</div>
+</article>
+</main>
+<!-- Bottom Navigation (Context) -->
+<nav class="sticky bottom-0 bg-background-light dark:bg-background-dark border-t border-gray-200 dark:border-gray-800 pb-safe pt-2 px-6 flex justify-between items-center z-20 h-20">
+<div class="flex flex-col items-center gap-1 text-primary">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">restaurant</span>
+<span class="text-[10px] font-medium">Food</span>
+</div>
+<div class="flex flex-col items-center gap-1 text-gray-400 dark:text-gray-500">
+<span class="material-symbols-outlined">shopping_bag</span>
+<span class="text-[10px] font-medium">Shop</span>
+</div>
+<div class="flex flex-col items-center gap-1 text-gray-400 dark:text-gray-500">
+<span class="material-symbols-outlined">account_balance_wallet</span>
+<span class="text-[10px] font-medium">Wallet</span>
+</div>
+<div class="flex flex-col items-center gap-1 text-gray-400 dark:text-gray-500">
+<span class="material-symbols-outlined">person</span>
+<span class="text-[10px] font-medium">Profile</span>
+</div>
+</nav>
+</div>
+</body></html>

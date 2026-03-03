@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Event Poster Card UI</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Theme Configuration -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "brand-red": "#ef4444",
+                        "brand-yellow": "#eab308",
+                        "brand-green": "#22c55e",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                        "surface-dark": "#192633",
+                    },
+                    fontFamily: {
+                        "display": ["Space Grotesk", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "2xl": "1rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom scrollbar for horizontal scrolling */
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-white min-h-screen flex justify-center">
+<!-- Mobile Container -->
+<div class="w-full max-w-md min-h-screen bg-background-light dark:bg-background-dark relative shadow-2xl overflow-hidden flex flex-col">
+<!-- Header -->
+<header class="p-5 flex items-center justify-between sticky top-0 z-20 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-800">
+<div>
+<p class="text-xs font-medium text-primary uppercase tracking-wider mb-1">Discover</p>
+<h1 class="text-2xl font-bold leading-none">Events</h1>
+</div>
+<div class="flex gap-4">
+<button class="material-symbols-outlined text-2xl text-slate-600 dark:text-slate-300">search</button>
+<div class="relative">
+<button class="material-symbols-outlined text-2xl text-slate-600 dark:text-slate-300">notifications</button>
+<span class="absolute top-0 right-0 w-2.5 h-2.5 bg-brand-red rounded-full border-2 border-white dark:border-background-dark"></span>
+</div>
+</div>
+</header>
+<!-- Main Content -->
+<main class="flex-1 overflow-y-auto pb-24">
+<!-- Featured Section (Horizontal Scroll) -->
+<section class="mt-6 pl-5">
+<div class="flex items-center justify-between pr-5 mb-4">
+<h2 class="text-lg font-bold">Featured</h2>
+<a class="text-sm text-primary font-medium" href="#">See All</a>
+</div>
+<div class="flex gap-4 overflow-x-auto hide-scrollbar pb-6 pr-5">
+<!-- Card 1: Large Poster Style -->
+<div class="min-w-[280px] w-[280px] group cursor-pointer">
+<div class="relative w-full aspect-[4/5] rounded-2xl overflow-hidden shadow-lg bg-surface-dark">
+<!-- Image -->
+<div class="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105" data-alt="vibrant concert stage with colorful laser lights in a dark venue" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCVn66QGMlVBokaMNeN26fhWRv7bF1fh07-f60xUaZTggVqQuJyFufiYjZ59c4et1lqAFZa1a8X0RZmAecbEABrDIGOou6vf9maHF8u6nHgtVMxrNBiS2fCST0_p4COSHy3DOy715sBI3dxmvXHAv8GHazaUpjrjkQZyNgZZyZVr2gvG5z14_69M4upqjn-6d5rdMmtleIxuR8MKERxLHBCtviDvie4vEBthBW3BAdUBfb45rhI6e-tuzpYcMNBoRJCmLIln2Xa");'>
+</div>
+<!-- Gradient Overlay for readability -->
+<div class="absolute inset-0 bg-gradient-to-t from-background-dark via-background-dark/60 to-transparent"></div>
+<!-- Floating Badge -->
+<div class="absolute top-3 left-3 flex flex-col items-center justify-center bg-white/10 backdrop-blur-md border border-white/10 rounded-xl p-2 min-w-[56px]">
+<span class="text-xs font-medium uppercase text-gray-300">Oct</span>
+<span class="text-xl font-bold text-white leading-none">24</span>
+</div>
+<!-- Top Right Tag -->
+<div class="absolute top-3 right-3">
+<span class="px-2 py-1 rounded-md bg-brand-yellow/20 text-brand-yellow border border-brand-yellow/30 text-xs font-bold backdrop-blur-sm">
+                                    MUSIC
+                                </span>
+</div>
+<!-- Content Overlay -->
+<div class="absolute bottom-0 left-0 w-full p-4 flex flex-col gap-2">
+<h3 class="text-2xl font-bold text-white leading-tight">Afro-Beats Festival '24</h3>
+<div class="flex items-center gap-4 text-gray-300 text-sm">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[18px] text-primary">schedule</span>
+<span>19:00 WAT</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[18px] text-primary">location_on</span>
+<span class="truncate max-w-[120px]">Eko Hotel, Lagos</span>
+</div>
+</div>
+<div class="flex items-center justify-between mt-2 pt-3 border-t border-white/10">
+<div>
+<p class="text-xs text-gray-400">Starting from</p>
+<p class="font-bold text-white">₦ 15,000</p>
+</div>
+<button class="h-9 px-4 rounded-lg bg-primary hover:bg-blue-600 active:bg-blue-700 text-white text-sm font-medium transition-colors">
+                                        Book Ticket
+                                    </button>
+</div>
+</div>
+</div>
+</div>
+<!-- Card 2: Tech Event -->
+<div class="min-w-[280px] w-[280px] group cursor-pointer">
+<div class="relative w-full aspect-[4/5] rounded-2xl overflow-hidden shadow-lg bg-surface-dark">
+<div class="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105" data-alt="speaker on stage at a tech conference with digital screens background" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBqOLSFF1FkEaM1WXpL9hCwikyeDSzsRHlTT3hCQFSssbnI0eR-gOpgIgSJE7RjGguHMC69FKzNRO85u1lXmkxvlvBsyIunAC7tv_dkUJ3ShKaQzKwxK0kNJ3usGLI36XfXMr0Pjgz_Lky324ldptEpCeD0bTODgtwoLqYB9LD5g7AaAqiPRz4o17AMkrH9X3e11AHe-HbplItxsOXYAb-y4rcAasa5jLJu3BfN2UOTVgDN4olxmQxMGPHg0jqdHjUJlB3st_RS");'>
+</div>
+<div class="absolute inset-0 bg-gradient-to-t from-background-dark via-background-dark/50 to-transparent"></div>
+<div class="absolute top-3 left-3 flex flex-col items-center justify-center bg-white/10 backdrop-blur-md border border-white/10 rounded-xl p-2 min-w-[56px]">
+<span class="text-xs font-medium uppercase text-gray-300">Nov</span>
+<span class="text-xl font-bold text-white leading-none">02</span>
+</div>
+<div class="absolute top-3 right-3">
+<span class="px-2 py-1 rounded-md bg-brand-red/20 text-brand-red border border-brand-red/30 text-xs font-bold backdrop-blur-sm">
+                                    TECH
+                                </span>
+</div>
+<div class="absolute bottom-0 left-0 w-full p-4 flex flex-col gap-2">
+<h3 class="text-2xl font-bold text-white leading-tight">Lagos Tech Summit</h3>
+<div class="flex items-center gap-4 text-gray-300 text-sm">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[18px] text-primary">schedule</span>
+<span>09:00 WAT</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[18px] text-primary">location_on</span>
+<span class="truncate max-w-[120px]">Landmark Center</span>
+</div>
+</div>
+<div class="flex items-center justify-between mt-2 pt-3 border-t border-white/10">
+<div>
+<p class="text-xs text-gray-400">Starting from</p>
+<p class="font-bold text-white">Free</p>
+</div>
+<button class="h-9 px-4 rounded-lg bg-white/10 hover:bg-white/20 text-white text-sm font-medium transition-colors backdrop-blur-sm">
+                                        Register
+                                    </button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Upcoming List Section -->
+<section class="px-5 mt-2">
+<h2 class="text-lg font-bold mb-4">Upcoming Events</h2>
+<div class="flex flex-col gap-4">
+<!-- List Card 1: Horizontal Layout -->
+<div class="flex flex-col @xl:flex-row bg-surface-dark rounded-xl p-3 gap-3 shadow-md border border-white/5 active:scale-[0.99] transition-transform">
+<!-- Image Container -->
+<div class="relative w-full h-32 rounded-lg overflow-hidden shrink-0">
+<div class="w-full h-full bg-cover bg-center" data-alt="modern art gallery exhibition with paintings on walls" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBGkHvjMmVKJEGozHLyMMZvP0KdDUJddMJOBkfOHYlFLUxlWU_p2nA4FJ1bcMm684JuuBovPYhp82uUsLWivn26rpVUpVaSG-zbAZiW2vot6FpypKPkUrUBg_ZP40FuAeHA_z3K8Zbd3_np4NLSi4pHFML3tI3iZVm1QQNAtJ7UAZQpSJObaJ_OnFmNvRNKleOdzb68PBEaUb-C3CHU0fWlMUEwhmm_pK45IM0Ij8ykMFv8dcU4mjw5hprsk3vAyFvJ6oihB1Bt");'>
+</div>
+<!-- Small Date Badge for List View -->
+<div class="absolute top-2 left-2 bg-background-dark/80 backdrop-blur text-white text-[10px] font-bold px-2 py-1 rounded">
+                                DEC 12
+                            </div>
+</div>
+<!-- Content -->
+<div class="flex flex-col justify-between grow">
+<div>
+<div class="flex justify-between items-start">
+<span class="text-[10px] font-bold text-brand-green uppercase tracking-wide mb-1 block">Exhibition</span>
+<span class="material-symbols-outlined text-gray-400 text-lg">favorite</span>
+</div>
+<h3 class="text-lg font-bold text-white leading-tight mb-1">Modern Art Gala</h3>
+<p class="text-gray-400 text-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">location_on</span>
+                                    Victoria Island
+                                </p>
+</div>
+<div class="flex items-end justify-between mt-3">
+<div class="text-sm font-medium text-white">
+                                    ₦ 2,000 <span class="text-xs text-gray-500 font-normal">/ person</span>
+</div>
+<button class="rounded bg-primary/20 text-primary hover:bg-primary hover:text-white px-3 py-1.5 text-xs font-bold transition-all">
+                                    Book
+                                </button>
+</div>
+</div>
+</div>
+<!-- List Card 2 -->
+<div class="flex flex-col @xl:flex-row bg-surface-dark rounded-xl p-3 gap-3 shadow-md border border-white/5 active:scale-[0.99] transition-transform">
+<div class="relative w-full h-32 rounded-lg overflow-hidden shrink-0">
+<div class="w-full h-full bg-cover bg-center" data-alt="gourmet food plate presentation at a food festival" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuB-_LaF8_-JZ62udaJn_e74CB8G7H-GkZSX5qeXeD3evxdVT6Z3cIS5m8221XBclKNLkWjRHjXn3aLiZMaYOeI4bouhErOhvMzXEv_HNF_Q1I-PEHxWqo8vyMWFwaZhvQl-G8kMgg0JHfIfN0kIDZfv1z7qE3PooNwOXgE_X5sFTzOsaMsCkGIS7MR2ppRfPNQ9drSBcUFa7j4ayHvHZTE-RqCUiPDMfRWj0raBlpb4Aq--SIOt5HqzmbHmQoXOLz4OJ2mGk3St");'>
+</div>
+<div class="absolute top-2 left-2 bg-background-dark/80 backdrop-blur text-white text-[10px] font-bold px-2 py-1 rounded">
+                                DEC 15
+                            </div>
+</div>
+<div class="flex flex-col justify-between grow">
+<div>
+<div class="flex justify-between items-start">
+<span class="text-[10px] font-bold text-brand-red uppercase tracking-wide mb-1 block">Food &amp; Drink</span>
+<span class="material-symbols-outlined text-gray-400 text-lg">favorite</span>
+</div>
+<h3 class="text-lg font-bold text-white leading-tight mb-1">Taste of Lagos</h3>
+<p class="text-gray-400 text-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">location_on</span>
+                                    Muri Okunola Park
+                                </p>
+</div>
+<div class="flex items-end justify-between mt-3">
+<div class="text-sm font-medium text-white">
+                                    ₦ 3,500 <span class="text-xs text-gray-500 font-normal">/ entry</span>
+</div>
+<button class="rounded bg-primary/20 text-primary hover:bg-primary hover:text-white px-3 py-1.5 text-xs font-bold transition-all">
+                                    Book
+                                </button>
+</div>
+</div>
+</div>
+<!-- List Card 3 (Sold Out State) -->
+<div class="flex flex-col @xl:flex-row bg-surface-dark rounded-xl p-3 gap-3 shadow-md border border-white/5 opacity-75">
+<div class="relative w-full h-32 rounded-lg overflow-hidden shrink-0 grayscale">
+<div class="w-full h-full bg-cover bg-center" data-alt="microphone on a stand with brick wall background for comedy show" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuC363l85mdzeCwdrkj6psSG8zDvpsZugCHFAYLwXrl0LuNPdgAwCz2EN_8NqWvqCmXwGAElFhhN-tHJhjR2Dda-F72gzgjocXZ2Z06PL7a89Nh3x5bp6-hNHH6Mt6LnKqXJQ7FhqQonvVhYHHxDxu42dJly9miOujr8gHNxBLv7wa78dcev4DWkcaevH6O-0oak7wb34KQiBVKY_wTZLeVPwfVlI7QH-V6e-TmaKShkrw9iNcgzMmrjJas2iQZXyY-2xJja1we6");'>
+</div>
+<div class="absolute inset-0 bg-black/40 flex items-center justify-center">
+<span class="bg-red-600 text-white text-xs font-bold px-3 py-1 rounded-full uppercase transform -rotate-12 border-2 border-white">Sold Out</span>
+</div>
+</div>
+<div class="flex flex-col justify-between grow">
+<div>
+<div class="flex justify-between items-start">
+<span class="text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-1 block">Comedy</span>
+<span class="material-symbols-outlined text-gray-600 text-lg">favorite_border</span>
+</div>
+<h3 class="text-lg font-bold text-gray-300 leading-tight mb-1">Laugh Out Loud</h3>
+<p class="text-gray-500 text-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">location_on</span>
+                                    Muson Centre
+                                </p>
+</div>
+<div class="flex items-end justify-between mt-3">
+<div class="text-sm font-medium text-gray-500">
+                                    ₦ 5,000
+                                </div>
+<button class="rounded bg-gray-700 text-gray-400 px-3 py-1.5 text-xs font-bold cursor-not-allowed" disabled="">
+                                    Closed
+                                </button>
+</div>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Bottom Navigation (Context) -->
+<nav class="h-20 bg-surface-dark border-t border-gray-800 flex items-center justify-around px-2 sticky bottom-0 z-30 pb-4">
+<a class="flex flex-col items-center gap-1 p-2 text-gray-500" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="text-[10px] font-medium">Home</span>
+</a>
+<a class="flex flex-col items-center gap-1 p-2 text-primary" href="#">
+<span class="material-symbols-outlined fill-1">local_activity</span>
+<span class="text-[10px] font-medium">Events</span>
+</a>
+<div class="relative -top-6 bg-primary p-4 rounded-full shadow-[0_0_15px_rgba(19,127,236,0.5)] border-4 border-background-dark">
+<span class="material-symbols-outlined text-white text-2xl">qr_code_scanner</span>
+</div>
+<a class="flex flex-col items-center gap-1 p-2 text-gray-500" href="#">
+<span class="material-symbols-outlined">wallet</span>
+<span class="text-[10px] font-medium">Wallet</span>
+</a>
+<a class="flex flex-col items-center gap-1 p-2 text-gray-500" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="text-[10px] font-medium">Profile</span>
+</a>
+</nav>
+</div>
+</body></html>

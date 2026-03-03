@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Taxi Driver Found</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                    },
+                    fontFamily: {
+                        "display": ["Space Grotesk", "sans-serif"]
+                    },
+                    borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" },
+                },
+            },
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display antialiased overflow-hidden">
+<div class="relative flex h-screen w-full flex-col group/design-root overflow-hidden">
+<!-- Map Background Layer -->
+<!-- Using absolute positioning to make it a full background behind the modal -->
+<div class="absolute inset-0 z-0 flex flex-col">
+<div class="w-full h-full bg-cover bg-center relative" data-alt="Map view of city streets in Accra" data-location="Accra" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAglTriCW0ngKDauarf_t5GwFe6__d0DOpciOg5roduRkg93QKRzEDNz57gjtsqNgyxKbuwSAfcxnR_zBza24GXBCy4PTLJbIzUKHGFQXAEvKpsroI2TsaloF8r7xDflx54FyyETSQUrLXLZC2cuoPLeDvwteda80-8bqOIdtNYLl4Y8BJdCdf-j3ZFxrRYIEOfkAlRiT35MoJXcrW8X5DQnWj9nFkuzUqJJ3CJ0PNNktFBW1DRtREjWUENSxUE8ExBIwdJeh-T');">
+<!-- Map UI Controls Overlay (Top) -->
+<div class="absolute top-0 left-0 w-full p-4 pt-14 flex justify-between items-start pointer-events-none">
+<button class="bg-[#192633]/90 backdrop-blur-md size-10 rounded-full flex items-center justify-center text-white shadow-lg pointer-events-auto border border-white/5">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<button class="bg-[#192633]/90 backdrop-blur-md size-10 rounded-full flex items-center justify-center text-white shadow-lg pointer-events-auto border border-white/5">
+<span class="material-symbols-outlined">my_location</span>
+</button>
+</div>
+<!-- Gradient overlay to make text readable if map is busy -->
+<div class="absolute inset-0 bg-gradient-to-b from-[#111a22]/30 via-transparent to-[#111a22]"></div>
+<!-- Simulated Map Markers -->
+<div class="absolute top-1/3 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+<div class="relative">
+<div class="size-16 bg-primary/20 rounded-full animate-ping absolute inset-0"></div>
+<div class="size-16 flex items-center justify-center relative z-10">
+<div class="bg-primary text-white p-2 rounded-full shadow-xl border-2 border-white">
+<span class="material-symbols-outlined" style="font-size: 24px;">directions_car</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Bottom Sheet Modal Area -->
+<div class="absolute inset-x-0 bottom-0 z-20 flex flex-col justify-end">
+<!-- Bottom Sheet Content -->
+<div class="bg-[#111a22] rounded-t-3xl shadow-[0_-8px_30px_rgba(0,0,0,0.5)] border-t border-white/5 pb-8 relative overflow-hidden">
+<!-- African Tech Vibe Accent Line -->
+<div class="absolute top-0 left-0 w-full h-1 flex">
+<div class="w-1/4 bg-[#137fec]"></div> <!-- Blue -->
+<div class="w-1/4 bg-[#ef4444]"></div> <!-- Red -->
+<div class="w-1/4 bg-[#eab308]"></div> <!-- Yellow -->
+<div class="w-1/4 bg-[#22c55e]"></div> <!-- Green -->
+</div>
+<!-- Handle -->
+<div class="w-full flex justify-center pt-4 pb-2">
+<div class="h-1.5 w-12 rounded-full bg-[#324d67]"></div>
+</div>
+<!-- Header: Driver Found Status -->
+<div class="px-6 pt-2 pb-4 text-center">
+<div class="flex flex-col items-center gap-2">
+<div class="size-12 rounded-full bg-[#22c55e]/10 border border-[#22c55e]/20 flex items-center justify-center text-[#22c55e] mb-1">
+<span class="material-symbols-outlined text-[28px]">check</span>
+</div>
+<h2 class="text-white tracking-tight text-[26px] font-bold leading-tight">Driver Found!</h2>
+<div class="flex items-center gap-1.5 text-primary bg-primary/10 px-3 py-1 rounded-full border border-primary/20">
+<span class="material-symbols-outlined text-[18px] animate-pulse">schedule</span>
+<span class="text-sm font-semibold tracking-wide uppercase">Arriving in 3 mins</span>
+</div>
+</div>
+</div>
+<!-- Driver Card Component -->
+<div class="px-4 py-2">
+<div class="bg-[#192633] rounded-2xl p-4 flex items-center justify-between border border-white/5 relative overflow-hidden group">
+<!-- Subtle Pattern Background -->
+<div class="absolute right-0 top-0 w-32 h-32 bg-primary/5 rounded-bl-full pointer-events-none"></div>
+<div class="flex items-center gap-4 relative z-10">
+<!-- Avatar with Rating Badge -->
+<div class="relative">
+<div class="bg-center bg-no-repeat bg-cover rounded-full h-16 w-16 shadow-lg border-2 border-[#192633]" data-alt="Portrait of driver Kwame smiling" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCdtLnGD8uZFhYqSwZ4dXdaw9HWS97EDk9Y8RN_eQ9nJ8t-0Sd3IBgYwvSP9iaMm4txsLwIX0Y8IYFAlq1USA70cZDwf124eon_2CMgy1acKqnuvXMDlcq0DwcJ5dvHHOGl-XfZLfPY___gShaw6fe7XIhaXIgEWyoLPgpGbtUv8UAFC6uRk4U1pXCwA0Bdb3jQ02_jpHDxvaegmGeQQM2u05z1NkvK32FUvjPg2BALvDW5Lri5GAT3FVn7T2Vd01F7WS4a-5xI");'></div>
+<div class="absolute -bottom-1 -right-1 bg-[#eab308] text-black text-[11px] font-bold px-1.5 py-0.5 rounded-full flex items-center gap-0.5 shadow-md border border-[#192633]">
+<span>4.9</span>
+<span class="material-symbols-outlined text-[12px] fill-current">star</span>
+</div>
+</div>
+<!-- Name & Car Info -->
+<div class="flex flex-col justify-center">
+<div class="flex items-center gap-1">
+<p class="text-white text-lg font-bold leading-tight">Kwame O.</p>
+<span class="material-symbols-outlined text-primary text-[16px]" title="Verified">verified</span>
+</div>
+<p class="text-[#92adc9] text-sm font-normal mt-1">Silver Toyota Corolla</p>
+</div>
+</div>
+<!-- Action Buttons (Call/Message) -->
+<div class="flex items-center gap-2 relative z-10">
+<button class="size-10 rounded-full bg-[#2c3e50] hover:bg-[#34495e] flex items-center justify-center text-white transition-all active:scale-95">
+<span class="material-symbols-outlined text-[20px]">chat</span>
+</button>
+<button class="size-10 rounded-full bg-primary hover:bg-primary/90 flex items-center justify-center text-white transition-all shadow-[0_4px_12px_rgba(19,127,236,0.3)] active:scale-95">
+<span class="material-symbols-outlined text-[20px]">call</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Vehicle Details List -->
+<div class="px-6 py-2">
+<div class="flex justify-between items-center py-3 border-b border-[#2c3e50]/50">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[#92adc9] text-[20px]">directions_car</span>
+<p class="text-[#92adc9] text-sm font-medium">License Plate</p>
+</div>
+<p class="text-white text-base font-mono font-medium tracking-wide bg-[#0d1318] px-2 py-1 rounded border border-[#2c3e50]">ACC - 4582</p>
+</div>
+<div class="flex justify-between items-center py-3">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[#92adc9] text-[20px]">payments</span>
+<p class="text-[#92adc9] text-sm font-medium">Payment</p>
+</div>
+<div class="flex items-center gap-1.5">
+<p class="text-white text-sm font-medium">Cash</p>
+<span class="text-[#22c55e] material-symbols-outlined text-[18px]">check_circle</span>
+</div>
+</div>
+</div>
+<!-- Main Action Button -->
+<div class="px-4 pt-4">
+<button class="group relative w-full flex items-center justify-center gap-2 bg-white text-[#111a22] hover:bg-gray-100 active:scale-[0.99] transition-all h-14 rounded-xl shadow-[0_4px_14px_rgba(255,255,255,0.1)]">
+<span class="text-lg font-bold tracking-tight">View Ride</span>
+<span class="material-symbols-outlined transition-transform group-hover:translate-x-1">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</body></html>

@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Yabisso SMS Login</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "yabisso-blue": "#137fec",
+                        "yabisso-red": "#ef4444",
+                        "yabisso-yellow": "#eab308",
+                        "yabisso-green": "#22c55e",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                        "surface-dark": "#192633",
+                        "border-dark": "#324d67",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "2xl": "1rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom scrollbar hide for cleaner mobile look */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display antialiased selection:bg-yabisso-blue selection:text-white">
+<div class="relative flex h-full min-h-screen w-full flex-col overflow-hidden max-w-md mx-auto shadow-2xl bg-background-dark">
+<!-- Top Navigation -->
+<div class="flex items-center justify-between p-4 pt-6 z-10">
+<button class="text-white hover:text-yabisso-blue transition-colors rounded-full p-2 -ml-2">
+<span class="material-symbols-outlined !text-[28px]">arrow_back</span>
+</button>
+<div class="flex gap-1">
+<!-- Yabisso Brand Colors Dots -->
+<div class="w-2 h-2 rounded-full bg-yabisso-blue"></div>
+<div class="w-2 h-2 rounded-full bg-yabisso-red"></div>
+<div class="w-2 h-2 rounded-full bg-yabisso-yellow"></div>
+<div class="w-2 h-2 rounded-full bg-yabisso-green"></div>
+</div>
+</div>
+<!-- Main Content -->
+<div class="flex-1 flex flex-col px-6 pb-6 relative z-10">
+<!-- Branding / Logo Area -->
+<div class="mt-4 mb-8">
+<div class="w-14 h-14 bg-gradient-to-br from-yabisso-blue to-blue-700 rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-yabisso-blue/20">
+<span class="material-symbols-outlined text-white !text-[32px]">bolt</span>
+</div>
+<h1 class="text-white text-3xl font-bold tracking-tight mb-2">Welcome Back</h1>
+<p class="text-gray-400 text-base leading-relaxed">
+                    Enter your mobile number to log in or create a new Yabisso account.
+                </p>
+</div>
+<!-- Form Section -->
+<div class="space-y-8">
+<!-- Phone Number Input -->
+<div class="space-y-4">
+<label class="block text-sm font-medium text-gray-300">Mobile Number</label>
+<div class="flex gap-3">
+<!-- Country Code Selector -->
+<div class="relative w-28 shrink-0">
+<select class="w-full h-14 pl-10 pr-8 bg-surface-dark border border-border-dark rounded-xl text-white appearance-none focus:border-yabisso-blue focus:ring-1 focus:ring-yabisso-blue transition-all font-medium text-lg">
+<option value="+234">+234</option>
+<option value="+254">+254</option>
+<option value="+233">+233</option>
+<option value="+27">+27</option>
+</select>
+<span class="absolute left-3 top-1/2 -translate-y-1/2 flex items-center justify-center">
+<span class="material-symbols-outlined text-gray-400 text-[20px]">public</span>
+</span>
+<span class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+<span class="material-symbols-outlined text-gray-400 text-[20px]">expand_more</span>
+</span>
+</div>
+<!-- Number Input -->
+<div class="relative flex-1">
+<input class="w-full h-14 bg-surface-dark border border-border-dark rounded-xl px-4 text-white placeholder-gray-500 focus:border-yabisso-blue focus:ring-1 focus:ring-yabisso-blue transition-all font-medium text-lg tracking-wide" placeholder="800 000 0000" type="tel" value="902 456 7890"/>
+<div class="absolute right-3 top-1/2 -translate-y-1/2">
+<span class="material-symbols-outlined text-yabisso-green text-[20px]">check_circle</span>
+</div>
+</div>
+</div>
+<!-- Send Code Action -->
+<button class="w-full h-14 bg-white hover:bg-gray-100 active:scale-[0.98] text-background-dark text-base font-bold rounded-xl shadow-lg transition-all flex items-center justify-center gap-2">
+<span>Get Code</span>
+<span class="material-symbols-outlined text-[20px]">send</span>
+</button>
+</div>
+<!-- OTP Section (Visualizing the verification state) -->
+<div class="pt-6 border-t border-dashed border-border-dark space-y-6">
+<div class="flex items-center justify-between">
+<label class="block text-sm font-medium text-gray-300">Verification Code</label>
+<button class="text-yabisso-blue text-sm font-semibold hover:text-blue-400 transition-colors">Resend Code</button>
+</div>
+<div class="grid grid-cols-4 gap-3">
+<input class="h-16 w-full text-center bg-surface-dark border border-yabisso-blue rounded-xl text-white text-2xl font-bold focus:ring-2 focus:ring-yabisso-blue focus:border-yabisso-blue transition-all shadow-[0_0_15px_rgba(19,127,236,0.15)]" maxlength="1" type="text" value="5"/>
+<input class="h-16 w-full text-center bg-surface-dark border border-border-dark rounded-xl text-white text-2xl font-bold focus:ring-2 focus:ring-yabisso-blue focus:border-yabisso-blue transition-all" maxlength="1" placeholder="-" type="text"/>
+<input class="h-16 w-full text-center bg-surface-dark border border-border-dark rounded-xl text-white text-2xl font-bold focus:ring-2 focus:ring-yabisso-blue focus:border-yabisso-blue transition-all" maxlength="1" placeholder="-" type="text"/>
+<input class="h-16 w-full text-center bg-surface-dark border border-border-dark rounded-xl text-white text-2xl font-bold focus:ring-2 focus:ring-yabisso-blue focus:border-yabisso-blue transition-all" maxlength="1" placeholder="-" type="text"/>
+</div>
+<p class="text-xs text-gray-500 flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">timer</span>
+                        Auto-verifying in <span class="text-white font-medium">00:24</span>
+</p>
+<!-- Verify Action -->
+<button class="w-full h-14 bg-white/10 hover:bg-white/20 active:scale-[0.98] text-white border border-white/10 text-base font-bold rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 backdrop-blur-sm">
+<span>Verify &amp; Login</span>
+<span class="material-symbols-outlined text-[20px]">arrow_forward</span>
+</button>
+</div>
+</div>
+<!-- Footer Support Link -->
+<div class="mt-auto pt-8 text-center">
+<p class="text-gray-500 text-sm">
+                    Having trouble? <a class="text-white font-medium underline decoration-yabisso-blue decoration-2 underline-offset-4" href="#">Contact Support</a>
+</p>
+</div>
+</div>
+<!-- Decorative Bottom Strip (Brand Vibe) -->
+<div class="h-1.5 w-full flex">
+<div class="bg-yabisso-blue flex-1"></div>
+<div class="bg-yabisso-red flex-1"></div>
+<div class="bg-yabisso-yellow flex-1"></div>
+<div class="bg-yabisso-green flex-1"></div>
+</div>
+<!-- Background decorative elements for "Tech Vibe" -->
+<div class="absolute top-0 right-0 -mr-20 -mt-20 w-80 h-80 bg-yabisso-blue/5 rounded-full blur-3xl pointer-events-none"></div>
+<div class="absolute bottom-0 left-0 -ml-20 -mb-20 w-60 h-60 bg-yabisso-red/5 rounded-full blur-3xl pointer-events-none"></div>
+</div>
+</body></html>

@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Super Admin Logs &amp; Security</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#46ec13",
+                        "background-light": "#f6f8f6",
+                        "background-dark": "#142210",
+                        "surface-dark": "#1a2c15",
+                        "surface-dark-highlight": "#243c1d",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"],
+                        "mono": ["ui-monospace", "SFMono-Regular", "Menlo", "Monaco", "Consolas", "Liberation Mono", "Courier New", "monospace"],
+                    },
+                    borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom scrollbar hiding for clean UI */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white font-display antialiased selection:bg-primary selection:text-black">
+<div class="relative flex min-h-screen w-full flex-col overflow-x-hidden max-w-md mx-auto border-x border-white/5 shadow-2xl">
+<!-- Top Navigation -->
+<div class="flex items-center bg-background-dark/95 backdrop-blur sticky top-0 z-50 p-4 pb-2 justify-between border-b border-white/5">
+<button class="text-white flex size-12 shrink-0 items-center justify-start hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-3xl">menu</span>
+</button>
+<h2 class="text-white text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center">Logs &amp; Security</h2>
+<div class="flex w-12 items-center justify-end">
+<button class="relative flex cursor-pointer items-center justify-center overflow-hidden rounded-xl h-12 bg-transparent text-white gap-2 text-base font-bold leading-normal tracking-[0.015em] min-w-0 p-0 hover:text-primary transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-3 right-0.5 h-2 w-2 rounded-full bg-red-500 ring-2 ring-background-dark"></span>
+</button>
+</div>
+</div>
+<!-- Segmented Control Tabs -->
+<div class="bg-background-dark pt-2 px-4 pb-3">
+<div class="flex h-12 w-full items-center justify-center rounded-xl bg-surface-dark p-1">
+<label class="relative flex cursor-pointer h-full grow items-center justify-center overflow-hidden rounded-lg px-2 text-white/60 has-[:checked]:bg-primary has-[:checked]:text-black transition-all duration-200">
+<span class="truncate text-xs font-bold z-10">System Logs</span>
+<input checked="" class="invisible absolute inset-0" name="nav-tabs" type="radio" value="System Logs"/>
+</label>
+<label class="relative flex cursor-pointer h-full grow items-center justify-center overflow-hidden rounded-lg px-2 text-white/60 has-[:checked]:bg-primary has-[:checked]:text-black transition-all duration-200">
+<span class="truncate text-xs font-bold z-10">Admin Audit</span>
+<input class="invisible absolute inset-0" name="nav-tabs" type="radio" value="Admin Audit"/>
+</label>
+<label class="relative flex cursor-pointer h-full grow items-center justify-center overflow-hidden rounded-lg px-2 text-white/60 has-[:checked]:bg-primary has-[:checked]:text-black transition-all duration-200">
+<span class="truncate text-xs font-bold z-10">Security</span>
+<input class="invisible absolute inset-0" name="nav-tabs" type="radio" value="Security"/>
+</label>
+</div>
+</div>
+<!-- Critical Alert (Action Panel) -->
+<div class="px-4 py-2 w-full">
+<div class="flex flex-col gap-3 rounded-xl border border-red-500/30 bg-red-500/10 p-4 shadow-[0_0_20px_rgba(239,68,68,0.1)]">
+<div class="flex items-start gap-3">
+<div class="rounded-full bg-red-500/20 p-2 text-red-500 shrink-0">
+<span class="material-symbols-outlined text-xl">gpp_maybe</span>
+</div>
+<div class="flex flex-col gap-1">
+<div class="flex items-center justify-between">
+<p class="text-white text-sm font-bold leading-tight">High Security Alert</p>
+<span class="text-xs text-red-400 font-mono">Just now</span>
+</div>
+<p class="text-white/70 text-xs font-normal leading-normal">Multiple failed root login attempts detected from IP 192.168.0.1.</p>
+</div>
+</div>
+<div class="flex gap-2 w-full mt-1">
+<button class="flex-1 cursor-pointer items-center justify-center rounded-lg h-9 bg-red-500 text-white text-sm font-bold hover:bg-red-600 transition-colors">
+                        Block IP
+                    </button>
+<button class="flex-1 cursor-pointer items-center justify-center rounded-lg h-9 bg-surface-dark border border-white/10 text-white text-sm font-medium hover:bg-surface-dark-highlight transition-colors">
+                        Investigate
+                    </button>
+</div>
+</div>
+</div>
+<!-- Search Bar -->
+<div class="px-4 py-2 sticky top-[136px] z-40 bg-background-dark/95 backdrop-blur-sm">
+<label class="flex flex-col h-12 w-full">
+<div class="flex w-full flex-1 items-stretch rounded-xl h-full border border-white/10 bg-surface-dark focus-within:border-primary/50 transition-colors">
+<div class="text-white/50 flex items-center justify-center pl-4 pr-2">
+<span class="material-symbols-outlined">search</span>
+</div>
+<input class="flex w-full min-w-0 flex-1 bg-transparent text-white focus:outline-none placeholder:text-white/30 text-sm font-normal leading-normal" placeholder="Search logs by ID, IP, or Event..." value=""/>
+</div>
+</label>
+</div>
+<!-- Filter Chips -->
+<div class="flex gap-2 px-4 py-2 overflow-x-auto no-scrollbar w-full">
+<button class="flex h-8 shrink-0 items-center justify-center gap-x-2 rounded-full border border-primary/30 bg-primary/10 pl-3 pr-3 hover:bg-primary/20 transition-colors">
+<span class="text-primary text-xs font-medium">All Events</span>
+<span class="material-symbols-outlined text-primary text-sm">check</span>
+</button>
+<button class="flex h-8 shrink-0 items-center justify-center gap-x-2 rounded-full border border-white/10 bg-surface-dark pl-3 pr-2 hover:bg-surface-dark-highlight transition-colors">
+<p class="text-white text-xs font-medium">Severity</p>
+<span class="material-symbols-outlined text-white/70 text-sm">expand_more</span>
+</button>
+<button class="flex h-8 shrink-0 items-center justify-center gap-x-2 rounded-full border border-white/10 bg-surface-dark pl-3 pr-2 hover:bg-surface-dark-highlight transition-colors">
+<p class="text-white text-xs font-medium">User Role</p>
+<span class="material-symbols-outlined text-white/70 text-sm">expand_more</span>
+</button>
+<button class="flex h-8 shrink-0 items-center justify-center gap-x-2 rounded-full border border-white/10 bg-surface-dark pl-3 pr-2 hover:bg-surface-dark-highlight transition-colors">
+<p class="text-white text-xs font-medium">Date Range</p>
+<span class="material-symbols-outlined text-white/70 text-sm">calendar_today</span>
+</button>
+</div>
+<!-- Logs Content -->
+<div class="flex flex-col px-4 pb-24 gap-4 mt-2">
+<!-- Date Separator -->
+<div class="flex items-center gap-2 mt-2">
+<div class="h-px flex-1 bg-white/10"></div>
+<span class="text-xs font-medium text-white/40 uppercase tracking-wider">Today</span>
+<div class="h-px flex-1 bg-white/10"></div>
+</div>
+<!-- Log Item 1: Success -->
+<div class="group flex flex-col gap-3 rounded-xl bg-surface-dark border border-white/5 p-4 hover:border-white/10 transition-colors cursor-pointer">
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-3">
+<div class="flex size-10 items-center justify-center rounded-full bg-primary/10 text-primary">
+<span class="material-symbols-outlined text-xl">login</span>
+</div>
+<div>
+<p class="text-white text-sm font-semibold">User Login</p>
+<p class="text-white/50 text-xs">admin_sarah</p>
+</div>
+</div>
+<div class="flex flex-col items-end gap-1">
+<span class="text-white/40 text-xs font-mono">14:02:22</span>
+<span class="inline-flex items-center rounded-md bg-green-500/10 px-2 py-0.5 text-xs font-medium text-green-400 ring-1 ring-inset ring-green-500/20">Success</span>
+</div>
+</div>
+<div class="flex items-center gap-4 border-t border-white/5 pt-3">
+<div class="flex flex-col gap-0.5">
+<span class="text-[10px] uppercase text-white/30 font-bold tracking-wider">IP Address</span>
+<span class="text-xs text-white/70 font-mono">104.22.56.12</span>
+</div>
+<div class="flex flex-col gap-0.5">
+<span class="text-[10px] uppercase text-white/30 font-bold tracking-wider">Session ID</span>
+<span class="text-xs text-white/70 font-mono">#sess_8829a</span>
+</div>
+</div>
+</div>
+<!-- Log Item 2: Failed -->
+<div class="group flex flex-col gap-3 rounded-xl bg-surface-dark border border-white/5 p-4 hover:border-white/10 transition-colors cursor-pointer relative overflow-hidden">
+<!-- Status indicator line -->
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-orange-500"></div>
+<div class="flex items-start justify-between pl-2">
+<div class="flex items-center gap-3">
+<div class="flex size-10 items-center justify-center rounded-full bg-orange-500/10 text-orange-500">
+<span class="material-symbols-outlined text-xl">key_off</span>
+</div>
+<div>
+<p class="text-white text-sm font-semibold">Password Reset</p>
+<p class="text-white/50 text-xs">user_mike99</p>
+</div>
+</div>
+<div class="flex flex-col items-end gap-1">
+<span class="text-white/40 text-xs font-mono">13:45:10</span>
+<span class="inline-flex items-center rounded-md bg-orange-500/10 px-2 py-0.5 text-xs font-medium text-orange-400 ring-1 ring-inset ring-orange-500/20">Failed</span>
+</div>
+</div>
+<div class="flex items-center gap-4 border-t border-white/5 pt-3 pl-2">
+<div class="flex flex-col gap-0.5">
+<span class="text-[10px] uppercase text-white/30 font-bold tracking-wider">IP Address</span>
+<span class="text-xs text-white/70 font-mono">192.168.1.45</span>
+</div>
+<div class="flex flex-col gap-0.5">
+<span class="text-[10px] uppercase text-white/30 font-bold tracking-wider">Reason</span>
+<span class="text-xs text-white/70">Invalid Token</span>
+</div>
+</div>
+</div>
+<!-- Log Item 3: Admin Action -->
+<div class="group flex flex-col gap-3 rounded-xl bg-surface-dark border border-white/5 p-4 hover:border-white/10 transition-colors cursor-pointer">
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-3">
+<div class="flex size-10 items-center justify-center rounded-full bg-blue-500/10 text-blue-400">
+<span class="material-symbols-outlined text-xl">admin_panel_settings</span>
+</div>
+<div>
+<p class="text-white text-sm font-semibold">Role Updated</p>
+<p class="text-white/50 text-xs">super_admin_yabisso</p>
+</div>
+</div>
+<div class="flex flex-col items-end gap-1">
+<span class="text-white/40 text-xs font-mono">11:20:05</span>
+<span class="inline-flex items-center rounded-md bg-blue-400/10 px-2 py-0.5 text-xs font-medium text-blue-400 ring-1 ring-inset ring-blue-400/20">Audit</span>
+</div>
+</div>
+<div class="mt-1">
+<p class="text-xs text-white/60 bg-white/5 p-2 rounded border border-white/5">
+                        Changed role for <span class="text-white font-medium">dev_john</span> from <span class="text-white/70">User</span> to <span class="text-primary">Moderator</span>
+</p>
+</div>
+</div>
+<!-- Log Item 4: System -->
+<div class="group flex flex-col gap-3 rounded-xl bg-surface-dark border border-white/5 p-4 hover:border-white/10 transition-colors cursor-pointer">
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-3">
+<div class="flex size-10 items-center justify-center rounded-full bg-purple-500/10 text-purple-400">
+<span class="material-symbols-outlined text-xl">database</span>
+</div>
+<div>
+<p class="text-white text-sm font-semibold">Database Backup</p>
+<p class="text-white/50 text-xs">System Automation</p>
+</div>
+</div>
+<div class="flex flex-col items-end gap-1">
+<span class="text-white/40 text-xs font-mono">03:00:00</span>
+<span class="inline-flex items-center rounded-md bg-green-500/10 px-2 py-0.5 text-xs font-medium text-green-400 ring-1 ring-inset ring-green-500/20">Success</span>
+</div>
+</div>
+</div>
+<!-- Trusted Devices Teaser (Simulating bottom of list) -->
+<div class="mt-4 rounded-xl border border-white/10 bg-gradient-to-br from-surface-dark to-surface-dark-highlight p-5">
+<div class="flex items-center justify-between mb-4">
+<h3 class="text-white font-bold text-sm">Trusted Devices</h3>
+<button class="text-primary text-xs font-bold hover:underline">Manage All</button>
+</div>
+<div class="flex flex-col gap-3">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-white/50">smartphone</span>
+<div class="flex flex-col">
+<span class="text-white text-sm font-medium">iPhone 14 Pro</span>
+<span class="text-white/40 text-xs">Tokyo, JP • Active now</span>
+</div>
+</div>
+<span class="size-2 rounded-full bg-primary shadow-[0_0_8px_#46ec13]"></span>
+</div>
+<div class="h-px w-full bg-white/5"></div>
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-white/50">laptop_mac</span>
+<div class="flex flex-col">
+<span class="text-white text-sm font-medium">MacBook Air M2</span>
+<span class="text-white/40 text-xs">Osaka, JP • 2h ago</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Floating Action Button (Optional for Quick Actions) -->
+<div class="fixed bottom-6 right-6 z-50">
+<button class="flex h-14 w-14 items-center justify-center rounded-full bg-primary shadow-[0_4px_20px_rgba(70,236,19,0.4)] text-black hover:scale-105 transition-transform">
+<span class="material-symbols-outlined text-3xl">download</span>
+</button>
+</div>
+</div>
+</body></html>

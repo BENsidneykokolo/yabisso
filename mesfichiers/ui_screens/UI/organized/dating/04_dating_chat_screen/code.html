@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Yabisso Dating Chat</title>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;700&amp;family=Noto+Sans:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                        "surface-dark": "#1e2936",
+                        "bubble-dark": "#233648",
+                        "brand-yellow": "#facc15",
+                        "brand-green": "#22c55e",
+                        "brand-red": "#ef4444",
+                    },
+                    fontFamily: {
+                        "display": ["Be Vietnam Pro", "sans-serif"],
+                        "body": ["Noto Sans", "sans-serif"]
+                    },
+                    borderRadius: { "DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px" },
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom scrollbar for webkit to keep it clean */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #233648;
+            border-radius: 10px;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark min-h-screen flex flex-col font-display selection:bg-primary/30">
+<!-- Header -->
+<header class="sticky top-0 z-50 flex items-center justify-between bg-background-light dark:bg-background-dark p-4 border-b border-gray-200 dark:border-white/5 backdrop-blur-md bg-opacity-90 dark:bg-opacity-90">
+<div class="flex items-center gap-3">
+<button class="text-gray-800 dark:text-white hover:bg-gray-200 dark:hover:bg-white/10 rounded-full p-2 transition-colors">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<div class="relative">
+<div class="bg-center bg-no-repeat bg-cover rounded-full size-10 border-2 border-transparent bg-clip-padding" data-alt="Portrait of a young african woman smiling" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuA7luEDDgmTNo91fZWSKp-l5jClESLpWnb9DN21Ix8LexGFKq6qDN8dPoF_lEt6_UBh0a1B6t-e-VR_K1V7ZW0st9UCZYjoypFx0K6ALjSCL6xgfNo_C_9bhabzWwr-ahuBFmkwn21OchDmgqrt5GVMu5JirzQBNu0IutQizw9xjm6JpASB1RSP2uCFIA8ej4cqj5sP9Orpn5QngVDRvqeuKyufsFGUlN5Wkq71K4vDV9jG_sApsTfzVvss-C-EyDgF-Wrcf0uR");'>
+</div>
+<!-- Online Status Indicator -->
+<div class="absolute bottom-0 right-0 size-3 bg-brand-green rounded-full border-2 border-background-dark"></div>
+</div>
+<div class="flex flex-col">
+<h2 class="text-gray-900 dark:text-white text-base font-bold leading-tight">Amara</h2>
+<span class="text-primary text-xs font-medium">Online</span>
+</div>
+</div>
+<div class="flex items-center">
+<button class="flex items-center justify-center rounded-full size-10 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-white/10 transition-colors">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</div>
+</header>
+<!-- Chat Area -->
+<main class="flex-1 overflow-y-auto p-4 flex flex-col gap-6">
+<!-- Date Divider -->
+<div class="flex justify-center my-2">
+<span class="bg-gray-200 dark:bg-surface-dark px-3 py-1 rounded-full text-xs font-medium text-gray-500 dark:text-gray-400">Today</span>
+</div>
+<!-- Receiver Message (Text) -->
+<div class="flex items-end gap-3 group">
+<div class="bg-center bg-no-repeat bg-cover rounded-full size-8 shrink-0 mb-1" data-alt="Portrait of a young african woman smiling" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuA3Zb-ndJ9A6sx9ZUcFpWRgc43U0HnXz-OmKzRpQa_KE7BoJY8YJ2Fn2XI3Q19oxVo_X4fgXckUx43ssPjGLMJmWnJi1-DBqdOePUCTW6JzZa90Ljf7St4lleF_WTXLR0aJTMKckwS7Lbarc0k90-KfBqeJ6boanKs3h3qH6d1HwAQMJBpBJhsWHowpkRjKwQFJX5ihx6oafzAtBufXn3XTBbHqoMq9UzIvM96Fu1ae14HlyzyerjAY-5E7AMJzKoHZHlhKtYi4");'>
+</div>
+<div class="flex flex-col items-start gap-1 max-w-[75%]">
+<div class="bg-white dark:bg-bubble-dark px-4 py-3 rounded-2xl rounded-bl-none shadow-sm dark:shadow-none">
+<p class="text-gray-800 dark:text-white text-sm leading-relaxed">Hey! I saw you like hiking too? That photo on your profile is amazing! 🏔️</p>
+</div>
+<span class="text-[10px] text-gray-400 pl-1">09:41 AM</span>
+</div>
+</div>
+<!-- Sender Message (Text) -->
+<div class="flex items-end gap-3 justify-end group">
+<div class="flex flex-col items-end gap-1 max-w-[75%]">
+<div class="bg-primary px-4 py-3 rounded-2xl rounded-br-none shadow-sm shadow-primary/20">
+<p class="text-white text-sm leading-relaxed">Yes! I go up to the mountains every weekend. It's my favorite way to disconnect.</p>
+</div>
+<div class="flex items-center gap-1 pr-1">
+<span class="text-[10px] text-gray-400 dark:text-gray-500">09:42 AM</span>
+<span class="material-symbols-outlined text-[14px] text-primary" title="Read">done_all</span>
+</div>
+</div>
+</div>
+<!-- Receiver Message (Voice) -->
+<div class="flex items-end gap-3 group">
+<div class="bg-center bg-no-repeat bg-cover rounded-full size-8 shrink-0 mb-1" data-alt="Portrait of a young african woman smiling" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDtrBUzfbqKXZ4xUuOhDfkpd1xYjAmnB2JZUQI7lSuyk21CkWVaLeuX9srcQimN0rZmVzfifwb-88Y-bEEG6KwK0zmrfj6-NhiDSPeyUbZpE7mugJZCsdnOLtf6MXkBsUjaSeOmdqFPrDKE1eWsEH90xuOHKYzewqAsyW5zzkuFczgA27VDYBjY65KCKrp64HGS0hJK9I9V7w85nd5YyIfS-9-3IK9r1YGaROO8yrCxQ37mhMH8__b-CJz30fLiA36-gN8FwFmd");'>
+</div>
+<div class="flex flex-col items-start gap-1 max-w-[85%] sm:max-w-[320px]">
+<div class="bg-white dark:bg-bubble-dark p-3 rounded-2xl rounded-bl-none w-full shadow-sm dark:shadow-none">
+<div class="flex items-center gap-3">
+<button class="flex shrink-0 items-center justify-center rounded-full size-10 bg-primary text-white hover:bg-blue-600 transition-colors">
+<span class="material-symbols-outlined filled text-[20px]">play_arrow</span>
+</button>
+<div class="flex-1 flex flex-col justify-center gap-1">
+<!-- Fake Waveform -->
+<div class="flex items-center gap-[2px] h-6">
+<div class="w-1 bg-primary/40 rounded-full h-3"></div>
+<div class="w-1 bg-primary/60 rounded-full h-5"></div>
+<div class="w-1 bg-primary rounded-full h-4"></div>
+<div class="w-1 bg-primary rounded-full h-6"></div>
+<div class="w-1 bg-primary rounded-full h-3"></div>
+<div class="w-1 bg-primary rounded-full h-5"></div>
+<div class="w-1 bg-primary/60 rounded-full h-4"></div>
+<div class="w-1 bg-primary/40 rounded-full h-2"></div>
+<div class="w-1 bg-gray-300 dark:bg-gray-600 rounded-full h-2"></div>
+<div class="w-1 bg-gray-300 dark:bg-gray-600 rounded-full h-3"></div>
+<div class="w-1 bg-gray-300 dark:bg-gray-600 rounded-full h-2"></div>
+<div class="w-1 bg-gray-300 dark:bg-gray-600 rounded-full h-4"></div>
+<div class="w-1 bg-gray-300 dark:bg-gray-600 rounded-full h-2"></div>
+<div class="w-1 bg-gray-300 dark:bg-gray-600 rounded-full h-2"></div>
+</div>
+<div class="flex justify-between items-center text-[10px] text-gray-500 dark:text-gray-400">
+<span>0:15</span>
+<span>0:45</span>
+</div>
+</div>
+</div>
+<!-- Transcription Link -->
+<div class="mt-2 pt-2 border-t border-gray-100 dark:border-white/10">
+<button class="flex items-center gap-1.5 text-xs text-primary font-medium hover:text-blue-400 transition-colors">
+<span class="material-symbols-outlined text-[14px]">transcribe</span>
+                            Tap to Transcribe
+                        </button>
+</div>
+</div>
+<span class="text-[10px] text-gray-400 pl-1">09:43 AM</span>
+</div>
+</div>
+<!-- Typing Indicator -->
+<div class="flex items-end gap-3 opacity-0 animate-[fadeIn_0.5s_ease-out_forwards] animation-delay-500">
+<div class="bg-center bg-no-repeat bg-cover rounded-full size-8 shrink-0 mb-1" data-alt="Portrait of a young african woman smiling" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBRvFTAEmiDfayqspOe9-jUOh2xvfEm76Po1SBBTNxIvKTYktRoAivxTPZXAstQ2lzzDc8lPowYvaoK-6AuWwUeq5V7tz-5j6zh1JDTe0xPSeRQ7PtNT-sm9xNDRJZniyIhNo40FgBxjQkJQPM2CpswKsGUBvoy7AtxOy-SGEHUHlemv8tBuhr1p2zNuvgg5BI-JL5j9RX8NCDFRisnZD41lyviqalhlK4jbNWRpNzykRg1mCz2rcwZ7K_WrTZ2iZMWq3IGIs8j");'>
+</div>
+<div class="bg-white dark:bg-bubble-dark px-4 py-3 rounded-2xl rounded-bl-none shadow-sm dark:shadow-none flex items-center gap-1 h-10">
+<div class="size-1.5 bg-gray-400 rounded-full animate-bounce"></div>
+<div class="size-1.5 bg-gray-400 rounded-full animate-bounce delay-100"></div>
+<div class="size-1.5 bg-gray-400 rounded-full animate-bounce delay-200"></div>
+</div>
+</div>
+<!-- Spacer for sticky footer -->
+<div class="h-2"></div>
+</main>
+<!-- Sticky Input Footer -->
+<footer class="sticky bottom-0 z-50 bg-background-light dark:bg-background-dark border-t border-gray-200 dark:border-white/5 p-3 pb-6 sm:pb-3">
+<div class="flex items-center gap-3 max-w-4xl mx-auto w-full">
+<!-- Add Attachment Button -->
+<button class="text-gray-500 dark:text-gray-400 hover:text-primary transition-colors p-2 rounded-full hover:bg-gray-100 dark:hover:bg-white/5">
+<span class="material-symbols-outlined text-[28px]">add_circle</span>
+</button>
+<!-- Input Container -->
+<div class="flex-1 relative flex items-center">
+<input class="w-full bg-white dark:bg-surface-dark text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 rounded-full py-3.5 pl-5 pr-12 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 border-none shadow-sm" placeholder="Say something nice..." type="text"/>
+<!-- Voice Input Icon (Accented) -->
+<button class="absolute right-2 p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/10 group/mic">
+<span class="material-symbols-outlined text-brand-yellow group-hover/mic:text-brand-green transition-colors">mic</span>
+</button>
+</div>
+<!-- Send Button (White style as requested) -->
+<button class="bg-white text-primary rounded-full size-12 shrink-0 flex items-center justify-center shadow-lg active:scale-95 transition-transform">
+<span class="material-symbols-outlined filled text-[24px]" style="font-variation-settings: 'FILL' 1;">send</span>
+</button>
+</div>
+</footer>
+</body></html>

@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Event Details - Yabisso</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Theme Config -->
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#137fec",
+              "background-light": "#f6f7f8",
+              "background-dark": "#101922",
+              "surface-dark": "#1a2632",
+              "accent-yellow": "#FFD700",
+            },
+            fontFamily: {
+              "display": ["Space Grotesk", "sans-serif"]
+            },
+            borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+            backgroundImage: {
+                'gradient-fade': 'linear-gradient(to bottom, rgba(16, 25, 34, 0) 0%, rgba(16, 25, 34, 1) 100%)',
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        /* Custom scrollbar hiding */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-white overflow-x-hidden min-h-screen pb-24">
+<!-- Top Navigation (Absolute Overlay) -->
+<div class="fixed top-0 left-0 w-full z-50 p-4 pt-12 flex items-center justify-between pointer-events-none">
+<!-- Back Button -->
+<button class="pointer-events-auto flex items-center justify-center size-10 rounded-full bg-black/20 backdrop-blur-md border border-white/10 text-white hover:bg-black/40 transition-colors">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<!-- Actions -->
+<div class="flex gap-3 pointer-events-auto">
+<button class="flex items-center justify-center size-10 rounded-full bg-black/20 backdrop-blur-md border border-white/10 text-white hover:bg-black/40 transition-colors">
+<span class="material-symbols-outlined">favorite_border</span>
+</button>
+<button class="flex items-center justify-center size-10 rounded-full bg-black/20 backdrop-blur-md border border-white/10 text-white hover:bg-black/40 transition-colors">
+<span class="material-symbols-outlined">share</span>
+</button>
+</div>
+</div>
+<!-- Hero Image Section -->
+<div class="relative w-full h-[50vh] @container">
+<div class="absolute inset-0 bg-background-dark animate-pulse">
+<!-- Skeleton placeholder if needed, though image loads fast usually -->
+</div>
+<img alt="Event Poster" class="w-full h-full object-cover" data-alt="Excited crowd at a concert with blue stage lighting and confetti" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAJ0u4Ra4ImptVF2CbMZ2sWXVdX8n3b8F6X4Wjh0ekx948tnScB4_hetOg6gFPuKJpAYfizoLOF2yK-CIJBXwjY1xzYQMTrZgNOz-vy54ISSzcy7I_Q9mktYk-9nhMs6KT0pyl8iXS_QLsZAEYEi1MNwL1JcP5CQPdWutxg_AeW5v4lir8BHEDgUNQMl8qxxHNfpAfIk0n89WiSJq_F4Hpdh9M-oRMKxdL4Zmj97UIQ94dLURLfyFzKqR7Z8ieMD4FGlZSRQrB8"/>
+<!-- Gradient Overlay -->
+<div class="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-background-dark to-transparent"></div>
+</div>
+<!-- Main Content Container -->
+<div class="relative -mt-10 z-10 px-5 flex flex-col gap-6">
+<!-- Event Header Info -->
+<div class="flex flex-col gap-3">
+<div class="flex items-start justify-between">
+<h1 class="text-3xl font-bold leading-tight tracking-tight text-white flex-1 mr-4">
+                    Afro-Tech Summit 2024
+                </h1>
+<div class="bg-primary/20 text-primary px-3 py-1 rounded-full text-xs font-bold border border-primary/30 uppercase tracking-wider">
+                    Selling Fast
+                </div>
+</div>
+<!-- Date & Location Row -->
+<div class="flex flex-col gap-2 text-gray-300">
+<div class="flex items-center gap-2 text-sm font-medium">
+<span class="material-symbols-outlined text-primary" style="font-size: 20px;">calendar_month</span>
+<span>Sat, 12 Oct • 19:00 PM</span>
+</div>
+<div class="flex items-center gap-2 text-sm font-medium">
+<span class="material-symbols-outlined text-primary" style="font-size: 20px;">location_on</span>
+<span>Eko Convention Centre, Lagos</span>
+</div>
+</div>
+</div>
+<!-- Offline Pack Action Panel -->
+<!-- Modified ActionPanel Component -->
+<div class="w-full">
+<div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 rounded-2xl border border-primary/30 bg-gradient-to-r from-surface-dark to-background-dark p-4 shadow-lg shadow-primary/5">
+<div class="flex gap-3 items-center">
+<div class="size-10 rounded-full bg-primary/20 flex items-center justify-center shrink-0 text-primary">
+<span class="material-symbols-outlined">cloud_download</span>
+</div>
+<div class="flex flex-col">
+<p class="text-white text-sm font-bold leading-tight">Going Offline?</p>
+<p class="text-gray-400 text-xs font-normal">Download ticket pack for entry without internet</p>
+</div>
+</div>
+<button class="w-full sm:w-auto flex cursor-pointer items-center justify-center overflow-hidden rounded-full h-9 px-5 bg-primary hover:bg-blue-600 text-white text-xs font-bold uppercase tracking-wide transition-all active:scale-95">
+                    Download
+                </button>
+</div>
+</div>
+<!-- Description Section -->
+<div class="flex flex-col gap-3">
+<h3 class="text-lg font-bold text-white">About Event</h3>
+<div class="text-gray-400 text-sm leading-relaxed">
+<p>Join the biggest gathering of tech enthusiasts in West Africa. Experience keynote speeches from industry leaders, interactive workshops, and an electrifying after-party featuring top Afrobeat artists. Don't miss the opportunity to network with the brightest minds in the ecosystem.</p>
+<button class="text-primary font-bold text-sm mt-2 flex items-center gap-1">
+                    Read More <span class="material-symbols-outlined text-sm">expand_more</span>
+</button>
+</div>
+<!-- Map Preview (Visual Only) -->
+<div class="mt-2 w-full h-32 rounded-2xl bg-surface-dark overflow-hidden border border-white/5 relative">
+<img class="w-full h-full object-cover opacity-50" data-alt="Map showing location of Eko Convention Centre" data-location="Lagos" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDkizAJFIiFW03sT2ly39RsUBPlQZnUY2QRE93m2DKstpb9fR6dbLZva9QGtd2sSH3kflgxM5E7yE0ElfKm8opTUWK8aQByS08_SFT-U2Tg3O-iJCspLU9IzRIHHjfGyeMPPKnQCchYtCG3LmaGpVxBb8IG20zAtmlF_oItrvPYv5maby-V99GHnyfNeP0_WJvkH23M9Bc2kUgT61jui8zafUkVXON5leiOkggZFEwTwWg43ohTtL969oONIPSHVTvbjHxO9gou"/>
+<div class="absolute inset-0 flex items-center justify-center">
+<button class="bg-white/10 backdrop-blur-md text-white px-4 py-2 rounded-full text-xs font-bold border border-white/20 flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">map</span> View on Map
+                    </button>
+</div>
+</div>
+</div>
+<!-- Ticket Selection -->
+<div class="flex flex-col gap-4 pb-4">
+<h3 class="text-lg font-bold text-white">Select Tickets</h3>
+<!-- Ticket Card 1: Regular -->
+<div class="p-4 rounded-2xl bg-surface-dark border border-white/5 flex flex-col gap-4">
+<div class="flex justify-between items-start">
+<div>
+<div class="text-white font-bold text-base">Regular Access</div>
+<div class="text-primary font-bold text-lg">₦5,000</div>
+<div class="text-gray-500 text-xs mt-1">Keynote + Exhibition Floor</div>
+</div>
+<!-- Quantity Stepper -->
+<div class="flex items-center bg-background-dark rounded-full p-1 border border-white/10">
+<button class="size-8 rounded-full bg-white/5 hover:bg-white/10 text-white flex items-center justify-center disabled:opacity-50 transition-colors">
+<span class="material-symbols-outlined text-sm">remove</span>
+</button>
+<span class="w-8 text-center text-white font-bold text-sm">1</span>
+<button class="size-8 rounded-full bg-primary text-white flex items-center justify-center shadow-lg shadow-primary/20 hover:bg-blue-600 transition-colors">
+<span class="material-symbols-outlined text-sm">add</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Ticket Card 2: VIP -->
+<div class="p-4 rounded-2xl bg-surface-dark border border-white/5 flex flex-col gap-4 relative overflow-hidden group">
+<div class="absolute -right-4 -top-4 size-16 bg-gradient-to-br from-accent-yellow to-orange-500 blur-2xl opacity-10 group-hover:opacity-20 transition-opacity"></div>
+<div class="flex justify-between items-start z-10">
+<div>
+<div class="flex items-center gap-2">
+<span class="text-white font-bold text-base">VIP Experience</span>
+<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-accent-yellow text-black uppercase">Popular</span>
+</div>
+<div class="text-primary font-bold text-lg">₦25,000</div>
+<div class="text-gray-500 text-xs mt-1">All Access + Front Row + Dinner</div>
+</div>
+<!-- Quantity Stepper -->
+<div class="flex items-center bg-background-dark rounded-full p-1 border border-white/10">
+<button class="size-8 rounded-full bg-white/5 hover:bg-white/10 text-white flex items-center justify-center disabled:opacity-50 transition-colors">
+<span class="material-symbols-outlined text-sm">remove</span>
+</button>
+<span class="w-8 text-center text-white font-bold text-sm">0</span>
+<button class="size-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors">
+<span class="material-symbols-outlined text-sm">add</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Sticky Action Bar -->
+<div class="fixed bottom-0 left-0 w-full bg-surface-dark/90 backdrop-blur-xl border-t border-white/10 p-4 px-5 z-40 safe-area-pb">
+<div class="flex items-center justify-between gap-4 max-w-md mx-auto w-full">
+<div class="flex flex-col">
+<span class="text-gray-400 text-xs font-medium uppercase tracking-wide">Total Price</span>
+<span class="text-white text-2xl font-bold tracking-tight">₦5,000</span>
+</div>
+<button class="flex-1 bg-white text-background-dark h-12 rounded-full font-bold text-base flex items-center justify-center gap-2 hover:bg-gray-100 transition-colors shadow-xl shadow-white/5">
+<span>Buy Ticket</span>
+<span class="material-symbols-outlined" style="font-size: 20px;">arrow_forward</span>
+</button>
+</div>
+</div>
+<div class="h-4 w-full"></div> <!-- Spacer for scrolling -->
+</body></html>

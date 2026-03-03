@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Yabisso Main Admin Settings</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#46ec13",
+                        "background-light": "#f6f8f6",
+                        "background-dark": "#142210",
+                        "surface-dark": "#1f3319",
+                        "surface-border": "#3f6732",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom toggle switch styling */
+        .toggle-checkbox:checked {
+            right: 0;
+            border-color: #46ec13;
+        }
+        .toggle-checkbox:checked + .toggle-label {
+            background-color: #46ec13;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display antialiased text-gray-900 dark:text-white pb-24">
+<!-- Top App Bar -->
+<div class="sticky top-0 z-50 bg-background-light dark:bg-background-dark border-b border-gray-200 dark:border-surface-border">
+<div class="flex items-center p-4 justify-between h-16">
+<button class="text-gray-900 dark:text-white flex size-12 shrink-0 items-center justify-center rounded-full hover:bg-gray-200 dark:hover:bg-surface-dark transition-colors">
+<span class="material-symbols-outlined" style="font-size: 24px;">arrow_back</span>
+</button>
+<h2 class="text-gray-900 dark:text-white text-lg font-bold leading-tight tracking-tight flex-1 text-center">Settings</h2>
+<button class="flex h-12 items-center justify-center px-2">
+<p class="text-primary text-base font-bold leading-normal tracking-wide shrink-0">Save</p>
+</button>
+</div>
+</div>
+<div class="px-4 pt-4 max-w-lg mx-auto w-full">
+<!-- Regional Configuration Section -->
+<div class="mb-6">
+<h3 class="text-gray-500 dark:text-gray-400 text-sm font-semibold uppercase tracking-wider px-2 pb-2 pt-2 ml-1">Regional Configuration</h3>
+<div class="bg-white dark:bg-surface-dark rounded-xl overflow-hidden shadow-sm border border-gray-200 dark:border-surface-border">
+<!-- Currency Selector -->
+<div class="border-b border-gray-100 dark:border-surface-border/50 px-4 py-3 flex items-center justify-between">
+<div class="flex flex-col">
+<span class="text-base font-medium text-gray-900 dark:text-white">Default Currency</span>
+<span class="text-xs text-gray-500 dark:text-gray-400">Used for local reports</span>
+</div>
+<div class="relative">
+<select class="appearance-none bg-gray-50 dark:bg-[#2a4522] border-none rounded-lg py-2 pl-3 pr-8 text-sm font-medium text-gray-900 dark:text-white focus:ring-1 focus:ring-primary cursor-pointer">
+<option value="XOF">XOF (CFA)</option>
+<option value="USD">USD ($)</option>
+<option value="EUR">EUR (€)</option>
+</select>
+<div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-500">
+<span class="material-symbols-outlined text-sm">expand_more</span>
+</div>
+</div>
+</div>
+<!-- Timezone -->
+<div class="border-b border-gray-100 dark:border-surface-border/50 px-4 py-3 flex items-center justify-between">
+<span class="text-base font-medium text-gray-900 dark:text-white">Timezone</span>
+<div class="flex items-center gap-2 text-gray-500 dark:text-gray-400">
+<span class="text-sm">GMT+0</span>
+<span class="material-symbols-outlined text-gray-400 text-lg">chevron_right</span>
+</div>
+</div>
+<!-- Operational Hours -->
+<div class="px-4 py-4">
+<p class="text-base font-medium text-gray-900 dark:text-white mb-3">Operational Hours</p>
+<div class="flex items-center gap-3">
+<div class="flex-1">
+<label class="text-xs text-gray-500 dark:text-gray-400 mb-1 block">Opens At</label>
+<div class="relative">
+<input class="block w-full rounded-lg border-gray-200 dark:border-surface-border bg-gray-50 dark:bg-[#2a4522] text-gray-900 dark:text-white focus:border-primary focus:ring-primary sm:text-sm h-10 px-2" type="time" value="08:00"/>
+</div>
+</div>
+<span class="text-gray-400 mt-5">-</span>
+<div class="flex-1">
+<label class="text-xs text-gray-500 dark:text-gray-400 mb-1 block">Closes At</label>
+<div class="relative">
+<input class="block w-full rounded-lg border-gray-200 dark:border-surface-border bg-gray-50 dark:bg-[#2a4522] text-gray-900 dark:text-white focus:border-primary focus:ring-primary sm:text-sm h-10 px-2" type="time" value="20:00"/>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Data Management Section -->
+<div class="mb-6">
+<h3 class="text-gray-500 dark:text-gray-400 text-sm font-semibold uppercase tracking-wider px-2 pb-2 pt-2 ml-1">Data Management</h3>
+<div class="bg-white dark:bg-surface-dark rounded-xl overflow-hidden shadow-sm border border-gray-200 dark:border-surface-border">
+<!-- Cloud Sync Toggle -->
+<div class="border-b border-gray-100 dark:border-surface-border/50 px-4 py-4 flex items-center justify-between">
+<div class="flex flex-col pr-4">
+<span class="text-base font-medium text-gray-900 dark:text-white">Cloud Backup Sync</span>
+<span class="text-xs text-primary mt-0.5 flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">check_circle</span>
+                            Last synced: 2 mins ago
+                        </span>
+</div>
+<div class="relative inline-block w-12 mr-2 align-middle select-none transition duration-200 ease-in">
+<input checked="" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer border-gray-300 dark:border-gray-600 checked:right-0 checked:border-primary focus:outline-none transition-all duration-300 top-0 left-0" id="sync-toggle" name="toggle" type="checkbox"/>
+<label class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 dark:bg-gray-700 cursor-pointer transition-colors duration-300" for="sync-toggle"></label>
+</div>
+</div>
+<!-- Actions -->
+<div class="flex flex-col">
+<button class="w-full text-left px-4 py-3.5 hover:bg-gray-50 dark:hover:bg-[#2a4522] transition-colors flex items-center gap-3 border-b border-gray-100 dark:border-surface-border/50">
+<div class="size-8 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-blue-600 dark:text-blue-400 text-lg">sync</span>
+</div>
+<span class="text-blue-600 dark:text-blue-400 font-medium text-sm">Force Sync Now</span>
+</button>
+<button class="w-full text-left px-4 py-3.5 hover:bg-gray-50 dark:hover:bg-[#2a4522] transition-colors flex items-center gap-3">
+<div class="size-8 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-primary text-lg">download</span>
+</div>
+<span class="text-primary font-medium text-sm">Export Transaction Data (CSV)</span>
+</button>
+</div>
+</div>
+</div>
+<!-- App Preferences Section -->
+<div class="mb-6">
+<h3 class="text-gray-500 dark:text-gray-400 text-sm font-semibold uppercase tracking-wider px-2 pb-2 pt-2 ml-1">App Preferences</h3>
+<div class="bg-white dark:bg-surface-dark rounded-xl overflow-hidden shadow-sm border border-gray-200 dark:border-surface-border">
+<!-- Maintenance Mode -->
+<div class="border-b border-gray-100 dark:border-surface-border/50 px-4 py-3 flex items-center justify-between">
+<div class="flex flex-col pr-4">
+<span class="text-base font-medium text-gray-900 dark:text-white">Maintenance Mode</span>
+<span class="text-xs text-gray-500 dark:text-gray-400">Suspend user transactions</span>
+</div>
+<div class="relative inline-block w-12 mr-2 align-middle select-none transition duration-200 ease-in">
+<input class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer border-gray-300 dark:border-gray-600 focus:outline-none transition-all duration-300 top-0 left-0" id="maint-toggle" name="maint-toggle" type="checkbox"/>
+<label class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 dark:bg-gray-700 cursor-pointer transition-colors duration-300" for="maint-toggle"></label>
+</div>
+</div>
+<!-- Notifications -->
+<div class="border-b border-gray-100 dark:border-surface-border/50 px-4 py-3 flex items-center justify-between">
+<span class="text-base font-medium text-gray-900 dark:text-white">Push Notifications</span>
+<div class="relative inline-block w-12 mr-2 align-middle select-none transition duration-200 ease-in">
+<input checked="" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer border-gray-300 dark:border-gray-600 checked:right-0 checked:border-primary focus:outline-none transition-all duration-300 top-0 left-0" id="notif-toggle" name="notif-toggle" type="checkbox"/>
+<label class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 dark:bg-gray-700 cursor-pointer transition-colors duration-300" for="notif-toggle"></label>
+</div>
+</div>
+<!-- Language -->
+<div class="px-4 py-3 flex items-center justify-between">
+<span class="text-base font-medium text-gray-900 dark:text-white">Language</span>
+<div class="flex items-center gap-2 text-gray-500 dark:text-gray-400">
+<span class="text-sm">English</span>
+<span class="material-symbols-outlined text-gray-400 text-lg">chevron_right</span>
+</div>
+</div>
+</div>
+</div>
+<div class="mt-8 mb-12 flex flex-col items-center gap-4">
+<button class="w-full bg-red-500/10 border border-red-500/20 text-red-500 font-medium py-3 rounded-xl active:bg-red-500/20 transition-colors">
+                Sign Out
+            </button>
+<p class="text-xs text-gray-500 dark:text-gray-600">App Version 2.4.1 (Build 890)</p>
+</div>
+</div>
+<!-- Bottom Navigation Bar (Mobile) -->
+<div class="fixed bottom-0 left-0 right-0 bg-white dark:bg-surface-dark border-t border-gray-200 dark:border-surface-border px-6 py-2 flex justify-between items-center z-40 h-20 safe-area-pb">
+<a class="flex flex-col items-center justify-center gap-1 w-16 group" href="#">
+<span class="material-symbols-outlined text-gray-400 group-hover:text-primary transition-colors">home</span>
+<span class="text-[10px] font-medium text-gray-400 group-hover:text-primary transition-colors">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center gap-1 w-16 group" href="#">
+<span class="material-symbols-outlined text-gray-400 group-hover:text-primary transition-colors">storefront</span>
+<span class="text-[10px] font-medium text-gray-400 group-hover:text-primary transition-colors">Kiosques</span>
+</a>
+<div class="relative -top-6">
+<button class="size-14 bg-primary rounded-full shadow-lg shadow-primary/40 flex items-center justify-center text-black">
+<span class="material-symbols-outlined" style="font-size: 28px;">add</span>
+</button>
+</div>
+<a class="flex flex-col items-center justify-center gap-1 w-16 group" href="#">
+<span class="material-symbols-outlined text-gray-400 group-hover:text-primary transition-colors">group</span>
+<span class="text-[10px] font-medium text-gray-400 group-hover:text-primary transition-colors">Users</span>
+</a>
+<a class="flex flex-col items-center justify-center gap-1 w-16 group" href="#">
+<span class="material-symbols-outlined text-primary fill-current">settings</span>
+<span class="text-[10px] font-medium text-primary">Settings</span>
+</a>
+</div>
+</body></html>

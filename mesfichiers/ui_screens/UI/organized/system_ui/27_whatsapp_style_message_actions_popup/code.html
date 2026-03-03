@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Message Actions Popup</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Theme Config -->
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#137fec",
+              "background-light": "#f6f7f8",
+              "background-dark": "#101922",
+              "surface-dark": "#1e293b",
+            },
+            fontFamily: {
+              "display": ["Inter", "sans-serif"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "2xl": "1rem", "3xl": "1.5rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="font-display bg-background-light dark:bg-background-dark text-white overflow-hidden antialiased selection:bg-primary selection:text-white">
+<div class="relative h-screen w-full flex flex-col">
+<!-- Background Layer: Simulated Chat Interface (Blurred & Dimmed) -->
+<div aria-hidden="true" class="absolute inset-0 flex flex-col p-4 gap-6 opacity-30 pointer-events-none">
+<!-- Header Placeholder -->
+<div class="flex items-center justify-between p-2">
+<div class="flex items-center gap-3">
+<div class="w-6 h-6 rounded-full border-2 border-gray-600 border-t-transparent"></div>
+<div class="h-4 w-24 bg-gray-700 rounded"></div>
+</div>
+<div class="flex gap-4">
+<div class="h-6 w-6 bg-gray-700 rounded-full"></div>
+<div class="h-6 w-6 bg-gray-700 rounded-full"></div>
+</div>
+</div>
+<!-- Date Separator -->
+<div class="self-center bg-gray-800/50 px-3 py-1 rounded-lg text-xs text-gray-400">Today</div>
+<!-- Incoming Message -->
+<div class="self-start flex items-end gap-2 max-w-[80%]">
+<div class="size-8 rounded-full bg-gray-700 shrink-0"></div>
+<div class="bg-gray-800 p-3 rounded-2xl rounded-bl-sm">
+<div class="h-2 w-32 bg-gray-600 rounded mb-2 opacity-50"></div>
+<div class="h-2 w-48 bg-gray-600 rounded opacity-50"></div>
+</div>
+</div>
+<!-- Outgoing Message (The one we will overlay) -->
+<div class="self-end flex items-end gap-2 max-w-[80%] opacity-0"> <!-- Hidden to prevent double vision -->
+<div class="bg-primary p-3 rounded-2xl rounded-br-sm">
+<div class="text-white">Can you send me the details for the offline payment?</div>
+</div>
+<div class="size-8 rounded-full bg-gray-700 shrink-0"></div>
+</div>
+<!-- Incoming Message -->
+<div class="self-start flex items-end gap-2 max-w-[70%]">
+<div class="size-8 rounded-full bg-gray-700 shrink-0"></div>
+<div class="bg-gray-800 p-3 rounded-2xl rounded-bl-sm">
+<div class="h-2 w-24 bg-gray-600 rounded opacity-50"></div>
+</div>
+</div>
+</div>
+<!-- Active Overlay Layer -->
+<div class="absolute inset-0 z-10 bg-[#000000]/70 backdrop-blur-[4px] flex flex-col">
+<!-- Close area (touching here dismisses) -->
+<div class="flex-1 w-full"></div>
+<!-- Interaction Container -->
+<div class="w-full flex flex-col items-center justify-end pb-8 px-4 animate-in slide-in-from-bottom duration-300 fade-in">
+<!-- 1. Selected Message Clone -->
+<!-- Positioned to mimic the location in the chat flow but highlighted -->
+<div class="w-full flex justify-end mb-3 scale-100 origin-bottom-right transition-transform">
+<div class="flex items-end gap-3 justify-end max-w-[90%]">
+<div class="flex flex-col gap-1 items-end w-full">
+<!-- Label -->
+<div class="flex justify-between items-center w-full px-1">
+<span class="text-white/40 text-[11px] font-medium tracking-wide uppercase">Selected</span>
+<span class="text-[#92adc9] text-[13px] font-normal">You</span>
+</div>
+<!-- Bubble -->
+<div class="relative text-base font-normal leading-normal rounded-2xl rounded-tr-sm px-4 py-3 bg-primary text-white shadow-[0_0_25px_-5px_rgba(19,127,236,0.5)] ring-1 ring-white/20">
+                                Can you send me the details for the offline payment?
+                                <!-- Message Meta -->
+<div class="flex justify-end items-center gap-1 mt-1 opacity-70">
+<span class="text-[10px]">14:20</span>
+<span class="material-symbols-outlined text-[14px]">done_all</span>
+</div>
+</div>
+</div>
+<!-- Avatar -->
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full w-9 h-9 shrink-0 ring-2 ring-background-dark/50" data-alt="User profile picture showing a smiling person" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCQBO3ezNtXoIwy423Bmkjivs9uQdeGqE8_G7uYl8gZXePT416--AHniazIOgJNeDNGorTwFDdURgBidgEVyNZ7hsepl7IJp3oxPxB1T7uV7CSI2w8zACm6QPO5Qdykq9tLCTK98zQYnGkEWfg-fGg-srLQsnm7oFcusOzirnpRYhB3QWBPdyaaddlMFzssZpuytjzGHop3X5Jr_pfLLtPCbWCf5oyzPyRJ42ngg_GGTqSJoGAwM8DxNepb_tUni9jgaE1BZ1Qt");'>
+</div>
+</div>
+</div>
+<!-- 2. Reactions Bar -->
+<div class="w-full flex justify-end mb-6 pr-12">
+<div class="flex items-center gap-1 bg-surface-dark/90 backdrop-blur-md px-2 py-2 rounded-full border border-white/5 shadow-lg">
+<button class="w-10 h-10 flex items-center justify-center hover:bg-white/10 rounded-full transition-all hover:scale-110 active:scale-95">
+<span class="text-2xl">❤️</span>
+</button>
+<button class="w-10 h-10 flex items-center justify-center hover:bg-white/10 rounded-full transition-all hover:scale-110 active:scale-95">
+<span class="text-2xl">😂</span>
+</button>
+<button class="w-10 h-10 flex items-center justify-center hover:bg-white/10 rounded-full transition-all hover:scale-110 active:scale-95">
+<span class="text-2xl">😮</span>
+</button>
+<button class="w-10 h-10 flex items-center justify-center hover:bg-white/10 rounded-full transition-all hover:scale-110 active:scale-95">
+<span class="text-2xl">😢</span>
+</button>
+<button class="w-10 h-10 flex items-center justify-center hover:bg-white/10 rounded-full transition-all hover:scale-110 active:scale-95">
+<span class="text-2xl">👍</span>
+</button>
+<div class="w-px h-5 bg-white/10 mx-1"></div>
+<button class="w-10 h-10 flex items-center justify-center hover:bg-white/10 rounded-full transition-all text-gray-400 hover:text-white">
+<span class="material-symbols-outlined">add_reaction</span>
+</button>
+</div>
+</div>
+<!-- 3. Actions Menu (Bottom Sheet Style) -->
+<div class="w-full max-w-sm bg-surface-dark/95 backdrop-blur-xl rounded-3xl overflow-hidden shadow-2xl border border-white/5 ring-1 ring-black/50">
+<!-- Handle -->
+<div class="flex justify-center pt-3 pb-1">
+<div class="h-1 w-12 rounded-full bg-white/20"></div>
+</div>
+<div class="flex flex-col py-2">
+<!-- Reply -->
+<button class="group flex items-center gap-4 px-5 py-3.5 w-full hover:bg-white/5 transition-colors active:bg-white/10">
+<div class="flex items-center justify-center rounded-xl bg-primary/10 shrink-0 size-10 group-hover:bg-primary group-hover:shadow-[0_0_15px_-3px_rgba(19,127,236,0.6)] transition-all duration-300">
+<span class="material-symbols-outlined text-primary group-hover:text-white transition-colors" style="font-size: 20px;">reply</span>
+</div>
+<span class="text-white text-[17px] font-medium leading-normal flex-1 text-left">Reply</span>
+</button>
+<!-- Forward -->
+<button class="group flex items-center gap-4 px-5 py-3.5 w-full hover:bg-white/5 transition-colors active:bg-white/10">
+<div class="flex items-center justify-center rounded-xl bg-primary/10 shrink-0 size-10 group-hover:bg-primary group-hover:shadow-[0_0_15px_-3px_rgba(19,127,236,0.6)] transition-all duration-300">
+<span class="material-symbols-outlined text-primary group-hover:text-white transition-colors" style="font-size: 20px;">forward</span>
+</div>
+<span class="text-white text-[17px] font-medium leading-normal flex-1 text-left">Forward</span>
+</button>
+<div class="h-px w-full bg-white/5 my-1 mx-5 w-[calc(100%-40px)]"></div>
+<!-- Copy -->
+<button class="group flex items-center gap-4 px-5 py-3.5 w-full hover:bg-white/5 transition-colors active:bg-white/10">
+<div class="flex items-center justify-center rounded-xl bg-white/5 shrink-0 size-10 group-hover:bg-white/10 transition-colors">
+<span class="material-symbols-outlined text-gray-300 group-hover:text-white transition-colors" style="font-size: 20px;">content_copy</span>
+</div>
+<span class="text-white text-[17px] font-medium leading-normal flex-1 text-left">Copy</span>
+</button>
+<!-- Save Offline (Brand Feature) -->
+<button class="group flex items-center gap-4 px-5 py-3.5 w-full hover:bg-white/5 transition-colors active:bg-white/10">
+<div class="flex items-center justify-center rounded-xl bg-yellow-500/10 shrink-0 size-10 group-hover:bg-yellow-500 group-hover:shadow-[0_0_15px_-3px_rgba(234,179,8,0.6)] transition-all duration-300">
+<span class="material-symbols-outlined text-yellow-500 group-hover:text-black transition-colors" style="font-size: 20px;">download_for_offline</span>
+</div>
+<div class="flex flex-col items-start flex-1">
+<span class="text-white text-[17px] font-medium leading-normal">Save Offline</span>
+<span class="text-gray-400 text-xs font-normal">Available without data</span>
+</div>
+<div class="size-6 flex items-center justify-center rounded-full bg-green-500/20">
+<span class="material-symbols-outlined text-green-500 text-[14px]">bolt</span>
+</div>
+</button>
+<!-- Info -->
+<button class="group flex items-center gap-4 px-5 py-3.5 w-full hover:bg-white/5 transition-colors active:bg-white/10">
+<div class="flex items-center justify-center rounded-xl bg-white/5 shrink-0 size-10 group-hover:bg-white/10 transition-colors">
+<span class="material-symbols-outlined text-gray-300 group-hover:text-white transition-colors" style="font-size: 20px;">info</span>
+</div>
+<span class="text-white text-[17px] font-medium leading-normal flex-1 text-left">Info</span>
+</button>
+<div class="h-px w-full bg-white/5 my-1 mx-5 w-[calc(100%-40px)]"></div>
+<!-- Delete -->
+<button class="group flex items-center gap-4 px-5 py-3.5 w-full hover:bg-red-500/10 transition-colors active:bg-red-500/20">
+<div class="flex items-center justify-center rounded-xl bg-red-500/10 shrink-0 size-10 group-hover:bg-red-500 group-hover:shadow-[0_0_15px_-3px_rgba(239,68,68,0.6)] transition-all duration-300">
+<span class="material-symbols-outlined text-red-500 group-hover:text-white transition-colors" style="font-size: 20px;">delete</span>
+</div>
+<span class="text-red-500 text-[17px] font-medium leading-normal flex-1 text-left">Delete</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</body></html>

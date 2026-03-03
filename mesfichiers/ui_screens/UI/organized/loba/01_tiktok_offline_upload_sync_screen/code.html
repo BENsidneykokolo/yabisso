@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Yabisso Sync Studio</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;700;800&amp;family=Noto+Sans:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#111a22",
+                        "surface-dark": "#192633",
+                        "yabisso-yellow": "#FBBF24",
+                        "yabisso-red": "#EF4444",
+                        "yabisso-green": "#10B981",
+                    },
+                    fontFamily: {
+                        "display": ["Plus Jakarta Sans", "sans-serif"],
+                        "body": ["Noto Sans", "sans-serif"],
+                    },
+                    borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "2xl": "1rem", "full": "9999px" },
+                },
+            },
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white font-display antialiased selection:bg-primary selection:text-white">
+<div class="relative flex h-full min-h-screen w-full flex-col overflow-x-hidden max-w-md mx-auto shadow-2xl">
+<!-- Header -->
+<div class="flex items-center bg-background-light dark:bg-background-dark p-4 pb-2 justify-between sticky top-0 z-10">
+<button class="text-slate-900 dark:text-white flex size-12 shrink-0 items-center justify-center rounded-full hover:bg-slate-200 dark:hover:bg-surface-dark transition-colors">
+<span class="material-symbols-outlined">arrow_back_ios_new</span>
+</button>
+<h2 class="text-slate-900 dark:text-white text-lg font-bold leading-tight tracking-tight flex-1 text-center pr-12">Sync Studio</h2>
+</div>
+<!-- Main Scrollable Content -->
+<div class="flex-1 flex flex-col p-4 gap-6">
+<!-- Video Preview Card -->
+<div class="group relative flex flex-col items-stretch justify-start rounded-2xl shadow-lg bg-white dark:bg-surface-dark overflow-hidden border border-slate-200 dark:border-slate-700/50">
+<!-- Video Thumbnail Area -->
+<div class="relative w-full aspect-[9/16] bg-slate-800" data-alt="Vertical mobile video preview showing a blurred colorful abstract background representing a recorded dance video" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDkA_mR3T-RZuj4QZc2zs3LVx1x9Of3Kctw25cyEJQ944ZJhjEqwawcffWl1Nq_adpYIlrNp3bnFY7GcpS8y2CHfq_os3aulpsJjraKAXy05KEISbNSQvY_PjGfPPtIj-V6712cGOEfb7NLHw8Zv7ih2tYLoBUHwZRilLwGM7al3jaelY0gmIeF69aIF__hnDIGuVcuu2gMppkc3ZsCewdtXD4awVL8JY2qFauJSH2STNm68weHGcieQFMTqvYN3BMObrhH8PoY"); background-size: cover; background-position: center;'>
+<div class="absolute inset-0 bg-black/30 flex items-center justify-center group-hover:bg-black/40 transition-all">
+<button class="size-14 rounded-full bg-white/20 backdrop-blur-sm border border-white/50 flex items-center justify-center text-white hover:scale-105 transition-transform">
+<span class="material-symbols-outlined !text-3xl">play_arrow</span>
+</button>
+</div>
+<!-- Duration Badge -->
+<div class="absolute bottom-3 right-3 px-2 py-1 bg-black/60 backdrop-blur-md rounded text-xs font-medium text-white border border-white/10">
+                        00:15
+                    </div>
+</div>
+<!-- Card Meta -->
+<div class="flex w-full flex-col items-stretch justify-center gap-3 p-4">
+<div class="flex items-start justify-between">
+<div>
+<p class="text-slate-900 dark:text-white text-lg font-bold leading-tight">Afrobeats Challenge</p>
+<p class="text-slate-500 dark:text-[#92adc9] text-sm font-normal mt-1">Recorded 2 mins ago • 14.2 MB</p>
+</div>
+<!-- Status Badge -->
+<div class="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-yabisso-yellow/10 border border-yabisso-yellow/20">
+<div class="size-2 rounded-full bg-yabisso-yellow animate-pulse"></div>
+<span class="text-yabisso-yellow text-xs font-bold uppercase tracking-wide">Pending</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Sync Status & Progress Section -->
+<div class="flex flex-col gap-2">
+<div class="flex items-center justify-center gap-2 text-slate-400 dark:text-slate-500 mb-2">
+<span class="material-symbols-outlined">wifi_off</span>
+<span class="text-xs uppercase font-bold tracking-widest">Offline Mode Active</span>
+</div>
+<div class="rounded-xl bg-white dark:bg-surface-dark p-5 border border-slate-200 dark:border-slate-700/50">
+<h3 class="text-slate-900 dark:text-white tracking-tight text-xl font-bold leading-tight text-center mb-2">Waiting for connection...</h3>
+<p class="text-slate-500 dark:text-[#92adc9] text-sm font-normal leading-normal text-center mb-6 px-4">
+                        We'll auto-resume when you're back online. You can manage your draft below.
+                    </p>
+<!-- Progress Bar Component -->
+<div class="flex flex-col gap-2">
+<div class="flex gap-6 justify-between items-end">
+<p class="text-slate-900 dark:text-white text-sm font-medium leading-normal">Sync Progress</p>
+<p class="text-slate-500 dark:text-[#92adc9] text-xs font-normal leading-normal">0/14.2 MB</p>
+</div>
+<div class="rounded-full bg-slate-100 dark:bg-[#324d67] h-2.5 overflow-hidden">
+<div class="h-full rounded-full bg-primary relative w-[5%]">
+<div class="absolute inset-0 bg-white/20"></div>
+</div>
+</div>
+<p class="text-slate-400 dark:text-[#92adc9] text-xs font-normal leading-normal text-right">5% Buffered</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Footer Actions (Fixed at bottom) -->
+<div class="p-4 pt-2 bg-background-light dark:bg-background-dark border-t border-slate-200 dark:border-slate-800 z-20 pb-8">
+<!-- Primary Action: Google Drive Upload -->
+<button class="w-full flex items-center justify-center gap-3 bg-white text-black hover:bg-slate-100 active:scale-[0.98] transition-all rounded-xl py-4 mb-4 shadow-[0_0_15px_rgba(255,255,255,0.1)] group">
+<span class="material-symbols-outlined group-hover:text-primary transition-colors">add_to_drive</span>
+<span class="text-base font-bold">Upload &amp; Sync to Google Drive</span>
+</button>
+<!-- Secondary Actions Row -->
+<div class="grid grid-cols-2 gap-3">
+<button class="flex items-center justify-center gap-2 bg-surface-dark dark:bg-surface-dark border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-900 dark:text-slate-200 rounded-lg py-3 transition-colors">
+<span class="material-symbols-outlined text-[20px]">download</span>
+<span class="text-sm font-semibold">Save to Gallery</span>
+</button>
+<button class="flex items-center justify-center gap-2 bg-transparent border border-yabisso-red/30 hover:bg-yabisso-red/10 text-yabisso-red rounded-lg py-3 transition-colors">
+<span class="material-symbols-outlined text-[20px]">delete</span>
+<span class="text-sm font-semibold">Discard</span>
+</button>
+</div>
+<p class="text-center text-[10px] text-slate-400 dark:text-slate-600 mt-6 uppercase tracking-widest font-bold opacity-60">Yabisso Offline-First Technology</p>
+</div>
+</div>
+</body></html>

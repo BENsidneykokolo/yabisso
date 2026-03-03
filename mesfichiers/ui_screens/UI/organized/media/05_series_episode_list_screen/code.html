@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Yabisso Series - Episode List</title>
+<!-- Google Fonts: Spline Sans -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Spline+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Config -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "yabisso-green": "#22c55e",
+                        "yabisso-red": "#ef4444",
+                        "yabisso-yellow": "#eab308",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                        "card-dark": "#192633",
+                    },
+                    fontFamily: {
+                        "display": ["Spline Sans", "sans-serif"]
+                    },
+                    borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "2xl": "1rem", "full": "9999px" },
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .icon-filled {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        /* Hide scrollbar for clean UI */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-dark text-white font-display overflow-x-hidden antialiased selection:bg-primary selection:text-white">
+<div class="relative flex flex-col min-h-screen pb-20">
+<!-- Background Hero Image -->
+<div class="fixed top-0 left-0 w-full h-[45vh] z-0">
+<div class="w-full h-full bg-cover bg-center" data-alt="Dark moody abstract pattern representing mystery series atmosphere" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAUy9HH7bSIxcpVcRMhI3ILqBzhzbzUEwhrPZMBmHln8oDoSTzNh-AZcvLzwKQFCWyqKcE6DWd2Bn7UuKSVHPrEnq6gjhc5RLoW6N5_l6XijC0jHFa5WYjBUtgeKXtFebjWJXam32v4HKpxLMfrLpTBpVlmCKeC-1DpF9dmVxlG5ch43XCWdV5W39zZdxrmDoYP5-jX-8XIuaHFQ2nV8Nrln2CGt-Q2nYxMre0TJ5-Eo-RPQF8o8CQuIckB81oNQ4uvQCPaG4ee');"></div>
+<!-- Gradient Overlay -->
+<div class="absolute inset-0 bg-gradient-to-b from-background-dark/30 via-background-dark/80 to-background-dark"></div>
+</div>
+<!-- Sticky Header -->
+<header class="sticky top-0 z-50 flex items-center justify-between px-4 py-4 bg-background-dark/80 backdrop-blur-md border-b border-white/5">
+<button class="flex items-center justify-center size-10 rounded-full bg-white/10 hover:bg-white/20 transition-colors backdrop-blur-sm text-white">
+<span class="material-symbols-outlined">arrow_back_ios_new</span>
+</button>
+<h1 class="text-lg font-bold tracking-tight truncate max-w-[200px]">Stranger Things</h1>
+<div class="flex gap-2">
+<button class="flex items-center justify-center size-10 rounded-full bg-transparent hover:bg-white/10 text-white">
+<span class="material-symbols-outlined">cast</span>
+</button>
+<button class="flex items-center justify-center size-10 rounded-full bg-transparent hover:bg-white/10 text-white">
+<span class="material-symbols-outlined">search</span>
+</button>
+</div>
+</header>
+<!-- Main Content Area -->
+<main class="relative z-10 flex flex-col px-4 pt-4 gap-6">
+<!-- Title & Season Selector -->
+<div class="flex flex-col gap-4">
+<div class="flex items-end justify-between">
+<div>
+<span class="text-yabisso-green text-xs font-bold uppercase tracking-wider mb-1 block">New Season</span>
+<h2 class="text-3xl font-bold leading-none">Season 4</h2>
+</div>
+<!-- Season Dropdown -->
+<div class="relative">
+<select class="appearance-none bg-card-dark border border-gray-700 text-white py-2 pl-4 pr-10 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm font-semibold">
+<option>Season 4</option>
+<option>Season 3</option>
+<option>Season 2</option>
+<option>Season 1</option>
+</select>
+<span class="material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 text-lg pointer-events-none">expand_more</span>
+</div>
+</div>
+<!-- Global Actions -->
+<div class="flex gap-3">
+<button class="flex-1 bg-white text-background-dark h-12 rounded-xl flex items-center justify-center gap-2 font-bold text-base hover:bg-gray-100 transition-colors">
+<span class="material-symbols-outlined icon-filled">play_arrow</span>
+                        Play S4 E1
+                    </button>
+<button aria-label="Download Season" class="size-12 bg-card-dark border border-gray-700 rounded-xl flex items-center justify-center text-white hover:bg-gray-800 transition-colors">
+<span class="material-symbols-outlined">download</span>
+</button>
+<button aria-label="Add to My List" class="size-12 bg-card-dark border border-gray-700 rounded-xl flex items-center justify-center text-white hover:bg-gray-800 transition-colors">
+<span class="material-symbols-outlined">add</span>
+</button>
+</div>
+</div>
+<!-- Episodes List -->
+<div class="flex flex-col gap-6 mt-2">
+<!-- Episode 1 -->
+<article class="group flex flex-col gap-3">
+<div class="flex gap-4">
+<!-- Thumbnail -->
+<div class="relative shrink-0 w-[140px] aspect-video rounded-lg overflow-hidden bg-gray-800">
+<img class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" data-alt="Two people walking in a dark hallway with dramatic lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD96FHxD5v0m1474BsNBQ7l4LWvpD7amH-xKwr-7rrUio5PYsJNWqro8sIe1KXKw0H0R2fC-xuTNwtcQZURix_fTeaMRu1HrAxB5Y6fHbJREXvOUknYezkvQZWQQaFZuu6DjToLsXpOs5w9jbpbJoHDR5_2ILSXeV0fYwB7fnVKuOlh_R7YgLGlvQnLxZeW2mYe1pFoxomkld0TOo7VfW43mnlKcpfMLNYXUVZCwzTSMUDu7ycXtqViHe0soI4ExzUZLuuG1gcP"/>
+<!-- Duration Badge -->
+<div class="absolute bottom-1 right-1 bg-black/80 px-1.5 py-0.5 rounded text-[10px] font-medium text-white backdrop-blur-sm">
+                                1h 18m
+                            </div>
+<!-- Progress Bar -->
+<div class="absolute bottom-0 left-0 w-full h-1 bg-gray-700/50">
+<div class="h-full bg-yabisso-red w-3/4"></div>
+</div>
+</div>
+<!-- Content -->
+<div class="flex flex-col flex-1 justify-center min-w-0">
+<div class="flex items-center gap-2 mb-1">
+<span class="text-sm font-semibold text-primary">S4 E1</span>
+<span class="text-xs text-gray-400">• Mar 12</span>
+</div>
+<h3 class="text-base font-bold text-white leading-tight truncate">Chapter One: The Hellfire Club</h3>
+<p class="text-gray-400 text-xs mt-1 line-clamp-2 leading-relaxed">Detailed synopsis of the episode goes here. The gang faces new threats as high school complicates their lives.</p>
+</div>
+</div>
+<!-- Quick Actions Row -->
+<div class="flex items-center justify-between pl-[156px]">
+<div class="flex items-center gap-4">
+<button class="text-gray-400 hover:text-white flex items-center gap-1.5 text-xs font-medium">
+<span class="material-symbols-outlined text-[20px]">play_circle</span>
+                                Resume
+                            </button>
+<button class="text-gray-400 hover:text-white flex items-center gap-1.5 text-xs font-medium">
+<span class="material-symbols-outlined text-[20px]">info</span>
+                                Details
+                            </button>
+</div>
+<button class="text-white hover:text-primary transition-colors">
+<span class="material-symbols-outlined">download</span>
+</button>
+</div>
+</article>
+<div class="h-px bg-gray-800 w-full"></div>
+<!-- Episode 2 (Downloaded) -->
+<article class="group flex flex-col gap-3">
+<div class="flex gap-4">
+<div class="relative shrink-0 w-[140px] aspect-video rounded-lg overflow-hidden bg-gray-800">
+<img class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" data-alt="Close up of an old clock face in dim lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDf9Mc2lnTyWVzSAQsL8hTByfp_sGcFcI-4hgYp4k-1GglOyJ3aBQE_5Tdb1twg6c_hmYX_17t_q68sUrpteiSZBv94-0ZRv_3WwJXrtv-zChKv9xvyt8jNfb5VLuMMHkK8d8BC9IvcQMtjdHBIcYkmQInFGL5SW5P0gD9-91H9Zo8JNs1SI1u-BRDjr__SxPTmeLzmotRd2Ae-KTKPFmN9DOqgJc4wgiVpOtsulddC9Tu5YB4RzQ_EVB2-JW46owJ3wUE7sHOj"/>
+<div class="absolute bottom-1 right-1 bg-black/80 px-1.5 py-0.5 rounded text-[10px] font-medium text-white backdrop-blur-sm">
+                                1h 15m
+                            </div>
+</div>
+<div class="flex flex-col flex-1 justify-center min-w-0">
+<div class="flex items-center gap-2 mb-1">
+<span class="text-sm font-semibold text-white">S4 E2</span>
+<!-- Downloaded Indicator -->
+<div class="flex items-center gap-1 bg-yabisso-green/20 px-1.5 rounded text-yabisso-green text-[10px] font-bold uppercase tracking-wide">
+<span class="material-symbols-outlined text-[12px]">check</span>
+<span>Downloaded</span>
+</div>
+</div>
+<h3 class="text-base font-bold text-white leading-tight truncate">Chapter Two: Vecna's Curse</h3>
+<p class="text-gray-400 text-xs mt-1 line-clamp-2 leading-relaxed">A plane crash in Russia, a new monster in Hawkins, and a road trip to find Eleven.</p>
+</div>
+</div>
+<div class="flex items-center justify-between pl-[156px]">
+<div class="flex items-center gap-4">
+<button class="text-gray-400 hover:text-white flex items-center gap-1.5 text-xs font-medium">
+<span class="material-symbols-outlined text-[20px]">play_circle</span>
+                                Play
+                            </button>
+</div>
+<button class="text-yabisso-green hover:text-white transition-colors">
+<span class="material-symbols-outlined icon-filled">download_done</span>
+</button>
+</div>
+</article>
+<div class="h-px bg-gray-800 w-full"></div>
+<!-- Episode 3 -->
+<article class="group flex flex-col gap-3">
+<div class="flex gap-4">
+<div class="relative shrink-0 w-[140px] aspect-video rounded-lg overflow-hidden bg-gray-800">
+<img class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" data-alt="A dark forest scene with blue mist" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAAMbwAS_naSpzz_fPp3S8r_BviPzEhQdMGdjo4jBqvl-8t4JFzcZbcEUhXtcfn7CoIPpbcXsPJdCI3m0w6kVH41hfGHEKiYAdRAoJMQCRnTvvnT347rTco-VgKRFCxonTxiAXp3FtEVWegsub_N3aahoNqzyKBk4D8hylI7QWBBSLQ2FP7dcdju9VdLnF01CRW0m21xPZwTdxVdxf_KfgDiMTKbqlD9BUbpZKyeNvvr9bx48Jemk8D5MDe7CHy6BL2Gr-D7P0M"/>
+<div class="absolute bottom-1 right-1 bg-black/80 px-1.5 py-0.5 rounded text-[10px] font-medium text-white backdrop-blur-sm">
+                                1h 03m
+                            </div>
+</div>
+<div class="flex flex-col flex-1 justify-center min-w-0">
+<div class="flex items-center gap-2 mb-1">
+<span class="text-sm font-semibold text-white">S4 E3</span>
+</div>
+<h3 class="text-base font-bold text-white leading-tight truncate">Chapter Three: The Monster</h3>
+<p class="text-gray-400 text-xs mt-1 line-clamp-2 leading-relaxed">Murray and Joyce fly to Alaska, while Eleven confronts her past in the laboratory.</p>
+</div>
+</div>
+<div class="flex items-center justify-between pl-[156px]">
+<div class="flex items-center gap-4">
+<button class="text-gray-400 hover:text-white flex items-center gap-1.5 text-xs font-medium">
+<span class="material-symbols-outlined text-[20px]">play_circle</span>
+                                Play
+                            </button>
+</div>
+<button class="text-white hover:text-primary transition-colors">
+<span class="material-symbols-outlined">download</span>
+</button>
+</div>
+</article>
+<div class="h-px bg-gray-800 w-full"></div>
+<!-- Episode 4 -->
+<article class="group flex flex-col gap-3">
+<div class="flex gap-4">
+<div class="relative shrink-0 w-[140px] aspect-video rounded-lg overflow-hidden bg-gray-800">
+<!-- Linear Gradient placeholder for abstract art -->
+<div class="w-full h-full bg-gradient-to-br from-indigo-900 via-purple-900 to-black" data-alt="Abstract gradient pattern representing mystery"></div>
+<div class="absolute bottom-1 right-1 bg-black/80 px-1.5 py-0.5 rounded text-[10px] font-medium text-white backdrop-blur-sm">
+                                1h 17m
+                            </div>
+</div>
+<div class="flex flex-col flex-1 justify-center min-w-0">
+<div class="flex items-center gap-2 mb-1">
+<span class="text-sm font-semibold text-white">S4 E4</span>
+</div>
+<h3 class="text-base font-bold text-white leading-tight truncate">Chapter Four: Dear Billy</h3>
+<p class="text-gray-400 text-xs mt-1 line-clamp-2 leading-relaxed">Max realizes she is running out of time. Nancy and Robin visit the asylum.</p>
+</div>
+</div>
+<div class="flex items-center justify-between pl-[156px]">
+<div class="flex items-center gap-4">
+<button class="text-gray-400 hover:text-white flex items-center gap-1.5 text-xs font-medium">
+<span class="material-symbols-outlined text-[20px]">play_circle</span>
+                                Play
+                            </button>
+</div>
+<button class="text-white hover:text-primary transition-colors">
+<span class="material-symbols-outlined">download</span>
+</button>
+</div>
+</article>
+</div>
+</main>
+<!-- Yabisso Branding / Bottom Safe Area -->
+<div class="h-10"></div>
+</div>
+</body></html>

@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+
+<html lang="fr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Informations du destinataire - Yabisso</title>
+<!-- BEGIN: Tailwind Setup -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            yabisso: {
+              blue: '#0055A4',
+              red: '#EF4135',
+              yellow: '#FDB913',
+              green: '#009B4D',
+              dark: '#121212',
+              card: '#1E1E1E'
+            }
+          }
+        }
+      }
+    }
+  </script>
+<!-- END: Tailwind Setup -->
+<!-- BEGIN: Global Styles -->
+<style data-purpose="custom-layout">
+    body {
+      background-color: #000000;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    /* Simple animation for the modal slide up */
+    @keyframes slide-up {
+      from { transform: translateY(100%); }
+      to { transform: translateY(0); }
+    }
+    .modal-animate-up {
+      animation: slide-up 0.3s ease-out forwards;
+    }
+  </style>
+<!-- END: Global Styles -->
+</head>
+<body class="h-screen flex items-end justify-center">
+<!-- BEGIN: Modal Overlay -->
+<div class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-end justify-center z-50" data-purpose="modal-overlay">
+<!-- BEGIN: Modal Content Container -->
+<div class="modal-animate-up bg-yabisso-dark w-full max-w-md rounded-t-3xl p-6 shadow-2xl border-t border-white/10" data-purpose="recipient-info-modal">
+<!-- BEGIN: Handle Bar -->
+<div class="flex justify-center mb-6">
+<div class="w-12 h-1.5 bg-gray-600 rounded-full"></div>
+</div>
+<!-- END: Handle Bar -->
+<!-- BEGIN: Header -->
+<div class="mb-8">
+<h1 class="text-2xl font-bold text-white mb-2">Informations du destinataire</h1>
+<p class="text-gray-400 text-sm">Veuillez entrer les coordonnées de la personne qui recevra la commande.</p>
+</div>
+<!-- END: Header -->
+<!-- BEGIN: Form -->
+<form class="space-y-5" data-purpose="recipient-form">
+<!-- Nom Field -->
+<div class="space-y-2">
+<label class="block text-sm font-medium text-gray-300" for="last_name">Nom</label>
+<input class="w-full bg-yabisso-card border-none rounded-xl py-4 px-4 text-white placeholder-gray-500 focus:ring-2 focus:ring-yabisso-blue transition-all ring-2 ring-yabisso-red" id="last_name" name="last_name" placeholder="ex: M'Bappe" type="text"/><p class="text-yabisso-red text-xs mt-1 font-medium">Ce champ est obligatoire</p>
+</div>
+<!-- Prénom Field -->
+<div class="space-y-2">
+<label class="block text-sm font-medium text-gray-300" for="first_name">Prénom</label>
+<input class="w-full bg-yabisso-card border-none rounded-xl py-4 px-4 text-white placeholder-gray-500 focus:ring-2 focus:ring-yabisso-blue transition-all ring-2 ring-yabisso-red" id="first_name" name="first_name" placeholder="ex: Kylian" type="text"/><p class="text-yabisso-red text-xs mt-1 font-medium">Ce champ est obligatoire</p>
+</div>
+<!-- Numéro de téléphone Field -->
+<div class="space-y-2">
+<label class="block text-sm font-medium text-gray-300" for="phone">Numéro de téléphone</label>
+<div class="relative">
+<input class="w-full bg-yabisso-card border-none rounded-xl py-4 px-4 text-white placeholder-gray-500 focus:ring-2 focus:ring-yabisso-blue transition-all ring-2 ring-yabisso-red" id="phone" name="phone" placeholder="+243 ..." type="tel"/>
+<!-- Accent border on the left to show brand color -->
+<div class="absolute left-0 top-1/4 bottom-1/4 w-1 bg-yabisso-yellow rounded-r-full"></div>
+</div><p class="text-yabisso-red text-xs mt-1 font-medium">Ce champ est obligatoire</p>
+</div>
+<!-- Email Field -->
+<div class="space-y-2">
+<div class="flex justify-between">
+<label class="block text-sm font-medium text-gray-300" for="email">Email</label>
+<span class="text-xs text-gray-500 italic">Optionnel</span>
+</div>
+<input class="w-full bg-yabisso-card border-none rounded-xl py-4 px-4 text-white placeholder-gray-500 focus:ring-2 focus:ring-yabisso-blue transition-all" id="email" name="email" placeholder="destinataire@exemple.com" type="email"/>
+</div>
+<!-- BEGIN: Action Buttons -->
+<div class="pt-6 space-y-3">
+<!-- Primary Action -->
+<button class="w-full bg-white text-black font-bold py-4 rounded-xl active:scale-[0.98] transition-transform text-lg shadow-lg" type="submit">
+            Confirmer
+          </button>
+<!-- Secondary / Cancel -->
+<button class="w-full bg-transparent text-gray-400 font-medium py-3 rounded-xl hover:text-white transition-colors" type="button">
+            Annuler
+          </button>
+</div>
+<!-- END: Action Buttons -->
+</form>
+<!-- END: Form -->
+<!-- BEGIN: Brand Accents -->
+<div class="mt-8 flex justify-center gap-1.5 opacity-50">
+<div class="w-8 h-1 bg-yabisso-blue rounded-full"></div>
+<div class="w-8 h-1 bg-yabisso-yellow rounded-full"></div>
+<div class="w-8 h-1 bg-yabisso-red rounded-full"></div>
+<div class="w-8 h-1 bg-yabisso-green rounded-full"></div>
+</div>
+<!-- END: Brand Accents -->
+<!-- Mobile Safe Area Padding -->
+<div class="h-6"></div>
+</div>
+<!-- END: Modal Content Container -->
+</div>
+<!-- END: Modal Overlay -->
+<!-- BEGIN: Form Logic -->
+<script data-purpose="form-interactivity">
+    document.querySelector('form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      // Handle data processing here
+      console.log('Recipient details submitted');
+    });
+
+    // Close modal on background click (optional UI behavior)
+    document.querySelector('[data-purpose="modal-overlay"]').addEventListener('click', (e) => {
+      if (e.target === e.currentTarget) {
+        console.log('Close modal requested');
+      }
+    });
+  </script>
+<!-- END: Form Logic -->
+</body></html>

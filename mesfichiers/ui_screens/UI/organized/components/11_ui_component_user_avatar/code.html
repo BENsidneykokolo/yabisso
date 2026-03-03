@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>User Avatar Component</title>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Noto+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind Config -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                        "surface-dark": "#1c2630",
+                    },
+                    fontFamily: {
+                        "display": ["Space Grotesk", "sans-serif"],
+                        "body": ["Noto Sans", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined.filled {
+            font-variation-settings: 'FILL' 1;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white font-display antialiased overflow-x-hidden">
+<div class="relative flex h-auto min-h-screen w-full flex-col max-w-md mx-auto border-x border-slate-200 dark:border-slate-800">
+<!-- TopAppBar -->
+<div class="flex items-center bg-background-light dark:bg-background-dark p-4 pb-2 justify-between sticky top-0 z-50 border-b border-slate-200 dark:border-slate-800">
+<div class="text-slate-900 dark:text-white flex size-12 shrink-0 items-center justify-center rounded-full hover:bg-slate-200 dark:hover:bg-slate-800 cursor-pointer transition-colors">
+<span class="material-symbols-outlined">arrow_back</span>
+</div>
+<h2 class="text-slate-900 dark:text-white text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center pr-12">User Avatar</h2>
+</div>
+<!-- Section: Large Avatar (Profile Context) -->
+<div class="flex flex-col pt-6 px-4">
+<h2 class="text-slate-900 dark:text-white tracking-tight text-[22px] font-bold leading-tight text-left pb-4">Profile Header</h2>
+<!-- Large Avatar Card -->
+<div class="flex flex-col items-center justify-center p-8 bg-white dark:bg-surface-dark rounded-xl shadow-sm border border-slate-200 dark:border-slate-800">
+<div class="relative">
+<div class="w-24 h-24 rounded-full bg-cover bg-center border-4 border-white dark:border-[#2a3a4a] shadow-lg" data-alt="Portrait of a young woman with a neutral expression" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCyJV7wFBwJc1SkP6a3fhEwLCDEnAYd5Sd18wuv3DagY68TLOXKTi9pxWBYf6k9c0fxqdXrLeOmja6p7zIl0Z7EsPwLdN7gw-JmGE3XzzHxg6Ng7O3K34Sq-2WXu5hs_eISTemRN-NMxKd40l9l-JaN_hB6F9nnj04U9qoMVsDyhMRRiYOcx1WFMc7vayyP6C5b_f5eW8dmz8Yr4U1EJuWujdY5w76kuCK1XYwuC_xE8wxLjdk9OIy9jCvl6xFtRrCTCbCMGrMo');">
+</div>
+<!-- Status Indicator Add-on -->
+<div class="absolute bottom-1 right-1 w-6 h-6 bg-green-500 border-4 border-white dark:border-[#2a3a4a] rounded-full"></div>
+</div>
+<h3 class="mt-4 text-xl font-bold text-slate-900 dark:text-white">Fatima Jallow</h3>
+<p class="text-sm text-slate-500 dark:text-slate-400 font-body">Premium Member</p>
+<button class="mt-4 px-6 py-2 bg-primary text-white rounded-full text-sm font-bold hover:bg-blue-600 transition-colors w-full sm:w-auto">
+                    Edit Profile
+                </button>
+</div>
+</div>
+<div class="h-6"></div>
+<!-- Section: Sizes & States -->
+<div class="flex flex-col px-4">
+<h2 class="text-slate-900 dark:text-white tracking-tight text-[22px] font-bold leading-tight text-left pb-4">Sizes &amp; States</h2>
+<div class="grid grid-cols-1 gap-4">
+<!-- Row 1: Image State -->
+<div class="flex items-center justify-between p-4 bg-white dark:bg-surface-dark rounded-lg border border-slate-200 dark:border-slate-800">
+<div class="flex flex-col gap-1">
+<span class="text-sm font-bold text-slate-900 dark:text-white">Image State</span>
+<span class="text-xs text-slate-500 dark:text-slate-400 font-body">Large, Medium, Small</span>
+</div>
+<div class="flex items-center gap-4">
+<!-- Large (96px/24rem handled above, scaling down here for row fit) -->
+<div class="w-16 h-16 rounded-full bg-cover bg-center ring-2 ring-primary/20" data-alt="Portrait of a man smiling wearing glasses" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuB3wrdRw7nXatDccF6JS7dGF2vCT5CdtCLadHuA12E1z0mBNJRSeVgyriUpMWCWANaz1xCkkMkE7TO6JxDjexHHyX-l4RL2l-_ptmSAUaPegq9MZWA8geFMqKz45Nfi1p8O1J2tyK0ZxxtSNg2kdazMcHri-o58LunUD9lzkyD8wJ0urztIyahx2o2smS5ohKepFITCGiRgqcoAGbRlcuroik2XQjykromGZB_LkNNHp8ZmGnLZvH6Y9GthygF7hdnTXIIwcybw');">
+</div>
+<!-- Medium -->
+<div class="w-12 h-12 rounded-full bg-cover bg-center" data-alt="Portrait of a man smiling wearing glasses" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAseiRbDsvkM0bcnbPlXI8Bc34nZT-jck5n4hX2kLmxjLolzdJPpv6OF0OGQrNxSMSBI4F6rIy6C-fBFyLJsRjDqgWE7wWGuDMLJ86ai1Qa2R2eqR_ktSvFy4PAOP18htWIbvLh0KnCiry24GFi07Q_HlNqUSLwCYaRHg0xXriSvFD5BN5YETWsiAazGvtX-IIT6AV4V9fR2rxqz7For3bAAEsW_gEMpYKPSZGIXpl_Ydl_yn75we7YWr9SDtIlZzusbYv42RzU');">
+</div>
+<!-- Small -->
+<div class="w-8 h-8 rounded-full bg-cover bg-center" data-alt="Portrait of a man smiling wearing glasses" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAtU3qyiTat_xfd9huynpIkDGz3mIGHoNL2OIV8b6OOY3j5-DIrNcHEhxTllZw_PO6EpUf121TJkwTDvFCFPRbiPU-v9Eb9jlYm8350JPf4CmSd2CMz_n3K_3voBJjwMpPZn8zENKOZd6zg306AU5qTvl-OkiMYKpRXJnNBCCNkORXcKfsiBbyv2-x-9xHuiSjOnh3VmTbxN5mpyX8pi8TxTPrDaQu3yYqhhCWRNdj_glJbYCBwFfEw711t_8fL-VmuCCBMAq8a');">
+</div>
+</div>
+</div>
+<!-- Row 2: Initials Fallback (Offline First) -->
+<div class="flex items-center justify-between p-4 bg-white dark:bg-surface-dark rounded-lg border border-slate-200 dark:border-slate-800">
+<div class="flex flex-col gap-1">
+<span class="text-sm font-bold text-slate-900 dark:text-white">Initials Fallback</span>
+<span class="text-xs text-slate-500 dark:text-slate-400 font-body">When image fails/offline</span>
+</div>
+<div class="flex items-center gap-4">
+<!-- Large -->
+<div class="w-16 h-16 rounded-full bg-primary flex items-center justify-center text-white text-2xl font-bold tracking-tight">
+                            JD
+                        </div>
+<!-- Medium -->
+<div class="w-12 h-12 rounded-full bg-indigo-600 flex items-center justify-center text-white text-lg font-bold">
+                            MK
+                        </div>
+<!-- Small -->
+<div class="w-8 h-8 rounded-full bg-pink-600 flex items-center justify-center text-white text-xs font-bold">
+                            AL
+                        </div>
+</div>
+</div>
+<!-- Row 3: Icon Fallback -->
+<div class="flex items-center justify-between p-4 bg-white dark:bg-surface-dark rounded-lg border border-slate-200 dark:border-slate-800">
+<div class="flex flex-col gap-1">
+<span class="text-sm font-bold text-slate-900 dark:text-white">Icon Fallback</span>
+<span class="text-xs text-slate-500 dark:text-slate-400 font-body">Anonymous user</span>
+</div>
+<div class="flex items-center gap-4">
+<!-- Large -->
+<div class="w-16 h-16 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-slate-400 dark:text-slate-300">
+<span class="material-symbols-outlined filled" style="font-size: 32px;">person</span>
+</div>
+<!-- Medium -->
+<div class="w-12 h-12 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-slate-400 dark:text-slate-300">
+<span class="material-symbols-outlined filled" style="font-size: 24px;">person</span>
+</div>
+<!-- Small -->
+<div class="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-slate-400 dark:text-slate-300">
+<span class="material-symbols-outlined filled" style="font-size: 18px;">person</span>
+</div>
+</div>
+</div>
+<!-- Row 4: Squircle Variant (African Tech Vibe) -->
+<div class="flex items-center justify-between p-4 bg-white dark:bg-surface-dark rounded-lg border border-slate-200 dark:border-slate-800">
+<div class="flex flex-col gap-1">
+<span class="text-sm font-bold text-slate-900 dark:text-white">Squircle Variant</span>
+<span class="text-xs text-slate-500 dark:text-slate-400 font-body">Modern tech aesthetic</span>
+</div>
+<div class="flex items-center gap-4">
+<!-- Large -->
+<div class="w-16 h-16 rounded-2xl bg-cover bg-center relative" data-alt="Portrait of a woman looking away with a serious expression" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDoFivnKoebNLoy6iBrF6ahJtN__284aKUMb0TbMzrk5p_Q7mvmSNvJQiCKWKz6u-KSwaRI74wXB-WerkF0wDwZBzseZjV-1A_9K-i5fNZZJNZO_VLLWBc9FYOUMwqZOSsEUuWOgjJ8YMK9HtXLWkHjf9lo_qwC_u7NXvPn9clUC99Pu5LuuxDkqLZKVfqoI-sU9HSBQ3ohkL9MQbszpyeGSYLiiVrQ9YlNSSFSmUqWXY4BLxRC_MvB9vVEeCDmfITIUmnetaYB');">
+<div class="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 border-2 border-white dark:border-surface-dark rounded-full"></div>
+</div>
+<!-- Medium Fallback -->
+<div class="w-12 h-12 rounded-xl bg-primary flex items-center justify-center text-white text-lg font-bold">
+                            OJ
+                        </div>
+<!-- Small Icon -->
+<div class="w-8 h-8 rounded-lg bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-slate-400 dark:text-slate-300">
+<span class="material-symbols-outlined" style="font-size: 18px;">face</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="h-6"></div>
+<!-- Section: Contextual Examples -->
+<div class="flex flex-col px-4 pb-8">
+<h2 class="text-slate-900 dark:text-white tracking-tight text-[22px] font-bold leading-tight text-left pb-4">Context: Chat List</h2>
+<div class="flex flex-col bg-white dark:bg-surface-dark rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800">
+<!-- Chat Item 1 -->
+<div class="flex items-center gap-3 p-4 border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-[#23313d] transition-colors cursor-pointer">
+<div class="relative">
+<div class="w-12 h-12 rounded-full bg-cover bg-center" data-alt="Portrait of a young woman with curly hair" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuD8RVuk24z7ysW1QgDZ8n1x2QNJD1WlLvTSysfoNGly935k23mLP740gEE5yrfE2LxVcO1IzK1a3XREJsPvW76SuGBu3jYN9gGPvt1OtRS3idQAqecEp9wu9qtMdGApXouawfeNghu1pa2_COSg5gE82-aPxUdPa2Kj5xedlkmpZutWAlG7OHQ1PJeRMe5YcnVrkgdzLhu4_1BWOvYApTruCMwaoa4XZow6WWIUTFVutyBNrujNTIaIKC9kCIMijrbll6HfGXc9');">
+</div>
+<div class="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 border-2 border-white dark:border-surface-dark rounded-full"></div>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex justify-between items-baseline">
+<h4 class="text-slate-900 dark:text-white font-bold truncate">Amina Diop</h4>
+<span class="text-xs text-slate-400 font-body">12:30 PM</span>
+</div>
+<p class="text-sm text-slate-500 dark:text-slate-400 truncate font-body">Sent you a payment request.</p>
+</div>
+</div>
+<!-- Chat Item 2 (Initials) -->
+<div class="flex items-center gap-3 p-4 border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-[#23313d] transition-colors cursor-pointer">
+<div class="w-12 h-12 rounded-full bg-primary flex items-center justify-center text-white text-lg font-bold shrink-0">
+                        KW
+                    </div>
+<div class="flex-1 min-w-0">
+<div class="flex justify-between items-baseline">
+<h4 class="text-slate-900 dark:text-white font-bold truncate">Kwame Williams</h4>
+<span class="text-xs text-slate-400 font-body">Yesterday</span>
+</div>
+<p class="text-sm text-slate-500 dark:text-slate-400 truncate font-body">Looking forward to the meetup!</p>
+</div>
+</div>
+<!-- Chat Item 3 (Group Avatar / Stacked) -->
+<div class="flex items-center gap-3 p-4 hover:bg-slate-50 dark:hover:bg-[#23313d] transition-colors cursor-pointer">
+<div class="flex -space-x-4 overflow-hidden py-1 pl-1">
+<div class="inline-block h-10 w-10 rounded-full ring-2 ring-white dark:ring-surface-dark bg-cover bg-center" data-alt="Portrait of a man with short hair" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCgwrjv71bB_1i1sDvaztBkwHbfQJssbGLGqvnmDLS0yrXLET-WQLBu1TrVBIplaXfhbdyYFjWaNOYDflE9o0b80knZMCFOCxLWY2X-KfMIdjxg3a9-qJn2k5KnfZNM4S34T65RUaZIL7LqkgKukp41GFF9oYDB2paZGUHP4yvrJW9o7KvD3Z-Jur2Bu446FfIPwL53JWrspLVqKZtkdj2vkp8vw7dvm1m1RF-1PSuiEqQUUJtCzVEddQ7MXhX7Kczidh0Dcl_k');">
+</div>
+<div class="inline-block h-10 w-10 rounded-full ring-2 ring-white dark:ring-surface-dark bg-orange-500 flex items-center justify-center text-white text-xs font-bold">
+                           TS
+                        </div>
+<div class="inline-block h-10 w-10 rounded-full ring-2 ring-white dark:ring-surface-dark bg-slate-700 flex items-center justify-center text-slate-300 text-xs font-bold">
+                            +3
+                        </div>
+</div>
+<div class="flex-1 min-w-0 ml-1">
+<div class="flex justify-between items-baseline">
+<h4 class="text-slate-900 dark:text-white font-bold truncate">Tech Hub Lagos</h4>
+<span class="text-xs text-primary font-bold font-body">2 New</span>
+</div>
+<p class="text-sm text-slate-900 dark:text-white font-medium truncate font-body">Samuel: Did you see the updates?</p>
+</div>
+</div>
+</div>
+</div>
+<div class="h-10 bg-background-light dark:bg-background-dark"></div>
+</div>
+</body></html>

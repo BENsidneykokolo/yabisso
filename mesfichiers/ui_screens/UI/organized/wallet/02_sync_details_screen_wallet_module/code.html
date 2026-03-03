@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Sync Details Screen</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                        "yabisso-red": "#ef4444",
+                        "yabisso-yellow": "#eab308",
+                        "yabisso-green": "#22c55e",
+                        "surface-dark": "#192633",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white font-display antialiased selection:bg-primary/30">
+<div class="relative flex min-h-screen w-full flex-col overflow-x-hidden max-w-md mx-auto shadow-2xl">
+<!-- Header -->
+<header class="sticky top-0 z-50 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-md border-b border-gray-200 dark:border-gray-800 p-4 pb-2">
+<div class="flex items-center justify-between">
+<button class="text-slate-900 dark:text-white flex size-10 shrink-0 items-center justify-center rounded-full hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors">
+<span class="material-symbols-outlined text-2xl">arrow_back</span>
+</button>
+<h2 class="text-slate-900 dark:text-white text-lg font-bold leading-tight tracking-tight">Synchronization</h2>
+<div class="size-10"></div> <!-- Spacer for center alignment -->
+</div>
+</header>
+<main class="flex-1 flex flex-col p-4 gap-6">
+<!-- Hero Status Card -->
+<!-- Using a subtle gradient border top to incorporate Yabisso colors (Red, Yellow, Green, Blue) for that "African Tech" vibe -->
+<div class="relative overflow-hidden rounded-xl bg-surface-dark shadow-lg ring-1 ring-white/10">
+<div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-yabisso-green via-yabisso-yellow to-yabisso-red"></div>
+<div class="p-6 flex flex-col items-center justify-center text-center gap-4 relative z-10">
+<!-- Dynamic Icon Container -->
+<div class="relative">
+<div class="absolute inset-0 bg-yabisso-green/20 blur-xl rounded-full animate-pulse"></div>
+<span class="material-symbols-outlined text-6xl text-yabisso-green relative z-10">cloud_done</span>
+</div>
+<div class="space-y-1">
+<h3 class="text-2xl font-bold text-white tracking-tight">All Caught Up</h3>
+<p class="text-gray-400 text-sm">Your wallet data is synchronized and secure.</p>
+</div>
+<!-- Network Status Pill -->
+<div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/40 border border-white/10 backdrop-blur-sm">
+<div class="size-2 rounded-full bg-yabisso-green animate-pulse"></div>
+<span class="text-xs font-medium text-gray-300 uppercase tracking-wider">Online • Wi-Fi</span>
+</div>
+</div>
+<!-- Decorative background pattern -->
+<div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-10 mix-blend-overlay" data-alt="Abstract carbon fiber pattern texture"></div>
+</div>
+<!-- Stats Grid -->
+<div class="grid grid-cols-3 gap-3">
+<div class="flex flex-col gap-1 rounded-xl bg-surface-dark p-4 border border-white/5 relative overflow-hidden group">
+<div class="absolute top-0 right-0 p-2 opacity-10 group-hover:opacity-20 transition-opacity">
+<span class="material-symbols-outlined">pending_actions</span>
+</div>
+<p class="text-gray-400 text-xs font-medium uppercase tracking-wider">Pending</p>
+<p class="text-white text-xl font-bold">0</p>
+</div>
+<div class="flex flex-col gap-1 rounded-xl bg-surface-dark p-4 border border-white/5 relative overflow-hidden group">
+<div class="absolute top-0 right-0 p-2 opacity-10 group-hover:opacity-20 transition-opacity">
+<span class="material-symbols-outlined">database</span>
+</div>
+<p class="text-gray-400 text-xs font-medium uppercase tracking-wider">Size</p>
+<p class="text-white text-xl font-bold">0 KB</p>
+</div>
+<div class="flex flex-col gap-1 rounded-xl bg-surface-dark p-4 border border-white/5 relative overflow-hidden group">
+<div class="absolute top-0 right-0 p-2 opacity-10 group-hover:opacity-20 transition-opacity">
+<span class="material-symbols-outlined">schedule</span>
+</div>
+<p class="text-gray-400 text-xs font-medium uppercase tracking-wider">Last Sync</p>
+<p class="text-white text-xl font-bold">10:42</p>
+<p class="text-gray-500 text-[10px]">AM Today</p>
+</div>
+</div>
+<!-- Primary Action (White Button Style) -->
+<button class="w-full relative overflow-hidden rounded-xl h-14 bg-white text-black font-bold text-base tracking-wide hover:bg-gray-100 active:scale-[0.98] transition-all shadow-lg flex items-center justify-center gap-2 group">
+<span class="material-symbols-outlined group-hover:rotate-180 transition-transform duration-500">sync</span>
+<span>Sync Now</span>
+</button>
+<!-- Settings Toggle -->
+<div class="flex items-center justify-between p-4 rounded-xl bg-surface-dark border border-white/5">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-gray-400">wifi</span>
+<div class="flex flex-col">
+<span class="text-white text-sm font-medium">Sync only on Wi-Fi</span>
+<span class="text-gray-500 text-xs">Save mobile data usage</span>
+</div>
+</div>
+<!-- Toggle Switch -->
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox" value=""/>
+<div class="w-11 h-6 bg-gray-700 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
+</label>
+</div>
+<!-- Recent Activity Log -->
+<div class="flex flex-col gap-4">
+<h3 class="text-white text-lg font-bold tracking-tight px-1">Recent Activity</h3>
+<div class="flex flex-col gap-2">
+<!-- Log Item: Success -->
+<div class="group flex items-center gap-4 p-4 rounded-xl bg-surface-dark border border-white/5 hover:border-white/10 transition-colors">
+<div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-yabisso-green/10 text-yabisso-green">
+<span class="material-symbols-outlined text-xl">check_circle</span>
+</div>
+<div class="flex flex-col flex-1">
+<p class="text-white text-sm font-medium">Auto-sync completed</p>
+<p class="text-gray-500 text-xs">12 items updated</p>
+</div>
+<p class="text-gray-400 text-xs font-medium">10:42 AM</p>
+</div>
+<!-- Log Item: Warning/Pending -->
+<div class="group flex items-center gap-4 p-4 rounded-xl bg-surface-dark border border-white/5 hover:border-white/10 transition-colors">
+<div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-yabisso-yellow/10 text-yabisso-yellow">
+<span class="material-symbols-outlined text-xl">hourglass_top</span>
+</div>
+<div class="flex flex-col flex-1">
+<p class="text-white text-sm font-medium">Payment #4029 Queued</p>
+<p class="text-gray-500 text-xs">Waiting for connection</p>
+</div>
+<p class="text-gray-400 text-xs font-medium">09:15 AM</p>
+</div>
+<!-- Log Item: Error (Example for completeness) -->
+<div class="group flex items-center gap-4 p-4 rounded-xl bg-surface-dark border border-white/5 hover:border-white/10 transition-colors">
+<div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-yabisso-red/10 text-yabisso-red">
+<span class="material-symbols-outlined text-xl">cloud_off</span>
+</div>
+<div class="flex flex-col flex-1">
+<p class="text-white text-sm font-medium">Sync Failed</p>
+<p class="text-gray-500 text-xs">Connection timed out</p>
+</div>
+<p class="text-gray-400 text-xs font-medium">Yesterday</p>
+</div>
+</div>
+<!-- View All Link -->
+<button class="text-primary text-sm font-medium text-center py-2 hover:text-primary/80 transition-colors">
+                    View Full History
+                </button>
+</div>
+<div class="h-8"></div> <!-- Bottom Spacer -->
+</main>
+</div>
+</body></html>

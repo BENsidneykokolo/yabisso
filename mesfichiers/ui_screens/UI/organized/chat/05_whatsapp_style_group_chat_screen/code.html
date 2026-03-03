@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Yabisso Group Chat</title>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                        "surface-dark": "#192633",
+                        "yabisso-red": "#ef4444",
+                        "yabisso-yellow": "#eab308",
+                        "yabisso-green": "#22c55e",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "1rem", "lg": "1.5rem", "xl": "2rem", "2xl": "3rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom scrollbar for better aesthetics */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #324d67;
+            border-radius: 3px;
+        }
+        .message-bubble-in {
+            border-bottom-left-radius: 4px;
+        }
+        .message-bubble-out {
+            border-bottom-right-radius: 4px;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display antialiased overflow-hidden h-screen w-full flex flex-col relative text-slate-900 dark:text-white">
+<!-- Top Header -->
+<header class="flex-none bg-[#111a22] p-4 flex items-center justify-between border-b border-[#233648] z-20 shadow-md">
+<div class="flex items-center gap-3 overflow-hidden">
+<button class="text-[#92adc9] hover:text-white transition-colors p-1 -ml-2 rounded-full active:bg-[#233648]">
+<span class="material-symbols-outlined" style="font-size: 28px;">arrow_back_ios_new</span>
+</button>
+<div class="relative shrink-0">
+<div class="h-10 w-10 rounded-full bg-cover bg-center border border-[#324d67]" data-alt="Group avatar showing diverse african team smiling" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAUbUuGTUVBfMiY40rqiEf6PJBBde-wKJ6oxFLURCuCWN-w4_8dwHyAyHhy4FFoSU1nQWzQAnF-LBbK_Cjh0TXwbMKdOrDk2BUkflYDxKs5K6tfPPVjm6vRopeNDdPl7Xej3wgbPONYYC5AYtBole2YkwS146XcdTk8e1P9fAtXqA9KubdAZoysavX9z_XUKtj6aKCCDKcVSpAL-HHBpFsZJJ5IRvLbMyh6CeFDIa3DSEqVwuU0klvm5lpxoClsAWC-SU1agfaV');"></div>
+<!-- Online indicator dot -->
+<div class="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-yabisso-green border-2 border-[#111a22]"></div>
+</div>
+<div class="flex flex-col min-w-0">
+<h2 class="text-white text-base font-bold leading-tight truncate">Yabisso Entrepreneurs</h2>
+<p class="text-[#92adc9] text-xs font-medium truncate">Alice, Kwesi, You + 3 others</p>
+</div>
+</div>
+<div class="flex items-center gap-1 shrink-0">
+<button class="text-[#92adc9] hover:text-white p-2 rounded-full hover:bg-[#233648] transition-colors">
+<span class="material-symbols-outlined" style="font-size: 24px;">call</span>
+</button>
+<button class="text-[#92adc9] hover:text-white p-2 rounded-full hover:bg-[#233648] transition-colors">
+<span class="material-symbols-outlined" style="font-size: 24px;">more_vert</span>
+</button>
+</div>
+</header>
+<!-- Admin Announcement Banner (Pinned) -->
+<div class="flex-none bg-surface-dark border-b border-[#233648] p-3 flex items-center gap-3 shadow-lg z-10 cursor-pointer hover:bg-[#233648] transition-colors">
+<div class="h-10 w-10 shrink-0 rounded-full bg-yabisso-red/20 flex items-center justify-center text-yabisso-red">
+<span class="material-symbols-outlined">campaign</span>
+</div>
+<div class="flex-1 min-w-0 flex flex-col">
+<div class="flex items-center justify-between">
+<p class="text-yabisso-red text-xs font-bold uppercase tracking-wider">Admin Announcement</p>
+<span class="text-[#556980] text-[10px]">10:00 AM</span>
+</div>
+<div class="flex items-center gap-2 mt-1">
+<span class="text-white text-sm font-medium truncate">Update on payment gateway</span>
+<div class="flex items-center gap-1 bg-yabisso-red/10 px-2 py-0.5 rounded-full">
+<span class="material-symbols-outlined text-yabisso-red" style="font-size: 14px;">graphic_eq</span>
+<span class="text-[10px] text-yabisso-red font-bold">0:45</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Chat Area -->
+<main class="flex-1 overflow-y-auto p-4 flex flex-col gap-4 bg-[#0d141c]" style="background-image: radial-gradient(#192633 1px, transparent 1px); background-size: 20px 20px;">
+<!-- Date Divider -->
+<div class="flex justify-center my-2">
+<span class="bg-[#192633] text-[#92adc9] text-xs font-medium px-3 py-1 rounded-full shadow-sm">Today</span>
+</div>
+<!-- System Message -->
+<div class="flex justify-center my-1">
+<span class="bg-[#192633]/60 text-[#92adc9] text-[11px] px-3 py-1 rounded-lg flex items-center gap-1">
+<span class="material-symbols-outlined text-yabisso-yellow" style="font-size: 14px;">lock</span>
+                Messages are end-to-end encrypted.
+            </span>
+</div>
+<!-- Incoming Message (Kwesi) -->
+<div class="flex items-end gap-2 max-w-[85%] self-start group">
+<div class="h-8 w-8 shrink-0 rounded-full bg-cover bg-center mb-1" data-alt="Portrait of Kwesi smiling" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBVSNsUAEvQodkUh1ruY-hr5_9pVtnxkFJImZU4_d0mknr2_Mi9Xts4BdlGh6eshhaEvgKz_bdYyjv_IXCz7FXlTygsafor3nyho4upayP6q43EV3zn8U0ssKTQW-oFuhl0IHO8Xa18ih_u2qTIwQ1l4UC3DNKnpNjVle4uMleNNsvJglNWLXEygzv97dDrS1OprHL__kNBSOKQgQkL8zMgCj1wquHef2YaoeKZyMI2kZtzMnTaoD4jeCd5P5n6XdrTKRgKU3hx');"></div>
+<div class="flex flex-col gap-1">
+<div class="bg-[#233648] p-3 rounded-2xl message-bubble-in shadow-sm relative">
+<p class="text-yabisso-yellow text-xs font-bold mb-1">Kwesi</p>
+<p class="text-white text-[15px] leading-relaxed">Has everyone seen the new wallet update? It looks fire 🔥</p>
+<div class="flex justify-end items-center gap-1 mt-1 opacity-60">
+<span class="text-[10px] text-white">10:42 AM</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Incoming Message (Alice) -->
+<div class="flex items-end gap-2 max-w-[85%] self-start group">
+<div class="h-8 w-8 shrink-0 rounded-full bg-cover bg-center mb-1" data-alt="Portrait of Alice serious look" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAEeoDg_wShftv99mSVHxwztftXpHybzTHtrbZsWuSKeYY1Kz7Krn65wxFnVGkXRNVZErm0vX-39XJU_8AWsbJwqh10fwrJp64yoE5jt671t94weRtlzYb2iHFa1StDGn4ROSrIqOFuQ1ePqhWWNXoDkhfkI1SbbgXfguF42x82T0EQRb80p3JGCLX3izwQN1mPcYI53Vhik9WNDg0UJPkM8jRT4Rr4ix2xYeVfeUPWbl5E-Dz83_sWAy9JVuVMtDNsDbtAD_h3');"></div>
+<div class="flex flex-col gap-1">
+<div class="bg-[#233648] p-3 rounded-2xl message-bubble-in shadow-sm">
+<p class="text-yabisso-green text-xs font-bold mb-1">Alice</p>
+<!-- Voice Note Message -->
+<div class="flex items-center gap-3 min-w-[160px]">
+<button class="flex items-center justify-center h-8 w-8 rounded-full bg-primary text-white shrink-0">
+<span class="material-symbols-outlined filled" style="font-size: 20px;">play_arrow</span>
+</button>
+<div class="flex flex-col flex-1 gap-1">
+<div class="h-1 w-full bg-[#324d67] rounded-full overflow-hidden">
+<div class="h-full bg-white w-1/3 rounded-full"></div>
+</div>
+<span class="text-[10px] text-[#92adc9]">0:12</span>
+</div>
+</div>
+<div class="flex justify-end items-center gap-1 mt-1 opacity-60">
+<span class="text-[10px] text-white">10:44 AM</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Outgoing Message (You) -->
+<div class="flex items-end gap-2 max-w-[85%] self-end group">
+<div class="flex flex-col gap-1 items-end w-full">
+<div class="bg-primary p-3 rounded-2xl message-bubble-out shadow-sm text-white">
+<p class="text-[15px] leading-relaxed">Yes, the offline mode works great! I tested it in the metro.</p>
+<div class="flex justify-end items-center gap-1 mt-1 opacity-80">
+<span class="text-[10px]">10:45 AM</span>
+<span class="material-symbols-outlined" style="font-size: 14px;">done_all</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Outgoing Message (You - Image) -->
+<div class="flex items-end gap-2 max-w-[85%] self-end group">
+<div class="flex flex-col gap-1 items-end w-full">
+<div class="bg-primary p-1 rounded-2xl message-bubble-out shadow-sm text-white overflow-hidden">
+<div class="rounded-xl overflow-hidden mb-1 relative">
+<img alt="Attachment" class="w-full h-auto object-cover max-h-60" data-alt="Screenshot of mobile app interface showing wallet balance" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBEXxYvkB47LhWkfhONGMj3jVV2OnPOD7MSKm9HJ6tfpwpH9wi15eFu0SztkxMYkWIND6q2yPGzLrlS1wuRqG-4mYRfFgotkBGvqkm4ere_unw14NVoP0_I_Ykuof8MVl7QwYUavmAI3SSkwZii__ahtxgFskg3QbATw-i3-TjncmBiIxeK86Dqye2D8qyTrDoJAqhvxVGub5b6UMY7QHN5Qx_-HfZUS0VRT8YjsLqD8Gg-GIypu7KMWONJ33dcm10B3-tfNmrr"/>
+<div class="absolute bottom-2 right-2 bg-black/40 backdrop-blur-sm px-2 py-0.5 rounded-full text-[10px]">Screenshots</div>
+</div>
+<p class="text-[15px] px-2 pb-1">Check this out.</p>
+<div class="flex justify-end items-center gap-1 mr-2 mb-1 opacity-80">
+<span class="text-[10px]">10:46 AM</span>
+<span class="material-symbols-outlined" style="font-size: 14px;">done_all</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Typing indicator -->
+<div class="flex items-end gap-2 self-start ml-10 animate-pulse">
+<div class="bg-[#233648] px-3 py-2 rounded-2xl rounded-bl-none flex items-center gap-1">
+<div class="w-1.5 h-1.5 bg-[#92adc9] rounded-full"></div>
+<div class="w-1.5 h-1.5 bg-[#92adc9] rounded-full"></div>
+<div class="w-1.5 h-1.5 bg-[#92adc9] rounded-full"></div>
+</div>
+</div>
+</main>
+<!-- Floating Action Button for Admin (Conditional) -->
+<div class="absolute bottom-20 right-4 z-10">
+<button class="h-12 w-12 rounded-full bg-[#233648] border border-[#324d67] shadow-lg flex items-center justify-center text-white hover:bg-[#324d67] transition active:scale-95">
+<span class="material-symbols-outlined text-yabisso-red">campaign</span>
+</button>
+</div>
+<!-- Input Area -->
+<footer class="flex-none bg-[#111a22] p-2 pb-6 flex items-end gap-2 border-t border-[#233648]">
+<button class="text-[#92adc9] hover:text-white p-2 mb-1 rounded-full hover:bg-[#233648] transition-colors shrink-0">
+<span class="material-symbols-outlined" style="font-size: 24px;">add</span>
+</button>
+<div class="flex-1 bg-[#192633] rounded-2xl flex items-center gap-2 p-2 min-h-[44px]">
+<!-- Attachment inside input -->
+<button class="text-[#92adc9] hover:text-white p-1 rounded-full hover:bg-[#233648] shrink-0">
+<span class="material-symbols-outlined" style="font-size: 20px;">sentiment_satisfied</span>
+</button>
+<textarea class="bg-transparent text-white placeholder-[#556980] flex-1 outline-none text-[15px] resize-none overflow-hidden py-1 max-h-32" placeholder="Message..." rows="1" style="font-family: Inter, sans-serif;"></textarea>
+<button class="text-[#92adc9] hover:text-white p-1 rounded-full hover:bg-[#233648] shrink-0">
+<span class="material-symbols-outlined" style="font-size: 20px;">attach_file</span>
+</button>
+<button class="text-[#92adc9] hover:text-white p-1 rounded-full hover:bg-[#233648] shrink-0">
+<span class="material-symbols-outlined" style="font-size: 20px;">photo_camera</span>
+</button>
+</div>
+<button class="h-11 w-11 rounded-full bg-[#137fec] flex items-center justify-center text-white shadow-lg shrink-0 mb-0.5 hover:bg-[#137fec]/90 active:scale-95 transition-all">
+<!-- Dynamic Icon: Mic if empty, Send if typed. Showing mic here as default empty state -->
+<span class="material-symbols-outlined" style="font-size: 24px;">mic</span>
+</button>
+</footer>
+</body></html>

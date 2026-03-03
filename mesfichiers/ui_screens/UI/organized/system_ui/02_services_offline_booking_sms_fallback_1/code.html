@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Services Offline Booking SMS Fallback</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                        "yabisso-red": "#ef4444",
+                        "yabisso-yellow": "#eab308",
+                        "yabisso-green": "#22c55e",
+                        "surface-dark": "#192633",
+                        "surface-border": "#324d67",
+                    },
+                    fontFamily: {
+                        "display": ["Plus Jakarta Sans", "Noto Sans", "sans-serif"]
+                    },
+                    borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" },
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom scrollbar for horizontal scrolling elements */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white font-display overflow-x-hidden antialiased selection:bg-primary selection:text-white">
+<div class="relative flex flex-col min-h-screen w-full max-w-md mx-auto bg-background-light dark:bg-background-dark pb-24">
+<!-- TopAppBar -->
+<div class="sticky top-0 z-50 flex items-center bg-background-light dark:bg-background-dark p-4 pb-2 justify-between border-b border-gray-200 dark:border-gray-800">
+<button class="text-slate-900 dark:text-white flex size-12 shrink-0 items-center justify-center rounded-full hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
+<span class="material-symbols-outlined text-2xl">arrow_back</span>
+</button>
+<h2 class="text-slate-900 dark:text-white text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center pr-12">Offline Booking</h2>
+</div>
+<!-- Connection Status (Modified EmptyState) -->
+<div class="flex flex-col px-4 py-6">
+<div class="flex flex-col items-center gap-6">
+<!-- Status Icon/Image with data-alt -->
+<div class="relative flex items-center justify-center w-full max-w-[360px] aspect-[2/1] rounded-2xl bg-surface-dark border border-surface-border overflow-hidden">
+<div class="absolute inset-0 opacity-20 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-yabisso-red via-background-dark to-background-dark"></div>
+<div class="flex flex-col items-center gap-3 z-10">
+<div class="size-16 rounded-full bg-yabisso-red/20 flex items-center justify-center animate-pulse">
+<span class="material-symbols-outlined text-yabisso-red text-4xl">wifi_off</span>
+</div>
+<p class="text-yabisso-red font-bold tracking-widest text-xs uppercase">Connection Lost</p>
+</div>
+</div>
+<div class="flex max-w-[480px] flex-col items-center gap-2">
+<h1 class="text-slate-900 dark:text-white text-2xl font-bold leading-tight tracking-tight text-center">Use SMS Fallback</h1>
+<p class="text-slate-500 dark:text-gray-400 text-sm font-normal leading-normal max-w-[320px] text-center">
+                        Don't worry, you can still book this service. Fill out the details below to generate a pre-filled SMS message.
+                    </p>
+</div>
+</div>
+</div>
+<!-- Context Card (Service Summary) -->
+<div class="px-4 pb-2">
+<div class="bg-surface-dark rounded-xl p-4 border-l-4 border-primary flex items-start gap-4">
+<div class="size-12 rounded-lg bg-center bg-cover shrink-0" data-alt="Icon representing plumbing or home services" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuB0pIYqXxkYGp0NCqNi_j0eb14oVTwiX4zaGU7vXW-3ED7Hq0JxTYvEWQ7W2-gwbtI2FXtm9EiAXWga6ZVijtqJTJgssckggnRzPERX2GavrnLjeO7gxW89q1ViBPTg21uVmEOjTCOv-4cyaJl8QTRWt4ARt7w9HVeA0YkiipDwfiDjEOudUOUseErTKP7KFABurUtD9JvbBMHUAcF4FNyKfrykaoy7gEV9UvYZ71Jw1cgaEaodcB8HXcMm3LVViwCvcp_9zk3C");'></div>
+<div class="flex flex-col">
+<span class="text-xs text-primary font-bold uppercase tracking-wide">Trying to book</span>
+<span class="text-white font-bold text-lg">Home Cleaning</span>
+<span class="text-gray-400 text-xs">Standard Package</span>
+</div>
+</div>
+</div>
+<!-- Form Section -->
+<div class="flex flex-col px-4 py-2 gap-6">
+<!-- Service Type Input -->
+<label class="flex flex-col w-full">
+<p class="text-slate-900 dark:text-white text-base font-medium leading-normal pb-2">Service Type</p>
+<div class="relative">
+<select class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-xl text-slate-900 dark:text-white focus:outline-0 focus:ring-2 focus:ring-primary border border-gray-300 dark:border-surface-border bg-white dark:bg-surface-dark h-14 placeholder:text-gray-400 dark:placeholder:text-[#92adc9] px-4 pr-10 text-base font-normal leading-normal appearance-none">
+<option value="cleaning">Home Cleaning</option>
+<option value="plumbing">Plumbing</option>
+<option value="electrician">Electrician</option>
+</select>
+<div class="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
+<span class="material-symbols-outlined">expand_more</span>
+</div>
+</div>
+</label>
+<!-- Date Picker (Calendar) -->
+<div class="flex flex-col gap-2">
+<p class="text-slate-900 dark:text-white text-base font-medium leading-normal">Select Date</p>
+<div class="bg-surface-dark rounded-xl border border-surface-border p-4">
+<div class="flex items-center justify-between mb-4">
+<button class="p-1 hover:bg-white/5 rounded-full"><span class="material-symbols-outlined text-white text-lg">chevron_left</span></button>
+<span class="text-white font-bold">October 2023</span>
+<button class="p-1 hover:bg-white/5 rounded-full"><span class="material-symbols-outlined text-white text-lg">chevron_right</span></button>
+</div>
+<div class="grid grid-cols-7 gap-y-2 text-center">
+<div class="text-gray-400 text-xs font-bold py-2">S</div>
+<div class="text-gray-400 text-xs font-bold py-2">M</div>
+<div class="text-gray-400 text-xs font-bold py-2">T</div>
+<div class="text-gray-400 text-xs font-bold py-2">W</div>
+<div class="text-gray-400 text-xs font-bold py-2">T</div>
+<div class="text-gray-400 text-xs font-bold py-2">F</div>
+<div class="text-gray-400 text-xs font-bold py-2">S</div>
+<!-- Days -->
+<div class="text-gray-600 text-sm py-2">28</div>
+<div class="text-gray-600 text-sm py-2">29</div>
+<div class="text-gray-600 text-sm py-2">30</div>
+<div class="text-white text-sm py-2">1</div>
+<div class="text-white text-sm py-2">2</div>
+<div class="text-white text-sm py-2">3</div>
+<div class="text-white text-sm py-2">4</div>
+<div class="relative">
+<div class="size-8 mx-auto flex items-center justify-center bg-primary rounded-full text-white text-sm font-bold shadow-lg shadow-primary/40">5</div>
+</div>
+<div class="text-white text-sm py-2">6</div>
+<div class="text-white text-sm py-2">7</div>
+<div class="text-white text-sm py-2">8</div>
+<div class="text-white text-sm py-2">9</div>
+<div class="text-white text-sm py-2">10</div>
+<div class="text-white text-sm py-2">11</div>
+</div>
+</div>
+</div>
+<!-- Time Picker (Horizontal Scroll) -->
+<div class="flex flex-col gap-2">
+<p class="text-slate-900 dark:text-white text-base font-medium leading-normal">Select Time</p>
+<div class="flex gap-3 overflow-x-auto no-scrollbar pb-1">
+<button class="flex-shrink-0 px-4 py-2.5 rounded-lg bg-surface-dark border border-surface-border text-white text-sm font-medium hover:border-primary transition-colors">09:00 AM</button>
+<button class="flex-shrink-0 px-4 py-2.5 rounded-lg bg-primary border border-primary text-white text-sm font-bold shadow-md shadow-primary/20">10:00 AM</button>
+<button class="flex-shrink-0 px-4 py-2.5 rounded-lg bg-surface-dark border border-surface-border text-white text-sm font-medium hover:border-primary transition-colors">11:00 AM</button>
+<button class="flex-shrink-0 px-4 py-2.5 rounded-lg bg-surface-dark border border-surface-border text-white text-sm font-medium hover:border-primary transition-colors">01:00 PM</button>
+<button class="flex-shrink-0 px-4 py-2.5 rounded-lg bg-surface-dark border border-surface-border text-white text-sm font-medium hover:border-primary transition-colors">02:00 PM</button>
+</div>
+</div>
+<!-- Preferred Provider -->
+<label class="flex flex-col w-full">
+<p class="text-slate-900 dark:text-white text-base font-medium leading-normal pb-2">Preferred Provider <span class="text-gray-500 font-normal">(Optional)</span></p>
+<input class="form-input flex w-full min-w-0 flex-1 rounded-xl text-slate-900 dark:text-white focus:outline-0 focus:ring-2 focus:ring-primary border border-gray-300 dark:border-surface-border bg-white dark:bg-surface-dark h-14 placeholder:text-gray-400 dark:placeholder:text-[#92adc9] px-4 text-base font-normal leading-normal" placeholder="e.g. John's Services" type="text"/>
+</label>
+<!-- Description Input -->
+<label class="flex flex-col w-full">
+<div class="flex justify-between items-end pb-2">
+<p class="text-slate-900 dark:text-white text-base font-medium leading-normal">Additional Details</p>
+<span class="text-xs text-gray-500">0/140</span>
+</div>
+<textarea class="form-input flex w-full min-w-0 flex-1 resize-none rounded-xl text-slate-900 dark:text-white focus:outline-0 focus:ring-2 focus:ring-primary border border-gray-300 dark:border-surface-border bg-white dark:bg-surface-dark placeholder:text-gray-400 dark:placeholder:text-[#92adc9] p-4 text-base font-normal leading-normal" placeholder="Briefly describe what you need..." rows="3"></textarea>
+<p class="text-xs text-gray-500 pt-2">Keep it short to fit in a single SMS.</p>
+</label>
+</div>
+<!-- Sticky Footer Action -->
+<div class="fixed bottom-0 left-0 right-0 p-4 bg-background-light/90 dark:bg-background-dark/90 backdrop-blur-md border-t border-gray-200 dark:border-gray-800 z-50 flex flex-col gap-3 max-w-md mx-auto">
+<div class="flex items-center gap-2 justify-center">
+<span class="material-symbols-outlined text-yabisso-yellow text-sm">info</span>
+<p class="text-xs text-slate-500 dark:text-gray-400 text-center">Standard SMS carrier rates may apply</p>
+</div>
+<button class="relative w-full h-14 bg-primary hover:bg-blue-600 active:scale-[0.98] transition-all rounded-xl flex items-center justify-center gap-3 shadow-lg shadow-primary/25">
+<span class="material-symbols-outlined text-white">sms</span>
+<span class="text-white text-lg font-bold tracking-wide">Generate Offline Booking SMS</span>
+</button>
+<button class="w-full py-2 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-white text-sm font-medium transition-colors">
+                Cancel and try again later
+            </button>
+</div>
+</div>
+</body></html>

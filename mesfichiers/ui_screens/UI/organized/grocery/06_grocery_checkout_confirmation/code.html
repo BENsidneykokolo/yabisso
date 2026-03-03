@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Grocery Checkout</title>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;800&amp;family=Noto+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#46ec13",
+                        "primary-dark": "#3ad10e",
+                        "background-light": "#f6f8f6",
+                        "background-dark": "#142210",
+                        "surface-light": "#ffffff",
+                        "surface-dark": "#1e2e1a",
+                        "accent-yellow": "#FFC107",
+                        "accent-warn": "#FF5252",
+                    },
+                    fontFamily: {
+                        "display": ["Lexend", "sans-serif"],
+                        "body": ["Noto Sans", "sans-serif"],
+                    },
+                    borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "2xl": "2rem", "full": "9999px"},
+                    boxShadow: {
+                        'soft': '0 4px 20px -2px rgba(0, 0, 0, 0.05)',
+                        'glow': '0 0 15px rgba(70, 236, 19, 0.3)',
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom scrollbar hiding */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-white relative min-h-screen flex flex-col">
+<!-- Top Header -->
+<header class="flex items-center justify-between px-4 py-4 bg-background-light dark:bg-background-dark sticky top-0 z-30">
+<button class="flex size-10 shrink-0 items-center justify-center rounded-full bg-white dark:bg-surface-dark shadow-sm active:scale-95 transition-transform text-[#111b0d] dark:text-white">
+<span class="material-symbols-outlined" style="font-size: 20px;">arrow_back</span>
+</button>
+<h2 class="text-[#111b0d] dark:text-white text-xl font-bold leading-tight tracking-[-0.015em]">Checkout</h2>
+<div class="size-10"></div> <!-- Spacer for visual balance -->
+</header>
+<!-- Main Content Area -->
+<main class="flex-1 px-4 pb-32 space-y-6 overflow-y-auto no-scrollbar">
+<!-- Progress / Status Indicator (Simple) -->
+<div class="flex items-center justify-center gap-2 mb-2">
+<div class="h-1.5 w-8 rounded-full bg-primary"></div>
+<div class="h-1.5 w-8 rounded-full bg-primary"></div>
+<div class="h-1.5 w-8 rounded-full bg-primary"></div>
+</div>
+<!-- Section: Delivery Details -->
+<section class="animate-fade-in-up">
+<div class="flex items-center justify-between mb-2 px-1">
+<h3 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Delivery Details</h3>
+</div>
+<div class="bg-surface-light dark:bg-surface-dark rounded-2xl shadow-soft overflow-hidden">
+<!-- Location Item -->
+<div class="flex items-center gap-4 p-4 relative">
+<div class="flex items-center justify-center rounded-2xl bg-[#eaf3e7] dark:bg-[#2a3f25] shrink-0 size-14 text-[#142210] dark:text-primary">
+<span class="material-symbols-outlined" style="font-size: 28px;">location_on</span>
+</div>
+<div class="flex flex-col justify-center flex-1 mr-12">
+<p class="text-[#111b0d] dark:text-white text-lg font-bold leading-tight line-clamp-1">123 Market Street</p>
+<p class="text-gray-500 dark:text-gray-400 text-sm font-normal leading-normal line-clamp-1">Lagos, Nigeria • Home</p>
+</div>
+<!-- Voice Input FAB (Floating in context) -->
+<button aria-label="Use voice input for address" class="absolute right-4 top-1/2 -translate-y-1/2 size-12 flex items-center justify-center rounded-full bg-accent-yellow text-[#142210] shadow-md active:scale-90 transition-transform ring-4 ring-white dark:ring-surface-dark">
+<span class="material-symbols-outlined" style="font-size: 24px;">mic</span>
+</button>
+</div>
+<!-- Divider -->
+<div class="h-px bg-gray-100 dark:bg-gray-700 mx-4"></div>
+<!-- Time Item -->
+<div class="flex items-center gap-4 p-4">
+<div class="flex items-center justify-center rounded-2xl bg-blue-50 dark:bg-blue-900/20 shrink-0 size-14 text-blue-600 dark:text-blue-400">
+<span class="material-symbols-outlined" style="font-size: 28px;">two_wheeler</span>
+</div>
+<div class="flex flex-col justify-center flex-1">
+<p class="text-[#111b0d] dark:text-white text-lg font-bold leading-tight">~35-45 mins</p>
+<p class="text-gray-500 dark:text-gray-400 text-sm font-normal leading-normal">Estimated Arrival</p>
+</div>
+<!-- Small edit chevron -->
+<span class="material-symbols-outlined text-gray-400">chevron_right</span>
+</div>
+</div>
+</section>
+<!-- Section: Order Summary -->
+<section>
+<div class="flex items-center justify-between mb-2 px-1">
+<h3 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Payment</h3>
+</div>
+<div class="bg-surface-light dark:bg-surface-dark rounded-2xl shadow-soft p-5">
+<div class="space-y-3">
+<div class="flex justify-between items-center">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-gray-400 text-sm">shopping_basket</span>
+<p class="text-gray-600 dark:text-gray-300 text-base font-medium">Basket Subtotal</p>
+</div>
+<p class="text-[#111b0d] dark:text-white text-base font-bold">₦4,500</p>
+</div>
+<div class="flex justify-between items-center">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-gray-400 text-sm">local_shipping</span>
+<p class="text-gray-600 dark:text-gray-300 text-base font-medium">Delivery Fee</p>
+</div>
+<p class="text-[#111b0d] dark:text-white text-base font-bold">₦500</p>
+</div>
+<!-- Dashed Divider -->
+<div class="border-b-2 border-dashed border-gray-100 dark:border-gray-700 my-4"></div>
+<div class="flex justify-between items-end">
+<p class="text-gray-800 dark:text-gray-200 text-lg font-bold">Total</p>
+<div class="flex flex-col items-end">
+<p class="text-primary text-3xl font-extrabold leading-none tracking-tight">₦5,000</p>
+<p class="text-xs text-gray-400 mt-1 font-normal">Includes VAT</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Action Area Card -->
+<section class="pt-2">
+<!-- Green Card Container for strong emphasis -->
+<div class="bg-primary rounded-3xl p-5 shadow-glow relative overflow-hidden group">
+<!-- Abstract pattern decoration -->
+<div class="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -mr-10 -mt-10 pointer-events-none"></div>
+<div class="absolute bottom-0 left-0 w-24 h-24 bg-yellow-400/20 rounded-full blur-xl -ml-10 -mb-10 pointer-events-none"></div>
+<div class="relative z-10 flex flex-col gap-4">
+<!-- Terms -->
+<p class="text-center text-[#142210]/70 text-xs font-medium px-4">
+                        By confirming, you agree to our <a class="underline decoration-dotted hover:text-[#142210]" href="#">Terms &amp; Conditions</a>.
+                    </p>
+<!-- Large White Confirm Button -->
+<button class="w-full bg-white text-[#142210] h-16 rounded-xl font-black text-xl shadow-lg flex items-center justify-center gap-3 active:scale-[0.98] transition-all hover:bg-gray-50">
+<span>CONFIRM ORDER</span>
+<span class="material-symbols-outlined fill-current" style="font-size: 28px; font-weight: 700;">check_circle</span>
+</button>
+<!-- Cancel Option -->
+<button class="w-full py-2 text-sm font-bold text-[#142210] opacity-60 hover:opacity-100 transition-opacity flex items-center justify-center gap-1">
+<span class="material-symbols-outlined text-lg">close</span>
+                        Cancel Order
+                    </button>
+</div>
+</div>
+</section>
+</main>
+<!-- Bottom Navigation Bar -->
+<nav class="fixed bottom-0 left-0 w-full bg-surface-light dark:bg-[#0f180c] border-t border-gray-100 dark:border-white/5 pb-safe z-40 h-[80px] px-2 shadow-[0_-5px_20px_rgba(0,0,0,0.03)]">
+<div class="flex items-center justify-around h-full pb-2">
+<!-- Home -->
+<button class="flex flex-col items-center gap-1 p-2 text-gray-400 dark:text-gray-500 hover:text-primary transition-colors">
+<span class="material-symbols-outlined" style="font-size: 26px;">storefront</span>
+<span class="text-[10px] font-medium">Shop</span>
+</button>
+<!-- Search -->
+<button class="flex flex-col items-center gap-1 p-2 text-gray-400 dark:text-gray-500 hover:text-primary transition-colors">
+<span class="material-symbols-outlined" style="font-size: 26px;">search</span>
+<span class="text-[10px] font-medium">Search</span>
+</button>
+<!-- Checkout/Cart (Active) -->
+<div class="relative -top-6">
+<button class="flex flex-col items-center justify-center size-16 rounded-full bg-[#142210] border-4 border-[#f6f8f6] dark:border-[#142210] shadow-lg text-primary transform transition hover:scale-105">
+<span class="material-symbols-outlined" style="font-size: 28px;">shopping_cart</span>
+</button>
+</div>
+<!-- Wallet -->
+<button class="flex flex-col items-center gap-1 p-2 text-gray-400 dark:text-gray-500 hover:text-primary transition-colors">
+<span class="material-symbols-outlined" style="font-size: 26px;">account_balance_wallet</span>
+<span class="text-[10px] font-medium">Wallet</span>
+</button>
+<!-- Profile -->
+<button class="flex flex-col items-center gap-1 p-2 text-gray-400 dark:text-gray-500 hover:text-primary transition-colors">
+<span class="material-symbols-outlined" style="font-size: 26px;">person</span>
+<span class="text-[10px] font-medium">Profile</span>
+</button>
+</div>
+</nav>
+<!-- Safe Area Spacing for mobile -->
+<div class="h-safe-bottom w-full bg-transparent"></div>
+</body></html>

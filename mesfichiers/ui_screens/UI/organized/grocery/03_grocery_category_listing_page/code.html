@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Grocery Category Listing</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#13ec37",
+                        "primary-dark": "#0fb62b",
+                        "background-light": "#f8fcf9",
+                        "background-dark": "#102213",
+                        "card-light": "#ffffff",
+                        "card-dark": "#1a3320",
+                        "accent-yellow": "#FFD700",
+                        "accent-orange": "#FF8C00",
+                    },
+                    fontFamily: {
+                        "display": ["Lexend", "sans-serif"],
+                        "body": ["Lexend", "sans-serif"],
+                    },
+                    borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "2xl": "2rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom scrollbar hiding for clean UI */
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-[#0d1b10] dark:text-gray-100 font-display transition-colors duration-200">
+<div class="relative flex h-full min-h-screen w-full flex-col overflow-x-hidden pb-24">
+<!-- TopAppBar -->
+<header class="sticky top-0 z-20 flex items-center bg-background-light dark:bg-background-dark p-4 pb-2 justify-between backdrop-blur-sm bg-opacity-95 dark:bg-opacity-95">
+<div class="text-[#0d1b10] dark:text-white flex size-12 shrink-0 items-center justify-center rounded-full active:bg-gray-200 dark:active:bg-gray-800 transition-colors cursor-pointer" onclick="history.back()">
+<span class="material-symbols-outlined text-3xl">arrow_back</span>
+</div>
+<h2 class="text-[#0d1b10] dark:text-white text-xl font-bold leading-tight tracking-[-0.015em] flex-1 text-center pr-12">Fresh Vegetables</h2>
+<div class="absolute right-4 flex w-12 items-center justify-end">
+<button class="flex size-12 cursor-pointer items-center justify-center overflow-hidden rounded-xl bg-transparent text-[#0d1b10] dark:text-white min-w-0 p-0 active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-2xl">grid_view</span>
+</button>
+</div>
+</header>
+<!-- SearchBar & Voice Filter -->
+<div class="px-4 py-3 flex gap-3 items-center sticky top-[72px] z-10 bg-background-light dark:bg-background-dark">
+<label class="flex flex-col flex-1 h-12">
+<div class="flex w-full flex-1 items-stretch rounded-xl h-full shadow-sm bg-white dark:bg-card-dark border border-gray-100 dark:border-gray-800">
+<div class="text-gray-400 dark:text-gray-500 flex items-center justify-center pl-4 rounded-l-xl border-r-0">
+<span class="material-symbols-outlined text-2xl">search</span>
+</div>
+<input class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-xl text-[#0d1b10] dark:text-white focus:outline-0 focus:ring-0 border-none bg-transparent focus:border-none h-full placeholder:text-gray-400 dark:placeholder:text-gray-500 px-4 rounded-l-none border-l-0 pl-2 text-base font-normal leading-normal" placeholder="Search mangoes, spinach..." value=""/>
+</div>
+</label>
+<!-- Voice Filter Button -->
+<button class="shrink-0 flex items-center justify-center size-12 rounded-xl bg-primary shadow-lg shadow-primary/30 active:scale-95 transition-transform text-white">
+<span class="material-symbols-outlined text-2xl">mic</span>
+</button>
+</div>
+<!-- Filter Chips -->
+<div class="flex gap-3 p-3 overflow-x-auto hide-scrollbar w-full">
+<button class="flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-full bg-[#e7f3e9] dark:bg-green-900/30 pl-4 pr-4 active:bg-primary active:text-white transition-colors group">
+<span class="material-symbols-outlined text-xl text-primary dark:text-primary-dark group-active:text-white">tune</span>
+<p class="text-[#0d1b10] dark:text-white text-sm font-semibold leading-normal">Filters</p>
+</button>
+<button class="flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-full bg-primary pl-4 pr-4 shadow-md shadow-primary/20">
+<p class="text-white text-sm font-bold leading-normal">All</p>
+</button>
+<button class="flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-full bg-white dark:bg-card-dark border border-gray-100 dark:border-gray-700 pl-4 pr-4 shadow-sm">
+<span class="material-symbols-outlined text-xl text-accent-orange">local_fire_department</span>
+<p class="text-[#0d1b10] dark:text-white text-sm font-medium leading-normal">Popular</p>
+</button>
+<button class="flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-full bg-white dark:bg-card-dark border border-gray-100 dark:border-gray-700 pl-4 pr-4 shadow-sm">
+<span class="material-symbols-outlined text-xl text-green-600">location_on</span>
+<p class="text-[#0d1b10] dark:text-white text-sm font-medium leading-normal">Nearby</p>
+</button>
+<button class="flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-full bg-white dark:bg-card-dark border border-gray-100 dark:border-gray-700 pl-4 pr-4 shadow-sm">
+<span class="material-symbols-outlined text-xl text-yellow-500">star</span>
+<p class="text-[#0d1b10] dark:text-white text-sm font-medium leading-normal">Top Rated</p>
+</button>
+</div>
+<!-- Product Grid -->
+<div class="grid grid-cols-2 gap-4 p-4">
+<!-- Card 1 -->
+<div class="flex flex-col gap-3 rounded-2xl bg-card-light dark:bg-card-dark p-3 shadow-[0_2px_8px_rgba(0,0,0,0.04)] dark:shadow-none dark:border dark:border-gray-800">
+<div class="relative aspect-square rounded-xl bg-gray-100 dark:bg-gray-800 overflow-hidden group">
+<img alt="Fresh red tomatoes piled up" class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" data-alt="Fresh red tomatoes piled up" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDx2thhihy7AIjSOvrILzpHoXNp7ns5Y_SP-DAFGypv7fEl3HTVEIroQpCBAwmL6m94BJIaHfkPpuM8CID5ceexxibCW9ENaBcGCc53RxC-kO5EaoVZyTI3lbmxjFAG9shimRBLviusZAr_wqiHBvOqbVUg9PY6OHeLiRXP4MLibblGoe-r-9gr8IfSkGVs7HO0GSJqPAuMP4dA6jTqT7PLeUv3cui1swK_eMrdSI8LpJmgEKkQUMHYBmVjYFK5H5wFm_UjK1P-"/>
+<div class="absolute top-2 left-2 rounded-lg bg-accent-yellow px-2 py-1 flex items-center gap-1 shadow-sm">
+<span class="material-symbols-outlined text-xs text-black">storefront</span>
+<span class="text-[10px] font-bold uppercase tracking-wide text-black">Local</span>
+</div>
+<div class="absolute bottom-2 right-2 rounded-full bg-white/90 dark:bg-black/60 p-1 backdrop-blur-sm">
+<span class="material-symbols-outlined text-lg text-primary">eco</span>
+</div>
+</div>
+<div class="flex flex-col gap-1">
+<div class="flex justify-between items-start">
+<div>
+<p class="text-[#0d1b10] dark:text-white text-base font-bold leading-tight">Red Tomatoes</p>
+<p class="text-gray-500 dark:text-gray-400 text-xs font-medium">Mama K's Stall</p>
+</div>
+</div>
+<div class="flex items-center justify-between mt-1">
+<p class="text-primary text-lg font-bold">₦500<span class="text-xs text-gray-500 dark:text-gray-400 font-normal ml-1">/kg</span></p>
+<button class="flex items-center justify-center size-9 rounded-full bg-white dark:bg-transparent border-2 border-primary text-primary active:bg-primary active:text-white transition-colors shadow-sm">
+<span class="material-symbols-outlined text-xl">add_shopping_cart</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="flex flex-col gap-3 rounded-2xl bg-card-light dark:bg-card-dark p-3 shadow-[0_2px_8px_rgba(0,0,0,0.04)] dark:shadow-none dark:border dark:border-gray-800">
+<div class="relative aspect-square rounded-xl bg-gray-100 dark:bg-gray-800 overflow-hidden group">
+<img alt="Green fresh spinach leaves close up" class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" data-alt="Green fresh spinach leaves close up" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDIAbzclB5q6s6JpBskGb8CV4WfGftH6TvtqN54z1BIaybQWTHgpO0AvGw3WUwfVi9gXhQXGxnQgB9qXKAszmuD0c1OQAr_0WKXQ7zaT8NCzJzIKz0y5nY2KHoTQculRtF8-zz3XmPYR6BWscyjdXXQYgkZw_L4QXMNBnVkIHwKQBDjo-AX2sP6yTqV6UxavRQL-aob06hVH0fPat65o7c6icNMLipTGKgTELTX92Q5qrigXUW8yzEweYfSxVgzeAE6s4qjyFwx"/>
+<div class="absolute top-2 left-2 rounded-lg bg-green-100 px-2 py-1 flex items-center gap-1 shadow-sm">
+<span class="material-symbols-outlined text-xs text-green-800">verified</span>
+<span class="text-[10px] font-bold uppercase tracking-wide text-green-800">Verified</span>
+</div>
+</div>
+<div class="flex flex-col gap-1">
+<div class="flex justify-between items-start">
+<div>
+<p class="text-[#0d1b10] dark:text-white text-base font-bold leading-tight">Fresh Spinach</p>
+<p class="text-gray-500 dark:text-gray-400 text-xs font-medium">Green Valley</p>
+</div>
+</div>
+<div class="flex items-center justify-between mt-1">
+<p class="text-primary text-lg font-bold">₦300<span class="text-xs text-gray-500 dark:text-gray-400 font-normal ml-1">/bunch</span></p>
+<button class="flex items-center justify-center size-9 rounded-full bg-white dark:bg-transparent border-2 border-primary text-primary active:bg-primary active:text-white transition-colors shadow-sm">
+<span class="material-symbols-outlined text-xl">add_shopping_cart</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Card 3 -->
+<div class="flex flex-col gap-3 rounded-2xl bg-card-light dark:bg-card-dark p-3 shadow-[0_2px_8px_rgba(0,0,0,0.04)] dark:shadow-none dark:border dark:border-gray-800">
+<div class="relative aspect-square rounded-xl bg-gray-100 dark:bg-gray-800 overflow-hidden group">
+<img alt="Bright yellow ripe plantains" class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" data-alt="Bright yellow ripe plantains" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCiNL4gVpoUfYfrIjgv_6U-Qr5Z2BnUU7hBEgyjOgv9WB4qRDWUdFNIdKRFS4DPuZX1HP7u7hdP0yoeU0gwKdIRTycVgqW6E-JxcfA0lyemkDHkml0EIr38R3gBekocm7s_5NLCqeJ-8Z4HEmoUpwkyyqm_aNQl_NsMdB8FlAhYEcc5zAgRJ0scttVKiHQNWMFgChG5CT-A57u7mVVDJ54uWPD1dYMHqBnLZjYyZsCvEOgTjPJWthbAcOEFkDDYZ2yyRAuWr5Xc"/>
+<div class="absolute top-2 left-2 rounded-lg bg-accent-yellow px-2 py-1 flex items-center gap-1 shadow-sm">
+<span class="material-symbols-outlined text-xs text-black">storefront</span>
+<span class="text-[10px] font-bold uppercase tracking-wide text-black">Local</span>
+</div>
+</div>
+<div class="flex flex-col gap-1">
+<div class="flex justify-between items-start">
+<div>
+<p class="text-[#0d1b10] dark:text-white text-base font-bold leading-tight">Ripe Plantain</p>
+<p class="text-gray-500 dark:text-gray-400 text-xs font-medium">Lagos Farms</p>
+</div>
+</div>
+<div class="flex items-center justify-between mt-1">
+<p class="text-primary text-lg font-bold">₦1,200<span class="text-xs text-gray-500 dark:text-gray-400 font-normal ml-1">/bunch</span></p>
+<button class="flex items-center justify-center size-9 rounded-full bg-white dark:bg-transparent border-2 border-primary text-primary active:bg-primary active:text-white transition-colors shadow-sm">
+<span class="material-symbols-outlined text-xl">add_shopping_cart</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Card 4 -->
+<div class="flex flex-col gap-3 rounded-2xl bg-card-light dark:bg-card-dark p-3 shadow-[0_2px_8px_rgba(0,0,0,0.04)] dark:shadow-none dark:border dark:border-gray-800">
+<div class="relative aspect-square rounded-xl bg-gray-100 dark:bg-gray-800 overflow-hidden group">
+<img alt="Red spicy scotch bonnet peppers" class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" data-alt="Red spicy scotch bonnet peppers" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCdUIxpehqvyCHpVkE66-syhU6R_Sk__hAdtNPBVCgGNzRH7yTWlA8jCVe-1XdTdbxixNfQE0R3T2EHj6dCGKNToxellpOLLFjngeSg-nNZqIoP8Q-on-GYuhBfpbmbYkcKqOelDZqxhgnLYsZPO5POX0XmAdiar1nQdf3WI-Ey5r3Uu0GSbMzpLyhbj-JTj0cB60ncB0Quz7SrYArQmQqEO2FvSPBSA7xPEJW7C4-OND-ugCn-cCGAj7jD7cMJPv0ebvGPWhqX"/>
+</div>
+<div class="flex flex-col gap-1">
+<div class="flex justify-between items-start">
+<div>
+<p class="text-[#0d1b10] dark:text-white text-base font-bold leading-tight">Scotch Bonnet</p>
+<p class="text-gray-500 dark:text-gray-400 text-xs font-medium">City Market</p>
+</div>
+</div>
+<div class="flex items-center justify-between mt-1">
+<p class="text-primary text-lg font-bold">₦200<span class="text-xs text-gray-500 dark:text-gray-400 font-normal ml-1">/unit</span></p>
+<button class="flex items-center justify-center size-9 rounded-full bg-white dark:bg-transparent border-2 border-primary text-primary active:bg-primary active:text-white transition-colors shadow-sm">
+<span class="material-symbols-outlined text-xl">add_shopping_cart</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Card 5 -->
+<div class="flex flex-col gap-3 rounded-2xl bg-card-light dark:bg-card-dark p-3 shadow-[0_2px_8px_rgba(0,0,0,0.04)] dark:shadow-none dark:border dark:border-gray-800 opacity-80">
+<div class="relative aspect-square rounded-xl bg-gray-100 dark:bg-gray-800 overflow-hidden group">
+<img alt="Orange fresh carrots with stems" class="h-full w-full object-cover grayscale" data-alt="Orange fresh carrots with stems" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAE1Vqee6vCTJyUU3GLH5FbfrtNOL3Z68aAx4jWRf_y22tOxwb7Y1AGO-wlUTgt0KgTg9xBVN1J1QPu_2iZF0rUTsWrs7QVOKm6w-NyBdvuzXG2y-MnrJKW17cIxzfS0ljD_yGsJWlGk5RWkJdOVQBCCMz82ZlzqaRFGaDyh0r01HCTHYz2ku0npxjDd5S--KuD2csYEyRj8jkADFyz2o4Prp_VrgzxCVKz2W_zN1pA4EsBaqzn2WuxDYNaD5awVYDXc9QydFcq"/>
+<div class="absolute inset-0 bg-white/40 dark:bg-black/40 flex items-center justify-center backdrop-blur-[1px]">
+<span class="bg-gray-900 text-white text-xs font-bold px-3 py-1 rounded-full">Out of Stock</span>
+</div>
+</div>
+<div class="flex flex-col gap-1">
+<div class="flex justify-between items-start">
+<div>
+<p class="text-gray-500 dark:text-gray-400 text-base font-bold leading-tight">Carrots</p>
+<p class="text-gray-400 dark:text-gray-500 text-xs font-medium">Mama K's Stall</p>
+</div>
+</div>
+<div class="flex items-center justify-between mt-1">
+<p class="text-gray-400 text-lg font-bold">₦400<span class="text-xs font-normal ml-1">/kg</span></p>
+<button class="flex items-center justify-center size-9 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-400 cursor-not-allowed" disabled="">
+<span class="material-symbols-outlined text-xl">block</span>
+</button>
+</div>
+</div>
+</div>
+<!-- View More Button -->
+<div class="col-span-2 flex justify-center py-4">
+<button class="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-12 px-8 bg-white dark:bg-card-dark border-2 border-gray-100 dark:border-gray-700 text-[#0d1b10] dark:text-white text-sm font-bold leading-normal tracking-[0.015em] hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+<span class="truncate mr-2">View More Products</span>
+<span class="material-symbols-outlined text-lg">expand_more</span>
+</button>
+</div>
+</div>
+<!-- Bottom Navigation Bar -->
+<nav class="fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-card-dark border-t border-gray-100 dark:border-gray-800 px-6 py-3 pb-6 flex justify-between items-center shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
+<button class="flex flex-col items-center gap-1 text-gray-400 dark:text-gray-500 hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-2xl">home</span>
+<span class="text-[10px] font-medium">Home</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-gray-400 dark:text-gray-500 hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-2xl">account_balance_wallet</span>
+<span class="text-[10px] font-medium">Wallet</span>
+</button>
+<!-- Active State -->
+<button class="flex flex-col items-center gap-1 text-primary">
+<div class="bg-primary/10 px-4 py-1 rounded-full">
+<span class="material-symbols-outlined text-2xl fill-current">storefront</span>
+</div>
+<span class="text-[10px] font-bold">Shop</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-gray-400 dark:text-gray-500 hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-2xl">shopping_bag</span>
+<span class="text-[10px] font-medium">Cart</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-gray-400 dark:text-gray-500 hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-2xl">person</span>
+<span class="text-[10px] font-medium">Profile</span>
+</button>
+</nav>
+</div>
+</body></html>

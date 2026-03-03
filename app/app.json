@@ -1,0 +1,52 @@
+{
+  "expo": {
+    "name": "Yabisso",
+    "slug": "yabisso",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#000000"
+    },
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#000000"
+      },
+      "package": "com.benksidney.yabisso",
+      "permissions": [
+        "SEND_SMS",
+        "READ_SMS",
+        "RECEIVE_SMS"
+      ],
+      "kotlinVersion": "2.1.21"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "owner": "benksidney",
+    "extra": {
+      "eas": {
+        "projectId": "067ab267-1b14-46ae-bc99-6e9649dc6640"
+      }
+    },
+    "plugins": [
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "kotlinVersion": "2.1.21"
+          }
+        }
+      ],
+      "./plugins/withRemoveBundleCompression"
+    ]
+  }
+}

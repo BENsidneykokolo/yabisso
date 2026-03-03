@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Super Admin Overview - Yabisso</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#46ec13",
+                        "background-light": "#f6f8f6",
+                        "background-dark": "#142210",
+                        "surface-dark": "#1c2e18",
+                        "surface-light": "#ffffff",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.5rem", "lg": "0.75rem", "xl": "1rem", "2xl": "1.5rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom Scrollbar for cleaner look */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(70, 236, 19, 0.2);
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(70, 236, 19, 0.5);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-800 dark:text-white min-h-screen relative pb-24 overflow-x-hidden">
+<!-- Top App Bar -->
+<div class="sticky top-0 z-40 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-md border-b border-gray-200 dark:border-white/5 px-4 pt-12 pb-3 flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="relative group cursor-pointer">
+<div class="size-10 rounded-full overflow-hidden border-2 border-primary/30 p-0.5">
+<img alt="Super Admin profile photo" class="w-full h-full object-cover rounded-full" data-alt="Super Admin profile photo" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBeL9IDz_5nRdw-tiDkWi1DGOgGU9MytEhaOLHdLsmbT9PLxgfsoEmykJ_Sy19zbiBNHHb4UCzCZA2J3hgjizl51EWTWpIiBYsZ9YL5vdplXXt9o8CXXrxz7F09YJ4tK5wp4gfwBSouu4TvYab_DBcnL4xfhnONGpacuV5CoZSh0uc2hJeaYNZFex4VJwui0RVxqln7OPWkeyXhmbI2xRGIxL4WyBh95VHRleOBrRREWyJ0AbU2m9zVPNGVG_Po1EBsnLZL511o"/>
+</div>
+<div class="absolute bottom-0 right-0 size-3 bg-primary rounded-full border-2 border-background-dark"></div>
+</div>
+<div class="flex flex-col">
+<h1 class="text-base font-bold leading-none tracking-tight">Super Admin</h1>
+<span class="text-xs text-gray-500 dark:text-gray-400 font-medium">Yabisso Platform</span>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<button class="relative p-2 rounded-full hover:bg-gray-200 dark:hover:bg-white/10 transition-colors">
+<span class="material-symbols-outlined text-gray-600 dark:text-white">notifications</span>
+<span class="absolute top-2 right-2 size-2 bg-red-500 rounded-full animate-pulse"></span>
+</button>
+</div>
+</div>
+<!-- Main Content Area -->
+<main class="flex flex-col gap-6 p-4">
+<!-- Search Bar -->
+<div class="w-full">
+<div class="flex w-full items-center rounded-xl bg-white dark:bg-surface-dark border border-gray-200 dark:border-white/10 shadow-sm h-12 overflow-hidden transition-all focus-within:ring-2 focus-within:ring-primary/50">
+<div class="flex items-center justify-center pl-4 pr-2 text-gray-400 dark:text-primary/70">
+<span class="material-symbols-outlined">search</span>
+</div>
+<input class="w-full bg-transparent border-none text-base text-gray-800 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:ring-0 h-full" placeholder="Search users, kiosques, logs..."/>
+</div>
+</div>
+<!-- Hero Stats (Points Ecosystem) -->
+<section>
+<div class="flex items-center justify-between mb-3">
+<h2 class="text-lg font-bold">Economy Overview</h2>
+<span class="text-xs font-medium text-primary bg-primary/10 px-2 py-1 rounded-lg">Live</span>
+</div>
+<div class="grid grid-cols-1 gap-4">
+<!-- Main Card -->
+<div class="bg-surface-light dark:bg-surface-dark rounded-2xl p-6 border border-gray-200 dark:border-white/5 shadow-sm relative overflow-hidden group">
+<div class="absolute top-0 right-0 p-4 opacity-10">
+<span class="material-symbols-outlined text-6xl text-primary">token</span>
+</div>
+<p class="text-sm font-medium text-gray-500 dark:text-gray-400">Points in Circulation</p>
+<div class="flex items-baseline gap-2 mt-1">
+<h3 class="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">14,500,200</h3>
+</div>
+<div class="mt-4 flex items-center gap-2">
+<div class="flex items-center text-xs font-bold text-primary bg-primary/10 px-2 py-0.5 rounded">
+<span class="material-symbols-outlined text-sm mr-1">trending_up</span>
+                            +5.2%
+                        </div>
+<span class="text-xs text-gray-400">vs last week</span>
+</div>
+<!-- Progress bar for visual fill -->
+<div class="w-full bg-gray-100 dark:bg-white/5 h-1.5 mt-4 rounded-full overflow-hidden">
+<div class="h-full bg-primary w-[65%]"></div>
+</div>
+<div class="flex justify-between mt-2 text-xs text-gray-500 dark:text-gray-400">
+<span>Minted: 25M</span>
+<span>Burned: 10.5M</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Secondary Stats Grid -->
+<section class="grid grid-cols-2 gap-4">
+<!-- Total Users -->
+<div class="bg-surface-light dark:bg-surface-dark p-4 rounded-2xl border border-gray-200 dark:border-white/5 shadow-sm flex flex-col justify-between h-32">
+<div class="flex justify-between items-start">
+<div class="p-2 rounded-lg bg-blue-50 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400">
+<span class="material-symbols-outlined">group</span>
+</div>
+<span class="text-xs font-medium text-green-500">+1.2%</span>
+</div>
+<div>
+<p class="text-2xl font-bold text-gray-900 dark:text-white">12,450</p>
+<p class="text-xs text-gray-500 dark:text-gray-400 font-medium">Total Users</p>
+</div>
+</div>
+<!-- Total Kiosques -->
+<div class="bg-surface-light dark:bg-surface-dark p-4 rounded-2xl border border-gray-200 dark:border-white/5 shadow-sm flex flex-col justify-between h-32">
+<div class="flex justify-between items-start">
+<div class="p-2 rounded-lg bg-purple-50 dark:bg-purple-500/20 text-purple-600 dark:text-purple-400">
+<span class="material-symbols-outlined">storefront</span>
+</div>
+<span class="text-xs font-medium text-green-500">+0.5%</span>
+</div>
+<div>
+<p class="text-2xl font-bold text-gray-900 dark:text-white">843</p>
+<p class="text-xs text-gray-500 dark:text-gray-400 font-medium">Active Kiosques</p>
+</div>
+</div>
+</section>
+<!-- Chart Section -->
+<section>
+<h2 class="text-lg font-bold mb-3">Transaction Volume</h2>
+<div class="bg-surface-light dark:bg-surface-dark p-5 rounded-2xl border border-gray-200 dark:border-white/5 shadow-sm">
+<div class="flex justify-between items-center mb-6">
+<div>
+<p class="text-sm text-gray-500 dark:text-gray-400">Daily Transactions</p>
+<p class="text-xl font-bold">24,302</p>
+</div>
+<select class="bg-transparent text-sm font-medium text-primary border-none focus:ring-0 cursor-pointer pr-6">
+<option>Last 7 Days</option>
+<option>Last 30 Days</option>
+</select>
+</div>
+<!-- CSS Bar Chart -->
+<div class="flex items-end justify-between h-32 gap-2 mt-4">
+<!-- Day 1 -->
+<div class="flex flex-col items-center gap-2 flex-1 group">
+<div class="w-full bg-gray-100 dark:bg-white/5 rounded-t-sm relative h-full flex items-end">
+<div class="w-full bg-primary/40 group-hover:bg-primary transition-all duration-300 rounded-t-sm" style="height: 45%"></div>
+</div>
+<span class="text-[10px] text-gray-400 uppercase">Mon</span>
+</div>
+<!-- Day 2 -->
+<div class="flex flex-col items-center gap-2 flex-1 group">
+<div class="w-full bg-gray-100 dark:bg-white/5 rounded-t-sm relative h-full flex items-end">
+<div class="w-full bg-primary/40 group-hover:bg-primary transition-all duration-300 rounded-t-sm" style="height: 60%"></div>
+</div>
+<span class="text-[10px] text-gray-400 uppercase">Tue</span>
+</div>
+<!-- Day 3 -->
+<div class="flex flex-col items-center gap-2 flex-1 group">
+<div class="w-full bg-gray-100 dark:bg-white/5 rounded-t-sm relative h-full flex items-end">
+<div class="w-full bg-primary/40 group-hover:bg-primary transition-all duration-300 rounded-t-sm" style="height: 35%"></div>
+</div>
+<span class="text-[10px] text-gray-400 uppercase">Wed</span>
+</div>
+<!-- Day 4 -->
+<div class="flex flex-col items-center gap-2 flex-1 group">
+<div class="w-full bg-gray-100 dark:bg-white/5 rounded-t-sm relative h-full flex items-end">
+<div class="w-full bg-primary/40 group-hover:bg-primary transition-all duration-300 rounded-t-sm" style="height: 80%"></div>
+</div>
+<span class="text-[10px] text-gray-400 uppercase">Thu</span>
+</div>
+<!-- Day 5 -->
+<div class="flex flex-col items-center gap-2 flex-1 group">
+<div class="w-full bg-gray-100 dark:bg-white/5 rounded-t-sm relative h-full flex items-end">
+<div class="w-full bg-primary/60 group-hover:bg-primary transition-all duration-300 rounded-t-sm" style="height: 55%"></div>
+</div>
+<span class="text-[10px] text-gray-400 uppercase">Fri</span>
+</div>
+<!-- Day 6 (Today) -->
+<div class="flex flex-col items-center gap-2 flex-1 group">
+<div class="w-full bg-gray-100 dark:bg-white/5 rounded-t-sm relative h-full flex items-end">
+<div class="w-full bg-primary shadow-[0_0_15px_rgba(70,236,19,0.5)] rounded-t-sm" style="height: 92%"></div>
+</div>
+<span class="text-[10px] text-primary font-bold uppercase">Sat</span>
+</div>
+<!-- Day 7 -->
+<div class="flex flex-col items-center gap-2 flex-1 group">
+<div class="w-full bg-gray-100 dark:bg-white/5 rounded-t-sm relative h-full flex items-end">
+<div class="w-full bg-primary/20 rounded-t-sm" style="height: 10%"></div>
+</div>
+<span class="text-[10px] text-gray-400 uppercase">Sun</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Alerts Section -->
+<section>
+<div class="flex items-center justify-between mb-3">
+<h2 class="text-lg font-bold text-gray-900 dark:text-white">Critical Alerts</h2>
+<button class="text-xs text-primary font-medium hover:underline">View All</button>
+</div>
+<div class="flex flex-col gap-3">
+<!-- Alert 1: Urgent Fraud -->
+<div class="flex items-start gap-4 bg-red-50 dark:bg-red-900/10 p-4 rounded-xl border border-red-200 dark:border-red-500/20 relative overflow-hidden">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-red-500"></div>
+<div class="bg-red-100 dark:bg-red-500/20 text-red-600 dark:text-red-400 rounded-lg p-2 shrink-0">
+<span class="material-symbols-outlined">gpp_maybe</span>
+</div>
+<div class="flex-1">
+<h3 class="text-sm font-bold text-gray-900 dark:text-white">Potential Fraud Detected</h3>
+<p class="text-xs text-gray-600 dark:text-gray-400 mt-1">User ID #9921 triggered velocity limits (50 tx/min). Account frozen.</p>
+<div class="mt-2 flex gap-3">
+<button class="text-xs font-bold text-red-500 dark:text-red-400">Review Case</button>
+<button class="text-xs font-bold text-gray-500 hover:text-gray-700">Dismiss</button>
+</div>
+</div>
+</div>
+<!-- Alert 2: Sync Issue -->
+<div class="flex items-start gap-4 bg-surface-light dark:bg-surface-dark p-4 rounded-xl border border-gray-200 dark:border-white/5">
+<div class="bg-orange-100 dark:bg-orange-500/20 text-orange-600 dark:text-orange-400 rounded-lg p-2 shrink-0">
+<span class="material-symbols-outlined">sync_problem</span>
+</div>
+<div class="flex-1">
+<h3 class="text-sm font-bold text-gray-900 dark:text-white">Pending Sync: 3 Kiosques</h3>
+<p class="text-xs text-gray-600 dark:text-gray-400 mt-1">Offline transactions pending upload for &gt; 2 hours.</p>
+<div class="mt-2 flex gap-3">
+<button class="text-xs font-bold text-primary">Force Sync</button>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Spacer for FAB and Bottom Nav -->
+<div class="h-10"></div>
+</main>
+<!-- Floating Action Button (FAB) -->
+<div class="fixed bottom-24 right-4 z-50">
+<button class="group flex items-center justify-center h-14 bg-primary hover:bg-[#3bd110] active:scale-95 text-background-dark shadow-[0_8px_30px_rgba(70,236,19,0.3)] rounded-full pl-4 pr-6 transition-all duration-300">
+<span class="material-symbols-outlined mr-2 text-2xl group-hover:rotate-90 transition-transform">add_circle</span>
+<span class="font-bold text-base whitespace-nowrap">Mint Points</span>
+</button>
+</div>
+<!-- Bottom Navigation -->
+<nav class="fixed bottom-0 left-0 right-0 bg-white/95 dark:bg-[#0f1a0c]/95 backdrop-blur-lg border-t border-gray-200 dark:border-white/5 px-2 pb-safe z-40">
+<div class="flex justify-around items-center h-16 max-w-md mx-auto">
+<!-- Active Item -->
+<button class="flex flex-col items-center justify-center w-full h-full gap-1 text-primary">
+<span class="material-symbols-outlined filled">dashboard</span>
+<span class="text-[10px] font-bold">Overview</span>
+</button>
+<!-- Inactive Item -->
+<button class="flex flex-col items-center justify-center w-full h-full gap-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors">
+<span class="material-symbols-outlined">people</span>
+<span class="text-[10px] font-medium">Users</span>
+</button>
+<!-- Inactive Item -->
+<button class="flex flex-col items-center justify-center w-full h-full gap-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors">
+<span class="material-symbols-outlined">storefront</span>
+<span class="text-[10px] font-medium">Kiosques</span>
+</button>
+<!-- Inactive Item -->
+<button class="flex flex-col items-center justify-center w-full h-full gap-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors">
+<span class="material-symbols-outlined">admin_panel_settings</span>
+<span class="text-[10px] font-medium">Admin</span>
+</button>
+</div>
+</nav>
+<!-- Bottom safe area spacing helper for iPhone home bar -->
+<style>
+        .pb-safe {
+            padding-bottom: env(safe-area-inset-bottom, 20px);
+        }
+    </style>
+</body></html>

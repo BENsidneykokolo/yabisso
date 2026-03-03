@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Payment Success Pop-up</title>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Theme Configuration -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                        "surface-dark": "#18232e", // Slightly lighter for cards
+                    },
+                    fontFamily: {
+                        "display": ["Space Grotesk", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: "Space Grotesk", sans-serif;
+        }
+        /* Subtle pattern for the background to give it texture */
+        .bg-pattern {
+            background-image: radial-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark min-h-screen flex flex-col items-center justify-center relative overflow-hidden">
+<!-- Background App Simulation (Blurred/Dimmed) -->
+<div aria-hidden="true" class="absolute inset-0 z-0 flex flex-col opacity-20 pointer-events-none">
+<!-- Fake Header -->
+<div class="h-16 w-full flex items-center justify-between px-6 pt-4">
+<div class="h-8 w-8 rounded-full bg-gray-600"></div>
+<div class="h-4 w-32 rounded-full bg-gray-600"></div>
+<div class="h-8 w-8 rounded-full bg-gray-600"></div>
+</div>
+<!-- Fake Content -->
+<div class="flex-1 p-4 space-y-4">
+<div class="h-48 w-full rounded-2xl bg-gray-700"></div>
+<div class="h-20 w-full rounded-xl bg-gray-700"></div>
+<div class="h-20 w-full rounded-xl bg-gray-700"></div>
+<div class="h-20 w-full rounded-xl bg-gray-700"></div>
+</div>
+</div>
+<!-- Modal Overlay -->
+<div class="fixed inset-0 z-50 flex items-end justify-center sm:items-center">
+<!-- Backdrop -->
+<div class="absolute inset-0 bg-[#0a0f14]/80 backdrop-blur-md transition-opacity"></div>
+<!-- Bottom Sheet / Modal Panel -->
+<div class="relative w-full max-w-[420px] transform overflow-hidden rounded-t-[2.5rem] sm:rounded-[2.5rem] bg-background-dark border-t border-white/5 shadow-2xl transition-all">
+<!-- Handle -->
+<div class="flex justify-center pt-5 pb-2 w-full" id="handle">
+<div class="h-1.5 w-12 rounded-full bg-[#324d67]"></div>
+</div>
+<!-- Content Container -->
+<div class="flex flex-col items-center px-6 pb-8 pt-4">
+<!-- Success Icon with Brand Colors Glow -->
+<div class="relative mb-6 group cursor-default">
+<!-- Animated Glow Ring (Yabisso Colors) -->
+<div class="absolute -inset-2 rounded-full bg-gradient-to-tr from-[#137fec] via-yellow-400 to-red-500 opacity-30 blur-md group-hover:opacity-50 transition-opacity duration-500"></div>
+<!-- Icon Circle -->
+<div class="relative flex h-20 w-20 items-center justify-center rounded-full bg-[#22c55e] shadow-[0_0_20px_rgba(34,197,94,0.3)]">
+<span class="material-symbols-outlined text-[40px] text-white font-bold select-none">check</span>
+</div>
+</div>
+<!-- Headline -->
+<h2 class="text-white tracking-wide text-xl font-bold uppercase mb-1 text-center">Payment Successful!</h2>
+<p class="text-[#92adc9] text-sm font-normal mb-8">Dec 24, 2023 • 14:30 PM</p>
+<!-- Amount -->
+<div class="mb-10 text-center">
+<p class="text-[#92adc9] text-xs font-medium tracking-widest uppercase mb-2">Total Paid</p>
+<h1 class="text-white text-4xl sm:text-5xl font-bold tracking-tight">₦ 12,500<span class="text-white/50 text-3xl">.00</span></h1>
+</div>
+<!-- Receipt Detail Card -->
+<div class="w-full bg-surface-dark rounded-2xl p-4 mb-8 border border-white/5 flex items-center justify-between">
+<div class="flex items-center gap-4">
+<!-- Avatar -->
+<div class="h-12 w-12 rounded-full bg-white/10 bg-cover bg-center border border-white/10 relative overflow-hidden" data-alt="Logo of Jumia Food showing an orange shopping cart on white background" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAoAFN_hRB9TYJEPdMPjOGx7pomeXfdBSersULMThdm3AKJoTbup6b9r6n2MKV0MKyKahWv_iY2ZDrQrwYfAHl_Or-8LkRmSg94V8NjQ5UgByh0O9Hzv_5E_MoxV_OG9VL9qohaTlY8t8-D35jYY8RiEbJ4QKVtRYj-0I6U23bW1Q5jx1UPYObljINHsAR2_FOFdEJl8TNSLZV-RcltzVqVoxwmcefguYZGm-mpzRA5duVsWRwbDy_1q-jDJ1J-a0A03IUFW2XO');">
+</div>
+<div class="flex flex-col justify-center">
+<p class="text-[#92adc9] text-xs font-medium uppercase tracking-wider">Sent to</p>
+<p class="text-white text-lg font-medium leading-tight">Jumia Food</p>
+</div>
+</div>
+<!-- Chevron -->
+<button class="h-10 w-10 flex items-center justify-center rounded-full hover:bg-white/5 transition-colors">
+<span class="material-symbols-outlined text-[#92adc9]">chevron_right</span>
+</button>
+</div>
+<!-- Action Buttons -->
+<div class="w-full flex flex-col gap-3">
+<!-- Primary Action: Done -->
+<button class="w-full h-14 rounded-full bg-white hover:bg-gray-100 text-[#101922] font-bold text-lg tracking-wide shadow-lg shadow-white/5 flex items-center justify-center gap-2 transition-transform active:scale-[0.98]">
+<span>Done</span>
+</button>
+<!-- Secondary Action: View Receipt -->
+<button class="w-full h-14 rounded-full bg-transparent hover:bg-white/5 text-primary font-bold text-lg tracking-wide flex items-center justify-center gap-2 transition-colors">
+<span class="material-symbols-outlined text-xl">receipt_long</span>
+<span>View Receipt</span>
+</button>
+</div>
+</div>
+<!-- Bottom decorative spacer for iPhone home indicator area -->
+<div class="h-6 w-full"></div>
+</div>
+</div>
+</body></html>

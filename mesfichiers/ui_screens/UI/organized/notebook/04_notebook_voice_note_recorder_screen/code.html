@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Voice Note Recorder - Yabisso</title>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "yabisso-red": "#ef4444",
+                        "yabisso-yellow": "#eab308",
+                        "yabisso-green": "#22c55e",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#111a22",
+                        "surface-dark": "#233648",
+                    },
+                    fontFamily: {
+                        "display": ["Be Vietnam Pro", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom range slider styling for the waveform scrubber */
+        input[type=range] {
+            -webkit-appearance: none;
+            width: 100%;
+            background: transparent;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 16px;
+            width: 16px;
+            border-radius: 50%;
+            background: #ffffff;
+            cursor: pointer;
+            margin-top: -6px;
+            box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.1);
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 4px;
+            cursor: pointer;
+            background: #233648;
+            border-radius: 2px;
+        }
+        /* Custom scrollbar for clean look */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        
+        /* Animation for recording pulse */
+        @keyframes pulse-ring {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(19, 127, 236, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 15px rgba(19, 127, 236, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(19, 127, 236, 0); }
+        }
+        .recording-pulse {
+            animation: pulse-ring 2s infinite cubic-bezier(0.66, 0, 0, 1);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-dark text-white font-display antialiased selection:bg-primary/30 selection:text-white">
+<div class="relative flex h-full min-h-screen w-full flex-col overflow-x-hidden max-w-md mx-auto shadow-2xl bg-[#111a22]">
+<!-- Header -->
+<div class="flex items-center px-4 py-6 justify-between z-10">
+<button class="flex size-10 items-center justify-center rounded-full bg-surface-dark/50 hover:bg-surface-dark transition-colors active:scale-95">
+<span class="material-symbols-outlined text-white">arrow_back</span>
+</button>
+<div class="flex flex-col items-center">
+<h2 class="text-white text-lg font-bold leading-tight tracking-tight">Voice Note</h2>
+<div class="flex items-center gap-1 mt-0.5">
+<span class="size-2 rounded-full bg-yabisso-green animate-pulse"></span>
+<span class="text-[10px] text-white/60 font-medium uppercase tracking-wider">Offline Ready</span>
+</div>
+</div>
+<button class="flex size-10 items-center justify-center rounded-full bg-surface-dark/50 hover:bg-surface-dark transition-colors active:scale-95">
+<span class="material-symbols-outlined text-white">more_vert</span>
+</button>
+</div>
+<!-- Main Content -->
+<div class="flex-1 flex flex-col px-6 pt-4 pb-8">
+<!-- Timer Area -->
+<div class="flex flex-col items-center justify-center mb-10">
+<div class="text-[64px] font-bold leading-none tracking-tighter tabular-nums bg-gradient-to-b from-white to-white/70 bg-clip-text text-transparent">
+                    00:04:12
+                </div>
+<p class="text-white/40 font-medium mt-2">Wednesday, Oct 24 • 10:30 AM</p>
+</div>
+<!-- Waveform Visualization -->
+<div class="relative w-full h-32 flex items-center justify-center gap-[3px] mb-6 px-2">
+<!-- Bars representing audio waveform -->
+<div class="w-1.5 bg-surface-dark rounded-full h-8"></div>
+<div class="w-1.5 bg-surface-dark rounded-full h-12"></div>
+<div class="w-1.5 bg-primary/30 rounded-full h-16"></div>
+<div class="w-1.5 bg-primary/60 rounded-full h-20"></div>
+<div class="w-1.5 bg-primary rounded-full h-24"></div>
+<div class="w-1.5 bg-primary rounded-full h-14"></div>
+<div class="w-1.5 bg-primary rounded-full h-28"></div>
+<div class="w-1.5 bg-primary rounded-full h-16"></div>
+<div class="w-1.5 bg-primary/80 rounded-full h-10"></div>
+<div class="w-1.5 bg-primary rounded-full h-20"></div>
+<div class="w-1.5 bg-primary rounded-full h-32 shadow-[0_0_15px_rgba(19,127,236,0.5)]"></div> <!-- Peak -->
+<div class="w-1.5 bg-primary rounded-full h-16"></div>
+<div class="w-1.5 bg-primary rounded-full h-24"></div>
+<div class="w-1.5 bg-primary rounded-full h-12"></div>
+<div class="w-1.5 bg-primary/70 rounded-full h-8"></div>
+<div class="w-1.5 bg-primary/40 rounded-full h-6"></div>
+<div class="w-1.5 bg-surface-dark rounded-full h-4"></div>
+<div class="w-1.5 bg-surface-dark rounded-full h-8"></div>
+<div class="w-1.5 bg-surface-dark rounded-full h-4"></div>
+<div class="w-1.5 bg-surface-dark rounded-full h-10"></div>
+<!-- Playhead/Scrubber Line overlay -->
+<div class="absolute left-1/2 top-0 bottom-0 w-0.5 bg-yabisso-red/80 z-10 shadow-[0_0_10px_rgba(239,68,68,0.5)]"></div>
+</div>
+<!-- Playback Controls -->
+<div class="flex flex-col gap-2 mb-8">
+<input class="w-full h-2 bg-surface-dark rounded-lg appearance-none cursor-pointer" max="100" min="0" type="range" value="65"/>
+<div class="flex justify-between text-xs font-medium text-white/40">
+<span>04:12</span>
+<span>06:30</span>
+</div>
+</div>
+<!-- Secondary Actions Row -->
+<div class="flex items-center justify-center gap-6 mb-auto">
+<button class="flex flex-col items-center gap-2 group">
+<div class="size-12 rounded-full bg-surface-dark flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+<span class="material-symbols-outlined text-white/80 group-hover:text-primary">replay_10</span>
+</div>
+<span class="text-xs text-white/60">Rewind</span>
+</button>
+<button class="flex items-center gap-2 px-5 py-3 rounded-full bg-surface-dark hover:bg-surface-dark/80 border border-white/5 transition-all">
+<span class="material-symbols-outlined text-yabisso-yellow text-[20px]">auto_awesome</span>
+<span class="text-sm font-semibold text-white">Convert to Text</span>
+</button>
+<button class="flex flex-col items-center gap-2 group">
+<div class="size-12 rounded-full bg-surface-dark flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+<span class="material-symbols-outlined text-white/80 group-hover:text-primary">speed</span>
+</div>
+<span class="text-xs text-white/60">1.0x</span>
+</button>
+</div>
+<!-- Primary Actions Area -->
+<div class="flex flex-col items-center gap-8 mt-6">
+<!-- Main Record/Pause Button -->
+<div class="relative">
+<!-- Glow effect container -->
+<div class="absolute inset-0 rounded-full bg-primary blur-xl opacity-20"></div>
+<button class="relative flex items-center justify-center size-24 rounded-full bg-white text-surface-dark shadow-[0_0_40px_rgba(255,255,255,0.1)] hover:scale-105 active:scale-95 transition-all duration-300 group z-10">
+<!-- Shows 'Pause' or 'Stop' state icon since we are viewing a waveform -->
+<span class="material-symbols-outlined text-4xl group-hover:text-yabisso-red transition-colors" data-icon="pause">pause</span>
+</button>
+<!-- Decorative ring indicating recording state or active mode -->
+<div class="absolute -inset-2 rounded-full border border-white/10"></div>
+</div>
+<!-- Footer Save Button -->
+<div class="w-full flex gap-4">
+<button class="flex-1 h-14 rounded-full bg-surface-dark text-white font-bold text-base hover:bg-surface-dark/80 transition-colors flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-yabisso-red">delete</span>
+                        Discard
+                    </button>
+<button class="flex-[2] h-14 rounded-full bg-white text-[#111a22] font-bold text-base hover:bg-gray-100 transition-colors shadow-lg shadow-white/5 flex items-center justify-center gap-2">
+<span class="material-symbols-outlined">check_circle</span>
+                        Save Voice Note
+                    </button>
+</div>
+</div>
+</div>
+</div>
+</body></html>

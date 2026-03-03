@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Super Admin Kiosque Network</title>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#46ec13",
+                        "background-light": "#f6f8f6",
+                        "background-dark": "#142210",
+                        "surface-light": "#ffffff",
+                        "surface-dark": "#1c2e18",
+                        "text-main": "#111b0d",
+                    },
+                    fontFamily: {
+                        "display": ["Lexend", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-text-main dark:text-white font-display antialiased pb-24 selection:bg-primary selection:text-black">
+<!-- Top App Bar -->
+<header class="sticky top-0 z-40 bg-background-light/90 dark:bg-background-dark/90 backdrop-blur-md border-b border-gray-200 dark:border-gray-800 transition-colors duration-300">
+<div class="flex items-center p-4 pb-2 justify-between">
+<div class="flex items-center gap-3">
+<button class="flex items-center justify-center p-1 rounded-full active:bg-gray-200 dark:active:bg-gray-800">
+<span class="material-symbols-outlined text-text-main dark:text-white" style="font-size: 24px;">arrow_back</span>
+</button>
+<h2 class="text-xl font-bold leading-tight tracking-tight">Kiosque Network</h2>
+</div>
+<div class="flex items-center gap-3">
+<button class="relative flex items-center justify-center text-text-main dark:text-white">
+<span class="material-symbols-outlined" style="font-size: 24px;">notifications</span>
+<span class="absolute top-0 right-0 h-2.5 w-2.5 rounded-full bg-red-500 border-2 border-background-light dark:border-background-dark"></span>
+</button>
+<div class="h-8 w-8 rounded-full bg-gray-300 overflow-hidden border border-gray-200 dark:border-gray-700">
+<img alt="Admin Profile" class="h-full w-full object-cover" data-alt="Portrait of a male administrator" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAjjeoeXZrMO01vJYrLKM8xaqPycxYT7fmlvrMWW12riJJEZGMcuT0aWzzj4Dl2zYZcYgiHn3guhzW5qOP-GZvXUmyWIlDebme02y57qUWDUQS3X4ly8FW6fdfK2oyPYLKZrdKEfo_1mmR5RRA6J7zeGYCcpFT4CTDyf6QiCqn_WalJEIG9qFxGHI7MC7H_Yh2XWO3L0R5brXwToLWwpuDHfN2TSmDj4kNWM2RDAQ2IKXrVMo2bA3mTsdxJ1ZDo87Viq661NqTD"/>
+</div>
+</div>
+</div>
+</header>
+<!-- Main Content -->
+<main class="flex flex-col gap-4 p-4 overflow-x-hidden">
+<!-- View Toggle (Segmented Buttons) -->
+<div class="w-full">
+<div class="flex h-10 w-full items-center justify-center rounded-xl bg-gray-200 dark:bg-surface-dark p-1">
+<label class="flex cursor-pointer h-full grow items-center justify-center overflow-hidden rounded-lg has-[:checked]:bg-white dark:has-[:checked]:bg-gray-700 has-[:checked]:shadow-sm transition-all duration-200">
+<span class="text-sm font-semibold text-gray-600 dark:text-gray-300 has-[:checked]:text-black dark:has-[:checked]:text-white">List View</span>
+<input checked="" class="invisible w-0 h-0" name="view-toggle" type="radio" value="List View"/>
+</label>
+<label class="flex cursor-pointer h-full grow items-center justify-center overflow-hidden rounded-lg has-[:checked]:bg-white dark:has-[:checked]:bg-gray-700 has-[:checked]:shadow-sm transition-all duration-200">
+<span class="text-sm font-semibold text-gray-600 dark:text-gray-300 has-[:checked]:text-black dark:has-[:checked]:text-white">Map View</span>
+<input class="invisible w-0 h-0" name="view-toggle" type="radio" value="Map View"/>
+</label>
+</div>
+</div>
+<!-- Horizontal Scrolling Stats -->
+<div class="flex gap-3 overflow-x-auto hide-scrollbar pb-1 snap-x snap-mandatory">
+<!-- Card 1 -->
+<div class="snap-center shrink-0 min-w-[160px] flex flex-col justify-between gap-1 rounded-2xl p-4 bg-surface-light dark:bg-surface-dark border border-gray-200 dark:border-gray-800 shadow-sm">
+<div class="flex items-center gap-2">
+<div class="p-1.5 rounded-lg bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-primary">
+<span class="material-symbols-outlined" style="font-size: 20px;">storefront</span>
+</div>
+<p class="text-sm font-medium text-gray-500 dark:text-gray-400">Active</p>
+</div>
+<div>
+<p class="text-2xl font-bold tracking-tight">124</p>
+<p class="text-xs font-medium text-primary flex items-center gap-0.5">
+<span class="material-symbols-outlined" style="font-size: 14px;">trending_up</span>
+                        +4%
+                    </p>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="snap-center shrink-0 min-w-[160px] flex flex-col justify-between gap-1 rounded-2xl p-4 bg-surface-light dark:bg-surface-dark border border-gray-200 dark:border-gray-800 shadow-sm">
+<div class="flex items-center gap-2">
+<div class="p-1.5 rounded-lg bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400">
+<span class="material-symbols-outlined" style="font-size: 20px;">payments</span>
+</div>
+<p class="text-sm font-medium text-gray-500 dark:text-gray-400">Points</p>
+</div>
+<div>
+<p class="text-2xl font-bold tracking-tight">1.2M</p>
+<p class="text-xs font-medium text-gray-400 dark:text-gray-500">Total Dist.</p>
+</div>
+</div>
+<!-- Card 3 -->
+<div class="snap-center shrink-0 min-w-[160px] flex flex-col justify-between gap-1 rounded-2xl p-4 bg-surface-light dark:bg-surface-dark border border-gray-200 dark:border-gray-800 shadow-sm">
+<div class="flex items-center gap-2">
+<div class="p-1.5 rounded-lg bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400">
+<span class="material-symbols-outlined" style="font-size: 20px;">block</span>
+</div>
+<p class="text-sm font-medium text-gray-500 dark:text-gray-400">Suspended</p>
+</div>
+<div>
+<p class="text-2xl font-bold tracking-tight">12</p>
+<p class="text-xs font-medium text-red-600 dark:text-red-400 flex items-center gap-0.5">
+<span class="material-symbols-outlined" style="font-size: 14px;">warning</span>
+                        Action Req.
+                    </p>
+</div>
+</div>
+</div>
+<!-- Search Bar -->
+<div class="relative w-full">
+<div class="flex w-full items-center rounded-xl h-12 bg-white dark:bg-surface-dark border border-gray-200 dark:border-gray-700 shadow-sm focus-within:border-primary focus-within:ring-1 focus-within:ring-primary transition-all">
+<div class="text-gray-400 flex items-center justify-center pl-4" data-icon="MagnifyingGlass">
+<span class="material-symbols-outlined">search</span>
+</div>
+<input class="flex w-full min-w-0 bg-transparent text-text-main dark:text-white placeholder:text-gray-400 px-3 text-base font-normal focus:outline-none" placeholder="Search kiosque, ID, or admin..."/>
+</div>
+</div>
+<!-- Filter Chips -->
+<div class="flex gap-2 overflow-x-auto hide-scrollbar pb-2">
+<button class="flex h-8 shrink-0 items-center justify-center px-4 rounded-full bg-primary text-black font-medium text-sm shadow-sm hover:brightness-105 transition-colors">
+                All
+            </button>
+<button class="flex h-8 shrink-0 items-center justify-center px-4 rounded-full bg-white dark:bg-surface-dark border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 font-medium text-sm hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                Active
+            </button>
+<button class="flex h-8 shrink-0 items-center justify-center px-4 rounded-full bg-white dark:bg-surface-dark border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 font-medium text-sm hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                Suspended
+            </button>
+<button class="flex h-8 shrink-0 items-center justify-center px-4 rounded-full bg-white dark:bg-surface-dark border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 font-medium text-sm hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                High Traffic
+            </button>
+</div>
+<!-- Kiosque List -->
+<div class="flex flex-col gap-4">
+<!-- List Item 1 (Active) -->
+<div class="bg-surface-light dark:bg-surface-dark rounded-xl p-4 border border-gray-200 dark:border-gray-800 shadow-sm relative overflow-hidden group">
+<div class="absolute top-0 right-0 p-4">
+<span class="inline-flex items-center gap-1.5 rounded-full bg-green-100 dark:bg-green-900/40 px-2.5 py-0.5 text-xs font-bold text-green-700 dark:text-primary">
+<span class="h-1.5 w-1.5 rounded-full bg-green-600 dark:bg-primary"></span>
+                        Active
+                    </span>
+</div>
+<div class="flex flex-col gap-4">
+<div class="pr-20">
+<h3 class="text-lg font-bold text-text-main dark:text-white">Central Station Kiosk #04</h3>
+<p class="text-sm text-gray-500 dark:text-gray-400 mt-1 flex items-center gap-1">
+<span class="material-symbols-outlined text-base">location_on</span>
+                            Downtown District, Sector 4
+                        </p>
+</div>
+<div class="h-px w-full bg-gray-100 dark:bg-gray-800"></div>
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-3">
+<img alt="Admin Sarah" class="h-10 w-10 rounded-full object-cover border border-gray-200 dark:border-gray-600" data-alt="Portrait of Sarah, the kiosque admin" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC6cwC_AOBHq2cudnUddpVgNuFEFb3aDtRcsvtl7a5F1OjQRnSUKi4FMcRjkk7MmJ8Z-SqmlGPm5Mmh1wX4jRLE6rZ-nYZmOLGxwc-quQO6QEnvWlGF5htA9q3tldn1p3XABu2uicFafAv6LmV6pyCEXQYj8B5d6SeW4PeQ34CkMwCziYYeKJXbJcMJPxh3M3K8H3uS5bzu37JVVxCP7E79VQLQMAQ2PGEuT-BE6_ZackUOa7bg-WX6-JOS1N189IpgTW6CIfeb"/>
+<div>
+<p class="text-sm font-semibold text-text-main dark:text-white">Sarah J.</p>
+<p class="text-xs text-gray-500 dark:text-gray-400">Admin ID: 8821</p>
+</div>
+</div>
+<div class="text-right">
+<p class="text-lg font-bold text-text-main dark:text-white">45k</p>
+<p class="text-xs text-gray-500 dark:text-gray-400">Points (30d)</p>
+</div>
+</div>
+<div class="flex gap-2 mt-1">
+<button class="flex-1 h-10 rounded-lg border border-gray-200 dark:border-gray-700 text-sm font-semibold text-gray-600 dark:text-gray-300 flex items-center justify-center gap-2 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+<span class="material-symbols-outlined text-base">analytics</span>
+                            Details
+                        </button>
+<button class="h-10 px-4 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-sm font-semibold flex items-center justify-center hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors">
+                            Suspend
+                        </button>
+</div>
+</div>
+</div>
+<!-- List Item 2 (High Traffic) -->
+<div class="bg-surface-light dark:bg-surface-dark rounded-xl p-4 border border-gray-200 dark:border-gray-800 shadow-sm relative overflow-hidden">
+<div class="absolute top-0 right-0 p-4">
+<span class="inline-flex items-center gap-1.5 rounded-full bg-green-100 dark:bg-green-900/40 px-2.5 py-0.5 text-xs font-bold text-green-700 dark:text-primary">
+<span class="h-1.5 w-1.5 rounded-full bg-green-600 dark:bg-primary"></span>
+                        Active
+                    </span>
+</div>
+<div class="flex flex-col gap-4">
+<div class="pr-20">
+<h3 class="text-lg font-bold text-text-main dark:text-white">Mall Plaza North #12</h3>
+<div class="flex items-center gap-2 mt-1">
+<p class="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1">
+<span class="material-symbols-outlined text-base">location_on</span>
+                                North Avenue
+                            </p>
+<span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400 uppercase tracking-wide">High Traffic</span>
+</div>
+</div>
+<div class="h-px w-full bg-gray-100 dark:bg-gray-800"></div>
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-3">
+<img alt="Admin Mark" class="h-10 w-10 rounded-full object-cover border border-gray-200 dark:border-gray-600" data-alt="Portrait of Mark, the kiosque admin" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDr8CYNN8KCRSzNQbkI8FVQsdxjqC2EvP6e4j0cxECvYA4AmbFzAiyjD1Sunu_PhaE9XqLz0bxW1UbNVwlOYXkHzyG7OYrrJUz0Hb0GN2_kZMtOgjyfx0E3NeTcyVnI_gEe7osTEVDiA3TTNgbNps2L7bosG-Ti6tTLB59ca0VDYAGXrECo5iU-8QTlFRevTeJ9GirrgOReayyJeK7fY8dl494kLWAwNRuUYiCsltGJRsKe6KGudEtxi6_pME_JHQ4NGLFICKqI"/>
+<div>
+<p class="text-sm font-semibold text-text-main dark:text-white">Mark T.</p>
+<p class="text-xs text-gray-500 dark:text-gray-400">Admin ID: 9942</p>
+</div>
+</div>
+<div class="text-right">
+<p class="text-lg font-bold text-text-main dark:text-white">102k</p>
+<p class="text-xs text-gray-500 dark:text-gray-400">Points (30d)</p>
+</div>
+</div>
+<div class="flex gap-2 mt-1">
+<button class="flex-1 h-10 rounded-lg border border-gray-200 dark:border-gray-700 text-sm font-semibold text-gray-600 dark:text-gray-300 flex items-center justify-center gap-2 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+<span class="material-symbols-outlined text-base">analytics</span>
+                            Details
+                        </button>
+<button class="h-10 px-4 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-sm font-semibold flex items-center justify-center hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors">
+                            Suspend
+                        </button>
+</div>
+</div>
+</div>
+<!-- List Item 3 (Suspended) -->
+<div class="bg-surface-light dark:bg-surface-dark rounded-xl p-4 border border-gray-200 dark:border-gray-800 shadow-sm relative overflow-hidden opacity-90">
+<div class="absolute top-0 right-0 p-4">
+<span class="inline-flex items-center gap-1.5 rounded-full bg-red-100 dark:bg-red-900/40 px-2.5 py-0.5 text-xs font-bold text-red-700 dark:text-red-400">
+<span class="h-1.5 w-1.5 rounded-full bg-red-600 dark:bg-red-500"></span>
+                        Suspended
+                    </span>
+</div>
+<div class="flex flex-col gap-4">
+<div class="pr-20">
+<h3 class="text-lg font-bold text-text-main dark:text-white">Eastside Market #02</h3>
+<p class="text-sm text-gray-500 dark:text-gray-400 mt-1 flex items-center gap-1">
+<span class="material-symbols-outlined text-base">location_on</span>
+                            East River District
+                        </p>
+</div>
+<div class="h-px w-full bg-gray-100 dark:bg-gray-800"></div>
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-3 opacity-60">
+<div class="h-10 w-10 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-gray-500">
+<span class="material-symbols-outlined text-xl">person_off</span>
+</div>
+<div>
+<p class="text-sm font-semibold text-text-main dark:text-white">Unassigned</p>
+<p class="text-xs text-gray-500 dark:text-gray-400">--</p>
+</div>
+</div>
+<div class="text-right opacity-60">
+<p class="text-lg font-bold text-text-main dark:text-white">0</p>
+<p class="text-xs text-gray-500 dark:text-gray-400">Points (30d)</p>
+</div>
+</div>
+<div class="flex gap-2 mt-1">
+<button class="flex-1 h-10 rounded-lg bg-primary text-black text-sm font-semibold flex items-center justify-center gap-2 hover:bg-primary/90 transition-colors shadow-md shadow-primary/20">
+<span class="material-symbols-outlined text-base">power_settings_new</span>
+                            Activate
+                        </button>
+<button class="h-10 w-10 rounded-lg border border-gray-200 dark:border-gray-700 text-gray-500 flex items-center justify-center hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- End of list spacer -->
+<div class="h-12"></div>
+</main>
+<!-- Floating Action Button -->
+<button class="fixed bottom-24 right-4 z-30 h-14 w-14 rounded-full bg-primary text-black shadow-lg shadow-primary/30 flex items-center justify-center transition-transform active:scale-95 hover:scale-105">
+<span class="material-symbols-outlined text-3xl">add</span>
+</button>
+<!-- Bottom Navigation Bar (Mobile) -->
+<nav class="fixed bottom-0 left-0 w-full z-40 bg-white/90 dark:bg-surface-dark/95 backdrop-blur-lg border-t border-gray-200 dark:border-gray-800 pb-safe">
+<div class="flex justify-around items-center h-16">
+<a class="flex flex-col items-center justify-center w-full h-full text-gray-400 dark:text-gray-500 hover:text-primary dark:hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined text-[28px]">dashboard</span>
+<span class="text-[10px] font-medium mt-0.5">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center w-full h-full text-primary" href="#">
+<span class="material-symbols-outlined text-[28px] fill-current">storefront</span>
+<span class="text-[10px] font-medium mt-0.5">Network</span>
+</a>
+<div class="w-full"></div> <!-- Spacer for visual balance if needed, or remove -->
+<a class="flex flex-col items-center justify-center w-full h-full text-gray-400 dark:text-gray-500 hover:text-primary dark:hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined text-[28px]">monitoring</span>
+<span class="text-[10px] font-medium mt-0.5">Stats</span>
+</a>
+<a class="flex flex-col items-center justify-center w-full h-full text-gray-400 dark:text-gray-500 hover:text-primary dark:hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined text-[28px]">settings</span>
+<span class="text-[10px] font-medium mt-0.5">Settings</span>
+</a>
+</div>
+</nav>
+<!-- CSS Safe Area support for newer iPhones -->
+<style>
+        .pb-safe {
+            padding-bottom: env(safe-area-inset-bottom, 20px);
+        }
+    </style>
+</body></html>

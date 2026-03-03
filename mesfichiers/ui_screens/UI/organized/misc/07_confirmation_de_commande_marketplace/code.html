@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="fr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Yabisso - Confirmation de Commande</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                        "success": "#22c55e",
+                        "card-dark": "#1a2632",
+                        "border-dark": "#233648"
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .status-dot {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: .5; }
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white min-h-screen flex flex-col font-display">
+<!-- Top App Bar -->
+<header class="sticky top-0 z-50 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md border-b border-slate-200 dark:border-border-dark px-4 py-3">
+<div class="flex items-center justify-between max-w-md mx-auto w-full">
+<button class="flex items-center justify-center w-10 h-10 rounded-full hover:bg-slate-100 dark:hover:bg-card-dark transition-colors">
+<span class="material-symbols-outlined text-2xl">arrow_back</span>
+</button>
+<h1 class="text-lg font-bold tracking-tight">Confirmation</h1>
+<div class="flex items-center gap-3">
+<div class="flex items-center gap-1.5 bg-primary/10 px-2 py-1 rounded-full">
+<span class="material-symbols-outlined text-primary text-[14px] status-dot">circle</span>
+<span class="text-[11px] font-bold text-primary uppercase tracking-wider">En ligne</span>
+</div>
+<span class="material-symbols-outlined text-slate-400 dark:text-slate-500 text-xl">sync</span>
+</div>
+</div>
+</header>
+<main class="flex-1 flex flex-col max-w-md mx-auto w-full px-6 py-8">
+<!-- Success State -->
+<div class="flex flex-col items-center text-center mb-10">
+<div class="w-20 h-20 bg-success/20 rounded-full flex items-center justify-center mb-6">
+<span class="material-symbols-outlined text-success text-5xl font-bold">check_circle</span>
+</div>
+<h2 class="text-2xl font-extrabold leading-tight mb-3">Merci pour votre commande !</h2>
+<p class="text-slate-500 dark:text-slate-400 text-sm leading-relaxed">
+                Votre commande <span class="font-mono text-primary font-semibold">#YAB-9823-X</span> a été enregistrée avec succès.
+            </p>
+</div>
+<!-- Order Summary Card -->
+<div class="space-y-4">
+<h3 class="text-sm font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Détails de la commande</h3>
+<div class="bg-white dark:bg-card-dark rounded-xl border border-slate-200 dark:border-border-dark overflow-hidden shadow-sm">
+<!-- Delivery Info -->
+<div class="p-4 flex gap-4 border-b border-slate-100 dark:border-border-dark">
+<div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-primary">home</span>
+</div>
+<div class="flex-1">
+<p class="text-xs text-slate-500 dark:text-slate-400 font-medium">Adresse de livraison</p>
+<p class="font-bold text-sm mt-0.5">Maison</p>
+<p class="text-xs text-slate-400 mt-0.5 leading-tight">Rue 1.023, Quartier Bastos, Yaoundé</p>
+</div>
+</div>
+<!-- Estimation -->
+<div class="p-4 flex gap-4 border-b border-slate-100 dark:border-border-dark">
+<div class="w-10 h-10 rounded-lg bg-orange-500/10 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-orange-500">schedule</span>
+</div>
+<div class="flex-1">
+<p class="text-xs text-slate-500 dark:text-slate-400 font-medium">Livraison estimée</p>
+<p class="font-bold text-sm mt-0.5">25 - 35 min</p>
+</div>
+</div>
+<!-- Total -->
+<div class="p-4 flex items-center justify-between bg-primary/5">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-xl">payments</span>
+<p class="font-semibold text-sm">Montant Total</p>
+</div>
+<p class="text-lg font-black text-primary">116 500 XAF</p>
+</div>
+</div>
+</div>
+<!-- Illustration / Brand Element -->
+<div class="mt-auto py-8 opacity-20 flex justify-center">
+<div class="relative w-32 h-32">
+<div class="absolute inset-0 bg-primary rounded-full blur-3xl"></div>
+<div class="relative flex items-center justify-center h-full">
+<span class="material-symbols-outlined text-8xl text-primary">shopping_basket</span>
+</div>
+</div>
+</div>
+</main>
+<!-- Bottom Actions -->
+<footer class="p-6 max-w-md mx-auto w-full space-y-4">
+<button class="w-full bg-primary hover:bg-primary/90 text-white font-bold py-4 rounded-xl transition-all shadow-lg shadow-primary/20 flex items-center justify-center gap-2 active:scale-[0.98]">
+<span class="material-symbols-outlined">map</span>
+            Suivre ma commande
+        </button>
+<a class="block w-full text-center py-2 text-slate-500 dark:text-slate-400 font-semibold hover:text-primary transition-colors text-sm" href="#">
+            Retour à l'accueil
+        </a>
+</footer>
+<!-- Tab Bar (Matching the provided BottomNavBar component style) -->
+<nav class="border-t border-slate-200 dark:border-border-dark bg-white dark:bg-card-dark px-4 pb-6 pt-2">
+<div class="flex max-w-md mx-auto">
+<a class="flex flex-1 flex-col items-center justify-center gap-1 text-slate-400 dark:text-slate-500" href="#">
+<span class="material-symbols-outlined">home</span>
+<p class="text-[10px] font-medium leading-none">Accueil</p>
+</a>
+<a class="flex flex-1 flex-col items-center justify-center gap-1 text-slate-400 dark:text-slate-500" href="#">
+<span class="material-symbols-outlined">storefront</span>
+<p class="text-[10px] font-medium leading-none">Boutique</p>
+</a>
+<a class="flex flex-1 flex-col items-center justify-center gap-1 text-slate-400 dark:text-slate-500" href="#">
+<span class="material-symbols-outlined">shopping_bag</span>
+<p class="text-[10px] font-medium leading-none">Panier</p>
+</a>
+<a class="flex flex-1 flex-col items-center justify-center gap-1 text-primary" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1">receipt_long</span>
+<p class="text-[10px] font-medium leading-none">Commandes</p>
+</a>
+<a class="flex flex-1 flex-col items-center justify-center gap-1 text-slate-400 dark:text-slate-500" href="#">
+<span class="material-symbols-outlined">person</span>
+<p class="text-[10px] font-medium leading-none">Profil</p>
+</a>
+</div>
+</nav>
+</body></html>

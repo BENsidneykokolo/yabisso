@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Transfer Points - Yabisso</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "primary-dark": "#0f65bd",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                        "surface-dark": "#192633",
+                        "surface-light": "#ffffff",
+                        "brand-yellow": "#FFD700",
+                        "brand-red": "#FF4500",
+                        "brand-green": "#32CD32",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "2xl": "1rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom scrollbar hiding for clean UI */
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+        .scrollbar-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        
+        /* Custom radio logic for segmented control visual state */
+        input[type="radio"]:checked + span {
+            background-color: #101922; /* background-dark */
+            color: white;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+        }
+        .dark input[type="radio"]:checked + span {
+            background-color: #3b82f6; /* roughly primary-500 to indicate active in dark mode better, or keep dark surface */
+            background-color: #137fec; /* primary */
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white font-display antialiased selection:bg-primary selection:text-white">
+<!-- Mobile Container -->
+<div class="relative flex h-full min-h-screen w-full flex-col overflow-x-hidden max-w-md mx-auto bg-background-light dark:bg-background-dark border-x border-slate-200 dark:border-slate-800 shadow-2xl">
+<!-- Header Section -->
+<header class="sticky top-0 z-20 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-md border-b border-slate-200/50 dark:border-white/5">
+<div class="flex items-center px-4 h-16 justify-between">
+<button class="flex size-10 shrink-0 items-center justify-center rounded-full hover:bg-slate-200 dark:hover:bg-white/10 transition-colors text-slate-900 dark:text-white">
+<span class="material-symbols-outlined">arrow_back_ios_new</span>
+</button>
+<h2 class="text-lg font-bold leading-tight tracking-tight flex-1 text-center">Transfer Points</h2>
+<button class="flex size-10 shrink-0 items-center justify-center rounded-full hover:bg-slate-200 dark:hover:bg-white/10 transition-colors text-slate-900 dark:text-white">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</div>
+<!-- Offline/Sync Status Indicator -->
+<div class="flex items-center justify-center gap-2 pb-3 w-full">
+<div class="flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20">
+<span class="relative flex h-2 w-2">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+</span>
+<p class="text-emerald-600 dark:text-emerald-400 text-[11px] font-semibold uppercase tracking-wider">Synced</p>
+</div>
+</div>
+</header>
+<!-- Main Scrollable Content -->
+<main class="flex-1 flex flex-col gap-6 px-5 pt-4 pb-32">
+<!-- Balance Card -->
+<div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary to-blue-700 shadow-xl dark:shadow-blue-900/20">
+<!-- Abstract Pattern Background -->
+<div class="absolute inset-0 opacity-10" style="background-image: radial-gradient(#ffffff 1px, transparent 1px); background-size: 20px 20px;"></div>
+<div class="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-brand-yellow blur-[60px] opacity-20 mix-blend-overlay"></div>
+<div class="absolute -left-10 -bottom-10 h-40 w-40 rounded-full bg-brand-green blur-[60px] opacity-20 mix-blend-overlay"></div>
+<div class="relative z-10 p-5 flex flex-col justify-between min-h-[140px]">
+<div class="flex justify-between items-start">
+<div class="flex flex-col gap-1">
+<p class="text-blue-100 text-sm font-medium flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">account_balance_wallet</span>
+                                Available Balance
+                            </p>
+<h3 class="text-white text-3xl font-bold tracking-tight mt-1">12,500 <span class="text-lg font-normal text-blue-100 opacity-80">YBS</span></h3>
+</div>
+<div class="h-10 w-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center border border-white/10 shadow-inner">
+<span class="material-symbols-outlined text-white">qr_code_2</span>
+</div>
+</div>
+<div class="mt-4 pt-3 border-t border-white/10 flex items-center justify-between">
+<span class="text-xs font-medium text-blue-100/80">Daily limit: 50,000 YBS</span>
+<button class="text-xs font-bold text-white bg-white/20 hover:bg-white/30 px-2 py-1 rounded transition-colors">Top Up</button>
+</div>
+</div>
+</div>
+<!-- Recipient Section -->
+<div class="flex flex-col gap-4">
+<div class="flex items-center justify-between">
+<label class="text-sm font-bold text-slate-700 dark:text-slate-200">Recipient</label>
+<button class="text-xs text-primary hover:text-primary-dark font-medium flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">qr_code_scanner</span> Scan QR
+                    </button>
+</div>
+<!-- Segmented Control -->
+<div class="flex h-11 w-full items-center justify-center rounded-xl bg-slate-200 dark:bg-surface-dark p-1">
+<label class="cursor-pointer h-full flex-1 relative">
+<input checked="" class="peer sr-only" name="recipient_type" type="radio" value="id"/>
+<span class="flex h-full w-full items-center justify-center rounded-lg text-sm font-medium text-slate-500 dark:text-slate-400 transition-all duration-200 ease-out">
+                            Yabisso ID
+                        </span>
+</label>
+<label class="cursor-pointer h-full flex-1 relative">
+<input class="peer sr-only" name="recipient_type" type="radio" value="phone"/>
+<span class="flex h-full w-full items-center justify-center rounded-lg text-sm font-medium text-slate-500 dark:text-slate-400 transition-all duration-200 ease-out">
+                            Phone
+                        </span>
+</label>
+</div>
+<!-- Input Field -->
+<div class="relative group">
+<div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-slate-400 group-focus-within:text-primary transition-colors">alternate_email</span>
+</div>
+<input class="block w-full rounded-xl border-0 py-4 pl-12 pr-14 text-slate-900 dark:text-white bg-slate-50 dark:bg-surface-dark ring-1 ring-inset ring-slate-200 dark:ring-slate-700 placeholder:text-slate-400 focus:ring-2 focus:ring-inset focus:ring-primary sm:text-base font-medium sm:leading-6 transition-all shadow-sm" placeholder="Enter ID (e.g. sam_doe)" type="text" value=""/>
+<div class="absolute inset-y-0 right-0 pr-2 flex items-center">
+<button class="p-2 rounded-lg text-slate-400 hover:text-primary hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+<span class="material-symbols-outlined">contacts</span>
+</button>
+</div>
+</div>
+<!-- Recent Contacts -->
+<div class="mt-1">
+<p class="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-3 uppercase tracking-wide">Recent Contacts</p>
+<div class="flex gap-4 overflow-x-auto pb-4 scrollbar-hide -mx-5 px-5">
+<!-- Add New -->
+<div class="flex flex-col items-center gap-2 min-w-[64px] cursor-pointer group">
+<div class="size-16 rounded-full border border-dashed border-slate-400 dark:border-slate-600 group-hover:border-primary group-hover:bg-primary/10 transition-all flex items-center justify-center bg-slate-100 dark:bg-surface-dark">
+<span class="material-symbols-outlined text-slate-500 dark:text-slate-400 group-hover:text-primary">add</span>
+</div>
+<span class="text-xs text-center truncate w-full text-slate-600 dark:text-slate-400 font-medium">New</span>
+</div>
+<!-- Contact 1 -->
+<div class="flex flex-col items-center gap-2 min-w-[64px] cursor-pointer group">
+<div class="relative size-16 rounded-full p-[2px] bg-gradient-to-tr from-brand-yellow to-brand-red group-hover:scale-105 transition-transform">
+<div class="h-full w-full rounded-full border-2 border-background-light dark:border-background-dark overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="Portrait of Amara" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBRYEvkJ1NPD14CVO020eFPhgh52g4oOsWbK0ecjFqd1fHgktMSW7O0L7r6qHwCoK111DRcbrN6OAS8NgEuJxPsWxR2LRN92wmUaPOUGp4LjhkVoka4bJt-ozt7mLU6jdMuD6gIqVdNqTpcWTQ4OwmWH1U_NE59Do22VzP_kSGrD3ffRoK1DZLBBM-hyZ1GeLHLdcmr7NGCpjkwbjmFP8e_DAaKVhJPfu7GH7z9A7pdySc4SARuribaa3A0Uyh73GG6of5VDG8E"/>
+</div>
+<div class="absolute bottom-0 right-0 size-3.5 bg-brand-green rounded-full border-2 border-background-light dark:border-background-dark"></div>
+</div>
+<span class="text-xs text-center truncate w-full text-slate-700 dark:text-slate-200 font-medium">Amara</span>
+</div>
+<!-- Contact 2 -->
+<div class="flex flex-col items-center gap-2 min-w-[64px] cursor-pointer group">
+<div class="relative size-16 rounded-full p-[2px] bg-slate-200 dark:bg-slate-700 group-hover:scale-105 transition-transform">
+<div class="h-full w-full rounded-full border-2 border-background-light dark:border-background-dark overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="Portrait of Kwame" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCnh5jaffElTBxzsNTyprDnOVMditZz2x8TvgqcGvQVzmjk7cHEWH7iizhQOlHvL18Ck8nmpeyAPrFC5o3eoS-T7SPmKmwxisaqAWctJo_ahwhQuDIJXkmF3qd82-9lK1fc8l4JMdYf-UCXkM8MDTDhrzL0O91UEWu5W3b1y8pGzcgeylXs6iPpq-S1g6DkWLg1dKk5PNgFpYDFrZE4alZ1zA_XuEL4p82L9C9GymKMGNokpf4JivIw_PyhhOZiMuqN0_1DCWUJ"/>
+</div>
+</div>
+<span class="text-xs text-center truncate w-full text-slate-700 dark:text-slate-200 font-medium">Kwame</span>
+</div>
+<!-- Contact 3 -->
+<div class="flex flex-col items-center gap-2 min-w-[64px] cursor-pointer group">
+<div class="relative size-16 rounded-full p-[2px] bg-slate-200 dark:bg-slate-700 group-hover:scale-105 transition-transform">
+<div class="h-full w-full rounded-full border-2 border-background-light dark:border-background-dark overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="Portrait of Nia" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD3dlJzxiEiTy7urx76de90Z6-R4AFZTvUQzmPVCFUnbn1Sd1DNmXr5gHO4i5wktq_KO-XtnKvU8S5fVKUbiaB6eAaRVssorW8R6JhsFqjhOWuz8W9OFD2Ox_U1cQaveozSrD-KUKBcmn08YGPmkqYlt_MkUut2ST_iehJ7M-eUBNjYigLF_1ex-oh_jC1w1eZv2oHOUxIe27RraeG-Fsk7JtMXXqWDekZ4TYJCf9BEFU6JHxpSdVOI3SFfqPC_pin9SxbqjraN"/>
+</div>
+</div>
+<span class="text-xs text-center truncate w-full text-slate-700 dark:text-slate-200 font-medium">Nia</span>
+</div>
+<!-- Contact 4 -->
+<div class="flex flex-col items-center gap-2 min-w-[64px] cursor-pointer group">
+<div class="relative size-16 rounded-full p-[2px] bg-slate-200 dark:bg-slate-700 group-hover:scale-105 transition-transform">
+<div class="h-full w-full rounded-full border-2 border-background-light dark:border-background-dark overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="Portrait of David" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAcig2xCUNBvmZYKcfUbC1jM0AH1bvlvGiZX0nCZr7N2Af1QhCAA2ifIB2vkMCwuWWWxWLuhlJdGQTPMT3wCKCptHbAJGg0DcIkC_FpxlMd_rQxKTJ6MBdzRAgMuFVl6-weNVJDrqUyLPfcGuW8dPHj_SBLiDYPQ5Xkk0ndmNQfso-KpGoNI_TLEPNT8AJVn5vb8fdQdbBnZlhtY8Qy-Xo_1euVKe4-LAv1w8hmh5n5Zqt6yR3SK5rnKglacKdGZEneN1hFGtnF"/>
+</div>
+</div>
+<span class="text-xs text-center truncate w-full text-slate-700 dark:text-slate-200 font-medium">David</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Amount Section -->
+<div class="flex flex-col gap-4">
+<label class="text-sm font-bold text-slate-700 dark:text-slate-200">Amount</label>
+<div class="relative group">
+<span class="absolute left-5 top-1/2 -translate-y-1/2 text-xl font-bold text-slate-400 group-focus-within:text-primary transition-colors">YBS</span>
+<input class="block w-full rounded-2xl border-0 py-6 pl-20 pr-5 text-slate-900 dark:text-white bg-slate-50 dark:bg-surface-dark ring-1 ring-inset ring-slate-200 dark:ring-slate-700 placeholder:text-slate-600 dark:placeholder:text-slate-500 focus:ring-2 focus:ring-inset focus:ring-primary text-4xl font-extrabold tracking-tight text-right transition-all appearance-none shadow-inner" placeholder="0.00" type="number"/>
+</div>
+<!-- Quick Chips -->
+<div class="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+<button class="flex-none px-4 py-2 rounded-lg bg-slate-200 dark:bg-surface-dark text-xs font-bold uppercase tracking-wider hover:bg-primary hover:text-white dark:hover:bg-primary transition-colors ring-1 ring-inset ring-transparent dark:ring-slate-700 text-slate-600 dark:text-slate-300 shadow-sm">+100</button>
+<button class="flex-none px-4 py-2 rounded-lg bg-slate-200 dark:bg-surface-dark text-xs font-bold uppercase tracking-wider hover:bg-primary hover:text-white dark:hover:bg-primary transition-colors ring-1 ring-inset ring-transparent dark:ring-slate-700 text-slate-600 dark:text-slate-300 shadow-sm">+500</button>
+<button class="flex-none px-4 py-2 rounded-lg bg-slate-200 dark:bg-surface-dark text-xs font-bold uppercase tracking-wider hover:bg-primary hover:text-white dark:hover:bg-primary transition-colors ring-1 ring-inset ring-transparent dark:ring-slate-700 text-slate-600 dark:text-slate-300 shadow-sm">+1,000</button>
+<button class="flex-none px-4 py-2 rounded-lg bg-slate-200 dark:bg-surface-dark text-xs font-bold uppercase tracking-wider hover:bg-brand-yellow hover:text-black dark:hover:bg-brand-yellow dark:hover:text-black transition-colors ring-1 ring-inset ring-transparent dark:ring-slate-700 text-slate-600 dark:text-slate-300 shadow-sm">Max</button>
+</div>
+</div>
+<!-- Note Input -->
+<div class="flex flex-col gap-3">
+<label class="text-sm font-bold text-slate-700 dark:text-slate-200">Note <span class="text-slate-400 dark:text-slate-500 font-normal ml-1">(Optional)</span></label>
+<div class="relative group">
+<input class="block w-full rounded-xl border-0 py-4 px-4 text-slate-900 dark:text-white bg-slate-50 dark:bg-surface-dark ring-1 ring-inset ring-slate-200 dark:ring-slate-700 placeholder:text-slate-400 focus:ring-2 focus:ring-inset focus:ring-primary sm:text-base sm:leading-6 transition-all shadow-sm" placeholder="What's this for?" type="text"/>
+<div class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-slate-400 group-focus-within:text-primary transition-colors">edit_note</span>
+</div>
+</div>
+</div>
+</main>
+<!-- Sticky Footer Action -->
+<div class="fixed bottom-0 left-0 right-0 p-5 bg-background-light dark:bg-background-dark border-t border-slate-200 dark:border-slate-800 max-w-md mx-auto z-30 shadow-[0_-10px_40px_rgba(0,0,0,0.1)] dark:shadow-[0_-10px_40px_rgba(0,0,0,0.3)]">
+<div class="flex justify-between items-end mb-4 px-1">
+<div class="flex flex-col">
+<span class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wide">Total Deduction</span>
+<span class="text-sm text-slate-400">Includes fee: 0.50 YBS</span>
+</div>
+<span class="text-xl font-bold text-slate-900 dark:text-white">0.00 YBS</span>
+</div>
+<button class="group relative w-full h-14 bg-white text-background-dark hover:bg-slate-100 font-bold text-lg rounded-xl flex items-center justify-center gap-3 transition-all shadow-lg shadow-white/5 active:scale-[0.98]">
+<!-- Button Glow Effect -->
+<div class="absolute inset-0 rounded-xl bg-white blur-md opacity-20 group-hover:opacity-40 transition-opacity"></div>
+<span class="relative z-10">Transfer Points</span>
+<span class="material-symbols-outlined relative z-10 text-[22px] group-hover:translate-x-1 transition-transform">arrow_forward</span>
+</button>
+</div>
+</div>
+</body></html>

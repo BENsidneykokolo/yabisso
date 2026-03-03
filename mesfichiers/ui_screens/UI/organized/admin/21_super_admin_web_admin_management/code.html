@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Super Admin - Admin Management</title>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Theme Config -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#42cf17",
+                        "primary-dark": "#36a813",
+                        "background-light": "#f6f8f6",
+                        "background-dark": "#152111",
+                        "surface-dark": "#1e2b1a",
+                        "surface-darker": "#0f180c",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"],
+                        "sans": ["Inter", "sans-serif"],
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem", 
+                        "lg": "0.5rem", 
+                        "xl": "0.75rem", 
+                        "2xl": "1rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom scrollbar for webkit */
+        ::-webkit-scrollbar {
+            width: 4px;
+            height: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #152111; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #2c4724; 
+            border-radius: 4px;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-filled {
+            font-family: 'Material Symbols Outlined';
+            font-weight: normal;
+            font-style: normal;
+            font-size: 24px;
+            line-height: 1;
+            letter-spacing: normal;
+            text-transform: none;
+            display: inline-block;
+            white-space: nowrap;
+            word-wrap: normal;
+            direction: ltr;
+            font-feature-settings: 'liga';
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white font-display antialiased overflow-x-hidden selection:bg-primary selection:text-white">
+<div class="relative min-h-screen flex flex-col max-w-md mx-auto shadow-2xl bg-background-light dark:bg-background-dark">
+<!-- Top App Bar -->
+<header class="sticky top-0 z-20 flex items-center justify-between px-4 py-3 bg-background-light dark:bg-background-dark border-b border-gray-200 dark:border-white/5 backdrop-blur-md bg-opacity-90 dark:bg-opacity-90">
+<div class="flex items-center gap-3">
+<button class="flex items-center justify-center p-2 -ml-2 text-slate-600 dark:text-white rounded-full hover:bg-gray-100 dark:hover:bg-white/10 transition-colors">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<h1 class="text-lg font-bold tracking-tight">Admin Management</h1>
+</div>
+<button class="flex items-center justify-center p-2 text-slate-600 dark:text-white rounded-full hover:bg-gray-100 dark:hover:bg-white/10 transition-colors">
+<span class="material-symbols-outlined">search</span>
+</button>
+</header>
+<!-- Main Content Scroll Area -->
+<main class="flex-1 flex flex-col pb-24 relative z-0">
+<!-- Tabs / Segmented Control -->
+<div class="px-4 py-4 sticky top-[60px] z-10 bg-background-light dark:bg-background-dark">
+<div class="flex p-1 bg-gray-200 dark:bg-surface-dark rounded-xl">
+<label class="flex-1 cursor-pointer">
+<input checked="" class="peer sr-only" name="admin_tab" type="radio"/>
+<div class="flex items-center justify-center py-2 text-sm font-medium rounded-lg transition-all duration-200 text-gray-500 dark:text-gray-400 peer-checked:bg-white dark:peer-checked:bg-[#2c4724] peer-checked:text-slate-900 dark:peer-checked:text-primary peer-checked:shadow-sm">
+                            Main Admins
+                        </div>
+</label>
+<label class="flex-1 cursor-pointer">
+<input class="peer sr-only" name="admin_tab" type="radio"/>
+<div class="flex items-center justify-center py-2 text-sm font-medium rounded-lg transition-all duration-200 text-gray-500 dark:text-gray-400 peer-checked:bg-white dark:peer-checked:bg-[#2c4724] peer-checked:text-slate-900 dark:peer-checked:text-primary peer-checked:shadow-sm">
+                            Kiosque
+                        </div>
+</label>
+<label class="flex-1 cursor-pointer">
+<input class="peer sr-only" name="admin_tab" type="radio"/>
+<div class="flex items-center justify-center py-2 text-sm font-medium rounded-lg transition-all duration-200 text-gray-500 dark:text-gray-400 peer-checked:bg-white dark:peer-checked:bg-[#2c4724] peer-checked:text-slate-900 dark:peer-checked:text-primary peer-checked:shadow-sm">
+                            Roles
+                        </div>
+</label>
+</div>
+</div>
+<!-- Stats Overview (Quick Glance) -->
+<div class="px-4 mb-4 grid grid-cols-2 gap-3">
+<div class="p-3 rounded-xl bg-white dark:bg-surface-dark border border-gray-100 dark:border-white/5 shadow-sm">
+<div class="text-xs text-gray-500 dark:text-gray-400 mb-1">Total Active</div>
+<div class="text-2xl font-bold text-slate-900 dark:text-white">24</div>
+</div>
+<div class="p-3 rounded-xl bg-white dark:bg-surface-dark border border-gray-100 dark:border-white/5 shadow-sm">
+<div class="text-xs text-gray-500 dark:text-gray-400 mb-1">Suspended</div>
+<div class="text-2xl font-bold text-red-500">3</div>
+</div>
+</div>
+<!-- List Section Header -->
+<div class="px-4 pb-2 flex items-center justify-between">
+<h3 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Active Accounts</h3>
+<button class="text-primary text-sm font-medium hover:underline">Sort by name</button>
+</div>
+<!-- Admin List Items -->
+<div class="flex flex-col space-y-2 px-4">
+<!-- Item 1: Active -->
+<div class="group relative flex items-center gap-4 p-3 rounded-2xl bg-white dark:bg-surface-dark border border-gray-100 dark:border-white/5 shadow-sm hover:border-primary/30 transition-all cursor-pointer active:scale-[0.98]">
+<div class="relative shrink-0">
+<div class="size-12 rounded-full bg-cover bg-center" data-alt="Portrait of John Doe smiling professionally" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuB4n-fwlHD0QDPiE4BsRBu0mES8iYxOOpEx52v5lxtCMdq0ZM6hMxHyaIRFW8R2ZZqg4-kDa-g0xayOU1DcdNZG0_ZcHSk_0IuEZ_9BPCAaDud5t88PEs0REbB8aPnoLCWz-_LctH1yoLhO6Zxj87Rlxmb7CkSP6pLgepnQladxH8JlCywpPIsijazFG0LQhkZ9j35ONKay4jFonZNS01ddihf8JgydS0d25NDv-bnDJDY_BF2YBl2Ovvh1-7AyXPnecPV3gZRW')"></div>
+<div class="absolute -bottom-0.5 -right-0.5 size-3.5 rounded-full border-2 border-white dark:border-surface-dark bg-primary"></div>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-center justify-between mb-0.5">
+<h4 class="text-base font-semibold text-slate-900 dark:text-white truncate">John Doe</h4>
+<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-primary/10 text-primary uppercase tracking-wide">Super</span>
+</div>
+<p class="text-sm text-gray-500 dark:text-gray-400 truncate">john.doe@yabisso.com</p>
+</div>
+<button class="p-2 text-gray-400 hover:text-slate-900 dark:hover:text-white transition-colors">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</div>
+<!-- Item 2: Active -->
+<div class="group relative flex items-center gap-4 p-3 rounded-2xl bg-white dark:bg-surface-dark border border-gray-100 dark:border-white/5 shadow-sm hover:border-primary/30 transition-all cursor-pointer active:scale-[0.98]">
+<div class="relative shrink-0">
+<div class="size-12 rounded-full bg-cover bg-center" data-alt="Portrait of Sarah Connor looking serious" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuB20MSstWQ7rX1lUt84CAUvrfHNkURnMMj5Ml7pOO74ZzZ6KyoEo0KTRjakpMqrqLD7pi0pKc26IoY0j5DKKPaN7eq0JlWxvdndq7tF776opzr5u521tnOxbsYHZ7QC7Queu0wy2IA6pwgdilOxQ7oC13gOHUyZdQdby0Ryh4zZGQcctoLyNIpz1_an3Ujec2d_2Q1S9Cx4Z2iWAHqX7xznmUpAoxC_FK9TVSBa6YHyZTM1IsWe1JLUJPpbaQwqOHjU67fFL4IP')"></div>
+<div class="absolute -bottom-0.5 -right-0.5 size-3.5 rounded-full border-2 border-white dark:border-surface-dark bg-primary"></div>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-center justify-between mb-0.5">
+<h4 class="text-base font-semibold text-slate-900 dark:text-white truncate">Sarah Connor</h4>
+<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-gray-300 uppercase tracking-wide">Main</span>
+</div>
+<p class="text-sm text-gray-500 dark:text-gray-400 truncate">s.connor@yabisso.com</p>
+</div>
+<button class="p-2 text-gray-400 hover:text-slate-900 dark:hover:text-white transition-colors">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</div>
+<!-- Item 3: Suspended -->
+<div class="group relative flex items-center gap-4 p-3 rounded-2xl bg-white dark:bg-surface-dark border border-gray-100 dark:border-white/5 shadow-sm opacity-80 hover:opacity-100 transition-all cursor-pointer">
+<div class="relative shrink-0 grayscale">
+<div class="size-12 rounded-full bg-cover bg-center" data-alt="Portrait of Marcus Wright looking away" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuA4GnoBQomuxjWaTqdg2yQ6WKdaxje3u7gBrFajEmh4lNneaI4uK0jWSg8tIFCb6Ae5FbTEmJzwn7AH9hHJDH7kua42XFDYhDKWsqwGvLGcezKAu2lPoNvfykqsWCtfwKA4SdIa_hHcR2_MG2PNUlK833YPEr29B7iZlyHY8I3XgCLUtc9qXBKiscLPZGCQth3AGuONMUbNcTeQ_vub72Cx9WMGqDsLKsTN-shsygCYnp9XQ5jw8apT6tM6EPq9bQeslTMQBt9W')"></div>
+<div class="absolute -bottom-0.5 -right-0.5 size-3.5 rounded-full border-2 border-white dark:border-surface-dark bg-red-500"></div>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-center justify-between mb-0.5">
+<h4 class="text-base font-semibold text-slate-500 dark:text-gray-300 truncate line-through decoration-red-500/50">Marcus Wright</h4>
+<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-500/10 text-red-500 uppercase tracking-wide">Suspended</span>
+</div>
+<p class="text-sm text-gray-400 truncate">m.wright@yabisso.com</p>
+</div>
+<button class="p-2 text-gray-400 hover:text-slate-900 dark:hover:text-white transition-colors">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</div>
+<!-- Item 4: Active -->
+<div class="group relative flex items-center gap-4 p-3 rounded-2xl bg-white dark:bg-surface-dark border border-gray-100 dark:border-white/5 shadow-sm hover:border-primary/30 transition-all cursor-pointer active:scale-[0.98]">
+<div class="relative shrink-0">
+<div class="size-12 rounded-full bg-cover bg-center" data-alt="Portrait of Elena Fisher" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDx41xanh9wHUn-hZ13ybP8ohG2YNwLj5S8hGf3zV3VGtoal18gmXXPfYQelqXdiwFInreSD8301YytKR-7eVXxJRYL5OrQtf7uVXwvYz51JMTdEvH0APbzBthhCY6WgiKH5WMnH9DV7OPxmGldJiT9uhRvpBJNY6gq9J7XFEd8EHYvMW5tscO4WfHlGNI6uIY-9a5EUZeBmlZKr37Ha8k9QzdxPdVCeFgXej79d4JvplTbX-rmTkUnoHom1LE_BWqd_YzPSlEj')"></div>
+<div class="absolute -bottom-0.5 -right-0.5 size-3.5 rounded-full border-2 border-white dark:border-surface-dark bg-primary"></div>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-center justify-between mb-0.5">
+<h4 class="text-base font-semibold text-slate-900 dark:text-white truncate">Elena Fisher</h4>
+<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-gray-300 uppercase tracking-wide">Finance</span>
+</div>
+<p class="text-sm text-gray-500 dark:text-gray-400 truncate">e.fisher@yabisso.com</p>
+</div>
+<button class="p-2 text-gray-400 hover:text-slate-900 dark:hover:text-white transition-colors">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</div>
+<!-- Item 5: Active -->
+<div class="group relative flex items-center gap-4 p-3 rounded-2xl bg-white dark:bg-surface-dark border border-gray-100 dark:border-white/5 shadow-sm hover:border-primary/30 transition-all cursor-pointer active:scale-[0.98]">
+<div class="relative shrink-0">
+<div class="size-12 rounded-full bg-cover bg-center" data-alt="Portrait of Nathan Drake" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAOLuSpDsHsMeYd7_xGw6iGcc5eAnbnRdfbqprVnfnR4uLJ5JQFYxczfLCBQ78xJEzUxIk6GNkfl3q19EOg75rbUtn8ai5c3bXVCaLftqjxsQQ__8lqDzgApl5eiBG8FsaLG_nqiuZcRB0hj8kFFRVhAC_6vtjVSCNp-mKB2uVKztcLv9X2gHtsik-qvV_fNbkBmMFePaingv1TB-3Nqueru2ug7iCBep2RxnwOo5CyRR9EGjVbVGFIw-rAYu_mDaYjE36Qu4Ma')"></div>
+<div class="absolute -bottom-0.5 -right-0.5 size-3.5 rounded-full border-2 border-white dark:border-surface-dark bg-primary"></div>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-center justify-between mb-0.5">
+<h4 class="text-base font-semibold text-slate-900 dark:text-white truncate">Nathan Drake</h4>
+<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-gray-300 uppercase tracking-wide">Kiosque</span>
+</div>
+<p class="text-sm text-gray-500 dark:text-gray-400 truncate">n.drake@yabisso.com</p>
+</div>
+<button class="p-2 text-gray-400 hover:text-slate-900 dark:hover:text-white transition-colors">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</div>
+</div>
+<!-- Spacer for scroll -->
+<div class="h-20"></div>
+</main>
+<!-- FAB -->
+<div class="fixed bottom-6 right-4 z-10">
+<button class="flex items-center justify-center size-14 rounded-full bg-primary hover:bg-primary-dark text-slate-900 shadow-lg shadow-primary/30 transition-transform active:scale-90">
+<span class="material-symbols-outlined !text-[32px]">add</span>
+</button>
+</div>
+<!-- Simulated Bottom Sheet (Partially visible/Interactive demo) -->
+<div class="fixed inset-0 z-30 pointer-events-none">
+<!-- Backdrop - visible only when active, hiding here for demo but ready -->
+<div class="absolute inset-0 bg-black/60 opacity-0 transition-opacity"></div>
+<!-- Sheet -->
+<div class="absolute bottom-0 left-0 right-0 max-w-md mx-auto bg-white dark:bg-surface-darker rounded-t-[32px] shadow-[0_-8px_30px_rgba(0,0,0,0.3)] transform translate-y-[calc(100%-80px)] hover:translate-y-0 transition-transform duration-500 ease-out pointer-events-auto border-t border-white/5">
+<!-- Drag Handle -->
+<div class="w-full h-8 flex items-center justify-center pt-2 pb-1 cursor-grab">
+<div class="w-12 h-1.5 rounded-full bg-gray-300 dark:bg-white/20"></div>
+</div>
+<!-- Sheet Content: Permissions Matrix -->
+<div class="px-6 pb-8 pt-2">
+<div class="flex items-center justify-between mb-6">
+<div>
+<h2 class="text-xl font-bold text-slate-900 dark:text-white">Permissions</h2>
+<p class="text-sm text-gray-500 dark:text-gray-400">Editing <span class="text-primary">Sarah Connor</span></p>
+</div>
+<div class="flex gap-2">
+<button class="size-10 rounded-full bg-gray-100 dark:bg-white/5 flex items-center justify-center text-red-500">
+<span class="material-symbols-outlined">block</span>
+</button>
+<button class="size-10 rounded-full bg-primary flex items-center justify-center text-slate-900">
+<span class="material-symbols-outlined">check</span>
+</button>
+</div>
+</div>
+<!-- Role Matrix Accordion / List -->
+<div class="space-y-4">
+<!-- Module: Point Management -->
+<div class="p-4 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/5">
+<div class="flex items-center justify-between mb-3">
+<div class="flex items-center gap-3">
+<div class="p-2 rounded-lg bg-orange-500/10 text-orange-500">
+<span class="material-symbols-outlined">loyalty</span>
+</div>
+<span class="font-semibold text-slate-900 dark:text-white">Point Creation</span>
+</div>
+<span class="text-xs font-medium text-primary bg-primary/10 px-2 py-1 rounded">Full Access</span>
+</div>
+<div class="space-y-3 pl-12">
+<label class="flex items-center justify-between cursor-pointer">
+<span class="text-sm text-gray-600 dark:text-gray-300">Create Points</span>
+<div class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox" value=""/>
+<div class="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
+</div>
+</label>
+<label class="flex items-center justify-between cursor-pointer">
+<span class="text-sm text-gray-600 dark:text-gray-300">Validate Requests</span>
+<div class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox" value=""/>
+<div class="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
+</div>
+</label>
+</div>
+</div>
+<!-- Module: User Management -->
+<div class="p-4 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/5 opacity-80">
+<div class="flex items-center justify-between mb-3">
+<div class="flex items-center gap-3">
+<div class="p-2 rounded-lg bg-blue-500/10 text-blue-500">
+<span class="material-symbols-outlined">group</span>
+</div>
+<span class="font-semibold text-slate-900 dark:text-white">User Mgmt</span>
+</div>
+<span class="text-xs font-medium text-gray-500 bg-gray-500/10 px-2 py-1 rounded">Read Only</span>
+</div>
+<div class="space-y-3 pl-12">
+<label class="flex items-center justify-between cursor-pointer">
+<span class="text-sm text-gray-600 dark:text-gray-300">View Users</span>
+<div class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox" value=""/>
+<div class="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
+</div>
+</label>
+<label class="flex items-center justify-between cursor-pointer">
+<span class="text-sm text-gray-600 dark:text-gray-300">Edit Profiles</span>
+<div class="relative inline-flex items-center cursor-pointer">
+<input class="sr-only peer" type="checkbox" value=""/>
+<div class="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
+</div>
+</label>
+</div>
+</div>
+</div>
+<div class="mt-6 text-center text-xs text-gray-500">
+                        Swipe down to close
+                    </div>
+</div>
+</div>
+</div>
+</div>
+</body></html>

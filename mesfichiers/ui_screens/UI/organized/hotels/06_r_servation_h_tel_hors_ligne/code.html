@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Hotels Reservation Screen</title>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&amp;family=Noto+Sans:ital,wght@0,100..900;1,100..900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922", // Deep charcoal
+                        "surface-dark": "#192633", // Slightly lighter for cards
+                        "yabisso-red": "#ef4444",
+                        "yabisso-yellow": "#eab308",
+                        "yabisso-green": "#22c55e",
+                    },
+                    fontFamily: {
+                        "display": ["Plus Jakarta Sans", "Noto Sans", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "2xl": "1rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom scrollbar for horizontal scrolling */
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+        .scrollbar-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="font-display bg-background-light dark:bg-background-dark text-slate-900 dark:text-white antialiased">
+<div class="relative flex h-full min-h-screen w-full flex-col max-w-md mx-auto shadow-2xl overflow-hidden pb-24"><div class="bg-yabisso-yellow text-black text-[10px] font-bold py-1 px-4 text-center tracking-widest uppercase">MODE HORS LIGNE</div>
+<!-- Header -->
+<div class="sticky top-0 z-10 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-800">
+<div class="flex items-center p-4">
+<button class="flex items-center justify-center p-2 rounded-full hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors">
+<span class="material-symbols-outlined text-slate-900 dark:text-white" style="font-size: 24px;">arrow_back</span>
+</button>
+<h2 class="text-lg font-bold leading-tight tracking-tight flex-1 text-center pr-10">Révision de la Réservation</h2>
+</div>
+<!-- Subtle Brand Gradient Line -->
+<div class="h-0.5 w-full bg-gradient-to-r from-primary via-yabisso-yellow to-yabisso-green"></div>
+</div>
+<main class="flex-1 overflow-y-auto px-4 pt-6 space-y-6">
+<!-- Hotel Card -->
+<div class="flex items-stretch justify-between gap-4 rounded-xl bg-white dark:bg-surface-dark p-4 shadow-sm border border-slate-200 dark:border-slate-700/50">
+<div class="flex flex-col justify-between flex-[2_2_0px]">
+<div>
+<div class="flex items-center gap-1 mb-1">
+<span class="material-symbols-outlined text-yabisso-yellow" style="font-size: 16px; font-variation-settings: 'FILL' 1;">star</span>
+<p class="text-slate-500 dark:text-slate-400 text-xs font-semibold">4.8 (120 avis)</p>
+</div>
+<h3 class="text-slate-900 dark:text-white text-lg font-bold leading-tight mb-1">Grand Yabisso Hotel</h3>
+<p class="text-slate-500 dark:text-slate-400 text-sm font-normal leading-normal truncate">Lagos, Nigeria</p>
+</div>
+<div class="flex items-center gap-1 mt-2">
+<span class="material-symbols-outlined text-yabisso-green" style="font-size: 14px;">check_circle</span>
+<span class="text-yabisso-green text-xs font-medium">Annulation Gratuite</span>
+</div>
+</div>
+<div class="w-24 h-24 bg-center bg-no-repeat bg-cover rounded-lg shrink-0 relative overflow-hidden" data-alt="Modern hotel building exterior at night with lights" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAbB71wqJhM7xRg5xSJsKhVgvmD228ltVaD4-INtAv_GvIow2evJcwD1BHw9vfUfe49bZNLngqA6nMvqYFKgOLHITt8qO3aCMACGIF1aF2FIdo0OlBBRu_2PcpQDdCzYxXcppC4RYkj4QyUuWR_xtNnIjYwCBAdzAoYC-GUvobNfSX5aJxLxc_-CZU_W06PcaBbtVJtEjrhKxN2Vg6H8WQVHxRjOdL8G4fzYQueLWh4_dMto_-MgC8Ca0kDyT9eqUp8-Y7JSoHb");'>
+<div class="absolute inset-0 bg-black/10"></div>
+</div>
+</div>
+<!-- Booking Details Grid -->
+<div class="rounded-xl bg-white dark:bg-surface-dark border border-slate-200 dark:border-slate-700/50 overflow-hidden">
+<div class="grid grid-cols-2 divide-x divide-slate-200 dark:divide-slate-700/50 border-b border-slate-200 dark:border-slate-700/50">
+<div class="p-4">
+<p class="text-slate-500 dark:text-slate-400 text-xs font-medium uppercase tracking-wider mb-1">Arrivée</p>
+<p class="text-slate-900 dark:text-white text-sm font-bold">12 Déc, 14:00</p>
+</div>
+<div class="p-4">
+<p class="text-slate-500 dark:text-slate-400 text-xs font-medium uppercase tracking-wider mb-1">Départ</p>
+<p class="text-slate-900 dark:text-white text-sm font-bold">14 Déc, 11:00</p>
+</div>
+</div>
+<div class="grid grid-cols-2 divide-x divide-slate-200 dark:divide-slate-700/50">
+<div class="p-4">
+<p class="text-slate-500 dark:text-slate-400 text-xs font-medium uppercase tracking-wider mb-1">Voyageurs</p>
+<p class="text-slate-900 dark:text-white text-sm font-bold">2 Adultes, 1 Enfant</p>
+</div>
+<div class="p-4">
+<p class="text-slate-500 dark:text-slate-400 text-xs font-medium uppercase tracking-wider mb-1">Type de chambre</p>
+<p class="text-slate-900 dark:text-white text-sm font-bold">Deluxe King</p>
+</div>
+</div>
+</div>
+<!-- Guest Information -->
+<div>
+<div class="flex items-center justify-between mb-2 px-1">
+<h3 class="text-base font-bold text-slate-900 dark:text-white">Informations sur le client</h3>
+<button class="text-primary text-sm font-semibold hover:underline">Modifier</button>
+</div>
+<div class="rounded-xl bg-white dark:bg-surface-dark border border-slate-200 dark:border-slate-700/50 p-4 flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-slate-500 dark:text-slate-300">
+<span class="material-symbols-outlined">person</span>
+</div>
+<div>
+<p class="text-slate-900 dark:text-white text-sm font-bold">Chidi Anagonye</p>
+<p class="text-slate-500 dark:text-slate-400 text-xs">+234 800 123 4567 • chidi@example.com</p>
+</div>
+</div>
+</div>
+<!-- Payment Method -->
+<div>
+<h3 class="text-base font-bold text-slate-900 dark:text-white mb-3 px-1">Mode de Paiement</h3>
+<div class="flex gap-3 overflow-x-auto scrollbar-hide pb-2"><!-- Option 1: Portefeuille Yabisso -->
+<div class="min-w-[160px] p-4 rounded-xl border-2 border-primary bg-primary/10 relative cursor-pointer flex flex-col justify-between h-28">
+<div class="absolute top-2 right-2 text-primary">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1; font-size: 20px;">check_circle</span>
+</div>
+<span class="material-symbols-outlined text-primary text-3xl mb-2">account_balance_wallet</span>
+<div>
+<p class="text-primary font-bold text-sm">Portefeuille Yabisso</p>
+<p class="text-slate-500 dark:text-slate-400 text-xs">Solde: <span class="text-slate-900 dark:text-white font-semibold">45.000 XAF</span></p>
+</div>
+</div>
+<!-- Option 2: Mobile Money -->
+<div class="min-w-[160px] p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface-dark relative cursor-pointer flex flex-col justify-between h-28 opacity-80 hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined text-slate-400 dark:text-slate-500 text-3xl mb-2">smartphone</span>
+<div>
+<p class="text-slate-900 dark:text-white font-bold text-sm">Mobile Money</p>
+<p class="text-slate-500 dark:text-slate-400 text-xs">Orange / MTN / Airtel</p>
+</div>
+</div></div>
+</div>
+<!-- Price Breakdown -->
+<div class="rounded-xl bg-white dark:bg-surface-dark border border-slate-200 dark:border-slate-700/50 p-4 space-y-3">
+<div class="flex justify-between items-center">
+<p class="text-slate-500 dark:text-slate-400 text-sm">Tarif de base (2 Nuits)</p>
+<p class="text-slate-900 dark:text-white text-sm font-medium">60.000 XAF</p>
+</div>
+<div class="flex justify-between items-center">
+<p class="text-slate-500 dark:text-slate-400 text-sm">Taxes &amp; Frais</p>
+<p class="text-slate-900 dark:text-white text-sm font-medium">12.000 XAF</p>
+</div>
+<div class="flex justify-between items-center">
+<p class="text-slate-500 dark:text-slate-400 text-sm">Remise</p>
+<p class="text-yabisso-green text-sm font-medium">-3.000 XAF</p>
+</div>
+<div class="h-px bg-slate-200 dark:bg-slate-700 my-2"></div>
+<div class="flex justify-between items-center">
+<p class="text-slate-900 dark:text-white text-base font-bold">Total Dû</p>
+<p class="text-primary text-xl font-bold">69.000 XAF</p>
+</div>
+</div>
+<!-- Trust Badge -->
+<div class="flex items-center justify-center gap-2 pb-6 opacity-60">
+<span class="material-symbols-outlined text-slate-500 dark:text-slate-400 text-sm">lock</span>
+<p class="text-slate-500 dark:text-slate-400 text-xs font-medium">Les paiements sont sécurisés et cryptés</p>
+</div>
+</main>
+<!-- Sticky Footer -->
+<div class="absolute bottom-0 left-0 w-full bg-white dark:bg-surface-dark border-t border-slate-200 dark:border-slate-700 p-4 pb-8 backdrop-blur-lg bg-opacity-90 dark:bg-opacity-90">
+<div class="flex items-center gap-4">
+<div class="flex flex-col">
+<p class="text-slate-500 dark:text-slate-400 text-xs font-medium">Prix Total</p>
+<p class="text-slate-900 dark:text-white text-xl font-bold">69.000 XAF</p>
+</div>
+<button class="flex-1 bg-white hover:bg-slate-100 text-black font-bold h-12 rounded-lg flex items-center justify-center gap-2 transition-colors shadow-lg active:scale-[0.98]"><span>Vérifier via SMS</span><span class="material-symbols-outlined" style="font-size: 20px;">sms</span></button>
+</div>
+</div>
+</div>
+</body></html>

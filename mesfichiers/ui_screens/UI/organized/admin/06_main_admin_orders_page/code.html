@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Main Admin Orders Page</title>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#46ec13",
+                        "background-light": "#f6f8f6",
+                        "background-dark": "#121212", 
+                        "surface-dark": "#1e1e1e",
+                        "card-dark": "#1A2C15", // Dark green tint for cards
+                        "danger": "#ef4444",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"],
+                        "body": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem",
+                        "lg": "0.75rem",
+                        "xl": "1rem",
+                        "2xl": "1.5rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom scrollbar hiding for horizontal scroll areas */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display antialiased text-gray-900 dark:text-white pb-24">
+<!-- Main Container -->
+<div class="relative min-h-screen w-full flex flex-col mx-auto max-w-md bg-background-light dark:bg-background-dark shadow-2xl overflow-hidden">
+<!-- Top Bar -->
+<header class="sticky top-0 z-20 flex items-center justify-between px-4 pt-12 pb-4 bg-background-light/90 dark:bg-background-dark/90 backdrop-blur-md border-b border-gray-200 dark:border-white/10">
+<button class="flex items-center justify-center size-10 rounded-full hover:bg-gray-200 dark:hover:bg-white/10 transition-colors">
+<span class="material-symbols-outlined text-gray-900 dark:text-white">arrow_back</span>
+</button>
+<h1 class="text-lg font-bold text-center flex-1 tracking-tight">Local Orders</h1>
+<button class="relative flex items-center justify-center size-10 rounded-full hover:bg-gray-200 dark:hover:bg-white/10 transition-colors">
+<span class="material-symbols-outlined text-gray-900 dark:text-white">notifications</span>
+<span class="absolute top-2 right-2 size-2.5 bg-primary rounded-full border-2 border-background-light dark:border-background-dark"></span>
+</button>
+</header>
+<!-- Search Area -->
+<div class="px-4 pt-4 pb-2">
+<div class="relative flex items-center w-full h-12 rounded-xl bg-white dark:bg-surface-dark border border-gray-200 dark:border-white/10 overflow-hidden focus-within:ring-2 focus-within:ring-primary/50 transition-all shadow-sm">
+<div class="flex items-center justify-center pl-4 pr-2 text-gray-400">
+<span class="material-symbols-outlined">search</span>
+</div>
+<input class="w-full bg-transparent border-none text-base text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-0 h-full p-0" placeholder="Search ID, User, or Kiosk..." type="text"/>
+<button class="p-2 mr-1 text-gray-400 hover:text-primary transition-colors">
+<span class="material-symbols-outlined">tune</span>
+</button>
+</div>
+</div>
+<!-- KPI Stats -->
+<div class="flex gap-3 px-4 py-4 overflow-x-auto no-scrollbar snap-x">
+<div class="flex min-w-[140px] flex-1 flex-col justify-between gap-1 rounded-2xl bg-gradient-to-br from-surface-dark to-black border border-white/10 p-4 shadow-lg snap-start relative overflow-hidden group">
+<div class="absolute right-0 top-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity">
+<span class="material-symbols-outlined text-4xl text-danger">gavel</span>
+</div>
+<p class="text-danger tracking-tight text-3xl font-bold font-display">12</p>
+<p class="text-gray-400 text-xs font-medium uppercase tracking-wider">Active Disputes</p>
+</div>
+<div class="flex min-w-[140px] flex-1 flex-col justify-between gap-1 rounded-2xl bg-surface-dark border border-white/10 p-4 shadow-lg snap-start relative overflow-hidden">
+<div class="absolute right-0 top-0 p-3 opacity-10">
+<span class="material-symbols-outlined text-4xl text-primary">check_circle</span>
+</div>
+<p class="text-white tracking-tight text-3xl font-bold font-display">450</p>
+<p class="text-gray-400 text-xs font-medium uppercase tracking-wider">Completed Today</p>
+</div>
+<div class="flex min-w-[140px] flex-1 flex-col justify-between gap-1 rounded-2xl bg-surface-dark border border-white/10 p-4 shadow-lg snap-start relative overflow-hidden">
+<div class="absolute right-0 top-0 p-3 opacity-10">
+<span class="material-symbols-outlined text-4xl text-blue-400">trending_up</span>
+</div>
+<p class="text-white tracking-tight text-3xl font-bold font-display">98%</p>
+<p class="text-gray-400 text-xs font-medium uppercase tracking-wider">Resolution Rate</p>
+</div>
+</div>
+<!-- Filter Chips -->
+<div class="flex gap-2 px-4 pb-4 overflow-x-auto no-scrollbar">
+<button class="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-full bg-primary pl-3 pr-4 shadow-md shadow-primary/20">
+<span class="text-black text-sm font-bold">All</span>
+</button>
+<button class="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-full bg-surface-dark border border-white/10 pl-3 pr-4 hover:bg-white/5 transition-colors">
+<span class="text-gray-300 text-sm font-medium">Active</span>
+</button>
+<button class="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-full bg-surface-dark border border-white/10 pl-3 pr-4 hover:bg-white/5 transition-colors">
+<span class="text-gray-300 text-sm font-medium">Pending</span>
+</button>
+<button class="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-full bg-surface-dark border border-danger/30 pl-3 pr-4 hover:bg-white/5 transition-colors">
+<span class="material-symbols-outlined text-danger text-[18px]">warning</span>
+<span class="text-danger text-sm font-medium">Disputed</span>
+</button>
+<button class="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-full bg-surface-dark border border-white/10 pl-3 pr-4 hover:bg-white/5 transition-colors">
+<span class="text-gray-300 text-sm font-medium">Completed</span>
+</button>
+</div>
+<!-- Orders List -->
+<div class="flex flex-col gap-4 px-4 pb-6">
+<!-- Dispute Card (High Priority) -->
+<div class="relative flex flex-col gap-3 rounded-2xl bg-surface-dark p-4 border border-danger/40 shadow-lg shadow-danger/5">
+<div class="flex justify-between items-start">
+<div class="flex items-center gap-3">
+<div class="flex h-10 w-10 items-center justify-center rounded-xl bg-white/5 text-white">
+<span class="material-symbols-outlined">local_taxi</span>
+</div>
+<div>
+<div class="flex items-center gap-2">
+<h3 class="text-base font-bold text-white">#ORD-99281</h3>
+<span class="h-1.5 w-1.5 rounded-full bg-gray-500"></span>
+<span class="text-xs text-gray-400">2 min ago</span>
+</div>
+<p class="text-sm text-gray-300">Sarah M. • <span class="text-white font-semibold">500 Pts</span></p>
+</div>
+</div>
+<button class="text-gray-400 hover:text-white">
+<span class="material-symbols-outlined">more_horiz</span>
+</button>
+</div>
+<div class="flex items-center gap-2 rounded-lg bg-danger/10 p-2 border border-danger/20">
+<span class="material-symbols-outlined text-danger text-[20px]">error</span>
+<p class="text-xs font-semibold text-danger uppercase tracking-wide">Dispute: Driver No-Show</p>
+</div>
+<div class="flex gap-2 mt-1">
+<button class="flex-1 h-10 rounded-lg bg-danger hover:bg-red-600 text-white text-sm font-bold flex items-center justify-center gap-2 transition-colors">
+                        Resolve Issue
+                    </button>
+<button class="h-10 px-4 rounded-lg bg-white/5 hover:bg-white/10 text-white text-sm font-medium border border-white/10 transition-colors">
+                        Contact
+                    </button>
+</div>
+</div>
+<!-- Active Order Card -->
+<div class="relative flex flex-col gap-3 rounded-2xl bg-surface-dark p-4 border border-white/5 hover:border-primary/30 transition-colors">
+<div class="flex justify-between items-start">
+<div class="flex items-center gap-3">
+<div class="flex h-10 w-10 items-center justify-center rounded-xl bg-white/5 text-white">
+<span class="material-symbols-outlined">restaurant</span>
+</div>
+<div>
+<div class="flex items-center gap-2">
+<h3 class="text-base font-bold text-white">#ORD-88123</h3>
+<span class="h-1.5 w-1.5 rounded-full bg-gray-500"></span>
+<span class="text-xs text-gray-400">12 min ago</span>
+</div>
+<p class="text-sm text-gray-300">Mike R. • <span class="text-white font-semibold">1,200 Pts</span></p>
+</div>
+</div>
+<button class="text-gray-400 hover:text-white">
+<span class="material-symbols-outlined">more_horiz</span>
+</button>
+</div>
+<div class="flex justify-between items-center">
+<div class="flex items-center gap-2">
+<span class="relative flex h-2.5 w-2.5">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-primary"></span>
+</span>
+<p class="text-sm font-medium text-primary">In Transit</p>
+</div>
+<button class="text-xs font-medium text-gray-400 underline decoration-gray-600 hover:text-white">View Map</button>
+</div>
+<!-- Map Preview (Abstract) -->
+<div class="h-24 w-full rounded-lg overflow-hidden relative mt-1">
+<img class="w-full h-full object-cover opacity-60 grayscale hover:grayscale-0 transition-all duration-500" data-alt="Dark map interface with street lines and location marker" data-location="City Map" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC0mub0C-4QqW6xkKXJ6bCTRu3Hsr5lHXzlJ_i2w8K1xRw5FUMQy9ta7dzRqMBXkulrdpaZlaYQozfRoy6jIt_y2a0Y245Srle5-hBo59gywBKwNFFNfwMp1hzRHm_Old33o5MVLsx-8hOmbgC4Q1tm2hFrzyvg5jc_0JbaAolpM5PscYASRiA3PWy7BxUz_lw61FA-qjLB19eEQ1xPOstSlB7ZRkPKYXlxsswpJhpw7dWtBfLRyFU7oppC8hvRhJeVZuJSx4lp"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-dark/90 to-transparent"></div>
+<div class="absolute bottom-2 left-2 flex items-center gap-1 text-xs text-white">
+<span class="material-symbols-outlined text-[14px]">location_on</span>
+<span>Approaching Kiosk 4</span>
+</div>
+</div>
+</div>
+<!-- Pending Order Card -->
+<div class="relative flex flex-col gap-3 rounded-2xl bg-surface-dark p-4 border border-white/5">
+<div class="flex justify-between items-start">
+<div class="flex items-center gap-3">
+<div class="flex h-10 w-10 items-center justify-center rounded-xl bg-white/5 text-white">
+<span class="material-symbols-outlined">shopping_bag</span>
+</div>
+<div>
+<div class="flex items-center gap-2">
+<h3 class="text-base font-bold text-white">#ORD-77402</h3>
+<span class="h-1.5 w-1.5 rounded-full bg-gray-500"></span>
+<span class="text-xs text-gray-400">45 min ago</span>
+</div>
+<p class="text-sm text-gray-300">Jenny L. • <span class="text-white font-semibold">250 Pts</span></p>
+</div>
+</div>
+<button class="text-gray-400 hover:text-white">
+<span class="material-symbols-outlined">more_horiz</span>
+</button>
+</div>
+<div class="flex items-center justify-between mt-1">
+<div class="flex items-center gap-2 rounded-md bg-yellow-500/10 px-2 py-1 border border-yellow-500/20">
+<span class="material-symbols-outlined text-yellow-500 text-[16px]">schedule</span>
+<p class="text-xs font-medium text-yellow-500">Awaiting Driver</p>
+</div>
+<button class="h-8 px-3 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary text-xs font-bold transition-colors">
+                        Assign Manually
+                    </button>
+</div>
+</div>
+<!-- Completed Order Card -->
+<div class="relative flex flex-col gap-3 rounded-2xl bg-surface-dark p-4 border border-white/5 opacity-80 hover:opacity-100 transition-opacity">
+<div class="flex justify-between items-start">
+<div class="flex items-center gap-3">
+<div class="flex h-10 w-10 items-center justify-center rounded-xl bg-white/5 text-gray-400">
+<span class="material-symbols-outlined">package_2</span>
+</div>
+<div>
+<div class="flex items-center gap-2">
+<h3 class="text-base font-bold text-gray-300">#ORD-66291</h3>
+<span class="h-1.5 w-1.5 rounded-full bg-gray-600"></span>
+<span class="text-xs text-gray-500">2 hrs ago</span>
+</div>
+<p class="text-sm text-gray-400">Tom H. • <span class="text-gray-300 font-semibold">800 Pts</span></p>
+</div>
+</div>
+<div class="flex items-center gap-1 text-primary">
+<span class="material-symbols-outlined text-[18px]">check_circle</span>
+<span class="text-xs font-bold">Done</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Floating Action Button for Filters -->
+<div class="fixed bottom-24 right-4 z-30">
+<button class="flex items-center justify-center size-14 rounded-full bg-primary text-black shadow-lg shadow-primary/40 hover:scale-105 transition-transform">
+<span class="material-symbols-outlined">filter_list</span>
+</button>
+</div>
+<!-- Bottom Navigation -->
+<nav class="fixed bottom-0 z-40 w-full max-w-md bg-surface-dark/90 backdrop-blur-xl border-t border-white/10 pb-6 pt-2">
+<div class="grid grid-cols-4 h-full">
+<button class="flex flex-col items-center justify-center gap-1 text-gray-500 hover:text-gray-300">
+<span class="material-symbols-outlined text-2xl">dashboard</span>
+<span class="text-[10px] font-medium">Home</span>
+</button>
+<button class="flex flex-col items-center justify-center gap-1 text-primary">
+<span class="material-symbols-outlined text-2xl fill-1">list_alt</span>
+<span class="text-[10px] font-bold">Orders</span>
+</button>
+<button class="flex flex-col items-center justify-center gap-1 text-gray-500 hover:text-gray-300">
+<span class="material-symbols-outlined text-2xl">storefront</span>
+<span class="text-[10px] font-medium">Kiosks</span>
+</button>
+<button class="flex flex-col items-center justify-center gap-1 text-gray-500 hover:text-gray-300">
+<span class="material-symbols-outlined text-2xl">account_balance_wallet</span>
+<span class="text-[10px] font-medium">Wallet</span>
+</button>
+</div>
+</nav>
+</div>
+</body></html>

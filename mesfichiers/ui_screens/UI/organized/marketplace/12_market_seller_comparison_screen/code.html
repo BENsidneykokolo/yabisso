@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Market Seller Comparison</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Work+Sans:ital,wght@0,100..900;1,100..900&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Theme Configuration -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec", // Yabisso Blue
+                        "secondary-red": "#ef4444",
+                        "secondary-yellow": "#fbbf24",
+                        "secondary-green": "#22c55e",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922", // Deep dark grey
+                        "surface-dark": "#192633", // Slightly lighter for cards
+                    },
+                    fontFamily: {
+                        "display": ["Work Sans", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom scrollbar hiding for horizontal lists */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display antialiased min-h-screen flex flex-col overflow-x-hidden text-slate-900 dark:text-white">
+<!-- Header Section -->
+<header class="sticky top-0 z-50 bg-background-dark/95 backdrop-blur-sm border-b border-white/5 pb-2">
+<div class="flex items-center p-4 pb-2 justify-between">
+<button class="text-white flex size-10 shrink-0 items-center justify-center rounded-full active:bg-white/10 transition-colors">
+<span class="material-symbols-outlined text-2xl">arrow_back</span>
+</button>
+<h2 class="text-white text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center pr-10">Compare Sellers</h2>
+</div>
+<!-- Product Summary Context -->
+<div class="px-4 pb-2">
+<div class="flex items-center gap-3 bg-surface-dark/50 p-2 rounded-lg border border-white/5">
+<div class="bg-center bg-no-repeat bg-cover rounded-md size-12 shrink-0 bg-white" data-alt="Small thumbnail of Apple iPhone 14 Pro Max" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBl65MXaR1khjucFjFf84RCVBY4sddrCYrnCXF71155jd9awHMwneZECphbsl_0qejxiPUyeCQ_fD7n5prGDSen9xO5lEXKkxhISW75aSZc4ueqaQf00DOWUz-5QArXbmwjk6-wE6LZ3bHScnJ_i62twwys2PXquZRBMyxDmHKYdHWvMgkABL8DUWktG2oJ6GdbZ2hSnlhuxKZUphlYljCpifTFgOJ9zLuHFxxyflKCOrtDZdZ9zI0FZr_Xx-NiBMNEE2N2fYCC");'></div>
+<div class="flex-1 min-w-0">
+<p class="text-white/60 text-xs font-medium uppercase tracking-wider mb-0.5">Comparing</p>
+<p class="text-white text-sm font-semibold truncate">Apple iPhone 14 Pro Max - 256GB</p>
+</div>
+</div>
+</div>
+<!-- Sort/Filter Chips -->
+<div class="flex gap-3 px-4 py-2 overflow-x-auto no-scrollbar">
+<button class="flex h-8 shrink-0 items-center justify-center gap-x-2 rounded-full bg-primary text-white px-4 border border-transparent shadow-lg shadow-primary/20">
+<span class="text-xs font-bold">Best Match</span>
+<span class="material-symbols-outlined text-[16px]">expand_more</span>
+</button>
+<button class="flex h-8 shrink-0 items-center justify-center gap-x-2 rounded-full bg-surface-dark border border-white/10 text-white/80 px-4 active:bg-white/10 transition-colors">
+<span class="text-xs font-medium">Lowest Price</span>
+</button>
+<button class="flex h-8 shrink-0 items-center justify-center gap-x-2 rounded-full bg-surface-dark border border-white/10 text-white/80 px-4 active:bg-white/10 transition-colors">
+<span class="text-xs font-medium">Fastest Delivery</span>
+</button>
+</div>
+</header>
+<!-- Main Content: Seller List -->
+<main class="flex-1 flex flex-col gap-4 p-4 pb-24">
+<!-- Seller Card 1: Premium / Best Match -->
+<div class="relative flex flex-col gap-3 rounded-xl bg-surface-dark p-4 shadow-lg border border-white/5">
+<!-- Header: Identity -->
+<div class="flex items-center justify-between gap-3">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded-full bg-white flex items-center justify-center overflow-hidden border border-white/10">
+<div class="w-full h-full bg-cover bg-center" data-alt="TechZone logo with blue tech pattern" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDH6iTawFsVSvLMVv7gwwvv03MhgKYPEQcMP3hKcanDo_fMvGX8161pj-tIOBKUrhq5pOh1wmlX7xZ19vQyRDPov6zUYh6bWcWOhm5YehdnhfT4_4bf-W9jVfTfu9RpO7xKmoUhujuj0-pHtWkxgERCRjcaGNVJmmHTsKOlzEPxhaR3FhE-7gbVkUHMb5xtVOehxIwjZN3f25GweT92cU5c0b7Yg6OdFo_e-81uaSXvFS8v6eW1TPKKLmjeBfzc0KfSkvhvEv2X");'></div>
+</div>
+<div>
+<div class="flex items-center gap-1.5">
+<h3 class="text-white text-base font-bold leading-tight">TechZone DRC</h3>
+<span class="material-symbols-outlined text-primary text-[16px]" title="Verified Seller">verified</span>
+</div>
+<div class="flex items-center gap-1 text-white/50">
+<span class="material-symbols-outlined text-[14px]">location_on</span>
+<p class="text-xs font-normal">Kinshasa, Gombe</p>
+</div>
+</div>
+</div>
+<div class="flex flex-col items-end">
+<div class="flex items-center gap-1 bg-secondary-yellow/10 px-1.5 py-0.5 rounded text-secondary-yellow">
+<span class="text-xs font-bold">4.9</span>
+<span class="material-symbols-outlined text-[14px] fill-current">star</span>
+</div>
+<p class="text-[10px] text-white/40 mt-0.5">(2.1k reviews)</p>
+</div>
+</div>
+<div class="h-px bg-white/5 w-full"></div>
+<!-- Metrics Grid -->
+<div class="grid grid-cols-2 gap-4 items-end">
+<div class="flex flex-col gap-1">
+<p class="text-white/50 text-xs">Price</p>
+<p class="text-primary text-2xl font-bold tracking-tight">$1,250</p>
+</div>
+<div class="flex flex-col gap-1 items-end">
+<p class="text-white/50 text-xs text-right">Delivery</p>
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-secondary-green text-[18px]">local_shipping</span>
+<p class="text-white text-sm font-medium">Instant (2h)</p>
+</div>
+</div>
+</div>
+<!-- Action -->
+<button class="mt-2 flex w-full cursor-pointer items-center justify-center gap-2 overflow-hidden rounded-lg bg-white h-11 text-black text-sm font-bold active:scale-[0.98] transition-transform">
+<span>Select Seller</span>
+<span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</button>
+</div>
+<!-- Seller Card 2: Budget Option -->
+<div class="relative flex flex-col gap-3 rounded-xl bg-surface-dark p-4 shadow-lg border border-white/5">
+<div class="absolute -top-2.5 left-4 bg-secondary-green text-black text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide">Best Price</div>
+<div class="flex items-center justify-between gap-3 mt-1">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded-full bg-slate-700 flex items-center justify-center overflow-hidden text-white font-bold text-lg">
+                        MK
+                    </div>
+<div>
+<h3 class="text-white text-base font-bold leading-tight">Market Kintambo</h3>
+<div class="flex items-center gap-1 text-white/50">
+<span class="material-symbols-outlined text-[14px]">location_on</span>
+<p class="text-xs font-normal">Kintambo Magasin</p>
+</div>
+</div>
+</div>
+<div class="flex flex-col items-end">
+<div class="flex items-center gap-1 bg-white/5 px-1.5 py-0.5 rounded text-white/70">
+<span class="text-xs font-bold">4.2</span>
+<span class="material-symbols-outlined text-[14px]">star</span>
+</div>
+<p class="text-[10px] text-white/40 mt-0.5">(86 reviews)</p>
+</div>
+</div>
+<div class="h-px bg-white/5 w-full"></div>
+<div class="grid grid-cols-2 gap-4 items-end">
+<div class="flex flex-col gap-1">
+<p class="text-white/50 text-xs">Price</p>
+<p class="text-primary text-2xl font-bold tracking-tight">$1,190</p>
+</div>
+<div class="flex flex-col gap-1 items-end">
+<p class="text-white/50 text-xs text-right">Delivery</p>
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-white/70 text-[18px]">schedule</span>
+<p class="text-white/90 text-sm font-medium">3-4 Days</p>
+</div>
+</div>
+</div>
+<button class="mt-2 flex w-full cursor-pointer items-center justify-center gap-2 overflow-hidden rounded-lg bg-white h-11 text-black text-sm font-bold active:scale-[0.98] transition-transform">
+<span>Select Seller</span>
+<span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</button>
+</div>
+<!-- Seller Card 3: Official Store -->
+<div class="relative flex flex-col gap-3 rounded-xl bg-surface-dark p-4 shadow-lg border border-primary/30 ring-1 ring-primary/20">
+<div class="absolute -top-2.5 right-4 bg-primary text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px]">verified_user</span>
+                Official Store
+            </div>
+<div class="flex items-center justify-between gap-3 mt-1">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded-full bg-white flex items-center justify-center overflow-hidden p-1">
+<div class="w-full h-full bg-contain bg-center bg-no-repeat" data-alt="Yabisso official logo graphic" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBThri00oB2_pUgd62JNEJP92G-IIQkQ0mwBBDBJbtGem9Yk9_z9S7A8UrCJqG9uFzF-Fh58E3_SvgFMAmegrDdJCRHYgsu7gg1SCTHHV8Hldb716QzEEveTOOljE0XSKo0BXbvqrnSs--up3Co_MfK2lPyYrs4zn-sTvRkqjwO5Cr8-ctqrIiZmRyPIXNdg_ifpnkKZEDBvAofi-BBdd5grhaeC2BtlQTeTU3XsjrGqN3LwvRKtD3n4pHXGts-lwawPR8d992D");'></div>
+</div>
+<div>
+<h3 class="text-white text-base font-bold leading-tight">Yabisso Official</h3>
+<div class="flex items-center gap-1 text-white/50">
+<span class="material-symbols-outlined text-[14px]">location_on</span>
+<p class="text-xs font-normal">Kinshasa, Central</p>
+</div>
+</div>
+</div>
+<div class="flex flex-col items-end">
+<div class="flex items-center gap-1 bg-secondary-yellow/10 px-1.5 py-0.5 rounded text-secondary-yellow">
+<span class="text-xs font-bold">5.0</span>
+<span class="material-symbols-outlined text-[14px] fill-current">star</span>
+</div>
+<p class="text-[10px] text-white/40 mt-0.5">(500+ reviews)</p>
+</div>
+</div>
+<div class="h-px bg-white/5 w-full"></div>
+<div class="grid grid-cols-2 gap-4 items-end">
+<div class="flex flex-col gap-1">
+<p class="text-white/50 text-xs">Price</p>
+<p class="text-primary text-2xl font-bold tracking-tight">$1,300</p>
+</div>
+<div class="flex flex-col gap-1 items-end">
+<p class="text-white/50 text-xs text-right">Delivery</p>
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-secondary-green text-[18px]">bolt</span>
+<p class="text-white text-sm font-medium">Next Day</p>
+</div>
+</div>
+</div>
+<!-- Extra info for Official store -->
+<div class="flex gap-2">
+<span class="inline-flex items-center rounded-md bg-white/5 px-2 py-1 text-xs font-medium text-white ring-1 ring-inset ring-white/10">Warranty: 1 Year</span>
+<span class="inline-flex items-center rounded-md bg-white/5 px-2 py-1 text-xs font-medium text-white ring-1 ring-inset ring-white/10">Free Return</span>
+</div>
+<button class="mt-2 flex w-full cursor-pointer items-center justify-center gap-2 overflow-hidden rounded-lg bg-white h-11 text-black text-sm font-bold active:scale-[0.98] transition-transform shadow-[0_0_15px_rgba(255,255,255,0.1)]">
+<span>Select Seller</span>
+<span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</button>
+</div>
+</main>
+<!-- Optional: Sticky Bottom Summary if needed, or simple gradient fade -->
+<div class="fixed bottom-0 left-0 w-full h-12 bg-gradient-to-t from-background-dark to-transparent pointer-events-none"></div>
+</body></html>

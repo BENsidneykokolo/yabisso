@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Marketplace Blocked User Screen</title>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Configuration -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                        "accent-red": "#EF4444",
+                        "accent-yellow": "#F59E0B",
+                        "accent-green": "#10B981",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" },
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom scrollbar for webkit */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #101922; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #324d67; 
+            border-radius: 4px;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display antialiased">
+<div class="relative flex h-full min-h-screen w-full flex-col overflow-x-hidden">
+<!-- Top Navigation -->
+<header class="flex items-center px-4 py-3 justify-between sticky top-0 z-10 bg-background-light/90 dark:bg-background-dark/90 backdrop-blur-sm">
+<button class="text-gray-900 dark:text-white flex size-10 shrink-0 items-center justify-center rounded-full hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors">
+<span class="material-symbols-outlined text-2xl">arrow_back</span>
+</button>
+<h2 class="text-gray-900 dark:text-white text-lg font-bold leading-tight tracking-tight flex-1 text-center pr-10">
+                Marketplace Status
+            </h2>
+</header>
+<!-- Main Content Scroll Area -->
+<main class="flex-1 flex flex-col items-center px-6 pt-4 pb-8 w-full max-w-md mx-auto">
+<!-- Hero Illustration -->
+<div class="w-full flex justify-center mb-6 relative">
+<!-- Abstract "Blocked" Illustration -->
+<div class="bg-center bg-no-repeat aspect-square bg-contain rounded-full w-48 h-48 flex items-center justify-center bg-gradient-to-br from-gray-200 to-gray-300 dark:from-gray-800 dark:to-[#1a2632] shadow-2xl shadow-black/20" data-alt="Illustration of a 3D locked padlock and shopping bag representing blocked access" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBtbIABgpbquWy8I74D0viScSO0FlsnSRFDagO23Kwiz0EdzTq6jXmhXyN1oW1W3xRGxPo6KbOaJTSq4fJMqfs8_Zwm1044pBgeOqkRyznEUyIqi_s0NLqNTzX8ysvQv6WWzG_PTRo7saPjgnF7iC5dUO7oXIjNhIo9xoAwfKX8y1ZXInujEiZ3PLhUhcON0HteQO3m5ywslUP1KmGqfh8X-OvnC_dAGimPxcFH-xJ97VylhEhepsaxUly87JjQxs363hZyKJyW"); background-size: cover; opacity: 0.8;'>
+<div class="absolute inset-0 bg-background-light/40 dark:bg-background-dark/60 rounded-full"></div>
+<span class="material-symbols-outlined text-accent-red text-7xl relative z-10 drop-shadow-lg">lock_person</span>
+</div>
+<!-- Status Badge Overlay -->
+<div class="absolute -bottom-3 bg-background-dark border border-gray-700 dark:border-gray-700 px-4 py-1.5 rounded-full flex items-center gap-2 shadow-lg">
+<div class="size-2 rounded-full bg-accent-red animate-pulse"></div>
+<span class="text-white text-xs font-bold uppercase tracking-wider">Suspended</span>
+</div>
+</div>
+<!-- Headline -->
+<div class="flex flex-col items-center gap-3 text-center mb-8">
+<h1 class="text-gray-900 dark:text-white text-3xl font-black leading-tight tracking-tight">
+                    Access Restricted
+                </h1>
+<p class="text-gray-600 dark:text-[#92adc9] text-sm font-normal leading-relaxed max-w-[320px]">
+                    We've temporarily paused your marketplace access to ensure fairness for our delivery partners.
+                </p>
+</div>
+<!-- Timer / Duration Card -->
+<div class="w-full bg-white dark:bg-[#1a2632] rounded-xl p-5 mb-6 border border-gray-200 dark:border-gray-800 shadow-sm relative overflow-hidden group">
+<div class="absolute top-0 left-0 w-1 h-full bg-accent-yellow"></div>
+<div class="flex justify-between items-center mb-1">
+<span class="text-gray-500 dark:text-gray-400 text-xs font-medium uppercase tracking-wider">Time Remaining</span>
+<span class="material-symbols-outlined text-accent-yellow text-xl">timer</span>
+</div>
+<div class="text-2xl font-bold text-gray-900 dark:text-white tabular-nums tracking-tight">
+                    6 days, 23 hours
+                </div>
+<div class="w-full bg-gray-200 dark:bg-gray-700 h-1.5 rounded-full mt-3 overflow-hidden">
+<div class="bg-accent-yellow h-full w-[15%] rounded-full"></div>
+</div>
+<p class="text-right text-xs text-gray-400 mt-2">Lifts on Oct 24, 2023</p>
+</div>
+<!-- Details List -->
+<div class="w-full mb-8">
+<h3 class="text-gray-900 dark:text-white text-base font-bold mb-4 px-1">Case Details</h3>
+<div class="bg-white dark:bg-[#1a2632] rounded-xl overflow-hidden border border-gray-200 dark:border-gray-800">
+<!-- Item 1 -->
+<div class="flex items-center justify-between p-4 border-b border-gray-100 dark:border-gray-800">
+<div class="flex items-center gap-3">
+<div class="p-2 rounded-lg bg-red-50 dark:bg-red-500/10 text-accent-red">
+<span class="material-symbols-outlined text-lg">gavel</span>
+</div>
+<div class="flex flex-col">
+<span class="text-gray-500 dark:text-[#92adc9] text-xs">Reason</span>
+<span class="text-gray-900 dark:text-white text-sm font-medium">Delivery Strike Abuse</span>
+</div>
+</div>
+</div>
+<!-- Item 2 -->
+<div class="flex items-center justify-between p-4 border-b border-gray-100 dark:border-gray-800">
+<div class="flex items-center gap-3">
+<div class="p-2 rounded-lg bg-blue-50 dark:bg-blue-500/10 text-primary">
+<span class="material-symbols-outlined text-lg">calendar_today</span>
+</div>
+<div class="flex flex-col">
+<span class="text-gray-500 dark:text-[#92adc9] text-xs">Date of Action</span>
+<span class="text-gray-900 dark:text-white text-sm font-medium">Oct 17, 2023</span>
+</div>
+</div>
+</div>
+<!-- Item 3 -->
+<div class="flex items-center justify-between p-4">
+<div class="flex items-center gap-3">
+<div class="p-2 rounded-lg bg-orange-50 dark:bg-orange-500/10 text-accent-yellow">
+<span class="material-symbols-outlined text-lg">info</span>
+</div>
+<div class="flex flex-col">
+<span class="text-gray-500 dark:text-[#92adc9] text-xs">Reference ID</span>
+<span class="text-gray-900 dark:text-white text-sm font-medium font-mono">#YAB-992-BLK</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Description/Education Block -->
+<div class="w-full mb-8 bg-gray-50 dark:bg-transparent rounded-lg p-4 border border-dashed border-gray-300 dark:border-gray-700">
+<div class="flex gap-3">
+<span class="material-symbols-outlined text-gray-400 dark:text-gray-500 shrink-0">help_outline</span>
+<div>
+<p class="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
+                             Our system flagged repeated use of "Driver Unavailable" as a cancellation reason when drivers were active. To protect driver ratings, we manually review these patterns.
+                         </p>
+<a class="inline-flex items-center gap-1 mt-2 text-primary text-xs font-semibold hover:underline" href="#">
+                             Read Community Guidelines
+                             <span class="material-symbols-outlined text-[10px]">open_in_new</span>
+</a>
+</div>
+</div>
+</div>
+</main>
+<!-- Sticky Footer Actions -->
+<div class="mt-auto w-full p-4 pb-8 bg-background-light dark:bg-background-dark border-t border-gray-200 dark:border-gray-800">
+<div class="max-w-md mx-auto flex flex-col gap-3">
+<button class="flex w-full items-center justify-center gap-2 rounded-lg h-12 bg-gray-900 dark:bg-white text-white dark:text-background-dark text-base font-bold hover:bg-black dark:hover:bg-gray-100 transition-all active:scale-[0.98]">
+<span class="material-symbols-outlined text-xl">support_agent</span>
+                    Contact Support
+                </button>
+<button class="flex w-full items-center justify-center gap-2 rounded-lg h-12 bg-transparent text-gray-600 dark:text-gray-400 text-sm font-semibold hover:text-gray-900 dark:hover:text-white transition-colors">
+                    Return to Home
+                </button>
+</div>
+</div>
+</div>
+</body></html>

@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Series Detail Screen - Yabisso</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Spline+Sans:wght@300;400;500;600;700&amp;family=Noto+Sans:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "brand-red": "#EF4444",
+                        "brand-yellow": "#F59E0B",
+                        "brand-green": "#10B981",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                        "surface-dark": "#1c2630",
+                    },
+                    fontFamily: {
+                        "display": ["Spline Sans", "sans-serif"],
+                        "body": ["Noto Sans", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "2xl": "1rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        /* Hide scrollbar for Chrome, Safari and Opera */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        /* Hide scrollbar for IE, Edge and Firefox */
+        .no-scrollbar {
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-dark text-white font-display antialiased overflow-x-hidden">
+<div class="relative w-full max-w-md mx-auto min-h-screen bg-background-dark pb-20">
+<!-- Hero Section -->
+<div class="relative h-[500px] w-full">
+<!-- Background Image -->
+<div class="absolute inset-0 w-full h-full bg-cover bg-center" data-alt="Cinematic poster of a fantasy warrior looking over a dark landscape" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDvrkULtjF9oVD68a_qlncyCePLif7MiFqz2W8b_Osp2Ymrb_NczFxokIKmtGbwfyIP-Kg-nv0IddHyFMBt2P2UBUcTQ0SX-OkZb5Uv-83v5dx20VgAGs-cvOm7yNl3Q2d3gLhoYNz-PEKXl2trvjVDPmqmm_-ptAxU5T0HY9SGsfeC-vnew0-ypBMavJwBSo0imRKmu4100Kx-jxDzSMn5RsHdCKZz2j3EcuPfTAxC0E6ZeZstfuXt9xoUY3BTrFxILrkbaFvb');">
+</div>
+<!-- Gradient Overlay -->
+<div class="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent via-50% to-background-dark"></div>
+<div class="absolute inset-0 bg-gradient-to-t from-background-dark via-background-dark/80 to-transparent bottom-0 h-64"></div>
+<!-- Header Navigation -->
+<div class="absolute top-0 left-0 w-full p-4 pt-14 z-20 flex justify-between items-center">
+<button class="size-10 flex items-center justify-center rounded-full bg-black/40 backdrop-blur-md border border-white/10 active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-white" style="font-size: 24px;">arrow_back_ios_new</span>
+</button>
+<div class="flex gap-3">
+<button class="size-10 flex items-center justify-center rounded-full bg-black/40 backdrop-blur-md border border-white/10 active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-white" style="font-size: 24px;">favorite</span>
+</button>
+<button class="size-10 flex items-center justify-center rounded-full bg-black/40 backdrop-blur-md border border-white/10 active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-white" style="font-size: 24px;">share</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Main Content Area -->
+<div class="relative z-10 px-5 -mt-40">
+<!-- Title Header -->
+<div class="flex flex-col items-center text-center mb-6">
+<!-- Yabisso Exclusive Tag -->
+<div class="mb-3 px-3 py-1 bg-gradient-to-r from-brand-red via-brand-yellow to-brand-green rounded-full shadow-lg shadow-black/50">
+<span class="text-[10px] font-bold text-black uppercase tracking-widest">Yabisso Original</span>
+</div>
+<h1 class="text-4xl font-bold leading-tight mb-2 tracking-tight drop-shadow-xl">The King's<br/>Horseman</h1>
+<!-- Meta Data -->
+<div class="flex items-center gap-3 text-sm text-gray-300 font-medium mt-1">
+<span class="text-brand-green font-bold">98% Match</span>
+<span class="size-1 rounded-full bg-gray-500"></span>
+<span>2023</span>
+<span class="size-1 rounded-full bg-gray-500"></span>
+<span class="px-1.5 py-0.5 border border-gray-500 rounded text-xs text-gray-400">16+</span>
+<span class="size-1 rounded-full bg-gray-500"></span>
+<span>3 Seasons</span>
+</div>
+</div>
+<!-- Action Buttons -->
+<div class="flex flex-col gap-3 mb-8">
+<button class="flex items-center justify-center gap-2 w-full h-12 bg-primary hover:bg-primary/90 rounded-xl text-white font-bold text-base shadow-lg shadow-primary/20 active:scale-[0.98] transition-all">
+<span class="material-symbols-outlined fill-current" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+                    Resume S1:E1
+                </button>
+<button class="flex items-center justify-center gap-2 w-full h-12 bg-white hover:bg-gray-100 rounded-xl text-background-dark font-bold text-base shadow-lg active:scale-[0.98] transition-all">
+<span class="material-symbols-outlined">download</span>
+                    Download Season 1
+                    <span class="text-xs font-normal text-gray-500 ml-1">(1.2 GB)</span>
+</button>
+</div>
+<!-- Synopsis -->
+<div class="mb-8">
+<p class="text-gray-300 text-sm leading-relaxed line-clamp-3">
+                    In the heart of the ancient Oyo Empire, the King's Horseman must commit ritual suicide to guide the King's spirit to the afterlife. But when modern colonial forces intervene, the delicate balance of the world is thrown into chaos.
+                </p>
+<button class="text-primary text-sm font-semibold mt-1">Read more</button>
+<!-- Genre Chips -->
+<div class="flex flex-wrap gap-2 mt-4">
+<span class="px-3 py-1.5 rounded-lg bg-surface-dark border border-white/5 text-xs text-gray-300 font-medium">Drama</span>
+<span class="px-3 py-1.5 rounded-lg bg-surface-dark border border-white/5 text-xs text-gray-300 font-medium">Historical</span>
+<span class="px-3 py-1.5 rounded-lg bg-surface-dark border border-white/5 text-xs text-gray-300 font-medium">African Cinema</span>
+<span class="px-3 py-1.5 rounded-lg bg-surface-dark border border-white/5 text-xs text-gray-300 font-medium">Thriller</span>
+</div>
+</div>
+<!-- Cast Section -->
+<div class="mb-8">
+<h3 class="text-lg font-bold text-white mb-3">Cast &amp; Crew</h3>
+<div class="flex gap-4 overflow-x-auto no-scrollbar pb-2">
+<!-- Cast 1 -->
+<div class="flex flex-col items-center gap-2 shrink-0 w-20">
+<div class="size-16 rounded-full overflow-hidden border-2 border-surface-dark bg-surface-dark">
+<img class="w-full h-full object-cover" data-alt="Portrait of lead actress with braided hair" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA4AZicXb0-3Um1d5KV8od2kyNBCt3q1E6XWJZdxDlk7CMRwypCRe0luuP1hg8b73cgMst7kqkQlh0H3zKBKzWaHx3U0UTYjCvy_mRFosWUB6SMWOjn2vOxPloBj0LatvcJNHpSK0dZIBU0LFXHuJOBUNGLP6hp-9jdPIhgx2Ypi2kFDg6k7fgVS3FTY1LO81482eTg18My6ckcUBRzIa1JO3JOngJOon92r8GIjN1vlWck_tL8tYsncmCvqvjTfH0CZouZuG3_"/>
+</div>
+<span class="text-xs text-center text-gray-300 leading-tight">Adesua Etomi</span>
+</div>
+<!-- Cast 2 -->
+<div class="flex flex-col items-center gap-2 shrink-0 w-20">
+<div class="size-16 rounded-full overflow-hidden border-2 border-surface-dark bg-surface-dark">
+<img class="w-full h-full object-cover" data-alt="Portrait of male actor looking serious" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC0IZG2OZ4EzZobk8O1AaS9ASEduWmyubzIBnmBKSa8hVV3ZvKQqAogTFs2GED3PXWWtyS-kCZH11O480LrGgIYL48esPpIpqgrGiS0VE_IITT-V-dlrWeR34UPs6J8KvrcUUOH-ATSlKqHAYarcRNmJngt1oQgU0FAm6u4D_70Pe8gd2PHDR6ya5NcGLvKsPkXtXyvN8_u8BSG0OKH90o_3aLOy8-nLQ1vMKOiS3iGv_ju9f-Xudg42WkbY5JKpbqS7WcPdWii"/>
+</div>
+<span class="text-xs text-center text-gray-300 leading-tight">Wole Ojo</span>
+</div>
+<!-- Cast 3 -->
+<div class="flex flex-col items-center gap-2 shrink-0 w-20">
+<div class="size-16 rounded-full overflow-hidden border-2 border-surface-dark bg-surface-dark">
+<img class="w-full h-full object-cover" data-alt="Portrait of actress with glasses" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBBt4An306TtOEPL4OfbBGrJM4Of87PbM8zwjeWaeZy4zm-qK0ko_KPBwlSgd_5ma_EXRqKBfD_wg325UcBRXyOyUTotjQm8EXbmXjQlLin9wN81Ki7x_8UsyAMTYgg2tJc36oqStZjP_Z2WM4FbEJcxn-mDO_5DgBBEcoEzV68h4Raur--VCY2c8tQzPJuXKiztz3Svhu3v0wMZBQXIfw7qdjTQdq4GCf0GHCyXNH5J8B9jkHtMITtb7CtcOloBlxtjyvk_WOD"/>
+</div>
+<span class="text-xs text-center text-gray-300 leading-tight">Genevieve Nnaji</span>
+</div>
+<!-- Cast 4 -->
+<div class="flex flex-col items-center gap-2 shrink-0 w-20">
+<div class="size-16 rounded-full overflow-hidden border-2 border-surface-dark bg-surface-dark">
+<img class="w-full h-full object-cover" data-alt="Portrait of male actor smiling" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB1333sJqC4iaTBJJd3pG7aMJY_mQjxwV2TyAXCrGinphocFRxvI2bb5mNe6NF3GHm528irFJPsRwLTl7u7_OIAa_2iaGLGDV06qpxmkxw4vu-fpbUm8PR1QW_68lehXeEI3IKNDp3oEqWIMB0-XGRNA7J6gRrSH36woJTdSQb0xtpom_ZCGmEABJDHT-1L8xk2s3PYB84lyQZXFtehewnJmjd9Oj_XRfKVbBJm7J6h5m5ojW0INxNYbDyaD0dpetjPWAhg6aQ5"/>
+</div>
+<span class="text-xs text-center text-gray-300 leading-tight">Richard Mofe</span>
+</div>
+</div>
+</div>
+<!-- Episodes Section -->
+<div class="mb-6">
+<div class="flex items-center justify-between mb-4">
+<div class="flex items-center gap-2 cursor-pointer">
+<h3 class="text-lg font-bold text-white">Season 1</h3>
+<span class="material-symbols-outlined text-gray-400 text-sm">expand_more</span>
+</div>
+<span class="text-xs text-gray-500 font-medium">8 Episodes</span>
+</div>
+<!-- Episode List -->
+<div class="flex flex-col gap-4">
+<!-- Episode 1 -->
+<div class="group relative flex gap-3 p-3 bg-surface-dark/50 hover:bg-surface-dark rounded-xl border border-white/5 transition-colors">
+<!-- Thumbnail -->
+<div class="relative w-32 h-20 shrink-0 rounded-lg overflow-hidden bg-black/50">
+<img class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" data-alt="Scene of a dusty village road at sunset" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDDSGFFZtB-2Tbr9JFrA-iqcy4jpMVjaCKw7UY97ftZk_Y_whai6lDvA9-DaTVDv7S4AFjXyRPPtZwSOrCaT__Nvuu6MMOWk20jSCjI1mvqC52z4Md_t5rzst_E0sL7zblisfkanX_rmji3-QtEzeYkxKS6WGqs5VREJnUcNfYO5Wf83g262zQBtfiT4QuycXd5xkCJ_k5Ymjkp26RE893JxxRSwbgMjTgkLzcEJP2rxrPK4aILICReu6azD6IUZ4nkliOJFpKk"/>
+<!-- Progress Bar -->
+<div class="absolute bottom-0 left-0 h-1 bg-gray-700 w-full">
+<div class="h-full bg-primary w-1/3"></div>
+</div>
+<div class="absolute inset-0 flex items-center justify-center">
+<div class="size-8 rounded-full bg-black/40 backdrop-blur-sm border border-white/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-white text-lg fill-current">play_arrow</span>
+</div>
+</div>
+</div>
+<!-- Details -->
+<div class="flex-1 flex flex-col justify-center min-w-0">
+<div class="flex justify-between items-start">
+<h4 class="text-sm font-bold text-white mb-1 truncate pr-2">1. The Summoning</h4>
+</div>
+<p class="text-xs text-gray-400 mb-2">48m • Drama</p>
+<p class="text-[10px] text-gray-500 line-clamp-1">Elesin Oba prepares for his final night...</p>
+</div>
+<!-- Download Action -->
+<div class="flex items-center justify-center px-1">
+<button class="flex flex-col items-center justify-center gap-1 group/btn">
+<div class="size-9 rounded-full bg-white flex items-center justify-center shadow-lg active:scale-90 transition-transform">
+<span class="material-symbols-outlined text-background-dark text-lg">download</span>
+</div>
+<span class="text-[9px] font-bold text-gray-400">145MB</span>
+</button>
+</div>
+</div>
+<!-- Episode 2 -->
+<div class="group relative flex gap-3 p-3 bg-surface-dark/50 hover:bg-surface-dark rounded-xl border border-white/5 transition-colors">
+<div class="relative w-32 h-20 shrink-0 rounded-lg overflow-hidden bg-black/50">
+<img class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" data-alt="Close up of traditional African drums" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCOWa3967fJp-Z14vRk42-NLli_lsJWOa1noq8h4NElWfXDezWeQYsT8ekdh36qdNgW20auGbt_Om1b_vmKN9lG-W2Dk0hxJgq3Y1eKOZOhCalfJ5v3sYsVocuWjzG2lj1_C2_UL29hpfRjnu-AT903BLU1Zyp6XIl5doslgR-h_o8w2sV8xD1MGW41C5KfghmjxVXIibuJwjM3NmZuvyOKDZ5xXv7jTao10HS9ozwJNe-UObU4zkocppkfiQmmUWrpc-5wMJdh"/>
+</div>
+<div class="flex-1 flex flex-col justify-center min-w-0">
+<div class="flex justify-between items-start">
+<h4 class="text-sm font-bold text-white mb-1 truncate pr-2">2. The Market Day</h4>
+</div>
+<p class="text-xs text-gray-400 mb-2">52m • Drama</p>
+<p class="text-[10px] text-gray-500 line-clamp-1">Tensions rise as the British officer intervenes.</p>
+</div>
+<div class="flex items-center justify-center px-1">
+<button class="flex flex-col items-center justify-center gap-1 group/btn">
+<div class="size-9 rounded-full border border-white/80 flex items-center justify-center active:scale-90 transition-transform hover:bg-white/10">
+<span class="material-symbols-outlined text-white text-lg">download</span>
+</div>
+<span class="text-[9px] font-bold text-gray-400">160MB</span>
+</button>
+</div>
+</div>
+<!-- Episode 3 -->
+<div class="group relative flex gap-3 p-3 bg-surface-dark/50 hover:bg-surface-dark rounded-xl border border-white/5 transition-colors">
+<div class="relative w-32 h-20 shrink-0 rounded-lg overflow-hidden bg-black/50">
+<img class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" data-alt="Night scene with firelight and shadows" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCtPw1kmS-oACXnl1nJASs9XhnC8aOqVtIZ7nHRv2X8kIxrlSMYNIvHQUSNBQ5G87STSoDh0-VCCShL_oc4fkJoDel6T_y87UI_yiFvMhR94IQ3ghDGLkXigh_DxSmuIirftbsS0p51zN_-xJgujmMMxBl5c00xJXVIJKRfwF4go0I_juX5nSD8w7BVo-06EyXhZ577ESerUxo7B9AJXB30WtixZaV6SBfOSZgZsWkI-RyBscS2V7h_PdPHePugLtSC2jiPKzVj"/>
+<!-- New Badge -->
+<div class="absolute top-1 left-1 px-1.5 py-0.5 bg-brand-red rounded text-[8px] font-bold text-white uppercase">New</div>
+</div>
+<div class="flex-1 flex flex-col justify-center min-w-0">
+<div class="flex justify-between items-start">
+<h4 class="text-sm font-bold text-white mb-1 truncate pr-2">3. The Interference</h4>
+</div>
+<p class="text-xs text-gray-400 mb-2">50m • Thriller</p>
+<p class="text-[10px] text-gray-500 line-clamp-1">Chaos erupts in the market square.</p>
+</div>
+<div class="flex items-center justify-center px-1">
+<button class="flex flex-col items-center justify-center gap-1 group/btn">
+<div class="size-9 rounded-full border border-white/80 flex items-center justify-center active:scale-90 transition-transform hover:bg-white/10">
+<span class="material-symbols-outlined text-white text-lg">download</span>
+</div>
+<span class="text-[9px] font-bold text-gray-400">155MB</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</body></html>

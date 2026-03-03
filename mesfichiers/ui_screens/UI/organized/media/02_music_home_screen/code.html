@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Yabisso Music Home</title>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind Config -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "yabisso-red": "#ef4444",
+                        "yabisso-yellow": "#eab308",
+                        "yabisso-green": "#22c55e",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                        "surface-dark": "#1C252E",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        /* Hide scrollbar for Chrome, Safari and Opera */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        /* Hide scrollbar for IE, Edge and Firefox */
+        .no-scrollbar {
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white font-display antialiased overflow-x-hidden pb-36">
+<!-- Top Header -->
+<div class="sticky top-0 z-20 flex items-center bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-md p-4 pb-2 justify-between">
+<div class="flex items-center gap-3">
+<div class="relative">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 ring-2 ring-primary/50" data-alt="User profile picture with abstract colorful background" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAhRj1i09p9eslK3HBYqILg_VrkvbI28RoOfHh1MCRQ5DzhJ6MNYdE2-RUTyxUi89WiG5XWkHCIK3ohaIYuRWTaMUR0_KtRTaG78SijtWbZ7HekwrS8WD_XmtJooc-5yF_XM7xDQFFAW01k5u7xNe0jHVxAQy65a670lqkPiI0qk8fIvaXli9ATBF0qlR0NGyMNaVUj-1o-4nj7FR-9w6qM_fpHUv7EeX_FqmfncMZF3k5r2nlv4MnrG5MfZ9VAbJ48J-Y-4RbL");'></div>
+<div class="absolute bottom-0 right-0 size-3 bg-yabisso-green rounded-full border-2 border-background-dark"></div>
+</div>
+<div>
+<p class="text-xs text-slate-400 font-medium">Good Evening</p>
+<h2 class="text-slate-900 dark:text-white text-lg font-bold leading-tight tracking-[-0.015em]">Yabisso Music</h2>
+</div>
+</div>
+<div class="flex items-center justify-end gap-3">
+<button class="flex items-center justify-center rounded-full size-10 bg-surface-dark/50 hover:bg-surface-dark text-white transition-colors">
+<span class="material-symbols-outlined text-xl">search</span>
+</button>
+<button class="flex items-center justify-center rounded-full size-10 bg-surface-dark/50 hover:bg-surface-dark text-white transition-colors relative">
+<span class="material-symbols-outlined text-xl">notifications</span>
+<span class="absolute top-2 right-2 size-2 bg-yabisso-red rounded-full"></span>
+</button>
+</div>
+</div>
+<!-- Quick Access Chips -->
+<div class="w-full">
+<div class="flex gap-3 px-4 py-4 overflow-x-auto no-scrollbar">
+<!-- Downloaded (Offline First Highlight) -->
+<div class="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-full bg-primary/20 border border-primary/30 pl-3 pr-4 active:scale-95 transition-transform cursor-pointer">
+<span class="material-symbols-outlined text-primary text-[18px]">check_circle</span>
+<p class="text-primary text-sm font-semibold leading-normal">Downloaded</p>
+</div>
+<div class="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-full bg-surface-dark pl-3 pr-4 active:scale-95 transition-transform cursor-pointer">
+<span class="material-symbols-outlined text-white text-[18px]">music_note</span>
+<p class="text-white text-sm font-medium leading-normal">Playlists</p>
+</div>
+<div class="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-full bg-surface-dark pl-3 pr-4 active:scale-95 transition-transform cursor-pointer">
+<span class="material-symbols-outlined text-white text-[18px]">album</span>
+<p class="text-white text-sm font-medium leading-normal">Albums</p>
+</div>
+<div class="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-full bg-surface-dark pl-3 pr-4 active:scale-95 transition-transform cursor-pointer">
+<span class="material-symbols-outlined text-white text-[18px]">podcasts</span>
+<p class="text-white text-sm font-medium leading-normal">Podcasts</p>
+</div>
+<div class="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-full bg-surface-dark pl-3 pr-4 active:scale-95 transition-transform cursor-pointer">
+<span class="material-symbols-outlined text-white text-[18px]">equalizer</span>
+<p class="text-white text-sm font-medium leading-normal">Charts</p>
+</div>
+</div>
+</div>
+<!-- Trending Section -->
+<div class="flex flex-col pt-2">
+<div class="flex justify-between items-end px-4 pb-3">
+<h2 class="text-slate-900 dark:text-white text-xl font-bold leading-tight">Trending Now</h2>
+<button class="text-primary text-xs font-semibold uppercase tracking-wider">See All</button>
+</div>
+<div class="flex w-full overflow-x-auto no-scrollbar px-4 pb-4">
+<div class="flex flex-row items-start justify-start gap-4">
+<!-- Card 1 -->
+<div class="group relative flex w-36 flex-col gap-3 cursor-pointer">
+<div class="relative w-full aspect-[3/4] overflow-hidden rounded-xl bg-surface-dark shadow-lg">
+<div class="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-110" data-alt="Vibrant abstract gradient cover for Afrobeats Hits playlist" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuD7WypJb7hGJitsWM76caqEKsS9yvNVcdgsl6hrI6vGKAToWNOIXH71rhbeXo2lH9uQ55qX_Vpx_Ry4AeQl7hprLPT8YmgWx5QIyM_e-8GUwjDLI9fmlrRQEzQ2X1VrYU3-aEHYIn02sqaPKq_kMpj_8kTC8t7GEHtXHS-ox8j-p3SJK3o-ztyFV1xIJzTX1nDVVvwzYR4p7jpaejm4oMw3uvgJ-4d4RD0L83xCJg7wTJdUlDn6j3Ou_URvEQC003jxsBgutoAY");'>
+</div>
+<div class="absolute bottom-2 right-2">
+<div class="size-8 rounded-full bg-primary flex items-center justify-center shadow-lg translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all">
+<span class="material-symbols-outlined text-white text-lg">play_arrow</span>
+</div>
+</div>
+</div>
+<div>
+<p class="text-slate-900 dark:text-white text-sm font-bold leading-tight truncate">Afrobeats Hits</p>
+<p class="text-slate-500 text-xs font-medium leading-normal truncate">Wizkid, Burna Boy...</p>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="group relative flex w-36 flex-col gap-3 cursor-pointer">
+<div class="relative w-full aspect-[3/4] overflow-hidden rounded-xl bg-surface-dark shadow-lg">
+<div class="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-110" data-alt="Colorful geometric pattern for Top Nigeria playlist" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuB2RxZMwdWs0fCmlITdZEH8Hks5FuAnou3rFlm7tO1tvhx9mYRdKyaA2pIvatj_3hei6xlNF5CB7vHeFkDu9ijhMD3AxH60krmnsoVmz13kwaGe7TFFvEoSwXLwpETBr-hlD9kAd85dEiHRDo9Ir5zm6vuZCCIoWeO9enYJq1o85T73Q67gfpiuVPnmt2ufWxPT8uNfeNPP0ji42tRINWPmOo3AwScGd7CXZT-B6cJ7jBxFpBMRNhig_lJU40ezQA9xhJduGitJ");'>
+</div>
+<div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
+</div>
+<div>
+<p class="text-slate-900 dark:text-white text-sm font-bold leading-tight truncate">Top Nigeria 50</p>
+<p class="text-slate-500 text-xs font-medium leading-normal truncate">Daily updated</p>
+</div>
+</div>
+<!-- Card 3 -->
+<div class="group relative flex w-36 flex-col gap-3 cursor-pointer">
+<div class="relative w-full aspect-[3/4] overflow-hidden rounded-xl bg-surface-dark shadow-lg">
+<div class="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-110" data-alt="Yellow and green abstract art for Amapiano playlist" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuB0rePcNUhrb4_mAmHv-RxRCTm8bANygFpYPMTlWGuiqPOuTvbGLD4Ow78ia5Uzoav-FRSNydil3aV6y89C_t6RcLHjT_H1jz_gyCgZfK484ppR5pswfbTmvnykL5ESgDAppvhp3DkgBbvchTJBlVQRSlwX5QYXYq03kDeDEJZ9AajEqjMdXGVH-zJE2ThUGSI8I10QOlxKO7W2VHuD4L9R0cNOp65ogAPX6igcHBGRAA4cwX68AN1Oh0ki2dqDlNCBzDsaJbbt");'>
+</div>
+</div>
+<div>
+<p class="text-slate-900 dark:text-white text-sm font-bold leading-tight truncate">Amapiano Kings</p>
+<p class="text-slate-500 text-xs font-medium leading-normal truncate">Kabza De Small...</p>
+</div>
+</div>
+<!-- Card 4 -->
+<div class="group relative flex w-36 flex-col gap-3 cursor-pointer">
+<div class="relative w-full aspect-[3/4] overflow-hidden rounded-xl bg-surface-dark shadow-lg">
+<div class="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-110" data-alt="Cool blue tones for Deep Focus playlist" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCH2BuzHmgjD2OKKULQh5iOhkMZ2tDUHS8RqgwOUka07JKcsoq3VXX_CDrLN91q_KX2rhG_MVtIN7NtOGTVZaTk3XcCxsCexxRFev5aw-fDQTHPZeN3qeM7xAmDAn58-aYvCzM1g1FBkBGMQPs_JxxpJxeiUuM3FQPWKscKCcVGtwEgcc8S7FYDFisIbU0IC7bosT0WWevgX2HBKscN95xKBBWpuZKpCsRtgBQ2a0Biz4d4no42tRj26_k9rLWg53Czq90ckJVb");'>
+</div>
+</div>
+<div>
+<p class="text-slate-900 dark:text-white text-sm font-bold leading-tight truncate">Ghana Gold</p>
+<p class="text-slate-500 text-xs font-medium leading-normal truncate">Best of Accra</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Local Artists Section (Circles) -->
+<div class="flex flex-col pt-4">
+<div class="flex justify-between items-end px-4 pb-3">
+<h2 class="text-slate-900 dark:text-white text-xl font-bold leading-tight">Local Artists</h2>
+</div>
+<div class="flex w-full overflow-x-auto no-scrollbar px-4 pb-4">
+<div class="flex flex-row items-start justify-start gap-5">
+<!-- Artist 1 -->
+<div class="flex flex-col items-center gap-2 w-20 text-center cursor-pointer">
+<div class="w-20 h-20 bg-center bg-no-repeat bg-cover rounded-full border-2 border-surface-dark" data-alt="Portrait of a musician performing on stage with red lighting" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuD-LFYRdkFdAOJh_zumC7nspMgMQQpaLe39Wxhq_hkzTsy9sYuIzaPwSGM3vV6VX42DsONjsugW6qPBXjZ2OoVxY853xiou9ivm_3WnHmrZjkUZLFhd-9s1Ceqz6FC6mzdbJ2JNLcsqrCy7mpYWy5z9E5YuRIY3TTQvWamSlHQk9LCXpCDv71kTV9rHhL78kKJ1i0yg6bWKPlQrLCCF0FnQnM2EPpgk1FDvLPyPzQpTUyorsYKMPyBMyIp-XcbRbkLWv3jLG34M");'>
+</div>
+<p class="text-slate-900 dark:text-white text-xs font-medium leading-normal truncate w-full">Davido</p>
+</div>
+<!-- Artist 2 -->
+<div class="flex flex-col items-center gap-2 w-20 text-center cursor-pointer">
+<div class="w-20 h-20 bg-center bg-no-repeat bg-cover rounded-full border-2 border-surface-dark" data-alt="Close up portrait of a female singer with braided hair" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAPbjq1rusbZeuj-4boTEMoI5WF63XPasp8V6VhMtNKv9fwC1rI-rE6KNzymjH31ZLurr4GAwk_lI6LBGWteetWDh_-SO_ag5g67Jdr9z331r-1UGH08WSz9dJCi_oCbOme7okKy4_C3k2nH6MGKEH46pc6fLuMLY8Ey3X2NL60Q_7U3oNIEbr_6ON6VA0-bSglMRDeaSUqzgDvLxC3bpgSI1tKl6DxXVOWjnVmdH7fjN5rX2lyS6lCyeyf0d0D_t3Pe1qKwB11");'>
+</div>
+<p class="text-slate-900 dark:text-white text-xs font-medium leading-normal truncate w-full">Tems</p>
+</div>
+<!-- Artist 3 -->
+<div class="flex flex-col items-center gap-2 w-20 text-center cursor-pointer">
+<div class="w-20 h-20 bg-center bg-no-repeat bg-cover rounded-full border-2 border-primary p-0.5" data-alt="Portrait of a smiling male artist with sunglasses" style='background-clip: content-box; background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBKcLSB2NgqbjaIkp3JQdTwF-pwdlaaNCLXTQhljcFgWAN0gn4fsC6ysKGH9CFfSszhm9avYEYVy1puZwAnMTHNPNiTDoVou7sLWDpPIgybjaHmDBdeTI_9Gth68fVUv9q2prd47H_hU8OOvmdiFgilkKDz3eWX3bkLW0hvAyhzFIttZLjPzY6kYWH-FyjTrNnSW7xKSs7h_2bFdtcXXZnC65Kv8PXa8YFk-IXG_UR1mkCzeooO7vZbg117k1cWem_v6J2kP7Nj");'>
+<div class="w-full h-full rounded-full bg-center bg-cover" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDhnwx6Bg_xwouUR-p7EfNeuqTi2lSClBCqPJa_WEOSiEGVhRPou3TBdZGin2vg6ckbr4M_1MP5lnSX3xeG3bJk8UridhHiQgZZyZ7rmOG7q0YTl0MZ2txEEAXyeEGCRBAOG3-jq5F2A0E0uwcw8QjklJTorBgakbs6tpdZlJug3KT0SKxImRKIB7s9eL-cLfe-gSw6ser9qxZNZYm0BHygPGDpAjMl-Su2sAFkDyNCHMUSfFqbOlI643B7GGXu-dlyySdO2Q4D");'></div>
+</div>
+<p class="text-slate-900 dark:text-white text-xs font-medium leading-normal truncate w-full">Burna Boy</p>
+</div>
+<!-- Artist 4 -->
+<div class="flex flex-col items-center gap-2 w-20 text-center cursor-pointer">
+<div class="w-20 h-20 bg-center bg-no-repeat bg-cover rounded-full border-2 border-surface-dark" data-alt="Black and white portrait of a musician holding a guitar" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDSqmIj4Y68YahNj1lSrIsEf1lfhcPZLhbcMAIR9AiPhuyQ4yqcy7FbB30BN7A-6ANy4T5zV58RZEPOcVsv5igCX9dnBMHsic8IEDcr-v0Ih2DzOiU8hskBWK_GORzfzozpeLOzQkeGhVf-TSSvJvV2J1NevqA0KEtNO-dNRABiBIsFYs7Yd6SLRYHJPYZ88jvfBJdX4aKG4RZUB4X-YNnthjm_9b2Q2AJ-qPZMamUe3ETU7YJBpWRScYBJxjDPBCyFIRUEE9US");'>
+</div>
+<p class="text-slate-900 dark:text-white text-xs font-medium leading-normal truncate w-full">Sarkodie</p>
+</div>
+<!-- Artist 5 -->
+<div class="flex flex-col items-center gap-2 w-20 text-center cursor-pointer">
+<div class="w-20 h-20 bg-center bg-no-repeat bg-cover rounded-full border-2 border-surface-dark" data-alt="Silhouette of a singer against a sunset background" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBnAd8k_Wk_8yo9YfFH8QTXxsJeMLuWFWm7kJ4nPAhPjw_6emGs9sYI6cJ9p5ynLlPkFuyYbeW0qYPhRSyhONKSORw5POcBJHLLMGeyoW0JRGsDeicI1_Aj7r8YW1B3MntaWw_mmyBEBgAQBnxhn_PTDDz79HNC99vlZA1IyCguAFcjMcpkrwWdpuBvKNE0YgEF_HsiE7G1t8q6vwspnXxY4tIcnh9KKJ_J8cV5jMXf3_6tJ6vcmvQ4Da5ZyyoBIwlzOw1X8FM4");'>
+</div>
+<p class="text-slate-900 dark:text-white text-xs font-medium leading-normal truncate w-full">Tiwa S.</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Recent / Just For You List -->
+<div class="px-4 pt-4">
+<h2 class="text-slate-900 dark:text-white text-xl font-bold leading-tight mb-4">Jump Back In</h2>
+<div class="flex flex-col gap-3">
+<!-- Item 1 -->
+<div class="flex items-center justify-between p-2 rounded-lg hover:bg-surface-dark transition-colors cursor-pointer group">
+<div class="flex items-center gap-3">
+<div class="relative w-12 h-12 rounded bg-cover bg-center shrink-0" data-alt="Album art with abstract colorful shapes" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuC_M-oxqrpjyLz3p_hpXIMJ3o_kvXfHNkitp6llCsQVbKgTNy_nhB78l77XAR-5cKvuFxV2k6BqP_1gN6C0LltohI_6dqlajJIl9iDLVvxu-c_KBZAbrQeazMJ7LLTCqItYVG8AODGcBaq_x72VQ_MtSpCk7YbPL8GTauUalRCrbF43nwXS-ykEC-sgHar7yvfIS8lxLec8DcdK421LxI_T-wk5CaEIH3aZA2TqfNqOWcHihgK4wdWfJGppvHunESG6b1jB5Wby");'>
+<!-- Offline Indicator on Album Art -->
+<div class="absolute -top-1 -right-1 bg-yabisso-green rounded-full p-[2px] border border-background-dark">
+<span class="material-symbols-outlined text-[8px] text-background-dark font-bold block">download</span>
+</div>
+</div>
+<div class="flex flex-col">
+<span class="text-slate-900 dark:text-white text-sm font-semibold">Last Last</span>
+<span class="text-slate-500 text-xs">Burna Boy</span>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-yabisso-green text-sm opacity-100" title="Downloaded">check_circle</span>
+<span class="material-symbols-outlined text-slate-400 text-xl">more_vert</span>
+</div>
+</div>
+<!-- Item 2 -->
+<div class="flex items-center justify-between p-2 rounded-lg hover:bg-surface-dark transition-colors cursor-pointer group">
+<div class="flex items-center gap-3">
+<div class="relative w-12 h-12 rounded bg-cover bg-center shrink-0" data-alt="Album art featuring a neon city street" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBS7mWpF7aJuIwnDxzc_1RUJ1IBjelgwBKAD_J53LkmdUQ58_v1VRdswpG_42-qv7Xisa-6YzLXzOEvSMUtOaEI_pFRsEPBfUGhvOLpcig0zWQfmCCnUOteqVSvQapk4FqP2tjVXKdaXK3sfFM-Wak8YhKmsF5TPzr_Q6WoD1XSVO5y4g99PlYqR2zgZxlDITR0KLmlZnDpvcFFURd847yxxArhZTkjgpdyT3J-HW3AQ9ewoyvv82TBk913NtmAdG8fNvll8x4o");'>
+</div>
+<div class="flex flex-col">
+<span class="text-slate-900 dark:text-white text-sm font-semibold">Essence (feat. Tems)</span>
+<span class="text-slate-500 text-xs">Wizkid</span>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-slate-400 text-xl">more_vert</span>
+</div>
+</div>
+<!-- Item 3 -->
+<div class="flex items-center justify-between p-2 rounded-lg hover:bg-surface-dark transition-colors cursor-pointer group">
+<div class="flex items-center gap-3">
+<div class="relative w-12 h-12 rounded bg-cover bg-center shrink-0" data-alt="Minimalist geometric album art in red and black" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCg2gB0Y6mUeNsx2lTU4k6t3h37iSTN0G8uDoWAnn_ZoryZn7JbJFkLYvOhKFEJHIbHztJOkAh33U9FyRDopWjbl98hOC4RXYD-NWTD_k2bLnmQVwMfV8iuVrwo_qI6uLYeZIG8KOOzWwY1EDlJuLKPlPpjtLSLmbdV-2mrVnH9q_PBKXUFTfPzKMzTeO9j8sJGCB8EpwtLPvphCiN9_wCZJu7NDzX4fKMpVbPFoBbK7pAESTxNKplASQHkiWLgXQWZP3n5jfc2");'>
+</div>
+<div class="flex flex-col">
+<span class="text-slate-900 dark:text-white text-sm font-semibold">Calm Down</span>
+<span class="text-slate-500 text-xs">Rema</span>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-slate-400 text-xl">more_vert</span>
+</div>
+</div>
+<!-- Item 4 -->
+<div class="flex items-center justify-between p-2 rounded-lg hover:bg-surface-dark transition-colors cursor-pointer group">
+<div class="flex items-center gap-3">
+<div class="relative w-12 h-12 rounded bg-cover bg-center shrink-0" data-alt="Abstract art with flowing blue liquid" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuA2zVTkwTNb55DHgF9H39nnOGreoYt7wgRmsWrP-0FXkWEmnSlEP3pM6bIWhZ676IYBTMsc4oUESzGPGs4XQ__eqAXAKQ-HtEVneKz6CSECFGaKaRxSS7hhlfvmEs7QY9wkix2WTOlSrlm4SVnDbJwyu-vZ_zs8cuEf8g4AtqQRJLtAulOcx8x-oU2EPDQ6GSY4oFa0bKJVJbi2YxPixolDtBwk0ssRAAbm6k1sYYFdb9uhpnnamGQkeBB5kkJUetIgDs-WAMas");'>
+<div class="absolute -top-1 -right-1 bg-yabisso-green rounded-full p-[2px] border border-background-dark">
+<span class="material-symbols-outlined text-[8px] text-background-dark font-bold block">download</span>
+</div>
+</div>
+<div class="flex flex-col">
+<span class="text-slate-900 dark:text-white text-sm font-semibold">Water</span>
+<span class="text-slate-500 text-xs">Tyla</span>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-yabisso-green text-sm opacity-100" title="Downloaded">check_circle</span>
+<span class="material-symbols-outlined text-slate-400 text-xl">more_vert</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Floating Mini Player -->
+<div class="fixed bottom-[64px] left-2 right-2 z-30">
+<div class="bg-[#2a3441] border border-white/5 rounded-xl shadow-2xl backdrop-blur-lg flex items-center justify-between p-2 pr-4 relative overflow-hidden">
+<!-- Progress Bar Background -->
+<div class="absolute bottom-0 left-0 h-[2px] bg-white/10 w-full">
+<div class="h-full bg-primary w-1/3 rounded-r-full"></div>
+</div>
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-md bg-cover bg-center animate-[spin_10s_linear_infinite]" data-alt="Album art for currently playing song 'Rush'" style='animation-play-state: paused; background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuD5RiXbWQgqZykcBmV_pP68TdmdeWmdGS_tyqHFjwgCyDPBg_3ZeD1jVHyMothQtNqhXcUEVbBj9KW_Tfs4MVxYmU6c7oOrAHtk65hYUPd7dTkwnUHdoLWRerm9-6ueuEK1WdZDJNTbSIQyiNBwbfaqOXW_CS07QmDqB1f1DoeOWSsUOD63Bn453n4NZWdNiKoKAyhZaPJI0RjTH71jy3MvAbbLBPhS8tGt4QDBDEEVjqk3kHJKaKO57YWepa335-sC3cnkJwvA");'>
+</div>
+<div class="flex flex-col">
+<span class="text-white text-sm font-semibold leading-tight">Rush</span>
+<span class="text-white/60 text-xs leading-tight">Ayra Starr</span>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="text-white hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-2xl">devices</span>
+</button>
+<button class="flex items-center justify-center w-8 h-8 bg-white rounded-full hover:scale-105 transition-transform">
+<span class="material-symbols-outlined text-black text-xl ml-0.5">play_arrow</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Bottom Navigation Bar -->
+<div class="fixed bottom-0 left-0 right-0 z-40 h-16 bg-background-dark/95 border-t border-white/5 backdrop-blur-lg">
+<div class="flex items-center justify-around h-full px-2">
+<button class="flex flex-col items-center justify-center gap-1 w-16 h-full text-primary">
+<span class="material-symbols-outlined text-2xl filled">home</span>
+<span class="text-[10px] font-medium">Home</span>
+</button>
+<button class="flex flex-col items-center justify-center gap-1 w-16 h-full text-slate-400 hover:text-white transition-colors">
+<span class="material-symbols-outlined text-2xl">explore</span>
+<span class="text-[10px] font-medium">Explore</span>
+</button>
+<button class="flex flex-col items-center justify-center gap-1 w-16 h-full text-slate-400 hover:text-white transition-colors">
+<span class="material-symbols-outlined text-2xl">library_music</span>
+<span class="text-[10px] font-medium">Library</span>
+</button>
+<button class="flex flex-col items-center justify-center gap-1 w-16 h-full text-slate-400 hover:text-white transition-colors">
+<span class="material-symbols-outlined text-2xl">person</span>
+<span class="text-[10px] font-medium">Profile</span>
+</button>
+</div>
+</div>
+</body></html>

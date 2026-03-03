@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Film Detail - Yabisso</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Spline+Sans:wght@300;400;500;600;700&amp;family=Noto+Sans:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Theme Config -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                        "brand-red": "#ef4444",
+                        "brand-yellow": "#f59e0b",
+                        "brand-green": "#10b981",
+                    },
+                    fontFamily: {
+                        "display": ["Spline Sans", "sans-serif"],
+                        "body": ["Noto Sans", "sans-serif"],
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        /* Hide scrollbar for horizontal scroll areas */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-white overflow-x-hidden selection:bg-primary selection:text-white">
+<div class="relative min-h-screen w-full flex flex-col">
+<!-- Header Image & Top Navigation (Merged for overlay effect) -->
+<div class="relative w-full h-[65vh] shrink-0">
+<!-- Top Nav Overlay -->
+<div class="absolute top-0 left-0 w-full p-4 pt-6 z-30 flex justify-between items-center bg-gradient-to-b from-black/80 to-transparent">
+<button class="flex items-center justify-center size-10 rounded-full bg-white/10 backdrop-blur-md border border-white/10 text-white hover:bg-white/20 transition-colors">
+<span class="material-symbols-outlined text-[24px]">arrow_back</span>
+</button>
+<div class="flex gap-3">
+<button class="flex items-center justify-center size-10 rounded-full bg-white/10 backdrop-blur-md border border-white/10 text-white hover:bg-white/20 transition-colors">
+<span class="material-symbols-outlined text-[24px]">favorite</span>
+</button>
+<button class="flex items-center justify-center size-10 rounded-full bg-white/10 backdrop-blur-md border border-white/10 text-white hover:bg-white/20 transition-colors">
+<span class="material-symbols-outlined text-[24px]">share</span>
+</button>
+</div>
+</div>
+<!-- Hero Image -->
+<div class="absolute inset-0 bg-center bg-no-repeat bg-cover flex flex-col justify-end overflow-hidden" data-alt="Cinematic movie poster showing a futuristic African city skyline with a hero figure looking out" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuB2U4-YAxTAtC7kQ8rWzSg1rbn7FICMt1OBmoV3WDbpIURTTdkEjWYCpFGC3v6C9-EQYY7WpM8pLqmTBje-DJ820d8diKGxRKPoS5ixqlQikBdQCfkCI5MWVrOwK010co0TyMblC1-nKLzCw5RGSqspaDB2N0PbnTsdqSa0UPvILKdZDZsjUfkPx4to-iUxTYvLH8dG8rPohCnh8tRvTeUCBLsEOmI-nFCjWAgDBVum5ZYeOXSyaVtmcTPQ98jXFrXrdaCQNJ6Q");'>
+<!-- Gradient Overlay for Readability -->
+<div class="absolute inset-0 bg-gradient-to-t from-[#101922] via-[#101922]/60 to-transparent"></div>
+</div>
+</div>
+<!-- Main Content Area - Pulling up to overlap image slightly -->
+<div class="relative z-10 flex flex-col w-full px-5 -mt-32 pb-10">
+<!-- Headline Text -->
+<h1 class="text-white tracking-tight text-4xl md:text-5xl font-bold leading-tight text-left drop-shadow-lg mb-2">The Legend of Kumbi</h1>
+<!-- Meta Text with Yabisso Brand Colors -->
+<div class="flex flex-wrap items-center gap-x-3 gap-y-2 text-slate-300 text-sm font-medium leading-normal mb-6">
+<span>2024</span>
+<span class="size-1.5 rounded-full bg-brand-red"></span>
+<span>Action/Sci-Fi</span>
+<span class="size-1.5 rounded-full bg-brand-yellow"></span>
+<span>2h 15m</span>
+<span class="size-1.5 rounded-full bg-brand-green"></span>
+<div class="flex items-center text-brand-yellow">
+<span class="material-symbols-outlined text-[16px] mr-1">star</span>
+<span>4.8</span>
+</div>
+</div>
+<!-- Action Buttons -->
+<div class="flex flex-col sm:flex-row gap-3 w-full mb-8">
+<button class="flex-1 h-14 rounded-xl bg-white text-background-dark font-bold text-base flex items-center justify-center gap-2 hover:bg-slate-200 transition-colors shadow-lg shadow-white/5">
+<span class="material-symbols-outlined text-[24px]">play_arrow</span>
+                    Watch Now
+                </button>
+<button class="flex-1 h-14 rounded-xl bg-white/10 backdrop-blur-sm border border-white/20 text-white font-semibold text-base flex items-center justify-center gap-2 hover:bg-white/20 transition-colors">
+<span class="material-symbols-outlined text-[24px]">download</span>
+<div class="flex flex-col items-start leading-none">
+<span>Download</span>
+<span class="text-[10px] opacity-70 font-normal">450MB</span>
+</div>
+</button>
+</div>
+<!-- Chips (Tech Specs) -->
+<div class="flex gap-3 overflow-x-auto no-scrollbar mb-8 -mx-5 px-5">
+<div class="flex h-8 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-[#233648] border border-white/5 px-4">
+<p class="text-white text-xs font-medium leading-normal">4K Ultra HD</p>
+</div>
+<div class="flex h-8 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-[#233648] border border-white/5 px-4">
+<p class="text-white text-xs font-medium leading-normal">Dolby Atmos</p>
+</div>
+<div class="flex h-8 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-[#233648] border border-white/5 px-4">
+<p class="text-white text-xs font-medium leading-normal">Nollywood</p>
+</div>
+<div class="flex h-8 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-[#233648] border border-white/5 px-4">
+<p class="text-white text-xs font-medium leading-normal">CC</p>
+</div>
+</div>
+<!-- Summary with Voice Feature -->
+<div class="mb-8">
+<div class="flex items-center justify-between mb-3">
+<h2 class="text-lg font-bold text-white">Plot Summary</h2>
+<button class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/20 hover:bg-primary/30 text-primary text-xs font-medium transition-colors">
+<span class="material-symbols-outlined text-[18px]">graphic_eq</span>
+                        Listen
+                    </button>
+</div>
+<p class="text-[#92adc9] text-base font-normal leading-relaxed">
+                    In a futuristic Lagos, a young hacker discovers an ancient artifact that grants him control over the city's power grid. Hunted by a corporate warlord, he must unlock the secrets of his ancestors to save his people.
+                </p>
+</div>
+<!-- Cast Section -->
+<div class="mb-8">
+<div class="flex items-center justify-between mb-4">
+<h2 class="text-lg font-bold text-white">Cast</h2>
+<button class="text-primary text-sm font-medium">See all</button>
+</div>
+<div class="flex gap-4 overflow-x-auto no-scrollbar -mx-5 px-5 pb-2">
+<!-- Cast Member 1 -->
+<div class="flex flex-col items-center gap-2 shrink-0 w-[72px]">
+<div class="size-[72px] rounded-full overflow-hidden bg-gray-700 border-2 border-transparent hover:border-primary transition-colors">
+<img alt="Portrait of lead actor" class="w-full h-full object-cover" data-alt="Close up portrait of a smiling woman" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA_Hl8CN0os_TWFf5uQwkY0JDsX-rFrHUINmEMi9TqWTSwhv-ShjRgLgSW6CcKCZXw6NCQLDb23wUk5nLZ23Srt5POmI6jvDAqRU7qMi5FAqaSz6VHdF1iGxSec1bFAXJX7kSngV_47FiUxMtazijbhRjZavVGyBA24YLz2ALottRsb5sfvdmZZrDseAvZmwRH5EjLH8iy3HET9N1R7GTcXRoJxS_fhSyClgpkpzo1t3EnNZhZA0wYQGiBPn2OqIEG9-6lp-3L9"/>
+</div>
+<p class="text-white text-xs text-center line-clamp-2">Adanna N.</p>
+</div>
+<!-- Cast Member 2 -->
+<div class="flex flex-col items-center gap-2 shrink-0 w-[72px]">
+<div class="size-[72px] rounded-full overflow-hidden bg-gray-700 border-2 border-transparent hover:border-primary transition-colors">
+<img alt="Portrait of actor" class="w-full h-full object-cover" data-alt="Close up portrait of a man looking serious" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC_qHSRG3W3UZ49YU5OHe5GOst9jftqR_EGdp_mV41fL8mqSzw1MQ9YIKAm3Sk1Xi7rkziVkRwxEQ3qR_8fcb-zyRfNPVsfq2WPBfJFzkbVMh0mlODF25mGF_-AYs8xEOPve_DCWRZITJ6CU689J8SUdGa-00oyPOQ-Dw7QZ-KXQnNnFJL-bSz2eG3ShpFyOGmWzalCM28cnbEFTAGGR3TzOQGmuhm5YjPMtSlacG9uu4tiPDQm143JnlKcBkbPJ59RMWQNIK-d"/>
+</div>
+<p class="text-white text-xs text-center line-clamp-2">Tunde B.</p>
+</div>
+<!-- Cast Member 3 -->
+<div class="flex flex-col items-center gap-2 shrink-0 w-[72px]">
+<div class="size-[72px] rounded-full overflow-hidden bg-gray-700 border-2 border-transparent hover:border-primary transition-colors">
+<img alt="Portrait of actor" class="w-full h-full object-cover" data-alt="Close up portrait of a woman with braided hair" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB1reJo7kCpvfcCO89TD1NW8GIy9PtAV1h-nEuhLg3jzPKj-G8MYkEphabE6hVcb_hcc0L0gb_BsSxBZ9mX536_rY0I7iG7Y89JLf-cIEEm1SV_yaIndtJxARK7D0MEOtKhE54rx4J-HQSw7wWdWQc4IMUfaPn9PHIQ3TKIsJWpgZyhhd1ltqMffGILUvDm-sg2sgTtrdoeeYPy_xdXIfadnGLVGk_1AVyc30P7vY7ICbPH6SZxBDhsLFQsowaX0m42KZ_U5vaE"/>
+</div>
+<p class="text-white text-xs text-center line-clamp-2">Chioma A.</p>
+</div>
+<!-- Cast Member 4 -->
+<div class="flex flex-col items-center gap-2 shrink-0 w-[72px]">
+<div class="size-[72px] rounded-full overflow-hidden bg-gray-700 border-2 border-transparent hover:border-primary transition-colors">
+<img alt="Portrait of actor" class="w-full h-full object-cover" data-alt="Close up portrait of a man with sunglasses" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBUI6MDA81_lkyosJqzIH3JusXlJQt_LXooymT6wqGKLsDDREuaCiHebq15UAAN0TL5rWa7mWJcT7TNg-t7TpD0Wx45y_VzmX28LK-TPhjF3OijGKjPtvYpDwAoUx29c5gpqeBUF4fN85LpQv7bqK-Q5O2GFtNijJ1LuJoGKw0JcPUwn99nkDgKFc-0blmYg43DsbDRTTezeRuFkNnohrwj2FY27GAw509S1imS_4XRDljXeP13MTziS3FJrNOmKR-GLHfCwLqE"/>
+</div>
+<p class="text-white text-xs text-center line-clamp-2">Emeka O.</p>
+</div>
+<!-- Cast Member 5 -->
+<div class="flex flex-col items-center gap-2 shrink-0 w-[72px]">
+<div class="size-[72px] rounded-full overflow-hidden bg-gray-700 border-2 border-transparent hover:border-primary transition-colors">
+<img alt="Portrait of actor" class="w-full h-full object-cover" data-alt="Close up portrait of a young woman looking at camera" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCf6jejNYPRB8dCTxla-sawBk9y31TtJs8C3O-AZvtbfXSZkO1GE-9SMRRqfqsF0FgAv6tYoRLNFYyNiLZYph2ifCLxYS4_9NtVrjcIU7IKEVMedlE-7g1BzGFTS-OXvhZaC0yqFroksnbBTMjL_Fdx5M6XXlPcxwnCYs7KWB8LCSU2abk0KeHBom68qATtrS7N9IsjCBNLXaZ4jD8R_HaNtbmi5I4w36hU7Rz1uajICPi00_JHMysxSwqTzN1o9LApVoLW0OtW"/>
+</div>
+<p class="text-white text-xs text-center line-clamp-2">Zainab K.</p>
+</div>
+</div>
+</div>
+<!-- More Like This -->
+<div>
+<h2 class="text-lg font-bold text-white mb-4">More Like This</h2>
+<div class="flex gap-4 overflow-x-auto no-scrollbar -mx-5 px-5">
+<!-- Movie Card 1 -->
+<div class="shrink-0 w-36 group cursor-pointer">
+<div class="w-full h-52 rounded-lg bg-gray-800 overflow-hidden mb-2 relative">
+<img alt="Similar movie poster" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" data-alt="Abstract dark sci-fi movie poster" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCdKPF9n835jAOkZy9yt42Jlj4hYcCuRn4RIzWyP0ac31ixfXMujHhewDQ-Rpyja2A_Mbh6fVUG8Rb3OyTcT0V9kJGu90sBzvx01cncicGuTK8y6aYychPWGGObBhK_H3PCz86B6Lf4GMLRAr5lIpPShBEdHRkt0ylZrOBLbAKbBLPr1vD5cRL9GTZKtWoC0hWItlpUwUWudG1e0thqttBgq1ME5jMSYUzGW5RSlDSFxFMsv_xGY3N0LSyVRf4DUr9CDwJq7oob"/>
+<div class="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-colors"></div>
+</div>
+<h3 class="text-white text-sm font-medium truncate">Cyber Lagos</h3>
+<p class="text-xs text-gray-500">2023</p>
+</div>
+<!-- Movie Card 2 -->
+<div class="shrink-0 w-36 group cursor-pointer">
+<div class="w-full h-52 rounded-lg bg-gray-800 overflow-hidden mb-2 relative">
+<img alt="Similar movie poster" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" data-alt="Dark moody cinematic scene with neon lights" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDOUF1A10DEMRczW8HnKbqF72QDBjnaonkoJ8Q_byXNNBCXaTVKNYfYMiJLvVvYc3kk1T6kQMUMd1tfE5CW--LZWqul43pR1NA7zjSmgmT_MIxBqJ2ylqdUlwt5NCWeP35EDlKyBNBufoIVBPtZ82D92yiirpO3flvMZU2SwNMOa6khSsJD8iDGGbvckSURqmF41hQbgnMgqcn4HkYBYsdUx8C6lGSLUgu5S-Ap0Ib_d9C2lgvShHM2g3GPW3-jLjT5zHZr9xGZ"/>
+<div class="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-colors"></div>
+</div>
+<h3 class="text-white text-sm font-medium truncate">The Ancestor</h3>
+<p class="text-xs text-gray-500">2022</p>
+</div>
+<!-- Movie Card 3 -->
+<div class="shrink-0 w-36 group cursor-pointer">
+<div class="w-full h-52 rounded-lg bg-gray-800 overflow-hidden mb-2 relative">
+<img alt="Similar movie poster" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" data-alt="Abstract lights and bokeh effect resembling a movie scene" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDtjBHSStmucpOVQa574rWiFRp2kAKpf6KJQ5MBHZLCpXan0D_zVhxKyBt_Ij6ShiMl6kx1XfkSnNJMof5Ljn1RzEi4SAyuPcJaUuZaQSJ8RFVlhMyrxqT96MEA7bYVY-jHK-1Y8VHoJnXuWh_c9sXH3Opk0nAOVdYRhY17FCmBsHC_BredIjKMoGS3TWRv-XAojiTsIU85OaN3RCeI7N69-HpbmCm6iRVzSjTaQL4ozKsiXNj9oSqNmt2wZ6eK2Tf3n7UoOlhO"/>
+<div class="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-colors"></div>
+</div>
+<h3 class="text-white text-sm font-medium truncate">Night Runners</h3>
+<p class="text-xs text-gray-500">2024</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</body></html>

@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Grocery Voice Ordering Overlay</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Theme Configuration -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#46ec13",
+                        "primary-dark": "#3bd10f",
+                        "background-light": "#f6f8f6",
+                        "background-dark": "#142210",
+                        "card-light": "#ffffff",
+                        "card-dark": "#1c2e18",
+                    },
+                    fontFamily: {
+                        "display": ["Lexend", "sans-serif"]
+                    },
+                    borderRadius: { "DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "2xl": "2rem", "3xl": "2.5rem", "full": "9999px" },
+                    boxShadow: {
+                        'glow': '0 0 40px -10px rgba(70, 236, 19, 0.5)',
+                        'soft': '0 10px 40px -10px rgba(0,0,0,0.08)'
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="font-display bg-background-light dark:bg-background-dark text-slate-900 dark:text-white overflow-hidden">
+<!-- Main Mobile Container -->
+<div class="relative w-full max-w-md mx-auto h-screen overflow-hidden bg-background-light dark:bg-background-dark shadow-2xl flex flex-col">
+<!-- Background App Simulation (Blurred context) -->
+<div aria-hidden="true" class="flex-1 p-4 grid grid-cols-2 gap-4 opacity-30 filter blur-[2px] pointer-events-none">
+<!-- Simulated Header -->
+<div class="col-span-2 flex justify-between items-center mb-4">
+<div class="h-8 w-24 bg-gray-300 dark:bg-gray-700 rounded-lg"></div>
+<div class="h-10 w-10 bg-gray-300 dark:bg-gray-700 rounded-full"></div>
+</div>
+<!-- Simulated Product Grid -->
+<div class="h-48 bg-gray-200 dark:bg-gray-800 rounded-xl"></div>
+<div class="h-48 bg-gray-200 dark:bg-gray-800 rounded-xl"></div>
+<div class="h-48 bg-gray-200 dark:bg-gray-800 rounded-xl"></div>
+<div class="h-48 bg-gray-200 dark:bg-gray-800 rounded-xl"></div>
+</div>
+<!-- Dark Overlay Backdrop -->
+<div class="absolute inset-0 bg-black/60 backdrop-blur-sm z-10 animate-fade-in"></div>
+<!-- Voice Ordering Overlay (Bottom Sheet) -->
+<div class="absolute bottom-0 left-0 w-full z-20 bg-card-light dark:bg-card-dark rounded-t-3xl shadow-[0_-10px_40px_rgba(0,0,0,0.2)] flex flex-col max-h-[85vh] transition-transform duration-300">
+<!-- BottomSheetHandle -->
+<div class="w-full pt-3 pb-1 flex justify-center cursor-grab active:cursor-grabbing">
+<div class="h-1.5 w-12 rounded-full bg-gray-300 dark:bg-gray-600"></div>
+</div>
+<!-- Header & Controls -->
+<div class="px-6 pt-2 pb-4 flex justify-between items-start">
+<div></div> <!-- Spacer -->
+<button class="p-2 -mr-2 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 transition-colors rounded-full hover:bg-gray-100 dark:hover:bg-gray-800">
+<span class="material-symbols-outlined text-3xl">close</span>
+</button>
+</div>
+<!-- Main Voice Interaction Area -->
+<div class="px-6 flex flex-col items-center text-center">
+<!-- Dynamic Header -->
+<h2 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white mb-2">
+                    Say what you need
+                </h2>
+<!-- Helper Text -->
+<p class="text-gray-500 dark:text-gray-400 text-sm mb-8">
+                    Try "2 kilos of rice and cooking oil"
+                </p>
+<!-- Voice Visualizer (Active State) -->
+<div class="relative flex justify-center items-center mb-8">
+<!-- Pulse Rings -->
+<div class="absolute w-24 h-24 rounded-full bg-primary/20 animate-ping"></div>
+<div class="absolute w-20 h-20 rounded-full bg-primary/40 animate-pulse"></div>
+<!-- Main Mic Button -->
+<button class="relative z-10 w-20 h-20 rounded-full bg-primary flex items-center justify-center shadow-glow transform transition active:scale-95">
+<span class="material-symbols-outlined text-4xl text-black">mic</span>
+</button>
+<!-- Waveform Bars (Decorative) -->
+<div class="absolute -right-16 flex gap-1 h-8 items-center">
+<div class="w-1 bg-primary rounded-full h-3 animate-[pulse_1s_ease-in-out_infinite]"></div>
+<div class="w-1 bg-primary rounded-full h-6 animate-[pulse_1.2s_ease-in-out_infinite]"></div>
+<div class="w-1 bg-primary rounded-full h-4 animate-[pulse_0.8s_ease-in-out_infinite]"></div>
+</div>
+<div class="absolute -left-16 flex gap-1 h-8 items-center">
+<div class="w-1 bg-primary rounded-full h-4 animate-[pulse_0.8s_ease-in-out_infinite]"></div>
+<div class="w-1 bg-primary rounded-full h-6 animate-[pulse_1.2s_ease-in-out_infinite]"></div>
+<div class="w-1 bg-primary rounded-full h-3 animate-[pulse_1s_ease-in-out_infinite]"></div>
+</div>
+</div>
+<!-- Live Transcription Box -->
+<div class="w-full bg-background-light dark:bg-background-dark rounded-xl p-4 mb-6 border-2 border-primary/20 flex flex-col items-center">
+<p class="text-lg font-medium text-slate-800 dark:text-gray-100">
+                        "2 kilos of rice and oil..."
+                    </p>
+<div class="flex items-center gap-2 mt-2">
+<span class="w-2 h-2 bg-primary rounded-full animate-bounce"></span>
+<span class="text-xs font-bold text-primary uppercase tracking-wider">Listening</span>
+</div>
+</div>
+</div>
+<!-- Suggested Products Section (Appears after/during speech) -->
+<div class="flex-1 w-full bg-gray-50/50 dark:bg-gray-800/30 border-t border-gray-100 dark:border-gray-700/50 pt-6 pb-24 overflow-y-auto">
+<div class="px-6 mb-3 flex items-center justify-between">
+<h3 class="font-bold text-gray-800 dark:text-gray-200">Suggested items</h3>
+<span class="text-xs font-medium text-primary bg-primary/10 px-2 py-1 rounded-full">2 Found</span>
+</div>
+<!-- Horizontal Scroll Container -->
+<div class="flex overflow-x-auto gap-4 px-6 pb-4 scrollbar-hide snap-x">
+<!-- Product Card 1 -->
+<div class="snap-center shrink-0 w-64 p-3 bg-white dark:bg-gray-800 rounded-2xl shadow-soft border border-gray-100 dark:border-gray-700 flex gap-3 items-center">
+<div class="w-20 h-20 rounded-xl bg-gray-100 dark:bg-gray-700 overflow-hidden shrink-0 relative">
+<img alt="Bag of white rice on a clean surface" class="w-full h-full object-cover" data-alt="Bag of white rice on a clean surface" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAW0Igb8stRJuOQ91V4ihwUOTelqbDZkv9W8lQeP56SNmY2UMh1XRVdPVSl2CaqOhRTvwQHxfLD2qKHcNi2So6J3TjqrkKOl-OAWKNr5WD8uPJXdBM6h0CYXpeVeOMq0JR39747Us2No4fwG-eLQ8tQAG2kYr0Kktnkp7AB4jm9v4XgnBOGWH14mOVk37wuPl1GSzCKElgUaf_v_4Hyo8MhyvmU6SMAbAYz8W4n33WenLJQlWndhjfPFX4IPO1yZ3mGewhAkF-_"/>
+</div>
+<div class="flex-1">
+<h4 class="font-bold text-slate-900 dark:text-white leading-tight mb-1">Premium Rice</h4>
+<p class="text-xs text-gray-500 mb-2">2kg Bag</p>
+<div class="flex items-center justify-between">
+<span class="text-sm font-bold text-slate-900 dark:text-white">₦3,500</span>
+<div class="h-6 w-6 rounded-full bg-primary text-black flex items-center justify-center">
+<span class="material-symbols-outlined text-sm">check</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Product Card 2 -->
+<div class="snap-center shrink-0 w-64 p-3 bg-white dark:bg-gray-800 rounded-2xl shadow-soft border border-gray-100 dark:border-gray-700 flex gap-3 items-center">
+<div class="w-20 h-20 rounded-xl bg-gray-100 dark:bg-gray-700 overflow-hidden shrink-0 relative">
+<img alt="Golden vegetable cooking oil in a bottle" class="w-full h-full object-cover" data-alt="Golden vegetable cooking oil in a bottle" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAnVrI6RIZgEa9W3fj6YJcY5upYE3SV7gYGj68X1_JwEmc0ERcrlY-kY6Hlujo8O8-73_kqAFxJ84--Z62X3lkzw7528ch9cte-yngoKG9vl3SyXAb_2Mlt2LR6xTh2SgNy3WJx81lhZM1nJ3mnjEa0lkbmFNHN7u1IazIgTWKFMMG7_6-7_OIp-pmyQjWlRuMRa-2N2XmERY92-I1tdhq4vAxbMpIOSVUOIVLnc_eYBhhhR3FNiM18QyAZaL0sBivcEjGGegR3"/>
+</div>
+<div class="flex-1">
+<h4 class="font-bold text-slate-900 dark:text-white leading-tight mb-1">Golden Oil</h4>
+<p class="text-xs text-gray-500 mb-2">1 Liter</p>
+<div class="flex items-center justify-between">
+<span class="text-sm font-bold text-slate-900 dark:text-white">₦1,200</span>
+<div class="h-6 w-6 rounded-full bg-primary text-black flex items-center justify-center">
+<span class="material-symbols-outlined text-sm">check</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Spacer for scroll -->
+<div class="w-2 shrink-0"></div>
+</div>
+</div>
+<!-- Fixed Bottom Actions -->
+<div class="absolute bottom-0 left-0 w-full bg-white dark:bg-card-dark border-t border-gray-100 dark:border-gray-800 p-4 pb-8 flex flex-col gap-3 shadow-[0_-5px_20px_rgba(0,0,0,0.05)]">
+<!-- Primary Action -->
+<button class="w-full bg-primary hover:bg-primary-dark text-black font-bold text-lg py-4 rounded-xl shadow-lg shadow-primary/30 flex items-center justify-center gap-3 transition-transform active:scale-[0.98]">
+<span>Confirm Order</span>
+<span class="bg-black/10 rounded-full p-1">
+<span class="material-symbols-outlined text-xl align-middle">arrow_forward</span>
+</span>
+</button>
+<!-- Secondary Actions Row -->
+<div class="flex justify-between items-center px-2">
+<button class="text-gray-500 dark:text-gray-400 font-medium text-sm flex items-center gap-1 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
+<span class="material-symbols-outlined text-lg">keyboard</span>
+                        Type instead
+                    </button>
+<button class="text-red-500 dark:text-red-400 font-medium text-sm p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20">
+                        Cancel
+                    </button>
+</div>
+</div>
+</div>
+</div>
+</body></html>

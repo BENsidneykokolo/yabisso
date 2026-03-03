@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Yabisso Camera Permission</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Noto+Sans:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#137fec",
+              "background-light": "#f6f7f8",
+              "background-dark": "#101922",
+              "brand-red": "#ef4444",
+              "brand-yellow": "#eab308",
+              "brand-green": "#22c55e",
+            },
+            fontFamily: {
+              "display": ["Space Grotesk", "sans-serif"],
+              "body": ["Noto Sans", "sans-serif"],
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "2xl": "1rem", "3xl": "1.5rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .icon-fill {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="font-display antialiased bg-gray-900 text-white overflow-hidden">
+<!-- Main Container simulating the app screen behind the modal -->
+<div class="relative h-screen w-full flex flex-col items-center justify-end overflow-hidden">
+<!-- Background Mock Content (Map/App View) -->
+<div class="absolute inset-0 z-0">
+<!-- Simulated Map Background -->
+<div class="w-full h-full bg-cover bg-center opacity-40 blur-sm scale-110" data-alt="Abstract dark map texture of an African city street layout" data-location="Nairobi, Kenya" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAY45MgtlmVgxIoihgSqd7ues0noTWfPprq7t4fcCQuDsy-U2Wv7Q5Z7Ds_21ciotkyX0DqDHUd0wAvEcpbRNR2oQnhR_wlr6mHo_VyJXfnewHb6Iznktt7p4h9A5SRFSbPenuLJhq4GtvnkEsVLas05-NK5JZ_llV8wP6r9n4pZtFucvZLV2MnXlheWLXSMst4w9jPiYJ85olYuQnM6fFjH3U7wgt_Pvy4qLUTTD81_PNtrjekvxzDu7PixNzDbGmcbN-gSis-');">
+</div>
+<!-- Overlay to darken background further -->
+<div class="absolute inset-0 bg-black/60"></div>
+</div>
+<!-- Bottom Sheet Modal -->
+<div class="relative z-10 w-full max-w-md mx-auto bg-background-light dark:bg-background-dark rounded-t-3xl shadow-2xl transform transition-transform duration-300 ease-out flex flex-col">
+<!-- Bottom Sheet Handle -->
+<div class="flex flex-col items-center pt-3 pb-2 w-full">
+<div class="h-1.5 w-12 rounded-full bg-gray-300 dark:bg-gray-700"></div>
+</div>
+<!-- Content Container -->
+<div class="px-6 pt-2 pb-8 flex flex-col items-center text-center">
+<!-- Illustration Area with Brand Colors -->
+<div class="relative w-full h-48 flex items-center justify-center mb-4">
+<!-- Abstract geometric confetti / blobs (Brand colors) -->
+<div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-primary/20 rounded-full blur-2xl"></div>
+<div class="absolute top-1/3 left-1/3 w-16 h-16 bg-brand-yellow/30 rounded-full blur-xl animate-pulse"></div>
+<div class="absolute bottom-1/3 right-1/3 w-12 h-12 bg-brand-red/20 rounded-full blur-xl"></div>
+<div class="absolute top-1/2 right-1/4 w-8 h-8 bg-brand-green/20 rounded-full blur-lg"></div>
+<!-- Main 3D-style Icon -->
+<div class="relative bg-background-light dark:bg-[#1a2632] p-6 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700/50 flex flex-col items-center justify-center">
+<span class="material-symbols-outlined text-primary !text-[64px] icon-fill">qr_code_scanner</span>
+<!-- Offline Badge -->
+<div class="absolute -bottom-3 flex items-center gap-1 bg-brand-green/10 border border-brand-green/20 backdrop-blur-md px-2 py-0.5 rounded-full">
+<span class="material-symbols-outlined text-brand-green !text-[12px]">wifi_off</span>
+<span class="text-[10px] font-bold text-brand-green tracking-wide uppercase">Offline Ready</span>
+</div>
+</div>
+</div>
+<!-- Headline -->
+<h2 class="text-gray-900 dark:text-white text-2xl font-bold leading-tight mb-3">
+                    Enable Camera Access
+                </h2>
+<!-- Body Text -->
+<p class="text-gray-500 dark:text-gray-400 text-base font-normal leading-relaxed max-w-xs mb-6">
+                    To pay merchants and connect offline, Yabisso needs permission to see through your lens. It's safe and instant.
+                </p>
+<!-- Primary Action -->
+<button class="w-full flex items-center justify-center h-14 bg-primary hover:bg-blue-600 active:bg-blue-700 text-white rounded-xl text-lg font-bold tracking-wide transition-colors mb-3 shadow-lg shadow-primary/25">
+<span class="mr-2">Allow Access</span>
+<span class="material-symbols-outlined !text-[20px]">check_circle</span>
+</button>
+<!-- Secondary Action -->
+<button class="w-full py-3 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white font-medium text-base transition-colors">
+                    Not Now
+                </button>
+<!-- Micro-copy / Trust -->
+<div class="mt-4 flex items-start justify-center gap-2 opacity-60">
+<span class="material-symbols-outlined !text-[16px] text-gray-400 pt-0.5">lock</span>
+<p class="text-[11px] text-gray-500 dark:text-gray-400 text-left max-w-[240px] leading-tight">
+                        We only use the camera when you are actively scanning a code.
+                    </p>
+</div>
+</div>
+<!-- Bottom safe area padding for modern phones -->
+<div class="h-6 w-full"></div>
+</div>
+</div>
+</body></html>

@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Yabisso - Ride Progress</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#137fec",
+              "background-light": "#f6f7f8",
+              "background-dark": "#101922",
+              "surface-dark": "#192633",
+              "surface-dark-lighter": "#233648",
+              "brand-red": "#ef4444",
+              "brand-yellow": "#eab308",
+              "brand-green": "#22c55e",
+            },
+            fontFamily: {
+              "display": ["Plus Jakarta Sans", "sans-serif"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "2xl": "1rem", "3xl": "1.5rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        /* Custom scrollbar for the bottom sheet if content overflows */
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #192633; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #233648; 
+            border-radius: 4px;
+        }
+        .map-gradient-overlay {
+            background: linear-gradient(to bottom, rgba(16, 25, 34, 0.6) 0%, rgba(16, 25, 34, 0) 20%, rgba(16, 25, 34, 0) 80%, rgba(16, 25, 34, 1) 100%);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-dark text-white font-display overflow-hidden h-screen w-full relative">
+<!-- Background Map -->
+<div class="absolute inset-0 z-0 h-full w-full">
+<div class="w-full h-full bg-cover bg-center" data-alt="Dark mode city map view showing streets and navigation path" data-location="Accra, Ghana" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDbmPRDkgaDDsDWgZttXMmzluPzWPeTK2uuZgaeYkCUEN2aF2MQd6cxJsp0dtsXRAtXFc7z4y3Fp_qEmqOcWl7ehf8VO1bix2CcRCrgAiebDFLED_wbHuMtFH4QFt18VpdhgDLKcG73_e9Zw-zIZW5LeZdyPN4KTFAiT94yW4jlx0QEV_641hHnekGBLpbQcR8oGQaoRhX0kbe-uW5FxF5LpYPiK9tv7v07rPv6eDt_fApfamB9qejYvjnpDAzCN4FTVs1iRgOK");'>
+</div>
+<!-- Gradient Overlay for better text visibility -->
+<div class="absolute inset-0 map-gradient-overlay pointer-events-none"></div>
+</div>
+<!-- Floating Top Bar -->
+<div class="absolute top-0 left-0 right-0 z-10 px-4 py-6 flex flex-col gap-4">
+<!-- Navigation & Help -->
+<div class="flex items-center justify-between">
+<button class="flex items-center justify-center size-10 rounded-full bg-surface-dark/80 backdrop-blur-sm shadow-lg border border-surface-dark-lighter text-white hover:bg-surface-dark transition-colors">
+<span class="material-symbols-outlined" style="font-size: 24px;">arrow_back</span>
+</button>
+<div class="px-4 py-2 bg-surface-dark/90 backdrop-blur-md rounded-full border border-surface-dark-lighter shadow-lg flex items-center gap-2">
+<div class="w-2 h-2 rounded-full bg-brand-green animate-pulse"></div>
+<span class="text-sm font-bold tracking-wide">En Route</span>
+</div>
+<button class="flex items-center justify-center h-10 px-4 rounded-full bg-surface-dark/80 backdrop-blur-sm shadow-lg border border-surface-dark-lighter text-[#92adc9] font-semibold text-sm hover:text-white hover:bg-surface-dark transition-colors">
+                Help
+            </button>
+</div>
+<!-- Floating Route Status Card -->
+<div class="mx-2 mt-2 p-3 bg-surface-dark/90 backdrop-blur-md rounded-xl border border-surface-dark-lighter shadow-xl flex items-center gap-3">
+<div class="flex-1 min-w-0">
+<div class="flex items-center gap-2 text-[#92adc9] text-xs font-medium uppercase tracking-wider mb-0.5">
+<span class="material-symbols-outlined text-brand-green" style="font-size: 14px;">my_location</span>
+                    Current Location
+                 </div>
+<div class="text-white font-semibold truncate">Independence Arch, Accra</div>
+</div>
+<div class="w-px h-8 bg-surface-dark-lighter"></div>
+<div class="flex-1 min-w-0 text-right">
+<div class="flex items-center justify-end gap-2 text-[#92adc9] text-xs font-medium uppercase tracking-wider mb-0.5">
+                    Destination
+                    <span class="material-symbols-outlined text-brand-red" style="font-size: 14px;">location_on</span>
+</div>
+<div class="text-white font-semibold truncate">Kotoka Int. Airport</div>
+</div>
+</div>
+</div>
+<!-- Bottom Sheet Container -->
+<div class="absolute bottom-0 left-0 right-0 z-20 flex flex-col">
+<!-- Quick Action FABs (Floating above sheet) -->
+<div class="flex justify-between items-end px-4 mb-4 pointer-events-none">
+<!-- Map Controls (Left) -->
+<div class="flex flex-col gap-2 pointer-events-auto">
+<button class="size-10 flex items-center justify-center rounded-lg bg-surface-dark shadow-lg border border-surface-dark-lighter text-white">
+<span class="material-symbols-outlined">add</span>
+</button>
+<button class="size-10 flex items-center justify-center rounded-lg bg-surface-dark shadow-lg border border-surface-dark-lighter text-white">
+<span class="material-symbols-outlined">remove</span>
+</button>
+</div>
+<!-- Re-center / Safety (Right) -->
+<div class="flex flex-col gap-3 pointer-events-auto items-end">
+<button class="size-12 flex items-center justify-center rounded-full bg-surface-dark shadow-lg border border-surface-dark-lighter text-brand-red hover:bg-brand-red hover:text-white transition-colors group">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform">local_police</span>
+</button>
+<button class="size-12 flex items-center justify-center rounded-full bg-primary shadow-[0_4px_12px_rgba(19,127,236,0.4)] text-white hover:bg-blue-600 transition-colors">
+<span class="material-symbols-outlined">navigation</span>
+</button>
+</div>
+</div>
+<!-- Main Content Sheet -->
+<div class="bg-surface-dark rounded-t-3xl shadow-[0_-4px_24px_rgba(0,0,0,0.4)] border-t border-surface-dark-lighter pb-6 pt-2 overflow-hidden flex flex-col">
+<!-- Drag Handle -->
+<div class="w-12 h-1.5 bg-surface-dark-lighter rounded-full mx-auto mb-4 mt-2"></div>
+<div class="px-5 flex flex-col gap-6">
+<!-- Driver Card -->
+<div class="flex items-stretch justify-between gap-4">
+<div class="flex flex-1 flex-col justify-center gap-1">
+<div class="flex items-center gap-2">
+<h3 class="text-white text-lg font-bold leading-tight">Kwame O.</h3>
+<div class="flex items-center gap-0.5 bg-surface-dark-lighter px-1.5 py-0.5 rounded text-xs text-white">
+<span class="material-symbols-outlined text-brand-yellow text-[14px]">star</span>
+                                4.8
+                             </div>
+</div>
+<p class="text-[#92adc9] text-sm font-normal">Toyota Corolla • <span class="text-white font-medium bg-surface-dark-lighter px-1 rounded ml-1">ACC-123-GH</span></p>
+</div>
+<div class="relative size-14 shrink-0">
+<!-- Driver Avatar -->
+<div class="w-full h-full bg-center bg-cover rounded-full border-2 border-surface-dark-lighter" data-alt="Portrait of the taxi driver" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAA3sBPB9o7XtA5pMK3pMEUJ1pAhFNqtFeAlODQHMkVi3RbMxq1rJJmSwisyIfKa8MV-weO_Pu8EweRIcn-3-jhxXyqdOMe4Rv0vx3iTM_Kfl1xzQjouDBdTDrHnJvnKiW6e7qNXbRKQy411_1pJKmUbwuuTjJL7dr0_EtNFNeDyGdGVh0W-GuNzSnBOnEh-QBN9rpn6b8GVQ9_H8fhKwIqn25lFeU-f-qyw-MKqEJG5lVaX5Bjab9ZJ-6983Dwz-OmcjZJw1LH");'>
+</div>
+<!-- Online Indicator -->
+<div class="absolute bottom-0 right-0 size-3.5 bg-brand-green border-2 border-surface-dark rounded-full"></div>
+</div>
+</div>
+<!-- Stats Grid -->
+<div class="flex gap-4">
+<div class="flex-1 flex flex-col gap-1 rounded-xl p-4 bg-surface-dark-lighter border border-[#2f455a]">
+<div class="flex items-center gap-2 text-[#92adc9]">
+<span class="material-symbols-outlined text-[18px]">schedule</span>
+<span class="text-xs font-semibold uppercase tracking-wide">ETA</span>
+</div>
+<p class="text-white text-2xl font-bold leading-tight">12:45 <span class="text-sm font-medium text-[#92adc9]">PM</span></p>
+</div>
+<div class="flex-1 flex flex-col gap-1 rounded-xl p-4 bg-surface-dark-lighter border border-[#2f455a]">
+<div class="flex items-center gap-2 text-[#92adc9]">
+<span class="material-symbols-outlined text-[18px]">av_timer</span>
+<span class="text-xs font-semibold uppercase tracking-wide">Remaining</span>
+</div>
+<p class="text-white text-2xl font-bold leading-tight">15 <span class="text-sm font-medium text-[#92adc9]">min</span></p>
+</div>
+</div>
+<!-- Actions Bar -->
+<div class="@container">
+<div class="grid grid-cols-4 gap-2">
+<!-- Call -->
+<button class="flex flex-col items-center gap-2 group">
+<div class="flex items-center justify-center size-12 rounded-full bg-surface-dark-lighter group-hover:bg-primary/20 transition-colors border border-transparent group-hover:border-primary/50">
+<span class="material-symbols-outlined text-white group-hover:text-primary">call</span>
+</div>
+<p class="text-[#92adc9] text-xs font-medium group-hover:text-white">Call</p>
+</button>
+<!-- Message -->
+<button class="flex flex-col items-center gap-2 group">
+<div class="flex items-center justify-center size-12 rounded-full bg-surface-dark-lighter group-hover:bg-primary/20 transition-colors border border-transparent group-hover:border-primary/50 relative">
+<span class="material-symbols-outlined text-white group-hover:text-primary">chat</span>
+<span class="absolute top-0 right-0 size-3 bg-brand-red rounded-full border-2 border-surface-dark"></span>
+</div>
+<p class="text-[#92adc9] text-xs font-medium group-hover:text-white">Chat</p>
+</button>
+<!-- Share -->
+<button class="flex flex-col items-center gap-2 group">
+<div class="flex items-center justify-center size-12 rounded-full bg-surface-dark-lighter group-hover:bg-primary/20 transition-colors border border-transparent group-hover:border-primary/50">
+<span class="material-symbols-outlined text-white group-hover:text-primary">share</span>
+</div>
+<p class="text-[#92adc9] text-xs font-medium group-hover:text-white">Share</p>
+</button>
+<!-- More / Cancel -->
+<button class="flex flex-col items-center gap-2 group">
+<div class="flex items-center justify-center size-12 rounded-full bg-surface-dark-lighter group-hover:bg-surface-dark-lighter/80 transition-colors border border-transparent group-hover:border-white/20">
+<span class="material-symbols-outlined text-white">more_horiz</span>
+</div>
+<p class="text-[#92adc9] text-xs font-medium group-hover:text-white">Options</p>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</body></html>
