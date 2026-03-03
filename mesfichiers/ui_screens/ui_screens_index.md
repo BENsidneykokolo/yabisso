@@ -38,6 +38,7 @@
 - Login: `app/src/features/auth/screens/LoginScreen.js`
 - Signup SMS: `app/src/features/auth/screens/SmsSignupScreen.js`
 - Signup QR: `app/src/features/auth/screens/QrSignupScreen.js`
+- Signup PIN: `app/src/features/auth/screens/PinSignupScreen.js`
 - Home (Dashboard): `app/src/features/home/screens/HomeScreen.js`
 - QR Hub: `app/src/features/home/screens/QrHubScreen.js`
 - Home Settings: `app/src/features/home/screens/HomeSettingsScreen.js`
@@ -51,6 +52,17 @@
 - Profil - Langue: `app/src/features/profile/screens/LanguageSettingsScreen.js`
 - Profil - Support: `app/src/features/profile/screens/SupportScreen.js`
 - Profil - Deconnexion: `app/src/features/profile/screens/LogoutScreen.js`
+- Marketplace - Home: `app/src/features/marketplace/screens/MarketplaceHomeScreen.js`
+- Marketplace - Product List: `app/src/features/marketplace/screens/ProductListScreen.js`
+- Marketplace - Category Page: `app/src/features/marketplace/screens/CategoryPageScreen.js`
+- FloatingNav: `app/src/components/FloatingNav.js`
+
+---
+
+## Features UI
+- Search bar: Style dashboard avec popups Voice/Camera
+- Bottom nav: Couleur bleue (#3B82F6) comme dashboard
+- Navigation: Boutique/Catégories/Chatbot/Nouveauté/Commande
 
 ---
 

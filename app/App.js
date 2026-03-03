@@ -27,6 +27,8 @@ import LogoutScreen from './src/features/profile/screens/LogoutScreen';
 import AddProductScreen from './src/features/marketplace/screens/AddProductScreen';
 import SellerProfileScreen from './src/features/marketplace/screens/SellerProfileScreen';
 import MarketplaceHomeScreen from './src/features/marketplace/screens/MarketplaceHomeScreen';
+import ProductListScreen from './src/features/marketplace/screens/ProductListScreen';
+import CategoryPageScreen from './src/features/marketplace/screens/CategoryPageScreen';
 
 export default function App() {
   const [screen, setScreen] = useState('welcome');
@@ -127,7 +129,7 @@ export default function App() {
     content = <HomeNotificationsScreen onBack={() => setScreen('home')} />;
   }
   if (screen === 'wallet') {
-    content = <WalletScreen onBack={() => setScreen('home')} />;
+    content = <WalletScreen onBack={() => setScreen('home')} onOpenHome={() => setScreen('home')} />;
   }
   if (screen === 'assistant') {
     content = <AssistantScreen onBack={() => setScreen('home')} />;
@@ -197,6 +199,29 @@ export default function App() {
           else if (screenName === 'profile') setScreen('profile');
           else if (screenName === 'cart') setScreen('cart');
           else if (screenName === 'orders') setScreen('orders');
+          else if (screenName === 'product_list') setScreen('marketplace_product_list');
+          else if (screenName === 'category_page') setScreen('marketplace_category_page');
+        }}
+      />
+    );
+  }
+  if (screen === 'marketplace_product_list') {
+    content = (
+      <ProductListScreen
+        onBack={() => setScreen('marketplace_home')}
+        onNavigate={(screenName) => {
+          if (screenName === 'marketplace_home') setScreen('marketplace_home');
+          if (screenName === 'category_page') setScreen('marketplace_category_page');
+        }}
+      />
+    );
+  }
+  if (screen === 'marketplace_category_page') {
+    content = (
+      <CategoryPageScreen
+        onBack={() => setScreen('marketplace_product_list')}
+        onNavigate={(screenName) => {
+          if (screenName === 'marketplace_home') setScreen('marketplace_home');
         }}
       />
     );
@@ -213,6 +238,8 @@ export default function App() {
     screen === 'profile_support' ||
     screen === 'profile_logout' ||
     screen === 'marketplace_home' ||
+    screen === 'marketplace_product_list' ||
+    screen === 'marketplace_category_page' ||
     screen === 'market_seller' ||
     screen === 'market_add_product';
 

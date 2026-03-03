@@ -6,6 +6,8 @@ import {
   StyleSheet,
   Text,
   View,
+  Modal,
+  TouchableOpacity,
 } from 'react-native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 
@@ -120,6 +122,8 @@ export default function HomeScreen({
 }) {
   const [activeTab, setActiveTab] = useState('Accueil');
   const [showAllServices, setShowAllServices] = useState(false);
+  const [showVoiceModal, setShowVoiceModal] = useState(false);
+  const [showCameraModal, setShowCameraModal] = useState(false);
   const isExpanded = showAllServices;
 
   useEffect(() => {
@@ -140,8 +144,9 @@ export default function HomeScreen({
   return (
     <SafeAreaView style={styles.root}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
+        <View style={styles.topSpacer} />
         <View style={styles.headerRow}>
-          <View style={styles.profileRow}>
+          <Pressable style={styles.profileRow} onPress={onOpenProfile}>
             <View style={styles.avatar}>
               <View style={styles.avatarDot} />
             </View>
@@ -151,7 +156,7 @@ export default function HomeScreen({
               </Text>
               <Text style={styles.name}>Kwesi</Text>
             </View>
-          </View>
+          </Pressable>
           <View style={styles.headerActions}>
             <Pressable style={styles.actionButton} onPress={onOpenQr}>
               <Ionicons name="qr-code" size={18} color="#E6EDF3" />
@@ -195,12 +200,12 @@ export default function HomeScreen({
               : 'Rechercher un service (ex: resto)'}
           </Text>
           <View style={styles.searchRight}>
-            <View style={styles.searchMini}>
+            <Pressable style={styles.searchMini} onPress={() => setShowCameraModal(true)}>
               <Ionicons name="camera" size={14} color="#CBD5F5" />
-            </View>
-            <View style={styles.searchMini}>
+            </Pressable>
+            <Pressable style={styles.searchMini} onPress={() => setShowVoiceModal(true)}>
               <Ionicons name="mic" size={14} color="#CBD5F5" />
-            </View>
+            </Pressable>
           </View>
         </View>
 
@@ -377,6 +382,82 @@ export default function HomeScreen({
         </View>
       </SafeAreaView>
 
+      {/* Voice Search Modal */}
+      <Modal
+        visible={showVoiceModal}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setShowVoiceModal(false)}
+      >
+        <TouchableOpacity 
+          style={styles.modalOverlay} 
+          activeOpacity={1} 
+          onPress={() => setShowVoiceModal(false)}
+        >
+          <View style={styles.modalContent}>
+            <Pressable style={styles.closeModalBtn} onPress={() => setShowVoiceModal(false)}>
+              <MaterialCommunityIcons name="close" size={24} color="#fff" />
+            </Pressable>
+            
+            <View style={styles.voiceIconContainer}>
+              <MaterialCommunityIcons name="microphone" size={64} color="#137fec" />
+            </View>
+            
+            <Text style={styles.modalTitle}>Recherche vocale</Text>
+            <Text style={styles.modalSubtitle}>Parlez maintenant...</Text>
+            
+            <View style={styles.voiceWaveContainer}>
+              <View style={styles.voiceWave} />
+              <View style={styles.voiceWave} />
+              <View style={styles.voiceWave} />
+            </View>
+            
+            <Pressable style={styles.voiceCancelBtn} onPress={() => setShowVoiceModal(false)}>
+              <Text style={styles.voiceCancelText}>Annuler</Text>
+            </Pressable>
+          </View>
+        </TouchableOpacity>
+      </Modal>
+
+      {/* Camera Search Modal */}
+      <Modal
+        visible={showCameraModal}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setShowCameraModal(false)}
+      >
+        <TouchableOpacity 
+          style={styles.modalOverlay} 
+          activeOpacity={1} 
+          onPress={() => setShowCameraModal(false)}
+        >
+          <View style={styles.modalContent}>
+            <Pressable style={styles.closeModalBtn} onPress={() => setShowCameraModal(false)}>
+              <MaterialCommunityIcons name="close" size={24} color="#fff" />
+            </Pressable>
+            
+            <Text style={styles.modalTitle}>Recherche par image</Text>
+            <Text style={styles.modalSubtitle}>Prenez une photo ou importez une image</Text>
+            
+            <View style={styles.cameraOptions}>
+              <Pressable style={styles.cameraOptionBtn}>
+                <View style={styles.cameraOptionIcon}>
+                  <MaterialCommunityIcons name="camera" size={32} color="#fff" />
+                </View>
+                <Text style={styles.cameraOptionText}>Appareil photo</Text>
+              </Pressable>
+              
+              <Pressable style={styles.cameraOptionBtn}>
+                <View style={styles.cameraOptionIcon}>
+                  <MaterialCommunityIcons name="image" size={32} color="#fff" />
+                </View>
+                <Text style={styles.cameraOptionText}>Galerie</Text>
+              </Pressable>
+            </View>
+          </View>
+        </TouchableOpacity>
+      </Modal>
+
     </SafeAreaView>
   );
 }
@@ -385,6 +466,9 @@ const styles = StyleSheet.create({
   root: {
     flex: 1,
     backgroundColor: '#0E151B',
+  },
+  topSpacer: {
+    height: 20,
   },
   scrollContent: {
     paddingTop: 20,
@@ -711,5 +795,95 @@ const styles = StyleSheet.create({
   },
   navLabelActive: {
     color: '#2BEE79',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    justifyContent: 'flex-end',
+  },
+  modalContent: {
+    backgroundColor: '#1a242d',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    padding: 24,
+    paddingBottom: 40,
+    alignItems: 'center',
+  },
+  closeModalBtn: {
+    position: 'absolute',
+    top: 16,
+    right: 16,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  voiceIconContainer: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: 'rgba(19, 127, 236, 0.15)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginVertical: 24,
+  },
+  modalTitle: {
+    color: '#fff',
+    fontSize: 20,
+    fontWeight: '700',
+    marginBottom: 8,
+  },
+  modalSubtitle: {
+    color: '#92adc9',
+    fontSize: 14,
+    marginBottom: 24,
+  },
+  voiceWaveContainer: {
+    flexDirection: 'row',
+    height: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 24,
+  },
+  voiceWave: {
+    width: 4,
+    height: 20,
+    backgroundColor: '#137fec',
+    marginHorizontal: 3,
+    borderRadius: 2,
+  },
+  voiceCancelBtn: {
+    paddingVertical: 12,
+    paddingHorizontal: 32,
+  },
+  voiceCancelText: {
+    color: '#ef4444',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  cameraOptions: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 24,
+    marginTop: 16,
+  },
+  cameraOptionBtn: {
+    alignItems: 'center',
+    gap: 12,
+  },
+  cameraOptionIcon: {
+    width: 80,
+    height: 80,
+    borderRadius: 20,
+    backgroundColor: '#137fec',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cameraOptionText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
   },
 });

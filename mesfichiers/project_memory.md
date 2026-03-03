@@ -27,6 +27,8 @@
 - UI onboarding/auth: Welcome, Language, Signup, Login, SMS, QR
 - Dashboard/Home + pages QR/Settings/Notifications
 - Pages: Wallet, Assistant IA, Profil + sous-pages (Compte, Securite, Notifications, Langue, Support, Deconnexion)
+- Marketplace: MarketplaceHomeScreen, ProductListScreen, CategoryPageScreen
+- FloatingNav: bouton flottant (bottom: 120)
 - Offline choix SMS/QR: modal active quand offline (NetInfo)
 - Schema DB local: profiles, sync_queue, signup_nonces, signup_verifications
 - Service offline signup: generation payload + enqueue SyncQueue (non connecte a l'UI)
@@ -96,6 +98,9 @@
 - Sprint 1: UI onboarding/auth (Welcome, Language, Signup, Login, SMS, QR)
 - Sprint 1: dashboard + Wallet/Assistant/Profil + pages settings
 - Sprint 1: schema DB local (profiles, sync_queue, signup_nonces, signup_verifications)
+- Sprint 1: Marketplace (MarketplaceHomeScreen, ProductListScreen, CategoryPageScreen)
+- Sprint 1: FloatingNav.position bottom: 120
+- Sprint 1: Search bar style dashboard + Voice/Camera popups
 
 ## Decisions techniques additionnelles
 - Navigation: React Navigation (a installer)

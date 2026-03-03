@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Pressable,
   SafeAreaView,
@@ -15,15 +15,6 @@ const quickStats = [
   { label: 'Prestations', value: '5' },
 ];
 
-const settings = [
-  { key: 'account', label: 'Compte', icon: 'account-circle' },
-  { key: 'security', label: 'Securite', icon: 'shield-lock' },
-  { key: 'notifications', label: 'Notifications', icon: 'bell' },
-  { key: 'language', label: 'Langue', icon: 'translate' },
-  { key: 'help', label: 'Aide et support', icon: 'help-circle' },
-  { key: 'logout', label: 'Se deconnecter', icon: 'logout' },
-];
-
 export default function ProfileScreen({
   onBack,
   onOpenAccount,
@@ -34,6 +25,14 @@ export default function ProfileScreen({
   onOpenLogout,
   onOpenWallet,
 }) {
+  const [activeTab, setActiveTab] = useState('Compte');
+
+  const navItems = [
+    { label: 'Compte', icon: 'account-circle', key: 'account' },
+    { label: 'Securite', icon: 'shield-lock', key: 'security' },
+    { label: 'Aide', icon: 'help-circle', key: 'help' },
+    { label: 'Notifs', icon: 'bell', key: 'notifications' },
+  ];
   return (
     <SafeAreaView style={styles.root}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
@@ -102,44 +101,56 @@ export default function ProfileScreen({
             </View>
           ))}
         </View>
-
-        <View style={styles.sectionRow}>
-          <Text style={styles.sectionTitle}>Parametres</Text>
-        </View>
-
-        {settings.map((item) => (
-          <Pressable
-            key={item.key}
-            style={styles.settingRow}
-            onPress={() => {
-              if (item.key === 'account') {
-                onOpenAccount?.();
-              }
-              if (item.key === 'security') {
-                onOpenSecurity?.();
-              }
-              if (item.key === 'notifications') {
-                onOpenNotifications?.();
-              }
-              if (item.key === 'language') {
-                onOpenLanguage?.();
-              }
-              if (item.key === 'help') {
-                onOpenSupport?.();
-              }
-              if (item.key === 'logout') {
-                onOpenLogout?.();
-              }
-            }}
-          >
-            <View style={styles.settingIcon}>
-              <MaterialCommunityIcons name={item.icon} size={18} color="#0E151B" />
-            </View>
-            <Text style={styles.settingLabel}>{item.label}</Text>
-            <Ionicons name="chevron-forward" size={18} color="#94A3B8" />
-          </Pressable>
-        ))}
       </ScrollView>
+
+      <SafeAreaView style={styles.bottomNavWrapper}>
+        <View style={styles.bottomNav}>
+          {navItems.map((item) => {
+            const isActive = activeTab === item.key;
+            return (
+              <Pressable
+                key={item.key}
+                style={({ pressed }) => [
+                  styles.navItem,
+                  pressed && styles.navItemPressed,
+                ]}
+                onPress={() => {
+                  setActiveTab(item.key);
+                  if (item.key === 'account') {
+                    onOpenAccount?.();
+                  }
+                  if (item.key === 'security') {
+                    onOpenSecurity?.();
+                  }
+                  if (item.key === 'notifications') {
+                    onOpenNotifications?.();
+                  }
+                  if (item.key === 'help') {
+                    onOpenSupport?.();
+                  }
+                }}
+              >
+                <View
+                  style={[
+                    styles.navIcon,
+                    isActive && styles.navIconActive,
+                    isActive && styles.navIconCenter,
+                  ]}
+                >
+                  <MaterialCommunityIcons
+                    name={item.icon}
+                    size={isActive ? 20 : 18}
+                    color={isActive ? '#0E151B' : '#CBD5F5'}
+                  />
+                </View>
+                <Text style={[styles.navLabel, isActive && styles.navLabelActive]}>
+                  {item.label}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </View>
+      </SafeAreaView>
     </SafeAreaView>
   );
 }
@@ -357,5 +368,57 @@ const styles = StyleSheet.create({
     color: '#F8FAFC',
     fontSize: 13,
     fontWeight: '600',
+  },
+  bottomNavWrapper: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    paddingHorizontal: 16,
+    paddingBottom: 36,
+  },
+  bottomNav: {
+    backgroundColor: 'rgba(22, 29, 37, 0.98)',
+    borderRadius: 24,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+    marginBottom: 4,
+  },
+  navItem: {
+    alignItems: 'center',
+    flex: 1,
+  },
+  navItemPressed: {
+    transform: [{ scale: 0.96 }],
+  },
+  navIcon: {
+    width: 22,
+    height: 22,
+    borderRadius: 6,
+    backgroundColor: 'rgba(255, 255, 255, 0.18)',
+    marginBottom: 6,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  navIconActive: {
+    backgroundColor: '#2BEE79',
+  },
+  navIconCenter: {
+    width: 34,
+    height: 34,
+    borderRadius: 12,
+    backgroundColor: '#2BEE79',
+    marginTop: -14,
+  },
+  navLabel: {
+    color: '#6B7280',
+    fontSize: 10,
+  },
+  navLabelActive: {
+    color: '#2BEE79',
   },
 });

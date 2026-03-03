@@ -12,6 +12,38 @@ import {
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 
+const categories = [
+  { name: 'Tout', icon: 'apps' },
+  { name: 'Téléphones', icon: 'smartphone' },
+  { name: 'Ordinateurs', icon: 'laptop' },
+  { name: 'Télévisions', icon: 'television' },
+  { name: 'Audio', icon: 'headphones' },
+  { name: 'Accessoires', icon: 'watch' },
+  { name: 'Gaming', icon: 'gamepad-variant' },
+  { name: 'Photo', icon: 'camera' },
+];
+
+const brands = [
+  { name: 'Tout', icon: 'apps' },
+  { name: 'Apple', icon: 'apple' },
+  { name: 'Samsung', icon: 'cellphone' },
+  { name: 'Tecno', icon: 'cellphone' },
+  { name: 'Infinix', icon: 'cellphone' },
+  { name: 'Xiaomi', icon: 'cellphone' },
+  { name: 'Huawei', icon: 'cellphone' },
+];
+
+const products = [
+  { id: 1, name: 'iPhone 13 Pro', brand: 'Apple', price: '450k', oldPrice: '500k' },
+  { id: 2, name: 'Samsung S23 Ultra', brand: 'Samsung', price: '480k', oldPrice: '520k' },
+  { id: 3, name: 'MacBook Air M2', brand: 'Apple', price: '680k', oldPrice: '720k' },
+  { id: 4, name: 'Tecno Camon 20', brand: 'Tecno', price: '145k', oldPrice: '160k' },
+  { id: 5, name: 'Samsung TV 55"', brand: 'Samsung', price: '350k', oldPrice: '400k' },
+  { id: 6, name: 'AirPods Pro', brand: 'Apple', price: '95k', oldPrice: '110k' },
+  { id: 7, name: 'Infinix Note 30', brand: 'Infinix', price: '125k', oldPrice: '140k' },
+  { id: 8, name: 'Xiaomi Redmi 12', brand: 'Xiaomi', price: '110k', oldPrice: '125k' },
+];
+
 const bottomNavItems = [
   { label: 'Boutique', icon: 'store' },
   { label: 'Catégories', icon: 'view-grid' },
@@ -20,140 +52,126 @@ const bottomNavItems = [
   { label: 'Commande', icon: 'shopping' },
 ];
 
-const categories = [
-  { name: 'Téléphones', icon: 'smartphone', color: '#137fec' },
-  { name: 'Mode', icon: 'tshirt-crew', color: '#eab308' },
-  { name: 'Maison', icon: 'sofa', color: '#22c55e' },
-  { name: 'Beauté', icon: 'face-woman', color: '#ef4444' },
-];
-
-const products = [
-  { id: 1, name: 'iPhone 13 Pro', brand: 'Apple', price: '450k' },
-  { id: 2, name: 'Air Zoom Pegasus', brand: 'Nike', price: '65k' },
-  { id: 3, name: 'Galaxy Watch 5', brand: 'Samsung', price: '120k' },
-  { id: 4, name: 'MacBook Air', brand: 'Apple', price: '680k' },
-];
-
-const deals = [
-  { id: 1, title: 'Grande Vente', subtitle: 'Électronique & Accessoires', tag: 'PROMO -50%', tagColor: '#ef4444' },
-  { id: 2, title: 'Tech Deals', subtitle: 'Arrivages récents', tag: 'NOUVEAU', tagColor: '#eab308' },
-];
-
-export default function MarketplaceHomeScreen({ onBack, onNavigate }) {
-  const [activeTab, setActiveTab] = useState('Boutique');
+export default function CategoryPageScreen({ onBack, onNavigate }) {
+  const [activeTab, setActiveTab] = useState('Catégories');
+  const [selectedCategory, setSelectedCategory] = useState('Tout');
+  const [selectedBrand, setSelectedBrand] = useState('Tout');
   const [showVoiceModal, setShowVoiceModal] = useState(false);
   const [showCameraModal, setShowCameraModal] = useState(false);
-  const [searchText, setSearchText] = useState('');
 
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.contentWrapper}>
         <ScrollView showsVerticalScrollIndicator={false} style={styles.scrollView}>
           <View style={styles.header}>
-            <View style={styles.headerTop}>
-              <View style={styles.userInfo}>
-                <View style={styles.avatar}>
-                  <MaterialCommunityIcons name="account" size={24} color="#fff" />
-                </View>
-                <View>
-                  <Text style={styles.greeting}>Bonjour, Alex</Text>
-                  <Text style={styles.location}>Abidjan, CI</Text>
-                </View>
-              </View>
-              <Pressable style={styles.notificationBtn}>
-                <MaterialCommunityIcons name="bell-outline" size={24} color="#fff" />
-                <View style={styles.notificationDot} />
-              </Pressable>
-            </View>
-
             <View style={styles.statusRow}>
-              <View style={styles.statusChip}>
-                <MaterialCommunityIcons name="wifi" size={14} color="#22c55e" />
-                <Text style={styles.statusTextGreen}>Online</Text>
+              <Pressable onPress={onBack} style={styles.backBtn}>
+                <MaterialCommunityIcons name="arrow-left" size={22} color="#fff" />
+              </Pressable>
+              <View style={styles.statusChips}>
+                <View style={styles.statusChip}>
+                  <MaterialCommunityIcons name="wifi" size={12} color="#22c55e" />
+                  <Text style={styles.statusTextGreen}>Online</Text>
+                </View>
+                <View style={[styles.statusChip, styles.statusChipSecondary]}>
+                  <MaterialCommunityIcons name="cloud-check-outline" size={12} color="#137fec" />
+                  <Text style={styles.statusText}>Syncronisé</Text>
+                </View>
               </View>
-              <View style={[styles.statusChip, styles.statusChipSecondary]}>
-                <MaterialCommunityIcons name="cloud-check-outline" size={14} color="#137fec" />
-                <Text style={styles.statusText}>Syncronisé</Text>
+              <View style={styles.statusActions}>
+                <Pressable style={styles.actionBtn}>
+                  <MaterialCommunityIcons name="filter-variant" size={20} color="#fff" />
+                </Pressable>
+                <Pressable style={styles.actionBtn}>
+                  <MaterialCommunityIcons name="cart-outline" size={20} color="#fff" />
+                </Pressable>
               </View>
             </View>
 
-            <View style={styles.searchContainer}>
-              <MaterialCommunityIcons name="magnify" size={18} color="#7C8A9A" />
-              <TextInput
-                style={styles.searchInput}
-                placeholder="Rechercher un service (ex: resto)"
-                placeholderTextColor="#7C8A9A"
-                value={searchText}
-                onChangeText={setSearchText}
-              />
-              <View style={styles.searchRight}>
-                <Pressable style={styles.searchMini} onPress={() => setShowVoiceModal(true)}>
-                  <MaterialCommunityIcons name="microphone" size={14} color="#CBD5F5" />
-                </Pressable>
-                <Pressable style={styles.searchMini} onPress={() => setShowCameraModal(true)}>
-                  <MaterialCommunityIcons name="camera" size={14} color="#CBD5F5" />
-                </Pressable>
+            <View style={styles.searchRow}>
+              <View style={styles.searchBar}>
+                <MaterialCommunityIcons name="magnify" size={18} color="#7C8A9A" />
+                <TextInput
+                  style={styles.searchInput}
+                  placeholder="Rechercher un service (ex: resto)"
+                  placeholderTextColor="#7C8A9A"
+                />
+                <View style={styles.searchRight}>
+                  <Pressable style={styles.searchMini} onPress={() => setShowVoiceModal(true)}>
+                    <MaterialCommunityIcons name="microphone" size={14} color="#CBD5F5" />
+                  </Pressable>
+                  <Pressable style={styles.searchMini} onPress={() => setShowCameraModal(true)}>
+                    <MaterialCommunityIcons name="camera" size={14} color="#CBD5F5" />
+                  </Pressable>
+                </View>
               </View>
             </View>
           </View>
 
-          <View style={styles.content}>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.dealsCarousel}>
-              {deals.map((deal) => (
-                <View key={deal.id} style={styles.dealCard}>
-                  <View style={styles.dealContent}>
-                    <View style={[styles.dealTag, { backgroundColor: deal.tagColor }]}>
-                      <Text style={styles.dealTagText}>{deal.tag}</Text>
-                    </View>
-                    <Text style={styles.dealTitle}>{deal.title}</Text>
-                    <Text style={styles.dealSubtitle}>{deal.subtitle}</Text>
+          <View style={styles.categorySection}>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categoryScroll}>
+              {categories.map((cat) => (
+                <Pressable
+                  key={cat.name}
+                  style={[
+                    styles.categoryPill,
+                    selectedCategory === cat.name && styles.categoryPillActive,
+                  ]}
+                  onPress={() => setSelectedCategory(cat.name)}
+                >
+                  <MaterialCommunityIcons
+                    name={cat.icon}
+                    size={14}
+                    color={selectedCategory === cat.name ? '#fff' : '#94a3b8'}
+                  />
+                  <Text style={[
+                    styles.categoryText,
+                    selectedCategory === cat.name && styles.categoryTextActive,
+                  ]}>
+                    {cat.name}
+                  </Text>
+                </Pressable>
+              ))}
+            </ScrollView>
+          </View>
+
+          <View style={styles.brandSection}>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.brandScroll}>
+              {brands.map((brand) => (
+                <Pressable
+                  key={brand.name}
+                  style={[
+                    styles.brandChip,
+                    selectedBrand === brand.name && styles.brandChipActive,
+                  ]}
+                  onPress={() => setSelectedBrand(brand.name)}
+                >
+                  <Text style={[
+                    styles.brandText,
+                    selectedBrand === brand.name && styles.brandTextActive,
+                  ]}>
+                    {brand.name}
+                  </Text>
+                </Pressable>
+              ))}
+            </ScrollView>
+          </View>
+
+          <View style={styles.productsSection}>
+            <View style={styles.productsGrid}>
+              {products.map((product) => (
+                <View key={product.id} style={styles.productCard}>
+                  <View style={styles.productImage}>
+                    <Pressable style={styles.favoriteBtn}>
+                      <MaterialCommunityIcons name="heart-outline" size={16} color="#fff" />
+                    </Pressable>
+                  </View>
+                  <View style={styles.productInfo}>
+                    <Text style={styles.productBrand}>{product.brand}</Text>
+                    <Text style={styles.productName} numberOfLines={2}>{product.name}</Text>
                   </View>
                 </View>
               ))}
-            </ScrollView>
-
-            <View style={styles.section}>
-              <View style={styles.sectionHeader}>
-                <Text style={styles.sectionTitle}>Catégories</Text>
-                <Pressable onPress={() => onNavigate?.('product_list')}>
-                  <Text style={styles.seeAll}>Voir tout</Text>
-                </Pressable>
-              </View>
-              <View style={styles.categoriesGrid}>
-                {categories.map((cat) => (
-                  <Pressable key={cat.name} style={styles.categoryItem} onPress={() => onNavigate?.('product_list')}>
-                    <View style={[styles.categoryIcon, { borderColor: cat.color }]}>
-                      <MaterialCommunityIcons name={cat.icon} size={28} color={cat.color} />
-                    </View>
-                    <Text style={styles.categoryName}>{cat.name}</Text>
-                  </Pressable>
-                ))}
-              </View>
-            </View>
-
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Populaires</Text>
-              <View style={styles.productsGrid}>
-                {products.map((product) => (
-                  <View key={product.id} style={styles.productCard}>
-                    <View style={styles.productImage}>
-                      <Pressable style={styles.favoriteBtn}>
-                        <MaterialCommunityIcons name="heart-outline" size={18} color="#fff" />
-                      </Pressable>
-                    </View>
-                    <View style={styles.productInfo}>
-                      <Text style={styles.productBrand}>{product.brand}</Text>
-                      <Text style={styles.productName} numberOfLines={1}>{product.name}</Text>
-                      <View style={styles.productBottom}>
-                        <Text style={styles.productPrice}>{product.price} FCFA</Text>
-                        <Pressable style={styles.addBtn}>
-                          <MaterialCommunityIcons name="plus" size={18} color="#fff" />
-                        </Pressable>
-                      </View>
-                    </View>
-                  </View>
-                ))}
-              </View>
             </View>
           </View>
         </ScrollView>
@@ -171,9 +189,9 @@ export default function MarketplaceHomeScreen({ onBack, onNavigate }) {
                   ]}
                   onPress={() => {
                     if (item.label === 'Boutique') {
-                      // Already on marketplace home
+                      onNavigate?.('marketplace_home');
                     } else if (item.label === 'Catégories') {
-                      onNavigate?.('category_page');
+                      onNavigate?.('product_list');
                     } else {
                       setActiveTab(item.label);
                     }
@@ -206,29 +224,29 @@ export default function MarketplaceHomeScreen({ onBack, onNavigate }) {
           animationType="slide"
           onRequestClose={() => setShowVoiceModal(false)}
         >
-          <TouchableOpacity 
-            style={styles.modalOverlay} 
-            activeOpacity={1} 
+          <TouchableOpacity
+            style={styles.modalOverlay}
+            activeOpacity={1}
             onPress={() => setShowVoiceModal(false)}
           >
             <View style={styles.modalContent}>
               <Pressable style={styles.closeModalBtn} onPress={() => setShowVoiceModal(false)}>
                 <MaterialCommunityIcons name="close" size={24} color="#fff" />
               </Pressable>
-              
+
               <View style={styles.voiceIconContainer}>
                 <MaterialCommunityIcons name="microphone" size={64} color="#137fec" />
               </View>
-              
+
               <Text style={styles.modalTitle}>Recherche vocale</Text>
               <Text style={styles.modalSubtitle}>Parlez maintenant...</Text>
-              
+
               <View style={styles.voiceWaveContainer}>
                 <View style={styles.voiceWave} />
                 <View style={styles.voiceWave} />
                 <View style={styles.voiceWave} />
               </View>
-              
+
               <Pressable style={styles.voiceCancelBtn} onPress={() => setShowVoiceModal(false)}>
                 <Text style={styles.voiceCancelText}>Annuler</Text>
               </Pressable>
@@ -243,19 +261,19 @@ export default function MarketplaceHomeScreen({ onBack, onNavigate }) {
           animationType="slide"
           onRequestClose={() => setShowCameraModal(false)}
         >
-          <TouchableOpacity 
-            style={styles.modalOverlay} 
-            activeOpacity={1} 
+          <TouchableOpacity
+            style={styles.modalOverlay}
+            activeOpacity={1}
             onPress={() => setShowCameraModal(false)}
           >
             <View style={styles.modalContent}>
               <Pressable style={styles.closeModalBtn} onPress={() => setShowCameraModal(false)}>
                 <MaterialCommunityIcons name="close" size={24} color="#fff" />
               </Pressable>
-              
+
               <Text style={styles.modalTitle}>Recherche par image</Text>
               <Text style={styles.modalSubtitle}>Prenez une photo ou importez une image</Text>
-              
+
               <View style={styles.cameraOptions}>
                 <Pressable style={styles.cameraOptionBtn}>
                   <View style={styles.cameraOptionIcon}>
@@ -263,7 +281,7 @@ export default function MarketplaceHomeScreen({ onBack, onNavigate }) {
                   </View>
                   <Text style={styles.cameraOptionText}>Appareil photo</Text>
                 </Pressable>
-                
+
                 <Pressable style={styles.cameraOptionBtn}>
                   <View style={styles.cameraOptionIcon}>
                     <MaterialCommunityIcons name="image" size={32} color="#fff" />
@@ -290,92 +308,27 @@ const styles = StyleSheet.create({
   scrollView: {
     flex: 1,
   },
-  content: {
-    paddingBottom: 100,
-  },
   header: {
     backgroundColor: '#101922',
     paddingTop: 40,
     paddingHorizontal: 16,
-    paddingBottom: 16,
+    paddingBottom: 12,
   },
-  headerTop: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  userInfo: {
+  searchRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
   },
-  avatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#137fec',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  greeting: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#fff',
-  },
-  location: {
-    fontSize: 12,
-    color: '#94a3b8',
-  },
-  notificationBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+  backBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     backgroundColor: '#1a2632',
     alignItems: 'center',
     justifyContent: 'center',
+    marginRight: 8,
   },
-  notificationDot: {
-    position: 'absolute',
-    top: 8,
-    right: 8,
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: '#ef4444',
-  },
-  statusRow: {
-    flexDirection: 'row',
-    gap: 8,
-    marginBottom: 12,
-  },
-  statusChip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 20,
-    backgroundColor: 'rgba(34, 197, 94, 0.1)',
-    borderWidth: 1,
-    borderColor: 'rgba(34, 197, 94, 0.2)',
-  },
-  statusChipSecondary: {
-    backgroundColor: '#1a2632',
-    borderColor: '#324d67',
-  },
-  statusTextGreen: {
-    fontSize: 12,
-    fontWeight: 'bold',
-    color: '#22c55e',
-  },
-  statusText: {
-    fontSize: 12,
-    fontWeight: '500',
-    color: '#94a3b8',
-  },
-  searchContainer: {
-    marginTop: 16,
+  searchBar: {
+    flex: 1,
     backgroundColor: 'rgba(24, 32, 40, 0.9)',
     borderRadius: 18,
     paddingHorizontal: 14,
@@ -403,99 +356,129 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  content: {
-    paddingBottom: 100,
-  },
-  dealsCarousel: {
-    paddingLeft: 16,
-    marginBottom: 16,
-  },
-  dealCard: {
-    width: 280,
-    height: 160,
-    backgroundColor: '#1a2632',
-    borderRadius: 16,
-    marginRight: 12,
-    overflow: 'hidden',
-  },
-  dealContent: {
-    flex: 1,
-    justifyContent: 'flex-end',
-    padding: 16,
-    backgroundColor: '#324d67',
-  },
-  dealTag: {
-    alignSelf: 'flex-start',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 4,
-    marginBottom: 8,
-  },
-  dealTagText: {
-    fontSize: 10,
-    fontWeight: 'bold',
-    color: '#fff',
-  },
-  dealTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#fff',
-  },
-  dealSubtitle: {
-    fontSize: 14,
-    color: '#94a3b8',
-  },
-  section: {
-    paddingHorizontal: 16,
-    marginBottom: 20,
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#fff',
-  },
-  seeAll: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#137fec',
-  },
-  categoriesGrid: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  categoryItem: {
-    alignItems: 'center',
-    gap: 8,
-  },
-  categoryIcon: {
-    width: 56,
-    height: 56,
-    borderRadius: 16,
+
+  actionBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 12,
     backgroundColor: '#1a2632',
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 1,
   },
-  categoryName: {
+  statusRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+  },
+  statusChips: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    flex: 1,
+    justifyContent: 'center',
+  },
+  statusActions: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  statusChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    backgroundColor: 'rgba(34, 197, 94, 0.1)',
+    borderWidth: 1,
+    borderColor: 'rgba(34, 197, 94, 0.2)',
+  },
+  statusChipSecondary: {
+    backgroundColor: '#1a2632',
+    borderColor: '#324d67',
+  },
+  statusTextGreen: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    color: '#22c55e',
+  },
+  statusText: {
     fontSize: 12,
     fontWeight: '500',
     color: '#94a3b8',
   },
+  categorySection: {
+    paddingVertical: 8,
+    backgroundColor: '#101922',
+  },
+  categoryScroll: {
+    paddingHorizontal: 16,
+  },
+  categoryPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 20,
+    backgroundColor: '#1a2632',
+    marginRight: 8,
+    borderWidth: 1,
+    borderColor: '#324d67',
+  },
+  categoryPillActive: {
+    backgroundColor: '#137fec',
+    borderColor: '#137fec',
+  },
+  categoryText: {
+    fontSize: 13,
+    color: '#94a3b8',
+    fontWeight: '500',
+  },
+  categoryTextActive: {
+    color: '#fff',
+  },
+  brandSection: {
+    paddingVertical: 8,
+    backgroundColor: '#101922',
+    borderBottomWidth: 1,
+    borderBottomColor: '#1a2632',
+  },
+  brandScroll: {
+    paddingHorizontal: 16,
+  },
+  brandChip: {
+    paddingHorizontal: 16,
+    paddingVertical: 6,
+    borderRadius: 16,
+    backgroundColor: '#1a2632',
+    marginRight: 8,
+  },
+  brandChipActive: {
+    backgroundColor: '#2BEE79',
+  },
+  brandText: {
+    fontSize: 12,
+    color: '#94a3b8',
+    fontWeight: '500',
+  },
+  brandTextActive: {
+    color: '#0E151B',
+  },
+  productsSection: {
+    paddingHorizontal: 12,
+    paddingTop: 12,
+    paddingBottom: 100,
+  },
   productsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 12,
+    gap: 8,
   },
   productCard: {
-    width: '47%',
+    width: '48%',
     backgroundColor: '#1a2632',
-    borderRadius: 12,
+    borderRadius: 14,
     overflow: 'hidden',
     borderWidth: 1,
     borderColor: '#324d67',
@@ -503,35 +486,52 @@ const styles = StyleSheet.create({
   productImage: {
     aspectRatio: 1,
     backgroundColor: '#324d67',
+    position: 'relative',
+  },
+  discountBadge: {
+    position: 'absolute',
+    top: 8,
+    left: 8,
+    backgroundColor: '#ef4444',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  discountText: {
+    fontSize: 10,
+    fontWeight: 'bold',
+    color: '#fff',
   },
   favoriteBtn: {
     position: 'absolute',
     top: 8,
     right: 8,
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: 'rgba(0,0,0,0.2)',
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: 'rgba(0,0,0,0.3)',
     alignItems: 'center',
     justifyContent: 'center',
   },
   productInfo: {
-    padding: 12,
-    gap: 4,
+    padding: 10,
+    gap: 2,
   },
   productBrand: {
-    fontSize: 12,
-    color: '#94a3b8',
+    fontSize: 10,
+    color: '#64748b',
+    fontWeight: '500',
   },
   productName: {
-    fontSize: 14,
-    fontWeight: 'bold',
+    fontSize: 13,
+    fontWeight: '600',
     color: '#fff',
+    lineHeight: 16,
   },
-  productBottom: {
+  priceRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
+    gap: 6,
     marginTop: 4,
   },
   productPrice: {
@@ -539,10 +539,18 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#137fec',
   },
+  productOldPrice: {
+    fontSize: 11,
+    color: '#64748b',
+    textDecorationLine: 'line-through',
+  },
   addBtn: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    position: 'absolute',
+    bottom: 8,
+    right: 8,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
     backgroundColor: '#137fec',
     alignItems: 'center',
     justifyContent: 'center',

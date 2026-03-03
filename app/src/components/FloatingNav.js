@@ -70,7 +70,7 @@ const styles = StyleSheet.create({
   wrapper: {
     position: 'absolute',
     right: 16,
-    bottom: 28,
+    bottom: 120,
     alignItems: 'flex-end',
   },
   menu: {

@@ -17,7 +17,28 @@
 | Fix WatermelonDB adapter import (SQLiteAdapter) | Done | P1 | S0 |
 | Local storage init (WatermelonDB + SecureStore) | Done | P1 | S0 |
 | Design system de base (YScreen/YText/YButton/YInput) | Not Started | P1 | S0 |
-| UI base (login/signup + screens de base) | In Progress | P1 | S1 |
+| UI base (login/signup + screens de base) | Done | P1 | S1 |
+| Creer WelcomeScreen (bienvenue) | Done | P1 | S1 |
+| Creer LanguageScreen | Done | P1 | S1 |
+| Creer SignupScreen | Done | P1 | S1 |
+| Creer SmsSignupScreen | Done | P1 | S1 |
+| Creer QrSignupScreen | Done | P1 | S1 |
+| Creer PinSignupScreen | Done | P1 | S1 |
+| Creer LoginScreen | Done | P1 | S1 |
+| Creer HomeScreen (dashboard) | Done | P1 | S1 |
+| Creer FloatingNav (bouton flottant) | Done | P1 | S1 |
+| Creer WalletScreen | Done | P1 | S1 |
+| Creer AssistantScreen | Done | P1 | S1 |
+| Creer ProfileScreen | Done | P1 | S1 |
+| Creer pages Profil (Compte, Securite, Langue, Support, Deconnexion) | Done | P1 | S1 |
+| Creer HomeSettingsScreen | Done | P1 | S1 |
+| Creer HomeNotificationsScreen | Done | P1 | S1 |
+| Creer QrHubScreen | Done | P1 | S1 |
+| Creer MarketplaceHomeScreen | Done | P1 | S1 |
+| Creer ProductListScreen | Done | P1 | S1 |
+| Creer CategoryPageScreen | Done | P1 | S1 |
+| FloatingNav remonter (bottom: 120) | Done | P1 | S1 |
+| Link BottomNav Boutique vers MarketplaceHomeScreen | Done | P1 | S1 |
 | Creer structure dossiers complete | Done | P1 | S0 |
 | Signup online (Supabase OTP) | Not Started | P1 | S1 |
 | SMS fallback automatique (user/super admin) | In Progress | P1 | S1 |
