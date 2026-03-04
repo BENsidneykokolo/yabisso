@@ -19,6 +19,11 @@ Supabase (Auth + RLS + Edge Functions)
 - Signup SMS UI: `app/src/features/auth/screens/SmsSignupScreen.js`
 - Signup QR UI: `app/src/features/auth/screens/QrSignupScreen.js`
 - Modal offline SMS/QR: `app/src/features/auth/components/OfflineSignupChoiceModal.js`
+- Wallet: `app/src/features/wallet/screens/WalletScreen.js` (FCFA/Points mode)
+- Wallet Recharge: `app/src/features/wallet/screens/RechargeScreen.js`
+- Wallet Send: `app/src/features/wallet/screens/SendScreen.js` + sub-screens
+- Wallet Receive: `app/src/features/wallet/screens/ReceiveScreen.js` + sub-screens
+- Wallet History: `app/src/features/wallet/screens/HistoryScreen.js`
 - DB locale WatermelonDB: `app/src/lib/db/schema.ts`
 
 ## Principes offline-first
@@ -207,6 +212,8 @@ Objectifs:
 - Streaming films/series, musique, formation & cours, pari sportif, notebook.
 - Chatbot (assistant AI natif).
 - Yabisso Pay (wallet): P2P, paiements services, recharge, cashback points, MTN/Airtel/PayPal/cartes/Flutterwave.
+  - Mode double-devise: FCFA et Points (conversion 1 FCFA = 1 Point).
+  - Saisie en FCFA avec conversion temps réel en Points en mode "Points".
 - Swap: echange de packs Yabisso.
 - Livraison interne (Yabisso Delivery) + livraison externe.
 

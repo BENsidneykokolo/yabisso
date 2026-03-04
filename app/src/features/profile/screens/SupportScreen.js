@@ -3,13 +3,14 @@ import { Pressable, SafeAreaView, ScrollView, StyleSheet, Text, View } from 'rea
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 
 const navItems = [
+  { label: 'Accueil', icon: 'home', key: 'home' },
   { label: 'Compte', icon: 'account-circle', key: 'account' },
   { label: 'Securite', icon: 'shield-lock', key: 'security' },
   { label: 'Aide', icon: 'help-circle', key: 'help' },
   { label: 'Notifs', icon: 'bell', key: 'notifications' },
 ];
 
-export default function SupportScreen({ onBack, onOpenAccount, onOpenSecurity, onOpenNotifications }) {
+export default function SupportScreen({ onBack, onOpenHome, onOpenAccount, onOpenSecurity, onOpenLogout, onOpenNotifications }) {
   const [activeTab, setActiveTab] = useState('help');
   return (
     <SafeAreaView style={styles.root}>
@@ -54,8 +55,10 @@ export default function SupportScreen({ onBack, onOpenAccount, onOpenSecurity, o
                 style={({ pressed }) => [styles.navItem, pressed && styles.navItemPressed]}
                 onPress={() => {
                   setActiveTab(item.key);
+                  if (item.key === 'home') onOpenHome?.();
                   if (item.key === 'account') onOpenAccount?.();
                   if (item.key === 'security') onOpenSecurity?.();
+                  if (item.key === 'logout') onOpenLogout?.();
                   if (item.key === 'notifications') onOpenNotifications?.();
                 }}
               >

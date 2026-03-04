@@ -29,6 +29,8 @@ Sprint 1.5: refonte UI/UX Hub terminee
 - UI onboarding/auth: Welcome, Language, Signup, Login, SMS, QR
 - Dashboard/Home + pages QR/Settings/Notifications
 - Pages: Wallet, Assistant IA, Profil + sous-pages (Compte, Securite, Notifications, Langue, Support, Deconnexion)
+- Wallet: Recharge, Envoyer (PIN/QR/Scan), Recevoir (Request/Scan), Historique.
+- Mode Points: conversion 1:1 avec saisie FCFA et affichage Points temps-réel.
 - Offline choix SMS/QR: modal active quand offline (NetInfo)
 - Schema DB local: profiles, sync_queue, signup_nonces, signup_verifications
 - Service offline signup: generation payload + enqueue SyncQueue (non connecte a l'UI)
@@ -70,7 +72,7 @@ Sprint 1 — Online + SMS fallback + UI
 - Secure Local DB. DoD: SQLite chiffre, schemas users/content/wallet/orders.
 
 Sprint 2 — Wallet core & Sync queue
-- Wallet basic (argent + points). DoD: ledger local, top-up dev hook, historique.
+- Wallet basic (argent + points). DoD: ledger local, top-up dev hook, historique, conversion 1:1. (Statut: UI/Logic Done)
 - Sync Engine & Connectivity. DoD: detection reseau, enqueue jobs.
 
 Sprint 3 — Flutterwave & Loba basic

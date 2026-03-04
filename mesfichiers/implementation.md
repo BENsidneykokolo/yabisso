@@ -78,6 +78,12 @@ Ne jamais bloquer l'utilisateur avec une erreur reseau
 - UI: `app/src/features/profile/screens/LanguageSettingsScreen.js`
 - UI: `app/src/features/profile/screens/SupportScreen.js`
 - UI: `app/src/features/profile/screens/LogoutScreen.js`
+- UI Wallet (Recharge, Send, Receive): `app/src/features/wallet/screens/`
+  - `WalletScreen.js`
+  - `RechargeScreen.js`
+  - `SendScreen.js` + sub-screens (QR, PIN, Scan)
+  - `ReceiveScreen.js` + sub-screens (Request, Scan)
+  - `HistoryScreen.js`
 - Offline signup service (payload + queue): `app/src/features/auth/services/OfflineSignupService.ts`
 - DB schema: `app/src/lib/db/schema.ts`
 
@@ -116,10 +122,10 @@ SEND_SMS, READ_SMS, RECEIVE_SMS
 - **Librairie** : react-native-qrcode-svg (génération) + expo-camera / expo-barcode-scanner (scan)
 - **Statut** : In Progress (Sprint 1)
 
-### Offline Payment
-- **Méthode** : Transaction écrite WatermelonDB d'abord → signée Ed25519 → SyncQueue → Supabase au retour réseau
+### Offline Payment / Wallet UI
+- **Méthode** : Saisie en FCFA, conversion automatique en Points (1:1). Double mode Wallet.
 - **Librairie** : WatermelonDB + tweetnacl + Flutterwave (online) / SMS fallback (offline)
-- **Statut** : Not Started (Sprint 2-3)
+- **Statut** : In Progress (UI/Flow logic completed)
 
 ## Modules produit (constraints)
 - Buy & Sell: max 2 images par article (1 principale + mosaique <= 6), suppression annonces obsoletes.

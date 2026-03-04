@@ -53,6 +53,19 @@
 | RLS policies + audit_log insert-only | Not Started | P1 | S1 |
 | SyncEngine + conflictResolver | Not Started | P1 | S2 |
 | Supabase Sync minimal | Not Started | P1 | S2 |
+| Wallet - Recharger Screen | Done | P1 | S1 |
+| Wallet - Kiosque QR Screen | Done | P1 | S1 |
+| Wallet - Kiosque PIN Screen | Done | P1 | S1 |
+| Wallet - Envoyer Screen (popup 3 options) | Done | P1 | S1 |
+| Wallet - Envoyer QR Generate (Step 1) | Done | P1 | S1 |
+| Wallet - Envoyer PIN/Select Beneficiaire | Done | P1 | S1 |
+| Wallet - Envoyer Scan QR (Step 3) | Done | P1 | S1 |
+| Wallet - Recevoir Screen | Done | P1 | S1 |
+| Wallet - Recevoir Scan QR | Done | P1 | S1 |
+| Wallet - Recevoir Notifications | Done | P1 | S1 |
+| Wallet - Recevoir Request Payment | Done | P1 | S1 |
+| Wallet - Historique Screen | Done | P1 | S1 |
+| Wallet - Mode Points & Conversion 1:1 | Done | P1 | S1 |
 
 ---
 

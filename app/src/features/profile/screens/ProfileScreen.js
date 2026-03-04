@@ -17,6 +17,7 @@ const quickStats = [
 
 export default function ProfileScreen({
   onBack,
+  onOpenHome,
   onOpenAccount,
   onOpenSecurity,
   onOpenNotifications,
@@ -24,10 +25,12 @@ export default function ProfileScreen({
   onOpenSupport,
   onOpenLogout,
   onOpenWallet,
+  onOpenEditProfile,
 }) {
   const [activeTab, setActiveTab] = useState('Compte');
 
   const navItems = [
+    { label: 'Accueil', icon: 'home', key: 'home' },
     { label: 'Compte', icon: 'account-circle', key: 'account' },
     { label: 'Securite', icon: 'shield-lock', key: 'security' },
     { label: 'Aide', icon: 'help-circle', key: 'help' },
@@ -61,7 +64,7 @@ export default function ProfileScreen({
               </View>
             </View>
           </View>
-          <Pressable style={styles.editButton}>
+          <Pressable style={styles.editButton} onPress={onOpenEditProfile}>
             <Ionicons name="pencil" size={16} color="#0E151B" />
             <Text style={styles.editButtonText}>Modifier</Text>
           </Pressable>
@@ -77,6 +80,9 @@ export default function ProfileScreen({
               key={item.key}
               style={styles.quickActionCard}
               onPress={() => {
+                if (item.key === 'verification') {
+                  onOpenAccount?.();
+                }
                 if (item.key === 'wallet') {
                   onOpenWallet?.();
                 }
@@ -101,6 +107,18 @@ export default function ProfileScreen({
             </View>
           ))}
         </View>
+
+        <View style={styles.sectionRow}>
+          <Text style={styles.sectionTitle}>Parametres</Text>
+        </View>
+
+        <Pressable style={styles.settingRow} onPress={onOpenLogout}>
+          <View style={[styles.settingIcon, { backgroundColor: 'rgba(239, 68, 68, 0.2)' }]}>
+            <Ionicons name="log-out-outline" size={20} color="#EF4444" />
+          </View>
+          <Text style={[styles.settingLabel, { color: '#EF4444' }]}>Se deconnecter</Text>
+          <Ionicons name="chevron-forward" size={18} color="#6B7280" />
+        </Pressable>
       </ScrollView>
 
       <SafeAreaView style={styles.bottomNavWrapper}>
@@ -116,6 +134,9 @@ export default function ProfileScreen({
                 ]}
                 onPress={() => {
                   setActiveTab(item.key);
+                  if (item.key === 'home') {
+                    onOpenHome?.();
+                  }
                   if (item.key === 'account') {
                     onOpenAccount?.();
                   }

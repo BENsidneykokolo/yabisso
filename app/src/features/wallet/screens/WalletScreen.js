@@ -6,11 +6,24 @@ import {
   StyleSheet,
   Text,
   View,
+  Switch,
 } from 'react-native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 
-export default function WalletScreen({ onBack, onOpenHome }) {
+export default function WalletScreen({ onBack, onOpenHome, onOpenRecharge, onOpenSend, onOpenReceive, onOpenHistory, walletMode: propWalletMode, setWalletMode: propSetWalletMode }) {
   const [activeTab, setActiveTab] = useState('Portefeuille');
+  const [walletModeState, setWalletModeState] = useState(propWalletMode || 'fcfa');
+  const isFcfa = walletModeState === 'fcfa';
+
+  const handleModeChange = (mode) => {
+    setWalletModeState(mode);
+    if (propSetWalletMode) {
+      propSetWalletMode(mode);
+    }
+  };
+
+  const fcfaBalance = '215 450';
+  const pointsBalance = '1 240';
 
   const navItems = [
     { label: 'Accueil', icon: 'home-variant', key: 'home' },
@@ -19,6 +32,21 @@ export default function WalletScreen({ onBack, onOpenHome }) {
     { label: 'Recevoir', icon: 'qrcode-scan', key: 'receive' },
     { label: 'Historique', icon: 'history', key: 'history' },
   ];
+
+  const fcfaTransactions = [
+    { id: 1, title: 'Recharge', meta: "Aujourd'hui · Mobile Money", amount: '+15 000', positive: true },
+    { id: 2, title: 'Paiement livraison', meta: 'Hier · Yabisso Delivery', amount: '-3 200', positive: false },
+    { id: 3, title: 'Cashback', meta: 'Hier · Bonus', amount: '+450', positive: true },
+  ];
+
+  const pointsTransactions = [
+    { id: 1, title: 'Recharge Points', meta: "Aujourd'hui · Achat Pack", amount: '+500', positive: true },
+    { id: 2, title: 'Utilisation Service', meta: 'Hier · Reservation', amount: '-200', positive: false },
+    { id: 3, title: 'Bonus Fidelite', meta: 'Hier · Programme', amount: '+50', positive: true },
+  ];
+
+  const transactions = isFcfa ? fcfaTransactions : pointsTransactions;
+
   return (
     <SafeAreaView style={styles.root}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
@@ -30,26 +58,44 @@ export default function WalletScreen({ onBack, onOpenHome }) {
           <View style={styles.headerSpacer} />
         </View>
 
+        <View style={styles.modeSwitchContainer}>
+          <View style={[styles.modeSwitch, isFcfa && styles.modeSwitchActive]}>
+            <Pressable
+              style={[styles.modeOption, isFcfa && styles.modeOptionActive]}
+              onPress={() => handleModeChange('fcfa')}
+            >
+              <Text style={[styles.modeText, isFcfa && styles.modeTextActive]}>FCFA</Text>
+            </Pressable>
+            <Pressable
+              style={[styles.modeOption, !isFcfa && styles.modeOptionActive]}
+              onPress={() => handleModeChange('points')}
+            >
+              <Text style={[styles.modeText, !isFcfa && styles.modeTextActive]}>Points</Text>
+            </Pressable>
+          </View>
+        </View>
+
         <View style={styles.balanceCard}>
           <View style={styles.balanceHeader}>
-            <Text style={styles.balanceLabel}>Solde total</Text>
+            <Text style={styles.balanceLabel}>{isFcfa ? 'Solde total' : 'Points Yabisso'}</Text>
             <View style={styles.statusChip}>
               <Ionicons name="shield-checkmark" size={12} color="#2BEE79" />
               <Text style={styles.statusText}>Securise</Text>
             </View>
           </View>
-          <Text style={styles.balanceValue}>215 450 FCFA</Text>
-          <Text style={styles.balanceSub}>Points Yabisso: 1 240</Text>
+          <Text style={styles.balanceValue}>
+            {isFcfa ? fcfaBalance : pointsBalance} {isFcfa ? 'FCFA' : 'Points'}
+          </Text>
         </View>
 
         <View style={styles.actionsRow}>
           {[
-            { key: 'topup', label: 'Recharger', icon: 'cash-plus' },
-            { key: 'send', label: 'Envoyer', icon: 'send' },
-            { key: 'receive', label: 'Recevoir', icon: 'qrcode-scan' },
-            { key: 'history', label: 'Historique', icon: 'history' },
+            { key: 'topup', label: 'Recharger', icon: 'cash-plus', action: () => onOpenRecharge && onOpenRecharge(walletModeState) },
+            { key: 'send', label: 'Envoyer', icon: 'send', action: () => onOpenSend && onOpenSend(walletModeState) },
+            { key: 'receive', label: 'Recevoir', icon: 'qrcode-scan', action: () => onOpenReceive && onOpenReceive(walletModeState) },
+            { key: 'history', label: 'Historique', icon: 'history', action: () => onOpenHistory && onOpenHistory(walletModeState) },
           ].map((item) => (
-            <Pressable key={item.key} style={styles.actionCard}>
+            <Pressable key={item.key} style={styles.actionCard} onPress={item.action}>
               <View style={styles.actionIcon}>
                 <MaterialCommunityIcons name={item.icon} size={18} color="#0E151B" />
               </View>
@@ -59,48 +105,44 @@ export default function WalletScreen({ onBack, onOpenHome }) {
         </View>
 
         <View style={styles.sectionRow}>
-          <Text style={styles.sectionTitle}>Dernieres operations</Text>
+          <Text style={styles.sectionTitle}>
+            {isFcfa ? 'Dernieres operations' : 'Historique des points'}
+          </Text>
           <Text style={styles.sectionLink}>Tout voir</Text>
         </View>
 
-        <View style={styles.transactionCard}>
-          <View style={styles.transactionIcon}>
-            <MaterialCommunityIcons name="arrow-down-bold" size={18} color="#2BEE79" />
+        {transactions.map((tx) => (
+          <View key={tx.id} style={styles.transactionCard}>
+            <View style={[styles.transactionIcon, !tx.positive && styles.transactionIconNegative]}>
+              <MaterialCommunityIcons
+                name={tx.positive ? 'arrow-down-bold' : 'arrow-up-bold'}
+                size={18}
+                color={tx.positive ? '#2BEE79' : '#F97316'}
+              />
+            </View>
+            <View style={styles.transactionInfo}>
+              <Text style={styles.transactionTitle}>{tx.title}</Text>
+              <Text style={styles.transactionMeta}>{tx.meta}</Text>
+            </View>
+            <Text style={tx.positive ? styles.transactionAmountPositive : styles.transactionAmountNegative}>
+              {tx.amount} {isFcfa ? 'FCFA' : 'Points'}
+            </Text>
           </View>
-          <View style={styles.transactionInfo}>
-            <Text style={styles.transactionTitle}>Recharge</Text>
-            <Text style={styles.transactionMeta}>Aujourd'hui · Mobile Money</Text>
-          </View>
-          <Text style={styles.transactionAmountPositive}>+15 000 FCFA</Text>
-        </View>
-
-        <View style={styles.transactionCard}>
-          <View style={[styles.transactionIcon, styles.transactionIconNegative]}>
-            <MaterialCommunityIcons name="arrow-up-bold" size={18} color="#F97316" />
-          </View>
-          <View style={styles.transactionInfo}>
-            <Text style={styles.transactionTitle}>Paiement livraison</Text>
-            <Text style={styles.transactionMeta}>Hier · Yabisso Delivery</Text>
-          </View>
-          <Text style={styles.transactionAmountNegative}>-3 200 FCFA</Text>
-        </View>
-
-        <View style={styles.transactionCard}>
-          <View style={styles.transactionIcon}>
-            <MaterialCommunityIcons name="arrow-down-bold" size={18} color="#2BEE79" />
-          </View>
-          <View style={styles.transactionInfo}>
-            <Text style={styles.transactionTitle}>Cashback</Text>
-            <Text style={styles.transactionMeta}>Hier · Bonus</Text>
-          </View>
-          <Text style={styles.transactionAmountPositive}>+450 FCFA</Text>
-        </View>
+        ))}
       </ScrollView>
 
       <SafeAreaView style={styles.bottomNavWrapper}>
         <View style={styles.bottomNav}>
           {navItems.map((item) => {
             const isActive = activeTab === item.key;
+            const getAction = () => {
+              if (item.key === 'home') return () => onOpenHome && onOpenHome();
+              if (item.key === 'recharge') return () => onOpenRecharge && onOpenRecharge(walletModeState);
+              if (item.key === 'send') return () => onOpenSend && onOpenSend(walletModeState);
+              if (item.key === 'receive') return () => onOpenReceive && onOpenReceive(walletModeState);
+              if (item.key === 'history') return () => onOpenHistory && onOpenHistory(walletModeState);
+              return () => { };
+            };
             return (
               <Pressable
                 key={item.key}
@@ -110,6 +152,7 @@ export default function WalletScreen({ onBack, onOpenHome }) {
                 ]}
                 onPress={() => {
                   setActiveTab(item.key);
+                  getAction()();
                 }}
               >
                 <View
@@ -151,6 +194,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    marginTop: 24,
   },
   backButton: {
     width: 40,
@@ -215,6 +259,37 @@ const styles = StyleSheet.create({
     color: '#94A3B8',
     fontSize: 13,
     marginTop: 6,
+  },
+  modeSwitchContainer: {
+    marginTop: 20,
+    alignItems: 'center',
+  },
+  modeSwitch: {
+    flexDirection: 'row',
+    backgroundColor: 'rgba(30, 41, 59, 0.9)',
+    borderRadius: 12,
+    padding: 4,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+  },
+  modeSwitchActive: {
+    backgroundColor: 'rgba(43, 238, 121, 0.15)',
+  },
+  modeOption: {
+    paddingHorizontal: 20,
+    paddingVertical: 8,
+    borderRadius: 8,
+  },
+  modeOptionActive: {
+    backgroundColor: '#2BEE79',
+  },
+  modeText: {
+    color: '#94A3B8',
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  modeTextActive: {
+    color: '#0E151B',
   },
   actionsRow: {
     marginTop: 20,

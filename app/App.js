@@ -15,6 +15,20 @@ import QrHubScreen from './src/features/home/screens/QrHubScreen';
 import HomeSettingsScreen from './src/features/home/screens/HomeSettingsScreen';
 import HomeNotificationsScreen from './src/features/home/screens/HomeNotificationsScreen';
 import WalletScreen from './src/features/wallet/screens/WalletScreen';
+import RechargeScreen from './src/features/wallet/screens/RechargeScreen';
+import KiosqueQRScreen from './src/features/wallet/screens/KiosqueQRScreen';
+import KiosquePinScreen from './src/features/wallet/screens/KiosquePinScreen';
+import SendScreen from './src/features/wallet/screens/SendScreen';
+import SendQRGenerateScreen from './src/features/wallet/screens/SendQRGenerateScreen';
+import SendQRResultScreen from './src/features/wallet/screens/SendQRResultScreen';
+import SendScanQRScreen from './src/features/wallet/screens/SendScanQRScreen';
+import SendSelectBeneficiaryScreen from './src/features/wallet/screens/SendSelectBeneficiaryScreen';
+import SendConfirmPaymentScreen from './src/features/wallet/screens/SendConfirmPaymentScreen';
+import ReceiveScreen from './src/features/wallet/screens/ReceiveScreen';
+import ReceiveScanQRScreen from './src/features/wallet/screens/ReceiveScanQRScreen';
+import ReceiveNotificationsScreen from './src/features/wallet/screens/ReceiveNotificationsScreen';
+import ReceiveRequestPaymentScreen from './src/features/wallet/screens/ReceiveRequestPaymentScreen';
+import HistoryScreen from './src/features/wallet/screens/HistoryScreen';
 import AssistantScreen from './src/features/ai/screens/AssistantScreen';
 import ProfileScreen from './src/features/profile/screens/ProfileScreen';
 import FloatingNav from './src/components/FloatingNav';
@@ -24,6 +38,7 @@ import NotificationsScreen from './src/features/profile/screens/NotificationsScr
 import LanguageSettingsScreen from './src/features/profile/screens/LanguageSettingsScreen';
 import SupportScreen from './src/features/profile/screens/SupportScreen';
 import LogoutScreen from './src/features/profile/screens/LogoutScreen';
+import EditProfileScreen from './src/features/profile/screens/EditProfileScreen';
 import AddProductScreen from './src/features/marketplace/screens/AddProductScreen';
 import SellerProfileScreen from './src/features/marketplace/screens/SellerProfileScreen';
 import MarketplaceHomeScreen from './src/features/marketplace/screens/MarketplaceHomeScreen';
@@ -34,6 +49,7 @@ export default function App() {
   const [screen, setScreen] = useState('welcome');
   const [activeTab, setActiveTab] = useState('Accueil');
   const [homeShowAllServices, setHomeShowAllServices] = useState(false);
+  const [walletMode, setWalletMode] = useState('fcfa');
 
   let content = null;
   if (screen === 'welcome') {
@@ -129,7 +145,51 @@ export default function App() {
     content = <HomeNotificationsScreen onBack={() => setScreen('home')} />;
   }
   if (screen === 'wallet') {
-    content = <WalletScreen onBack={() => setScreen('home')} onOpenHome={() => setScreen('home')} />;
+    content = <WalletScreen onBack={() => setScreen('home')} onOpenHome={() => setScreen('wallet')} onOpenRecharge={() => setScreen('wallet_recharge')} onOpenSend={() => setScreen('wallet_send')} onOpenReceive={() => setScreen('wallet_receive')} onOpenHistory={() => setScreen('wallet_history')} walletMode={walletMode} setWalletMode={setWalletMode} />;
+  }
+  if (screen === 'wallet_recharge') {
+    content = <RechargeScreen onBack={() => setScreen('wallet')} onComplete={() => setScreen('wallet')} onOpenQRScan={() => setScreen('wallet_kiosque_qr')} onOpenPinEntry={() => setScreen('wallet_kiosque_pin')} walletMode={walletMode} />;
+  }
+  if (screen === 'wallet_kiosque_qr') {
+    content = <KiosqueQRScreen onBack={() => setScreen('wallet_recharge')} onComplete={() => setScreen('wallet')} />;
+  }
+  if (screen === 'wallet_kiosque_pin') {
+    content = <KiosquePinScreen onBack={() => setScreen('wallet_recharge')} onComplete={() => setScreen('wallet')} walletMode={walletMode} />;
+  }
+  if (screen === 'wallet_send') {
+    content = <SendScreen onBack={() => setScreen('wallet')} onOpenQRGenerate={() => setScreen('wallet_send_qr_generate')} onOpenSelectBeneficiary={() => setScreen('wallet_send_beneficiary')} onOpenScanQR={() => setScreen('wallet_send_scan')} walletMode={walletMode} />;
+  }
+  if (screen === 'wallet_send_qr_generate') {
+    content = <SendQRGenerateScreen onBack={() => setScreen('wallet_send')} onCreateQR={() => setScreen('wallet_send_qr_result')} walletMode={walletMode} />;
+  }
+  if (screen === 'wallet_send_qr_result') {
+    content = <SendQRResultScreen onBack={() => setScreen('wallet_send_qr_generate')} onComplete={() => setScreen('wallet')} amount="5000" walletMode={walletMode} />;
+  }
+  if (screen === 'wallet_send_beneficiary') {
+    content = <SendSelectBeneficiaryScreen onBack={() => setScreen('wallet_send')} onSendMoney={() => setScreen('wallet')} walletMode={walletMode} />;
+  }
+  if (screen === 'wallet_send_scan') {
+    content = <SendScanQRScreen onBack={() => setScreen('wallet_send')} onConfirm={() => setScreen('wallet')} onShowPassword={(amount) => {
+      setScreen('wallet_send_confirm');
+    }} walletMode={walletMode} />;
+  }
+  if (screen === 'wallet_send_confirm') {
+    content = <SendConfirmPaymentScreen onBack={() => setScreen('wallet_send_scan')} onConfirm={() => setScreen('wallet')} amount="5000" recipientName="Jean Dupont" walletMode={walletMode} />;
+  }
+  if (screen === 'wallet_receive') {
+    content = <ReceiveScreen onBack={() => setScreen('wallet')} onOpenScanQR={() => setScreen('wallet_receive_scan')} onOpenNotifications={() => setScreen('wallet_receive_notifications')} onOpenRequestPayment={() => setScreen('wallet_receive_request')} walletMode={walletMode} />;
+  }
+  if (screen === 'wallet_receive_scan') {
+    content = <ReceiveScanQRScreen onBack={() => setScreen('wallet_receive')} onComplete={() => setScreen('wallet')} walletMode={walletMode} />;
+  }
+  if (screen === 'wallet_receive_notifications') {
+    content = <ReceiveNotificationsScreen onBack={() => setScreen('wallet_receive')} walletMode={walletMode} />;
+  }
+  if (screen === 'wallet_receive_request') {
+    content = <ReceiveRequestPaymentScreen onBack={() => setScreen('wallet_receive')} onCreateQR={() => setScreen('wallet_send_qr_result')} onSendToContact={() => setScreen('wallet')} walletMode={walletMode} />;
+  }
+  if (screen === 'wallet_history') {
+    content = <HistoryScreen onBack={() => setScreen('wallet')} walletMode={walletMode} />;
   }
   if (screen === 'assistant') {
     content = <AssistantScreen onBack={() => setScreen('home')} />;
@@ -138,6 +198,7 @@ export default function App() {
     content = (
       <ProfileScreen
         onBack={() => setScreen('home')}
+        onOpenHome={() => setScreen('profile')}
         onOpenAccount={() => setScreen('profile_account')}
         onOpenSecurity={() => setScreen('profile_security')}
         onOpenNotifications={() => setScreen('profile_notifications')}
@@ -152,25 +213,49 @@ export default function App() {
     );
   }
   if (screen === 'profile_account') {
-    content = <AccountScreen onBack={() => setScreen('profile')} />;
+    content = <AccountScreen onBack={() => setScreen('profile')} onOpenHome={() => setScreen('profile')} onOpenSecurity={() => setScreen('profile_security')} onOpenSupport={() => setScreen('profile_support')} onOpenLogout={() => setScreen('profile_logout')} />;
   }
   if (screen === 'profile_security') {
-    content = <SecurityScreen onBack={() => setScreen('profile')} />;
+    content = <SecurityScreen onBack={() => setScreen('profile')} onOpenHome={() => setScreen('profile')} onOpenAccount={() => setScreen('profile_account')} onOpenSupport={() => setScreen('profile_support')} onOpenLogout={() => setScreen('profile_logout')} />;
   }
   if (screen === 'profile_notifications') {
-    content = <NotificationsScreen onBack={() => setScreen('profile')} />;
+    content = (
+      <NotificationsScreen 
+        onBack={() => setScreen('profile')} 
+        onOpenHome={() => setScreen('profile')}
+        onOpenAccount={() => setScreen('profile_account')}
+        onOpenSecurity={() => setScreen('profile_security')}
+        onOpenSupport={() => setScreen('profile_support')}
+        onOpenNotifications={() => setScreen('profile_notifications')}
+        onOpenLogout={() => setScreen('profile_logout')}
+        onOpenEditProfile={() => setScreen('profile_edit')}
+      />
+    );
   }
   if (screen === 'profile_language') {
     content = <LanguageSettingsScreen onBack={() => setScreen('profile')} />;
   }
   if (screen === 'profile_support') {
-    content = <SupportScreen onBack={() => setScreen('profile')} />;
+    content = <SupportScreen onBack={() => setScreen('profile')} onOpenHome={() => setScreen('profile')} onOpenAccount={() => setScreen('profile_account')} onOpenSecurity={() => setScreen('profile_security')} onOpenLogout={() => setScreen('profile_logout')} />;
   }
   if (screen === 'profile_logout') {
     content = (
       <LogoutScreen
         onBack={() => setScreen('profile')}
         onConfirm={() => setScreen('welcome')}
+      />
+    );
+  }
+  if (screen === 'profile_edit') {
+    content = (
+      <EditProfileScreen
+        onBack={() => setScreen('profile')}
+        onOpenHome={() => setScreen('profile')}
+        onOpenAccount={() => setScreen('profile_account')}
+        onOpenSecurity={() => setScreen('profile_security')}
+        onOpenSupport={() => setScreen('profile_support')}
+        onOpenNotifications={() => setScreen('profile_notifications')}
+        onOpenLogout={() => setScreen('profile_logout')}
       />
     );
   }
@@ -229,6 +314,20 @@ export default function App() {
 
   const showFloatingNav =
     screen === 'wallet' ||
+    screen === 'wallet_recharge' ||
+    screen === 'wallet_kiosque_qr' ||
+    screen === 'wallet_kiosque_pin' ||
+    screen === 'wallet_send' ||
+    screen === 'wallet_send_qr_generate' ||
+    screen === 'wallet_send_qr_result' ||
+    screen === 'wallet_send_beneficiary' ||
+    screen === 'wallet_send_scan' ||
+    screen === 'wallet_send_confirm' ||
+    screen === 'wallet_receive' ||
+    screen === 'wallet_receive_scan' ||
+    screen === 'wallet_receive_notifications' ||
+    screen === 'wallet_receive_request' ||
+    screen === 'wallet_history' ||
     screen === 'assistant' ||
     screen === 'profile' ||
     screen === 'profile_account' ||
