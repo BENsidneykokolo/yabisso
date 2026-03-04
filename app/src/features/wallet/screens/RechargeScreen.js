@@ -11,8 +11,9 @@ import {
   Modal,
 } from 'react-native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import WalletBottomNav from '../../../components/WalletBottomNav';
 
-export default function RechargeScreen({ onBack, onComplete, onOpenQRScan, onOpenPinEntry, walletMode = 'fcfa' }) {
+export default function RechargeScreen({ onBack, onComplete, onOpenQRScan, onOpenPinEntry, walletMode = 'fcfa', onNavigate }) {
   const [amount, setAmount] = useState('');
   const [selectedMethod, setSelectedMethod] = useState(null);
   const [showMobileMoneyPopup, setShowMobileMoneyPopup] = useState(false);
@@ -309,6 +310,8 @@ export default function RechargeScreen({ onBack, onComplete, onOpenQRScan, onOpe
           </View>
         </Modal>
       </View>
+
+      <WalletBottomNav activeTab="recharge" onNavigate={onNavigate} walletMode={walletMode} />
     </SafeAreaView>
   );
 }

@@ -8,8 +8,9 @@ import {
   View,
 } from 'react-native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import WalletBottomNav from '../../../components/WalletBottomNav';
 
-export default function HistoryScreen({ onBack, walletMode = 'fcfa' }) {
+export default function HistoryScreen({ onBack, walletMode = 'fcfa', onNavigate }) {
   const [activeTab, setActiveTab] = useState('all');
 
   const isFcfa = walletMode === 'fcfa';
@@ -111,6 +112,8 @@ export default function HistoryScreen({ onBack, walletMode = 'fcfa' }) {
           ))}
         </ScrollView>
       </View>
+
+      <WalletBottomNav activeTab="history" onNavigate={onNavigate} walletMode={walletMode} />
     </SafeAreaView>
   );
 }

@@ -10,8 +10,9 @@ import {
 } from 'react-native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 
-export default function WalletScreen({ onBack, onOpenHome, onOpenRecharge, onOpenSend, onOpenReceive, onOpenHistory, walletMode: propWalletMode, setWalletMode: propSetWalletMode }) {
-  const [activeTab, setActiveTab] = useState('Portefeuille');
+export default function WalletScreen({ onBack, onOpenHome, onOpenRecharge, onOpenSend, onOpenReceive, onOpenHistory, walletMode: propWalletMode, setWalletMode: propSetWalletMode, activeTab: propActiveTab }) {
+  const [activeTabState, setActiveTabState] = useState(propActiveTab || 'home');
+  const activeTab = propActiveTab || activeTabState;
   const [walletModeState, setWalletModeState] = useState(propWalletMode || 'fcfa');
   const isFcfa = walletModeState === 'fcfa';
 
@@ -151,7 +152,7 @@ export default function WalletScreen({ onBack, onOpenHome, onOpenRecharge, onOpe
                   pressed && styles.navItemPressed,
                 ]}
                 onPress={() => {
-                  setActiveTab(item.key);
+                  setActiveTabState(item.key);
                   getAction()();
                 }}
               >

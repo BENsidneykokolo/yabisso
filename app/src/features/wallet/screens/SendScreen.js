@@ -10,8 +10,9 @@ import {
   Alert,
 } from 'react-native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import WalletBottomNav from '../../../components/WalletBottomNav';
 
-export default function SendScreen({ onBack, onOpenQRGenerate, onOpenSelectBeneficiary, onOpenScanQR, walletMode = 'fcfa' }) {
+export default function SendScreen({ onBack, onOpenQRGenerate, onOpenSelectBeneficiary, onOpenScanQR, walletMode = 'fcfa', onNavigate }) {
   const [showSendOptionsPopup, setShowSendOptionsPopup] = useState(false);
 
   const isFcfa = walletMode === 'fcfa';
@@ -125,6 +126,8 @@ export default function SendScreen({ onBack, onOpenQRGenerate, onOpenSelectBenef
           </View>
         </View>
       </Modal>
+
+      <WalletBottomNav activeTab="send" onNavigate={onNavigate} walletMode={walletMode} />
     </SafeAreaView>
   );
 }

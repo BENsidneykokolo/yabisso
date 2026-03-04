@@ -9,8 +9,9 @@ import {
   Modal,
 } from 'react-native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import WalletBottomNav from '../../../components/WalletBottomNav';
 
-export default function ReceiveScreen({ onBack, onOpenScanQR, onOpenNotifications, onOpenRequestPayment, walletMode = 'fcfa' }) {
+export default function ReceiveScreen({ onBack, onOpenScanQR, onOpenNotifications, onOpenRequestPayment, walletMode = 'fcfa', onNavigate }) {
   const isFcfa = walletMode === 'fcfa';
   const currency = isFcfa ? 'FCFA' : 'Points';
   const balance = isFcfa ? '215 450' : '1 240';
@@ -83,6 +84,8 @@ export default function ReceiveScreen({ onBack, onOpenScanQR, onOpenNotification
           ))}
         </ScrollView>
       </View>
+
+      <WalletBottomNav activeTab="receive" onNavigate={onNavigate} walletMode={walletMode} />
     </SafeAreaView>
   );
 }
