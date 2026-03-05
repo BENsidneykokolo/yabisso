@@ -37,6 +37,18 @@
 | Creer MarketplaceHomeScreen | Done | P1 | S1 |
 | Creer ProductListScreen | Done | P1 | S1 |
 | Creer CategoryPageScreen | Done | P1 | S1 |
+| Creer ProductDetailsScreen | Done | P1 | S4 |
+| Creer CartScreen | Done | P1 | S4 |
+| Creer CheckoutScreen | Done | P1 | S4 |
+| Creer OrderStatusScreen | Done | P1 | S4 |
+| Creer DeliveryTrackingScreen | Done | P1 | S4 |
+| Creer SellerComparisonScreen | Done | P1 | S4 |
+| Creer BlockedUserScreen | Done | P1 | S4 |
+| Creer CartContext (state management) | Done | P1 | S4 |
+| Ajouter bouton comparer dans ProductDetails | Done | P1 | S4 |
+| Ajouter bouton comparer dans ProductList | Done | P1 | S4 |
+| Ajouter bouton statut marketplace dans Profile | Done | P1 | S4 |
+| Branchement parcours complet marketplace | Done | P1 | S4 |
 | FloatingNav remonter (bottom: 120) | Done | P1 | S1 |
 | Link BottomNav Boutique vers MarketplaceHomeScreen | Done | P1 | S1 |
 | Creer structure dossiers complete | Done | P1 | S0 |

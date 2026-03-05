@@ -24,7 +24,14 @@
       "permissions": [
         "SEND_SMS",
         "READ_SMS",
-        "RECEIVE_SMS"
+        "RECEIVE_SMS",
+        "CAMERA",
+        "RECORD_AUDIO",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE",
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION",
+        "READ_CONTACTS"
       ],
       "kotlinVersion": "2.1.21"
     },
@@ -46,7 +53,13 @@
           }
         }
       ],
-      "./plugins/withRemoveBundleCompression"
+      "./plugins/withRemoveBundleCompression",
+      "expo-camera",
+      "expo-image-picker",
+      "expo-document-picker",
+      "expo-location",
+      "expo-contacts",
+      "expo-av"
     ]
   }
 }

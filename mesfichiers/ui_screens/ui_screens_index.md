@@ -44,6 +44,10 @@
 - Home Settings: `app/src/features/home/screens/HomeSettingsScreen.js`
 - Home Notifications: `app/src/features/home/screens/HomeNotificationsScreen.js`
 - Wallet: `app/src/features/wallet/screens/WalletScreen.js`
+- Wallet - Recharge: `app/src/features/wallet/screens/RechargeScreen.js`
+- Wallet - Send: `app/src/features/wallet/screens/SendScreen.js`
+- Wallet - Receive: `app/src/features/wallet/screens/ReceiveScreen.js`
+- Wallet - History: `app/src/features/wallet/screens/HistoryScreen.js`
 - Assistant IA: `app/src/features/ai/screens/AssistantScreen.js`
 - Profil: `app/src/features/profile/screens/ProfileScreen.js`
 - Profil - Compte: `app/src/features/profile/screens/AccountScreen.js`
@@ -52,9 +56,24 @@
 - Profil - Langue: `app/src/features/profile/screens/LanguageSettingsScreen.js`
 - Profil - Support: `app/src/features/profile/screens/SupportScreen.js`
 - Profil - Deconnexion: `app/src/features/profile/screens/LogoutScreen.js`
+- Profil - Edit Profile: `app/src/features/profile/screens/EditProfileScreen.js`
+- Profil - Notifications: `app/src/features/profile/screens/NotificationsScreen.js`
+- Profil - Langue: `app/src/features/profile/screens/LanguageSettingsScreen.js`
+- Profil - Support: `app/src/features/profile/screens/SupportScreen.js`
+- Profil - Deconnexion: `app/src/features/profile/screens/LogoutScreen.js`
 - Marketplace - Home: `app/src/features/marketplace/screens/MarketplaceHomeScreen.js`
 - Marketplace - Product List: `app/src/features/marketplace/screens/ProductListScreen.js`
 - Marketplace - Category Page: `app/src/features/marketplace/screens/CategoryPageScreen.js`
+- Marketplace - Product Details: `app/src/features/marketplace/screens/ProductDetailsScreen.js` (+ bouton comparer si plusieurs vendeurs)
+- Marketplace - Cart: `app/src/features/marketplace/screens/CartScreen.js`
+- Marketplace - Checkout: `app/src/features/marketplace/screens/CheckoutScreen.js`
+- Marketplace - Order Status: `app/src/features/marketplace/screens/OrderStatusScreen.js`
+- Marketplace - Delivery Tracking: `app/src/features/marketplace/screens/DeliveryTrackingScreen.js`
+- Marketplace - Seller Comparison: `app/src/features/marketplace/screens/SellerComparisonScreen.js`
+- Marketplace - Blocked User: `app/src/features/marketplace/screens/BlockedUserScreen.js`
+- Marketplace - Add Product: `app/src/features/marketplace/screens/AddProductScreen.js`
+- Marketplace - Seller Profile: `app/src/features/marketplace/screens/SellerProfileScreen.js`
+- Marketplace - Cart Context: `app/src/features/marketplace/context/CartContext.js`
 - FloatingNav: `app/src/components/FloatingNav.js`
 
 ---

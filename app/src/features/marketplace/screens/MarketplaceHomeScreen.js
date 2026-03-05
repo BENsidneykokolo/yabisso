@@ -135,9 +135,16 @@ export default function MarketplaceHomeScreen({ onBack, onNavigate }) {
               <Text style={styles.sectionTitle}>Populaires</Text>
               <View style={styles.productsGrid}>
                 {products.map((product) => (
-                  <View key={product.id} style={styles.productCard}>
+                  <Pressable 
+                    key={product.id} 
+                    style={styles.productCard}
+                    onPress={() => onNavigate?.('product_details')}
+                  >
                     <View style={styles.productImage}>
-                      <Pressable style={styles.favoriteBtn}>
+                      <Pressable 
+                        style={styles.favoriteBtn}
+                        onPress={(e) => e.stopPropagation()}
+                      >
                         <MaterialCommunityIcons name="heart-outline" size={18} color="#fff" />
                       </Pressable>
                     </View>
@@ -146,12 +153,15 @@ export default function MarketplaceHomeScreen({ onBack, onNavigate }) {
                       <Text style={styles.productName} numberOfLines={1}>{product.name}</Text>
                       <View style={styles.productBottom}>
                         <Text style={styles.productPrice}>{product.price} FCFA</Text>
-                        <Pressable style={styles.addBtn}>
+                        <Pressable 
+                          style={styles.addBtn}
+                          onPress={(e) => e.stopPropagation()}
+                        >
                           <MaterialCommunityIcons name="plus" size={18} color="#fff" />
                         </Pressable>
                       </View>
                     </View>
-                  </View>
+                  </Pressable>
                 ))}
               </View>
             </View>

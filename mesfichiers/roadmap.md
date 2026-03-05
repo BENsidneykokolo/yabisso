@@ -36,6 +36,13 @@ Sprint 1.5: refonte UI/UX Hub terminee
 - Service offline signup: generation payload + enqueue SyncQueue (non connecte a l'UI)
 - Supabase/OTP: pas encore integre
 
+## Marketplace - Sprint 4 (COMPLETED)
+- Marketplace: Home, Product List, Category Page, Product Details
+- Cart, Checkout, Order Status, Delivery Tracking
+- Seller Comparison, Blocked User Screen
+- CartContext: state management pour le panier
+- Branchements: parcours complet marketplace implemente
+
 ## Roadmap agile (vue condensee)
 Phase 1 — Online + SMS Fallback + UI (MVP)
 - Objectif: Demarrer en mode online, ajouter SMS fallback, livrer UI de base.

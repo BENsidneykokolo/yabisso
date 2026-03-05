@@ -10,6 +10,17 @@
 - NetInfo
 - react-native-get-sms-android (SMS fallback Android)
 
+## Stack natives installees (Assistant IA)
+- expo-camera (camera - photo)
+- expo-image-picker (galerie photos)
+- expo-document-picker (fichiers)
+- expo-location (geolocalisation)
+- expo-contacts (contacts)
+- expo-av (audio)
+- expo-barcode-scanner (QR code)
+- expo-file-system
+- expo-constants
+
 ## Stack planifiee (a installer)
 - Supabase (+ Edge Functions)
 - React Navigation
@@ -38,7 +49,33 @@ UI onboarding/auth implemente (Welcome, Language, Signup, Login, SMS, QR)
 Modal offline SMS/QR branche sur Signup
 Connectivity via NetInfo
 Schema DB local WatermelonDB en place
+UI Wallet implemente (WalletScreen, RechargeScreen, SendScreen, ReceiveScreen, HistoryScreen)
+Bottom navigation wallet avec navigation entre ecrans et etat actif
+FloatingNav (bouton flottant gauche) sur certaines pages
+UI Assistant IA implemente avec menu navigation, barre multiline, clavier avoidance, et 6 outils (Camera, Photo, Fichier, Position, Contact, Audio)
 Build dev client a revalider
+
+## Modules marketplace implementes (code)
+- UI: `app/src/features/marketplace/screens/MarketplaceHomeScreen.js`
+- UI: `app/src/features/marketplace/screens/ProductListScreen.js`
+- UI: `app/src/features/marketplace/screens/CategoryPageScreen.js`
+- UI: `app/src/features/marketplace/screens/ProductDetailsScreen.js` (+ compare button si plusieurs vendeurs)
+- UI: `app/src/features/marketplace/screens/CartScreen.js`
+- UI: `app/src/features/marketplace/screens/CheckoutScreen.js`
+- UI: `app/src/features/marketplace/screens/OrderStatusScreen.js`
+- UI: `app/src/features/marketplace/screens/DeliveryTrackingScreen.js`
+- UI: `app/src/features/marketplace/screens/SellerComparisonScreen.js`
+- UI: `app/src/features/marketplace/screens/BlockedUserScreen.js`
+- Context: `app/src/features/marketplace/context/CartContext.js`
+- Screens supplementaires: AddProductScreen, SellerProfileScreen
+
+## Parcours marketplace (flow complet)
+1. MarketplaceHome -> ProductList -> ProductDetails
+2. ProductDetails -> Cart -> Checkout -> OrderStatus
+3. OrderStatus -> DeliveryTracking
+4. ProductDetails (si plusieurs vendeurs) -> SellerComparison
+5. ProductList header -> SellerComparison
+6. Profile -> BlockedUser (Statut Marketplace)
 
 ## Auth et securite
 PIN hashe SHA-256, jamais stocke en clair

@@ -44,6 +44,13 @@ import SellerProfileScreen from './src/features/marketplace/screens/SellerProfil
 import MarketplaceHomeScreen from './src/features/marketplace/screens/MarketplaceHomeScreen';
 import ProductListScreen from './src/features/marketplace/screens/ProductListScreen';
 import CategoryPageScreen from './src/features/marketplace/screens/CategoryPageScreen';
+import ProductDetailsScreen from './src/features/marketplace/screens/ProductDetailsScreen';
+import CartScreen from './src/features/marketplace/screens/CartScreen';
+import CheckoutScreen from './src/features/marketplace/screens/CheckoutScreen';
+import OrderStatusScreen from './src/features/marketplace/screens/OrderStatusScreen';
+import DeliveryTrackingScreen from './src/features/marketplace/screens/DeliveryTrackingScreen';
+import SellerComparisonScreen from './src/features/marketplace/screens/SellerComparisonScreen';
+import BlockedUserScreen from './src/features/marketplace/screens/BlockedUserScreen';
 
 export default function App() {
   const [screen, setScreen] = useState('welcome');
@@ -246,6 +253,7 @@ export default function App() {
           setActiveTab('Portefeuille');
           setScreen('wallet');
         }}
+        onOpenBlockedUser={() => setScreen('blocked_user')}
       />
     );
   }
@@ -320,9 +328,10 @@ export default function App() {
           if (screenName === 'wallet') { setWalletActiveTab('home'); setScreen('wallet'); }
           else if (screenName === 'profile') setScreen('profile');
           else if (screenName === 'cart') setScreen('cart');
-          else if (screenName === 'orders') setScreen('orders');
+          else if (screenName === 'orders') setScreen('order_status');
           else if (screenName === 'product_list') setScreen('marketplace_product_list');
           else if (screenName === 'category_page') setScreen('marketplace_category_page');
+          else if (screenName === 'product_details') setScreen('marketplace_product_details');
         }}
       />
     );
@@ -334,6 +343,8 @@ export default function App() {
         onNavigate={(screenName) => {
           if (screenName === 'marketplace_home') setScreen('marketplace_home');
           if (screenName === 'category_page') setScreen('marketplace_category_page');
+          if (screenName === 'marketplace_product_details') setScreen('marketplace_product_details');
+          if (screenName === 'seller_comparison') setScreen('seller_comparison');
         }}
       />
     );
@@ -344,6 +355,77 @@ export default function App() {
         onBack={() => setScreen('marketplace_product_list')}
         onNavigate={(screenName) => {
           if (screenName === 'marketplace_home') setScreen('marketplace_home');
+        }}
+      />
+    );
+  }
+  if (screen === 'marketplace_product_details') {
+    content = (
+      <ProductDetailsScreen
+        onBack={() => setScreen('marketplace_product_list')}
+        onNavigate={(action, data) => {
+          if (action === 'cart') setScreen('cart');
+          if (action === 'seller_comparison') setScreen('seller_comparison');
+        }}
+      />
+    );
+  }
+  if (screen === 'cart') {
+    content = (
+      <CartScreen
+        onBack={() => setScreen('marketplace_home')}
+        onNavigate={(screenName) => {
+          if (screenName === 'checkout') setScreen('checkout');
+        }}
+      />
+    );
+  }
+  if (screen === 'checkout') {
+    content = (
+      <CheckoutScreen
+        onBack={() => setScreen('cart')}
+        onNavigate={(screenName) => {
+          if (screenName === 'home') setScreen('home');
+          if (screenName === 'order_status') setScreen('order_status');
+        }}
+      />
+    );
+  }
+  if (screen === 'order_status') {
+    content = (
+      <OrderStatusScreen
+        onBack={() => setScreen('cart')}
+        onNavigate={(screenName) => {
+          if (screenName === 'delivery_tracking') setScreen('delivery_tracking');
+        }}
+      />
+    );
+  }
+  if (screen === 'delivery_tracking') {
+    content = (
+      <DeliveryTrackingScreen
+        onBack={() => setScreen('order_status')}
+      />
+    );
+  }
+  if (screen === 'seller_comparison') {
+    content = (
+      <SellerComparisonScreen
+        onBack={() => setScreen('marketplace_product_details')}
+        onNavigate={(action, data) => {
+          if (action === 'select_seller') {
+            setScreen('marketplace_product_details');
+          }
+        }}
+      />
+    );
+  }
+  if (screen === 'blocked_user') {
+    content = (
+      <BlockedUserScreen
+        onBack={() => setScreen('home')}
+        onNavigate={(screenName) => {
+          if (screenName === 'home') setScreen('home');
         }}
       />
     );
@@ -375,6 +457,13 @@ export default function App() {
     screen === 'marketplace_home' ||
     screen === 'marketplace_product_list' ||
     screen === 'marketplace_category_page' ||
+    screen === 'marketplace_product_details' ||
+    screen === 'cart' ||
+    screen === 'checkout' ||
+    screen === 'order_status' ||
+    screen === 'delivery_tracking' ||
+    screen === 'seller_comparison' ||
+    screen === 'blocked_user' ||
     screen === 'market_seller' ||
     screen === 'market_add_product';
 

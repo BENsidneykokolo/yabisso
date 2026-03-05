@@ -26,6 +26,7 @@ export default function ProfileScreen({
   onOpenLogout,
   onOpenWallet,
   onOpenEditProfile,
+  onOpenBlockedUser,
 }) {
   const [activeTab, setActiveTab] = useState('Compte');
 
@@ -111,6 +112,14 @@ export default function ProfileScreen({
         <View style={styles.sectionRow}>
           <Text style={styles.sectionTitle}>Parametres</Text>
         </View>
+
+        <Pressable style={styles.settingRow} onPress={onOpenBlockedUser}>
+          <View style={[styles.settingIcon, { backgroundColor: 'rgba(245, 158, 11, 0.2)' }]}>
+            <MaterialCommunityIcons name="store-alert" size={20} color="#f59e0b" />
+          </View>
+          <Text style={styles.settingLabel}>Statut Marketplace</Text>
+          <Ionicons name="chevron-forward" size={18} color="#6B7280" />
+        </Pressable>
 
         <Pressable style={styles.settingRow} onPress={onOpenLogout}>
           <View style={[styles.settingIcon, { backgroundColor: 'rgba(239, 68, 68, 0.2)' }]}>

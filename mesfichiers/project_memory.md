@@ -14,19 +14,30 @@
 | expo-secure-store | ^15.0.8 | ✅ Installe |
 | NetInfo | ^12.0.1 | ✅ Installe |
 | react-native-get-sms-android | ^1.2.0 | ✅ Installe (Android only) |
+| expo-camera | ~17.0.5 | ✅ Installe |
+| expo-image-picker | ~16.0.10 | ✅ Installe |
+| expo-document-picker | ~13.0.6 | ✅ Installe |
+| expo-location | ~19.0.10 | ✅ Installe |
+| expo-contacts | ~14.0.6 | ✅ Installe |
+| expo-av | ~16.0.5 | ✅ Installe |
+| expo-barcode-scanner | - | ✅ Installe |
+| expo-file-system | ~19.0.6 | ✅ Installe |
+| expo-constants | ~18.0.5 | ✅ Installe |
 | Supabase | - | 🔄 A installer |
 | React Navigation | - | 🔄 A installer |
 | Zustand | - | 🔄 A installer |
 | BLE/WiFi Direct libs | - | ⏳ Phase 2-3 |
 
-**Build dev client Android** : 🔄 A revalider
+**Build dev client Android** : 🔄 A revalider (nouvelles dependances natives installees)
 **iOS** : Simple (Expo Go suffit pour Phase 1)
 **DB locale** : WatermelonDB + SQLiteAdapter (SQLCipher prevu pour chiffrement)
 
-## Etat actuel (verifie dans le code)
+##Etat actuel (verifie dans le code)
 - UI onboarding/auth: Welcome, Language, Signup, Login, SMS, QR
 - Dashboard/Home + pages QR/Settings/Notifications
-- Pages: Wallet, Assistant IA, Profil + sous-pages (Compte, Securite, Notifications, Langue, Support, Deconnexion)
+- UI Wallet complet: WalletScreen, RechargeScreen, SendScreen, ReceiveScreen, HistoryScreen
+- Bottom navigation wallet avec navigation et etat actif
+- Pages: Assistant IA (avec menu, clavier avoidance, 6 outils), Profil + sous-pages
 - Marketplace: MarketplaceHomeScreen, ProductListScreen, CategoryPageScreen
 - FloatingNav: bouton flottant (bottom: 120)
 - Offline choix SMS/QR: modal active quand offline (NetInfo)

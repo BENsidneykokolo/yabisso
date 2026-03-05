@@ -19,12 +19,12 @@ const categories = [
 ];
 
 const products = [
-  { id: 1, name: 'iPhone 13 Pro', brand: 'Apple', price: '450k', category: 'Téléphones' },
-  { id: 2, name: 'Samsung Galaxy S23', brand: 'Samsung', price: '380k', category: 'Téléphones' },
-  { id: 3, name: 'MacBook Air M2', brand: 'Apple', price: '680k', category: 'Électronique' },
-  { id: 4, name: 'Air Zoom Pegasus', brand: 'Nike', price: '65k', category: 'Sports' },
-  { id: 5, name: 'Galaxy Watch 5', brand: 'Samsung', price: '120k', category: 'Téléphones' },
-  { id: 6, name: 'iPad Air', brand: 'Apple', price: '420k', category: 'Électronique' },
+  { id: 1, name: 'iPhone 13 Pro', brand: 'Apple', price: '450000', category: 'Téléphones' },
+  { id: 2, name: 'Samsung Galaxy S23', brand: 'Samsung', price: '380000', category: 'Téléphones' },
+  { id: 3, name: 'MacBook Air M2', brand: 'Apple', price: '680000', category: 'Électronique' },
+  { id: 4, name: 'Air Zoom Pegasus', brand: 'Nike', price: '65000', category: 'Sports' },
+  { id: 5, name: 'Galaxy Watch 5', brand: 'Samsung', price: '120000', category: 'Téléphones' },
+  { id: 6, name: 'iPad Air', brand: 'Apple', price: '420000', category: 'Électronique' },
 ];
 
 const bottomNavItems = [
@@ -38,10 +38,16 @@ const bottomNavItems = [
 export default function ProductListScreen({ onBack, onNavigate }) {
   const [activeTab, setActiveTab] = useState('Boutique');
   const [selectedCategory, setSelectedCategory] = useState('Téléphones');
+  const [selectedProduct, setSelectedProduct] = useState(null);
 
   const filteredProducts = products.filter(
     (p) => p.category === selectedCategory
   );
+
+  const handleProductPress = (product) => {
+    setSelectedProduct(product);
+    onNavigate?.('marketplace_product_details');
+  };
 
 
   return (
@@ -55,6 +61,12 @@ export default function ProductListScreen({ onBack, onNavigate }) {
               </Pressable>
               <Text style={styles.headerTitle}>{selectedCategory}</Text>
               <View style={styles.headerActions}>
+                <Pressable 
+                  style={styles.actionBtn}
+                  onPress={() => onNavigate?.('seller_comparison')}
+                >
+                  <MaterialCommunityIcons name="compare-arrows" size={22} color="#fff" />
+                </Pressable>
                 <Pressable style={styles.actionBtn}>
                   <MaterialCommunityIcons name="filter-variant" size={22} color="#fff" />
                 </Pressable>
@@ -109,9 +121,18 @@ export default function ProductListScreen({ onBack, onNavigate }) {
             </Text>
             <View style={styles.productsGrid}>
               {filteredProducts.map((product) => (
-                <View key={product.id} style={styles.productCard}>
+                <Pressable
+                  key={product.id}
+                  style={styles.productCard}
+                  onPress={() => handleProductPress(product)}
+                >
                   <View style={styles.productImage}>
-                    <Pressable style={styles.favoriteBtn}>
+                    <Pressable 
+                      style={styles.favoriteBtn}
+                      onPress={(e) => {
+                        e.stopPropagation();
+                      }}
+                    >
                       <MaterialCommunityIcons name="heart-outline" size={18} color="#fff" />
                     </Pressable>
                   </View>
@@ -120,12 +141,17 @@ export default function ProductListScreen({ onBack, onNavigate }) {
                     <Text style={styles.productName} numberOfLines={1}>{product.name}</Text>
                     <View style={styles.productBottom}>
                       <Text style={styles.productPrice}>{product.price} FCFA</Text>
-                      <Pressable style={styles.addBtn}>
+                      <Pressable 
+                        style={styles.addBtn}
+                        onPress={(e) => {
+                          e.stopPropagation();
+                        }}
+                      >
                         <MaterialCommunityIcons name="plus" size={18} color="#fff" />
                       </Pressable>
                     </View>
                   </View>
-                </View>
+                </Pressable>
               ))}
             </View>
           </View>
