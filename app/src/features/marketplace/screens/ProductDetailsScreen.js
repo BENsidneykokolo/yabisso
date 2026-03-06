@@ -97,14 +97,14 @@ export default function ProductDetailsScreen({ onBack, onNavigate, product }) {
             <MaterialCommunityIcons name="arrow-left" size={24} color="#fff" />
           </Pressable>
           <View style={styles.headerActions}>
-            <Pressable 
-              onPress={() => setIsFavorite(!isFavorite)} 
+            <Pressable
+              onPress={() => setIsFavorite(!isFavorite)}
               style={styles.actionBtn}
             >
-              <MaterialCommunityIcons 
-                name={isFavorite ? "heart" : "heart-outline"} 
-                size={22} 
-                color={isFavorite ? "#ef4444" : "#fff"} 
+              <MaterialCommunityIcons
+                name={isFavorite ? "heart" : "heart-outline"}
+                size={22}
+                color={isFavorite ? "#ef4444" : "#fff"}
               />
             </Pressable>
             <Pressable style={styles.actionBtn}>
@@ -281,7 +281,7 @@ export default function ProductDetailsScreen({ onBack, onNavigate, product }) {
             </Pressable>
           </View>
           {hasMultipleSellers && (
-            <Pressable 
+            <Pressable
               style={styles.compareBtn}
               onPress={() => onNavigate?.('seller_comparison')}
             >
@@ -665,7 +665,7 @@ const styles = StyleSheet.create({
     color: '#fff',
   },
   bottomSpacer: {
-    height: 100,
+    height: 150,
   },
   bottomBar: {
     position: 'absolute',
@@ -675,8 +675,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#101922',
     borderTopWidth: 1,
     borderTopColor: '#1e293b',
-    padding: 16,
-    paddingBottom: 32,
+    paddingBottom: 60,
   },
   bottomBarContent: {
     flexDirection: 'row',

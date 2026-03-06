@@ -9,12 +9,15 @@ import {
   Image,
   Dimensions,
   FlatList,
+  Modal,
+  Alert,
+  Share,
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 const { width, height } = Dimensions.get('window');
 
-const videos = [
+const initialVideos = [
   {
     id: 1,
     username: '@LagosEats',
@@ -22,9 +25,12 @@ const videos = [
     video: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCtK8TvWjtBzKDjxuNCgfKCM4VlXkH7Hg9QBzK5eG3Ln-zP7vsQaoci0T6qobNgJTG-5XhMtb5xOpfX-pW4Q51r7E1jBDBkJ8ui72wvXPeaDdJ4XWogDMTXMK4rRBmj96uJkepQcbLbXghuHhcfgXXwVoJgVoNN7_EkMxkinirFlaspT4lpwuIVSIzP4iJEeJQuWKp8mryxMKc8Yr_16eVJt7gdmfV4Zzh-JOxvlDIzL-0kM-4AUc-kHPKVwQ1Aa020PiWFk7KE',
     caption: 'Trying the best suya in the city! 🔥🥩 This place is hidden but worth the trek. #Lagos #Foodie #Yabisso',
     song: 'Burna Boy - Last Last',
-    likes: 1200,
-    comments: 300,
+    likes: 1245,
+    comments: 320,
     progress: 35,
+    liked: false,
+    followed: false,
+    saved: false,
   },
   {
     id: 2,
@@ -33,9 +39,12 @@ const videos = [
     video: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAnsmNx5C1-w0Yj3lMlo7-VbFA9OZNzc8vCIqLLNiEWPlqfOQSn40V7O2anTjQdhiVVsOUPd1Fh80S2l0bXDXUxJqhNIq_5GB6gsUsXx0OCuH76RCqW8zwYWx3Z1nuto64008GB7dQ3GGUGAUDYbjA2dXyctAocSS9HrU9BqfKeUCbR0eAsO9ge8eYzPx4BNyZApogpBe7SnsiUhCQ36Q-JA2p3Wz5ZttmMg-YIjNKODC2cU2gW0AhE6WrSmspXkdYVewssDBFD',
     caption: 'Building the future of African tech! 🌍✨ #AfricanTech #Innovation',
     song: 'Wizkid - Essence',
-    likes: 2500,
+    likes: 4500,
     comments: 180,
     progress: 60,
+    liked: true,
+    followed: true,
+    saved: true,
   },
 ];
 
@@ -72,42 +81,111 @@ const posts = [
 
 export default function LobaHomeScreen({ onBack, onNavigate }) {
   const [activeTab, setActiveTab] = useState('For You');
+  const [activeTabNav, setActiveTabNav] = useState('Loba');
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
+  const [feedVideos, setFeedVideos] = useState(initialVideos);
+  const [isShareModalVisible, setIsShareModalVisible] = useState(false);
+  const [isCommentsModalVisible, setIsCommentsModalVisible] = useState(false);
+  const [selectedVideo, setSelectedVideo] = useState(null);
+
+  const handleLike = (id) => {
+    setFeedVideos(prev => prev.map(video => {
+      if (video.id === id) {
+        const isLiked = !video.liked;
+        return {
+          ...video,
+          liked: isLiked,
+          likes: isLiked ? video.likes + 1 : video.likes - 1
+        };
+      }
+      return video;
+    }));
+  };
+
+  const handleFollow = (id) => {
+    setFeedVideos(prev => prev.map(video => {
+      if (video.id === id) {
+        return { ...video, followed: !video.followed };
+      }
+      return video;
+    }));
+  };
+
+  const handleSave = (id) => {
+    setFeedVideos(prev => prev.map(video => {
+      if (video.id === id) {
+        return { ...video, saved: !video.saved };
+      }
+      return video;
+    }));
+  };
+
+  const openShare = (video) => {
+    setSelectedVideo(video);
+    setIsShareModalVisible(true);
+  };
+
+  const openComments = (video) => {
+    setSelectedVideo(video);
+    setIsCommentsModalVisible(true);
+  };
+
+  const handleNativeShare = async () => {
+    try {
+      if (!selectedVideo) return;
+      await Share.share({
+        message: `Check out ${selectedVideo.username}'s video on Yabisso: ${selectedVideo.caption}`,
+        url: selectedVideo.video,
+      });
+      setIsShareModalVisible(false);
+    } catch (error) {
+      Alert.alert('Error', 'Could not share video');
+    }
+  };
 
   const renderVideo = ({ item, index }) => (
     <View style={styles.videoContainer}>
       <Image source={{ uri: item.video }} style={styles.videoBackground} />
       <View style={styles.videoGradient} />
-      
-      <View style={styles.topOverlay}>
-        <View style={styles.offlineChip}>
-          <MaterialCommunityIcons name="wifi-off" size={14} color="#fbbf24" />
-          <Text style={styles.offlineText}>Mode Offline</Text>
-        </View>
-        
-        <View style={styles.tabs}>
-          <Text style={[styles.tab, activeTab === 'Following' && styles.tabActive]}>Following</Text>
-          <Text style={[styles.tab, activeTab === 'For You' && styles.tabActive]}>For You</Text>
-        </View>
-        
-        <Pressable style={styles.searchBtn}>
-          <MaterialCommunityIcons name="magnify" size={24} color="#fff" />
-        </Pressable>
-      </View>
 
       <View style={styles.rightActions}>
         <View style={styles.avatarContainer}>
           <Image source={{ uri: item.avatar }} style={styles.avatar} />
-          <View style={styles.followBadge}>
-            <MaterialCommunityIcons name="plus" size={12} color="#fff" />
-          </View>
+          <Pressable
+            style={[styles.followBadge, item.followed && styles.followBadgeActive]}
+            onPress={() => handleFollow(item.id)}
+          >
+            <MaterialCommunityIcons
+              name={item.followed ? "check" : "plus"}
+              size={item.followed ? 10 : 12}
+              color="#fff"
+            />
+          </Pressable>
         </View>
-        
-        <ActionButton icon="heart" count={item.likes} />
-        <ActionButton icon="chat-bubble" count={item.comments} />
-        <ActionButton icon="share" count="Share" />
-        <ActionButton icon="more-horiz" />
-        
+
+        <ActionButton
+          icon={item.liked ? "heart" : "heart-outline"}
+          color={item.liked ? "#ef4444" : "#fff"}
+          count={item.likes}
+          onPress={() => handleLike(item.id)}
+        />
+        <ActionButton
+          icon="chat-bubble"
+          count={item.comments}
+          onPress={() => openComments(item)}
+        />
+        <ActionButton
+          icon={item.saved ? "bookmark" : "bookmark-outline"}
+          color={item.saved ? "#fbbf24" : "#fff"}
+          count={item.saved ? "Enregistré" : "Enregistrer"}
+          onPress={() => handleSave(item.id)}
+        />
+        <ActionButton
+          icon="share"
+          count="Partager"
+          onPress={() => openShare(item)}
+        />
+
         <View style={styles.musicDisc}>
           <View style={styles.musicDiscInner}>
             <Image source={{ uri: item.avatar }} style={styles.musicImage} />
@@ -118,10 +196,13 @@ export default function LobaHomeScreen({ onBack, onNavigate }) {
       <View style={styles.bottomInfo}>
         <Text style={styles.username}>{item.username}</Text>
         <Text style={styles.caption} numberOfLines={3}>{item.caption}</Text>
-        <View style={styles.musicRow}>
+        <Pressable
+          style={styles.musicRow}
+          onPress={() => Alert.alert('Original Sound', item.song)}
+        >
           <MaterialCommunityIcons name="music-note" size={14} color="#fff" />
           <Text style={styles.musicText}>{item.song}</Text>
-        </View>
+        </Pressable>
       </View>
 
       <View style={styles.progressBar}>
@@ -132,29 +213,32 @@ export default function LobaHomeScreen({ onBack, onNavigate }) {
 
   return (
     <SafeAreaView style={styles.container}>
+      {/* Header Tabs */}
       <View style={styles.header}>
         <View style={styles.statusChip}>
           <MaterialCommunityIcons name="wifi-off" size={14} color="#fbbf24" />
-          <Text style={styles.statusText}>Mode Offline</Text>
+          <Text style={styles.statusText}>Offline Mode</Text>
         </View>
-        
+
         <View style={styles.tabContainer}>
-          <Pressable onPress={() => setActiveTab('Following')}>
+          <Pressable onPress={() => setActiveTab('Following')} style={styles.tabItem}>
             <Text style={[styles.tabText, activeTab === 'Following' && styles.tabTextActive]}>Following</Text>
+            {activeTab === 'Following' && <View style={styles.activeIndicator} />}
           </Pressable>
-          <View style={styles.tabDivider} />
-          <Pressable onPress={() => setActiveTab('For You')}>
+          <View style={styles.tabSpacer} />
+          <Pressable onPress={() => setActiveTab('For You')} style={styles.tabItem}>
             <Text style={[styles.tabText, activeTab === 'For You' && styles.tabTextActive]}>For You</Text>
+            {activeTab === 'For You' && <View style={styles.activeIndicator} />}
           </Pressable>
         </View>
-        
+
         <Pressable style={styles.searchBtn}>
-          <MaterialCommunityIcons name="magnify" size={24} color="#fff" />
+          <MaterialCommunityIcons name="magnify" size={26} color="#fff" />
         </Pressable>
       </View>
 
       <FlatList
-        data={videos}
+        data={feedVideos}
         renderItem={renderVideo}
         keyExtractor={item => item.id.toString()}
         pagingEnabled
@@ -166,38 +250,139 @@ export default function LobaHomeScreen({ onBack, onNavigate }) {
         }}
       />
 
-      <View style={styles.bottomNav}>
-        <NavButton icon="home" label="Home" />
-        <NavButton icon="account-balance-wallet" label="Wallet" />
-        <NavButton icon="plus-circle" label="Create" primary />
-        <NavButton icon="play-circle" label="Loba" active />
-        <NavButton icon="person" label="Profile" />
-      </View>
+      {/* Share Modal */}
+      <Modal
+        visible={isShareModalVisible}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setIsShareModalVisible(false)}
+      >
+        <Pressable
+          style={styles.modalOverlay}
+          onPress={() => setIsShareModalVisible(false)}
+        >
+          <View style={styles.modalContent}>
+            <View style={styles.modalHandle} />
+            <Text style={styles.modalTitle}>Partager avec</Text>
+
+            <View style={styles.shareGrid}>
+              <ShareOption icon="whatsapp" color="#25D366" label="WhatsApp" onPress={handleNativeShare} />
+              <ShareOption icon="facebook" color="#1877F2" label="Facebook" onPress={handleNativeShare} />
+              <ShareOption icon="instagram" color="#E4405F" label="Instagram" onPress={handleNativeShare} />
+              <ShareOption icon="download" color="#4B5563" label="Enregistrer" onPress={() => Alert.alert('Download', 'Saving to phone...')} />
+              <ShareOption icon="link-variant" color="#4B5563" label="Copier le lien" onPress={() => Alert.alert('Link', 'Link copied to clipboard')} />
+            </View>
+
+            <Pressable
+              style={styles.closeBtn}
+              onPress={() => setIsShareModalVisible(false)}
+            >
+              <Text style={styles.closeBtnText}>Annuler</Text>
+            </Pressable>
+          </View>
+        </Pressable>
+      </Modal>
+
+      {/* Comments Modal (Simplified) */}
+      <Modal
+        visible={isCommentsModalVisible}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setIsCommentsModalVisible(false)}
+      >
+        <Pressable
+          style={styles.modalOverlay}
+          onPress={() => setIsCommentsModalVisible(false)}
+        >
+          <View style={[styles.modalContent, styles.commentsModal]}>
+            <View style={styles.modalHandle} />
+            <Text style={styles.modalTitle}>{selectedVideo?.comments} commentaires</Text>
+
+            <ScrollView style={styles.commentsList}>
+              <View style={styles.emptyComments}>
+                <MaterialCommunityIcons name="chat-outline" size={48} color="rgba(255,255,255,0.2)" />
+                <Text style={styles.emptyCommentsText}>Chargement des commentaires...</Text>
+              </View>
+            </ScrollView>
+
+            <View style={styles.commentInputContainer}>
+              <Image source={{ uri: selectedVideo?.avatar }} style={styles.userAvatarSmall} />
+              <View style={styles.commentInput}>
+                <Text style={styles.commentPlaceholder}>Ajouter un commentaire...</Text>
+              </View>
+            </View>
+          </View>
+        </Pressable>
+      </Modal>
+
+      {/* Floating Bottom Navigation */}
+      <SafeAreaView style={styles.bottomNavWrapper}>
+        <View style={styles.bottomNav}>
+          {navItems.map((item) => {
+            const isActive = activeTabNav === item.label;
+            return (
+              <Pressable
+                key={item.label}
+                style={({ pressed }) => [
+                  styles.navItem,
+                  pressed && styles.navItemPressed,
+                ]}
+                onPress={() => {
+                  if (item.label === 'Home') onBack?.();
+                  else if (item.label === 'Profile') onNavigate?.('profile');
+                  else {
+                    setActiveTabNav(item.label);
+                  }
+                }}
+              >
+                <View style={[
+                  styles.navIcon,
+                  isActive && styles.navIconActive,
+                  item.primary && styles.navIconCenter,
+                ]}>
+                  <MaterialCommunityIcons
+                    name={item.icon}
+                    size={isActive || item.primary ? 22 : 18}
+                    color={isActive ? '#0E151B' : '#E6EDF3'}
+                  />
+                </View>
+                <Text style={[styles.navLabel, isActive && styles.navLabelActive]}>
+                  {item.label}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </View>
+      </SafeAreaView>
     </SafeAreaView>
   );
 }
 
-const ActionButton = ({ icon, count, onPress }) => (
-  <Pressable style={styles.actionBtn} onPress={onPress}>
-    <MaterialCommunityIcons name={icon} size={28} color="#fff" />
-    {count && <Text style={styles.actionCount}>{count}</Text>}
-  </Pressable>
+const navItems = [
+  { label: 'Home', icon: 'home-variant' },
+  { label: 'Wallet', icon: 'wallet' },
+  { label: 'Create', icon: 'plus', primary: true },
+  { label: 'Loba', icon: 'play-circle', active: true },
+  { label: 'Profile', icon: 'account' },
+];
+
+const ActionButton = ({ icon, color = "#fff", count, onPress }) => (
+  <View style={styles.actionItem}>
+    <Pressable style={styles.actionBtn} onPress={onPress}>
+      <View style={styles.iconCircle}>
+        <MaterialCommunityIcons name={icon} size={28} color={color} />
+      </View>
+    </Pressable>
+    {count !== undefined && <Text style={styles.actionCount}>{count}</Text>}
+  </View>
 );
 
-const NavButton = ({ icon, label, active, primary }) => (
-  <Pressable style={styles.navBtn}>
-    {primary ? (
-      <View style={styles.createBtn}>
-        <MaterialCommunityIcons name="plus" size={24} color="#fff" />
-      </View>
-    ) : (
-      <MaterialCommunityIcons 
-        name={icon} 
-        size={22} 
-        color={active ? '#fff' : '#94a3b8'} 
-      />
-    )}
-    <Text style={[styles.navLabel, active && styles.navLabelActive]}>{label}</Text>
+const ShareOption = ({ icon, color, label, onPress }) => (
+  <Pressable style={styles.shareOption} onPress={onPress}>
+    <View style={[styles.shareIconCircle, { backgroundColor: color + '20' }]}>
+      <MaterialCommunityIcons name={icon} size={28} color={color} />
+    </View>
+    <Text style={styles.shareLabel}>{label}</Text>
   </Pressable>
 );
 
@@ -211,58 +396,76 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 16,
-    paddingTop: 40,
-    paddingBottom: 8,
+    paddingTop: 54,
+    paddingBottom: 16,
     position: 'absolute',
     top: 0,
     left: 0,
     right: 0,
-    zIndex: 10,
+    zIndex: 20,
   },
   statusChip: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    backgroundColor: 'rgba(0,0,0,0.4)',
+    backgroundColor: 'rgba(0,0,0,0.5)',
     paddingHorizontal: 12,
-    paddingVertical: 6,
+    paddingVertical: 8,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
+    borderColor: 'rgba(255,255,255,0.15)',
+    backdropFilter: 'blur(10px)',
   },
   statusText: {
     color: '#fff',
     fontSize: 12,
-    fontWeight: '600',
+    fontWeight: '700',
   },
   tabContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 16,
+    gap: 24,
+  },
+  tabItem: {
+    alignItems: 'center',
   },
   tabText: {
     color: 'rgba(255,255,255,0.6)',
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: '600',
+    textShadowColor: 'rgba(0, 0, 0, 0.4)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
   },
   tabTextActive: {
     color: '#fff',
-    fontWeight: '700',
+    fontWeight: '800',
   },
-  tabDivider: {
+  activeIndicator: {
+    width: 20,
+    height: 2,
+    backgroundColor: '#fff',
+    borderRadius: 1,
+    marginTop: 4,
+    position: 'absolute',
+    bottom: -8,
+  },
+  tabSpacer: {
     width: 1,
-    height: 14,
+    height: 16,
     backgroundColor: 'rgba(255,255,255,0.2)',
   },
   searchBtn: {
-    width: 40,
-    height: 40,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: 'rgba(0,0,0,0.2)',
   },
   videoContainer: {
     width,
-    height: height - 80,
+    height: height,
     backgroundColor: '#000',
   },
   videoBackground: {
@@ -272,96 +475,66 @@ const styles = StyleSheet.create({
   },
   videoGradient: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0,0,0,0.3)',
-  },
-  topOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingTop: 80,
-    paddingBottom: 16,
-  },
-  offlineChip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    backgroundColor: 'rgba(0,0,0,0.4)',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 20,
-  },
-  offlineText: {
-    color: '#fbbf24',
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  tabs: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 16,
-  },
-  tab: {
-    color: 'rgba(255,255,255,0.6)',
-    fontSize: 15,
-    fontWeight: '600',
-  },
-  tabActive: {
-    color: '#fff',
-    fontWeight: '700',
+    backgroundColor: 'rgba(0,0,0,0.2)',
   },
   rightActions: {
     position: 'absolute',
     right: 8,
-    bottom: 100,
+    bottom: 120,
     alignItems: 'center',
-    gap: 16,
+    gap: 20,
+    zIndex: 10,
   },
   avatarContainer: {
-    marginBottom: 8,
+    marginBottom: 10,
   },
   avatar: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 50,
+    height: 50,
+    borderRadius: 25,
     borderWidth: 2,
     borderColor: '#fff',
   },
   followBadge: {
     position: 'absolute',
-    bottom: -4,
+    bottom: -6,
     left: '50%',
-    marginLeft: -10,
-    width: 20,
-    height: 20,
-    borderRadius: 10,
+    marginLeft: -11,
+    width: 22,
+    height: 22,
+    borderRadius: 11,
     backgroundColor: '#137fec',
     alignItems: 'center',
     justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: '#000',
   },
-  actionBtn: {
+  actionItem: {
     alignItems: 'center',
-    marginBottom: 8,
+    gap: 4,
+  },
+  iconCircle: {
+    textShadowColor: 'rgba(0, 0, 0, 0.5)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 3,
   },
   actionCount: {
     color: '#fff',
     fontSize: 12,
     fontWeight: 'bold',
-    marginTop: 4,
+    textShadowColor: 'rgba(0, 0, 0, 0.8)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
   },
   musicDisc: {
-    marginTop: 8,
+    marginTop: 10,
   },
   musicDiscInner: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     backgroundColor: '#1a1a1a',
-    borderWidth: 3,
+    borderWidth: 4,
     borderColor: '#333',
     overflow: 'hidden',
   },
@@ -371,21 +544,28 @@ const styles = StyleSheet.create({
   },
   bottomInfo: {
     position: 'absolute',
-    bottom: 80,
+    bottom: 100,
     left: 16,
-    right: 80,
+    right: 100,
+    zIndex: 10,
   },
   username: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: 'bold',
-    marginBottom: 8,
+    marginBottom: 6,
+    textShadowColor: 'rgba(0, 0, 0, 0.5)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
   },
   caption: {
     color: 'rgba(255,255,255,0.95)',
     fontSize: 14,
     lineHeight: 20,
-    marginBottom: 8,
+    marginBottom: 10,
+    textShadowColor: 'rgba(0, 0, 0, 0.5)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
   },
   musicRow: {
     flexDirection: 'row',
@@ -395,52 +575,192 @@ const styles = StyleSheet.create({
   musicText: {
     color: '#fff',
     fontSize: 13,
-    fontWeight: '500',
+    fontWeight: '600',
+    textShadowColor: 'rgba(0, 0, 0, 0.5)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
   },
   progressBar: {
     position: 'absolute',
-    bottom: 72,
+    bottom: 86,
     left: 0,
     right: 0,
     height: 2,
     backgroundColor: 'rgba(255,255,255,0.2)',
+    zIndex: 20,
   },
   progressFill: {
     height: '100%',
     backgroundColor: '#137fec',
   },
-  bottomNav: {
+  bottomNavWrapper: {
     position: 'absolute',
-    bottom: 0,
     left: 0,
     right: 0,
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    alignItems: 'center',
-    paddingVertical: 12,
-    paddingBottom: 24,
-    backgroundColor: 'rgba(0,0,0,0.8)',
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(255,255,255,0.05)',
+    bottom: 0,
+    paddingHorizontal: 16,
+    paddingBottom: 36,
+    zIndex: 30,
   },
-  navBtn: {
-    alignItems: 'center',
-    gap: 4,
-  },
-  navLabel: {
-    color: '#94a3b8',
-    fontSize: 10,
-  },
-  navLabelActive: {
-    color: '#fff',
-  },
-  createBtn: {
-    width: 48,
-    height: 48,
+  bottomNav: {
+    backgroundColor: 'rgba(22, 29, 37, 0.98)',
     borderRadius: 24,
-    backgroundColor: '#137fec',
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+    marginBottom: 4,
+  },
+  navItem: {
+    alignItems: 'center',
+    flex: 1,
+  },
+  navItemPressed: {
+    transform: [{ scale: 0.96 }],
+  },
+  navIcon: {
+    width: 22,
+    height: 22,
+    borderRadius: 6,
+    backgroundColor: 'rgba(255, 255, 255, 0.12)',
+    marginBottom: 6,
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: -20,
+  },
+  navIconActive: {
+    backgroundColor: '#3B82F6',
+  },
+  navIconCenter: {
+    width: 36,
+    height: 36,
+    borderRadius: 12,
+    backgroundColor: '#3B82F6',
+    marginTop: -14,
+    shadowColor: '#3B82F6',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  navLabel: {
+    color: '#E6EDF3',
+    fontSize: 10,
+    opacity: 0.6,
+  },
+  navLabelActive: {
+    color: '#2BEE79',
+    opacity: 1,
+    fontWeight: '700',
+  },
+  followBadgeActive: {
+    backgroundColor: '#22c55e',
+    borderColor: '#000',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'flex-end',
+  },
+  modalContent: {
+    backgroundColor: '#1c2a38',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    padding: 24,
+    minHeight: 400,
+  },
+  commentsModal: {
+    minHeight: height * 0.7,
+  },
+  modalHandle: {
+    width: 40,
+    height: 4,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    borderRadius: 2,
+    alignSelf: 'center',
+    marginBottom: 20,
+  },
+  modalTitle: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 24,
+  },
+  shareGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    gap: 20,
+    marginBottom: 30,
+  },
+  shareOption: {
+    width: '30%',
+    alignItems: 'center',
+    gap: 8,
+  },
+  shareIconCircle: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  shareLabel: {
+    color: '#cbd5e1',
+    fontSize: 12,
+    fontWeight: '500',
+  },
+  closeBtn: {
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    height: 56,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  closeBtnText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  commentsList: {
+    flex: 1,
+  },
+  emptyComments: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingTop: 60,
+    gap: 16,
+  },
+  emptyCommentsText: {
+    color: 'rgba(255,255,255,0.4)',
+    fontSize: 14,
+  },
+  commentInputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255,255,255,0.1)',
+  },
+  userAvatarSmall: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+  },
+  commentInput: {
+    flex: 1,
+    height: 44,
+    backgroundColor: 'rgba(255,255,255,0.08)',
+    borderRadius: 22,
+    justifyContent: 'center',
+    paddingHorizontal: 16,
+  },
+  commentPlaceholder: {
+    color: 'rgba(255,255,255,0.4)',
+    fontSize: 14,
   },
 });

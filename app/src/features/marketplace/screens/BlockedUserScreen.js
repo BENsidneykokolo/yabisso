@@ -394,7 +394,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   bottomSpacer: {
-    height: 120,
+    height: 150,
   },
   bottomBar: {
     position: 'absolute',
@@ -402,8 +402,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     backgroundColor: '#fff',
-    padding: 16,
-    paddingBottom: 32,
+    paddingBottom: 60,
     borderTopWidth: 1,
     borderTopColor: '#e5e7eb',
     gap: 12,

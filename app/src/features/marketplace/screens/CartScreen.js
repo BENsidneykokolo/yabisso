@@ -35,6 +35,7 @@ const sampleCartItems = [
 export default function CartScreen({ onBack, onNavigate }) {
   const [cartItems, setCartItems] = useState(sampleCartItems);
   const [selectedItems, setSelectedItems] = useState([1, 2]);
+  const [activeTab, setActiveTab] = useState('Panier');
 
   const formatPrice = (price) => {
     return price.toLocaleString('fr-FR') + ' XAF';
@@ -49,15 +50,15 @@ export default function CartScreen({ onBack, onNavigate }) {
   const total = subtotal + deliveryFee + taxes;
 
   const toggleItemSelection = (itemId) => {
-    setSelectedItems(prev => 
-      prev.includes(itemId) 
+    setSelectedItems(prev =>
+      prev.includes(itemId)
         ? prev.filter(id => id !== itemId)
         : [...prev, itemId]
     );
   };
 
   const updateQuantity = (itemId, delta) => {
-    setCartItems(prev => 
+    setCartItems(prev =>
       prev.map(item => {
         if (item.id === itemId) {
           const newQty = item.quantity + delta;
@@ -74,8 +75,8 @@ export default function CartScreen({ onBack, onNavigate }) {
       'Voulez-vous supprimer cet article du panier?',
       [
         { text: 'Annuler', style: 'cancel' },
-        { 
-          text: 'Supprimer', 
+        {
+          text: 'Supprimer',
           style: 'destructive',
           onPress: () => {
             setCartItems(prev => prev.filter(item => item.id !== itemId));
@@ -113,7 +114,7 @@ export default function CartScreen({ onBack, onNavigate }) {
           {cartItems.map((item) => (
             <View key={item.id} style={styles.cartItem}>
               {/* Checkbox */}
-              <Pressable 
+              <Pressable
                 onPress={() => toggleItemSelection(item.id)}
                 style={styles.checkboxContainer}
               >
@@ -137,14 +138,14 @@ export default function CartScreen({ onBack, onNavigate }) {
                 <View style={styles.itemBottom}>
                   <Text style={styles.itemPrice}>{formatPrice(item.price)}</Text>
                   <View style={styles.quantityControl}>
-                    <Pressable 
+                    <Pressable
                       onPress={() => updateQuantity(item.id, -1)}
                       style={styles.qtyBtn}
                     >
                       <MaterialCommunityIcons name="minus" size={14} color="#fff" />
                     </Pressable>
                     <Text style={styles.qtyText}>{item.quantity}</Text>
-                    <Pressable 
+                    <Pressable
                       onPress={() => updateQuantity(item.id, 1)}
                       style={styles.qtyBtn}
                     >
@@ -155,7 +156,7 @@ export default function CartScreen({ onBack, onNavigate }) {
               </View>
 
               {/* Delete Button */}
-              <Pressable 
+              <Pressable
                 onPress={() => removeItem(item.id)}
                 style={styles.deleteBtn}
               >
@@ -201,19 +202,67 @@ export default function CartScreen({ onBack, onNavigate }) {
             <Text style={styles.totalLabelSmall}>Montant Total</Text>
             <Text style={styles.totalValueSmall}>{formatPrice(total)}</Text>
           </View>
-          <Pressable 
+          <Pressable
             onPress={handleCheckout}
             style={[
-              styles.checkoutBtn,
-              selectedItems.length === 0 && styles.checkoutBtnDisabled
+              styles.buyBtn,
+              selectedItems.length === 0 && styles.buyBtnDisabled
             ]}
             disabled={selectedItems.length === 0}
           >
-            <Text style={styles.checkoutBtnText}>Passer à la caisse</Text>
-            <MaterialCommunityIcons name="arrow-right" size={20} color="#0E151B" />
+            <Text style={styles.buyBtnText}>Acheter</Text>
+            <MaterialCommunityIcons name="cart-check" size={20} color="#000" />
           </Pressable>
         </View>
       </View>
+
+      {/* Bottom Navigation */}
+      <SafeAreaView style={styles.bottomNavWrapper}>
+        <View style={styles.bottomNav}>
+          {bottomNavItems.map((item) => {
+            const isActive = activeTab === item.label;
+            return (
+              <Pressable
+                key={item.label}
+                style={({ pressed }) => [
+                  styles.navItem,
+                  pressed && styles.navItemPressed,
+                ]}
+                onPress={() => {
+                  if (item.label === 'Boutique') {
+                    onNavigate?.('marketplace_home');
+                  } else if (item.label === 'Catégories') {
+                    onNavigate?.('marketplace_category_page');
+                  } else if (item.label === 'Panier') {
+                    // Already on cart
+                  } else if (item.label === 'Nouveauté') {
+                    onNavigate?.('new_arrivals');
+                  } else if (item.label === 'Commande') {
+                    onNavigate?.('orders');
+                  } else {
+                    setActiveTab(item.label);
+                  }
+                }}
+              >
+                <View style={[
+                  styles.navIcon,
+                  isActive && styles.navIconActive,
+                  isActive && styles.navIconCenter,
+                ]}>
+                  <MaterialCommunityIcons
+                    name={item.icon}
+                    size={isActive ? 20 : 16}
+                    color={isActive ? '#0E151B' : '#CBD5F5'}
+                  />
+                </View>
+                <Text style={[styles.navLabel, isActive && styles.navLabelActive]}>
+                  {item.label}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </View>
+      </SafeAreaView>
     </SafeAreaView>
   );
 }
@@ -390,7 +439,54 @@ const styles = StyleSheet.create({
     color: '#fff',
   },
   bottomSpacer: {
-    height: 120,
+    height: 150,
+  },
+  bottomBar: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: '#1c2a38',
+    borderTopWidth: 1,
+    borderTopColor: '#324d67',
+    padding: 12,
+    paddingBottom: 50,
+  },
+  bottomBarContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  totalContainer: {
+    flex: 1,
+  },
+  totalLabelSmall: {
+    fontSize: 12,
+    color: '#64748b',
+  },
+  totalValueSmall: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#fff',
+  },
+  buyBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: 32,
+    paddingVertical: 14,
+    borderRadius: 12,
+    marginTop: 8,
+  },
+  buyBtnDisabled: {
+    backgroundColor: '#475569',
+  },
+  buyBtnText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#000000',
   },
   bottomBar: {
     position: 'absolute',
@@ -401,7 +497,7 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: '#324d67',
     padding: 16,
-    paddingBottom: 32,
+    paddingBottom: 110,
   },
   bottomBarContent: {
     flexDirection: 'row',
@@ -426,16 +522,139 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 8,
     backgroundColor: '#fff',
-    paddingHorizontal: 24,
+    paddingHorizontal: 16,
     paddingVertical: 14,
     borderRadius: 12,
+    flex: 1,
   },
   checkoutBtnDisabled: {
     backgroundColor: '#475569',
   },
   checkoutBtnText: {
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: 'bold',
     color: '#0E151B',
   },
+  buttonRow: {
+    flexDirection: 'row',
+    gap: 8,
+    flex: 1.5,
+  },
+  buyBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    backgroundColor: '#fff',
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    borderRadius: 12,
+    flex: 1,
+  },
+  buyBtnDisabled: {
+    backgroundColor: '#475569',
+  },
+  buyBtnText: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#000',
+  },
+  marketplaceBottomNav: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    paddingHorizontal: 16,
+    paddingBottom: 36,
+  },
+  bottomNavInner: {
+    backgroundColor: 'rgba(22, 29, 37, 0.98)',
+    borderRadius: 24,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+    marginBottom: 4,
+  },
+  navItem: {
+    alignItems: 'center',
+    flex: 1,
+  },
+  navItemPressed: {
+    transform: [{ scale: 0.96 }],
+  },
+  navIcon: {
+    width: 22,
+    height: 22,
+    borderRadius: 6,
+    backgroundColor: 'rgba(255, 255, 255, 0.18)',
+    marginBottom: 6,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  navIconActive: {
+    backgroundColor: '#3B82F6',
+  },
+  navIconCenter: {
+    width: 34,
+    height: 34,
+    borderRadius: 12,
+    backgroundColor: '#3B82F6',
+    marginTop: -14,
+  },
+  navLabel: {
+    color: '#6B7280',
+    fontSize: 10,
+  },
+  navLabelActive: {
+    color: '#2BEE79',
+  },
+  bottomNavWrapper: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    paddingHorizontal: 16,
+    paddingBottom: 36,
+  },
+  bottomNav: {
+    backgroundColor: 'rgba(22, 29, 37, 0.98)',
+    borderRadius: 24,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+    marginBottom: 4,
+  },
+  navIcon: {
+    width: 22,
+    height: 22,
+    borderRadius: 6,
+    backgroundColor: 'rgba(255, 255, 255, 0.18)',
+    marginBottom: 6,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  navIconActive: {
+    backgroundColor: '#3B82F6',
+  },
+  navLabel: {
+    color: '#6B7280',
+    fontSize: 10,
+  },
+  navLabelActive: {
+    color: '#2BEE79',
+  },
 });
+
+const bottomNavItems = [
+  { label: 'Boutique', icon: 'store' },
+  { label: 'Catégories', icon: 'view-grid' },
+  { label: 'Nouveauté', icon: 'sparkles' },
+  { label: 'Commande', icon: 'shopping' },
+  { label: 'Panier', icon: 'cart' },
+];

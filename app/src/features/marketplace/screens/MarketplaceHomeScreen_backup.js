@@ -54,9 +54,9 @@ export default function MarketplaceHomeScreen({ onBack, onNavigate }) {
     { label: 'Nouveautés', icon: 'sparkles', screen: 'new_arrivals' },
     { label: 'Mes commandes', icon: 'shopping', screen: 'orders' },
     { label: 'Panier', icon: 'cart', screen: 'cart' },
-    { label: 'Favoris', icon: 'heart', screen: 'marketplace_favorites' },
-    { label: 'Historique', icon: 'history', screen: 'marketplace_history' },
-    { label: 'Paramètres', icon: 'cog', screen: 'marketplace_settings' },
+    { label: 'Favoris', icon: 'heart', screen: null },
+    { label: 'Historique', icon: 'history', screen: null },
+    { label: 'Paramètres', icon: 'cog', screen: null },
     { label: 'Aide & Support', icon: 'help-circle', screen: null },
   ];
 
@@ -68,8 +68,6 @@ export default function MarketplaceHomeScreen({ onBack, onNavigate }) {
       } else {
         onNavigate?.(item.screen);
       }
-    } else if (item.label === 'Accueil') {
-      onBack?.();
     }
   };
 
@@ -88,7 +86,7 @@ export default function MarketplaceHomeScreen({ onBack, onNavigate }) {
                   <Text style={styles.location}>Abidjan, CI</Text>
                 </View>
               </View>
-              <Pressable style={styles.notificationBtn} onPress={() => onNavigate?.('marketplace_notifications')}>
+              <Pressable style={styles.notificationBtn}>
                 <MaterialCommunityIcons name="bell-outline" size={24} color="#fff" />
                 <View style={styles.notificationDot} />
               </Pressable>

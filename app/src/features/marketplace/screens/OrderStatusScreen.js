@@ -93,7 +93,7 @@ export default function OrderStatusScreen({ onBack, onNavigate }) {
         {/* Timeline */}
         <View style={styles.timelineCard}>
           <Text style={styles.timelineTitle}>Chronologie</Text>
-          
+
           {orderData.timeline.map((item, index) => (
             <View key={item.step} style={styles.timelineItem}>
               <View style={styles.timelineLeft}>
@@ -103,10 +103,10 @@ export default function OrderStatusScreen({ onBack, onNavigate }) {
                   item.active && styles.timelineDotActive,
                 ]}>
                   {item.completed ? (
-                    <MaterialCommunityIcons 
-                      name={item.step === 'payment' ? 'credit-card' : item.step === 'transit' ? 'local-shipping' : 'check'} 
-                      size={16} 
-                      color={item.active ? '#fff' : '#22c55e'} 
+                    <MaterialCommunityIcons
+                      name={item.step === 'payment' ? 'credit-card' : item.step === 'transit' ? 'local-shipping' : 'check'}
+                      size={16}
+                      color={item.active ? '#fff' : '#22c55e'}
                     />
                   ) : (
                     <MaterialCommunityIcons name="package" size={16} color="#64748b" />
@@ -164,7 +164,7 @@ export default function OrderStatusScreen({ onBack, onNavigate }) {
             <MaterialCommunityIcons name="chat" size={20} color="#fff" />
             <Text style={styles.contactBtnText}>Contacter le vendeur</Text>
           </Pressable>
-          <Pressable 
+          <Pressable
             style={styles.trackBtn}
             onPress={() => onNavigate?.('delivery_tracking')}
           >
@@ -439,7 +439,7 @@ const styles = StyleSheet.create({
     lineHeight: 18,
   },
   bottomSpacer: {
-    height: 100,
+    height: 150,
   },
   bottomBar: {
     position: 'absolute',
@@ -449,8 +449,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#101922',
     borderTopWidth: 1,
     borderTopColor: '#1e293b',
-    padding: 16,
-    paddingBottom: 32,
+    paddingBottom: 60,
   },
   bottomBarContent: {
     flexDirection: 'row',

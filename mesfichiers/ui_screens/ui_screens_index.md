@@ -69,6 +69,7 @@
 - Marketplace - Checkout: `app/src/features/marketplace/screens/CheckoutScreen.js`
 - Marketplace - Order Status: `app/src/features/marketplace/screens/OrderStatusScreen.js`
 - Marketplace - Delivery Tracking: `app/src/features/marketplace/screens/DeliveryTrackingScreen.js`
+- Marketplace - Orders List: `app/src/features/marketplace/screens/OrdersScreen.js`
 - Marketplace - Seller Comparison: `app/src/features/marketplace/screens/SellerComparisonScreen.js`
 - Marketplace - Blocked User: `app/src/features/marketplace/screens/BlockedUserScreen.js`
 - Marketplace - Add Product: `app/src/features/marketplace/screens/AddProductScreen.js`

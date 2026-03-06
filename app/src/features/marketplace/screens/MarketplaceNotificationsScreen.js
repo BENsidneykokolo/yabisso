@@ -17,7 +17,7 @@ const notifications = [
     id: 2,
     type: 'promo',
     title: 'Promotion',
-    message: 'Profitez de -50% sur tous les articleselectronics',
+    message: 'Profitez de -50% sur tous les articles',
     time: 'Il y a 5h',
     icon: 'gift',
     iconColor: '#eab308',
@@ -43,9 +43,19 @@ const notifications = [
     iconColor: '#8b5cf6',
     bgColor: 'rgba(139, 92, 246, 0.15)',
   },
+  {
+    id: 5,
+    type: 'delivery',
+    title: 'En cours',
+    message: 'Votre commande est en livraison',
+    time: 'Aujourd hui',
+    icon: 'truck-delivery',
+    iconColor: '#f97316',
+    bgColor: 'rgba(249, 115, 22, 0.15)',
+  },
 ];
 
-export default function HomeNotificationsScreen({ onBack }) {
+export default function MarketplaceNotificationsScreen({ onBack }) {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
@@ -54,7 +64,7 @@ export default function HomeNotificationsScreen({ onBack }) {
         </Pressable>
         <Text style={styles.headerTitle}>Notifications</Text>
         <Pressable style={styles.markAllBtn}>
-          <Text style={styles.markAllText}>Tout marquer comme lu</Text>
+          <Text style={styles.markAllText}>Tout lu</Text>
         </Pressable>
       </View>
 

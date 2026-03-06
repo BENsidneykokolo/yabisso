@@ -10,21 +10,23 @@ import {
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 const categories = [
+  { name: 'Tous', icon: 'apps', color: '#137fec' },
   { name: 'Téléphones', icon: 'smartphone', color: '#137fec' },
   { name: 'Mode', icon: 'tshirt-crew', color: '#eab308' },
   { name: 'Maison', icon: 'sofa', color: '#22c55e' },
   { name: 'Électronique', icon: 'laptop', color: '#ef4444' },
   { name: 'Sports', icon: 'basketball', color: '#f97316' },
-  { name: 'Services', icon: 'toolbox', color: '#8b5cf6' },
 ];
 
-const products = [
-  { id: 1, name: 'iPhone 13 Pro', brand: 'Apple', price: '450000', category: 'Téléphones' },
-  { id: 2, name: 'Samsung Galaxy S23', brand: 'Samsung', price: '380000', category: 'Téléphones' },
-  { id: 3, name: 'MacBook Air M2', brand: 'Apple', price: '680000', category: 'Électronique' },
-  { id: 4, name: 'Air Zoom Pegasus', brand: 'Nike', price: '65000', category: 'Sports' },
-  { id: 5, name: 'Galaxy Watch 5', brand: 'Samsung', price: '120000', category: 'Téléphones' },
-  { id: 6, name: 'iPad Air', brand: 'Apple', price: '420000', category: 'Électronique' },
+const newProducts = [
+  { id: 1, name: 'iPhone 15 Pro Max', brand: 'Apple', price: '950000', category: 'Téléphones', isNew: true },
+  { id: 2, name: 'Samsung Galaxy S24 Ultra', brand: 'Samsung', price: '780000', category: 'Téléphones', isNew: true },
+  { id: 3, name: 'MacBook Pro M3', brand: 'Apple', price: '1200000', category: 'Électronique', isNew: true },
+  { id: 4, name: 'Nike Air Max 2024', brand: 'Nike', price: '85000', category: 'Sports', isNew: true },
+  { id: 5, name: 'Xiaomi 14 Ultra', brand: 'Xiaomi', price: '650000', category: 'Téléphones', isNew: true },
+  { id: 6, name: 'Sony WH-1000XM5', brand: 'Sony', price: '180000', category: 'Électronique', isNew: true },
+  { id: 7, name: 'Apple Watch Ultra 2', brand: 'Apple', price: '450000', category: 'Téléphones', isNew: true },
+  { id: 8, name: 'Adidas Ultraboost 24', brand: 'Adidas', price: '95000', category: 'Sports', isNew: true },
 ];
 
 const bottomNavItems = [
@@ -35,20 +37,17 @@ const bottomNavItems = [
   { label: 'Panier', icon: 'cart' },
 ];
 
-export default function ProductListScreen({ onBack, onNavigate }) {
-  const [activeTab, setActiveTab] = useState('Boutique');
-  const [selectedCategory, setSelectedCategory] = useState('Téléphones');
-  const [selectedProduct, setSelectedProduct] = useState(null);
+export default function NewArrivalsScreen({ onBack, onNavigate }) {
+  const [activeTab, setActiveTab] = useState('Nouveauté');
+  const [selectedCategory, setSelectedCategory] = useState('Tous');
 
-  const filteredProducts = products.filter(
-    (p) => p.category === selectedCategory
-  );
+  const filteredProducts = selectedCategory === 'Tous' 
+    ? newProducts 
+    : newProducts.filter((p) => p.category === selectedCategory);
 
   const handleProductPress = (product) => {
-    setSelectedProduct(product);
     onNavigate?.('marketplace_product_details');
   };
-
 
   return (
     <SafeAreaView style={styles.container}>
@@ -59,14 +58,8 @@ export default function ProductListScreen({ onBack, onNavigate }) {
               <Pressable onPress={onBack} style={styles.backBtn}>
                 <MaterialCommunityIcons name="arrow-left" size={24} color="#fff" />
               </Pressable>
-              <Text style={styles.headerTitle}>{selectedCategory}</Text>
+              <Text style={styles.headerTitle}>Nouveautés</Text>
               <View style={styles.headerActions}>
-                <Pressable 
-                  style={styles.actionBtn}
-                  onPress={() => onNavigate?.('seller_comparison')}
-                >
-                  <MaterialCommunityIcons name="compare-arrows" size={22} color="#fff" />
-                </Pressable>
                 <Pressable style={styles.actionBtn}>
                   <MaterialCommunityIcons name="filter-variant" size={22} color="#fff" />
                 </Pressable>
@@ -83,7 +76,19 @@ export default function ProductListScreen({ onBack, onNavigate }) {
               </View>
               <View style={[styles.statusChip, styles.statusChipSecondary]}>
                 <MaterialCommunityIcons name="cloud-check-outline" size={14} color="#137fec" />
-                <Text style={styles.statusText}>Syncronisé</Text>
+                <Text style={styles.statusText}>Synchronisé</Text>
+              </View>
+            </View>
+          </View>
+
+          <View style={styles.bannerSection}>
+            <View style={styles.banner}>
+              <View style={styles.bannerContent}>
+                <MaterialCommunityIcons name="sparkles" size={32} color="#FFD700" />
+                <View style={styles.bannerText}>
+                  <Text style={styles.bannerTitle}>Nouveautés</Text>
+                  <Text style={styles.bannerSubtitle}>Découvrez les derniers ajouts</Text>
+                </View>
               </View>
             </View>
           </View>
@@ -117,7 +122,7 @@ export default function ProductListScreen({ onBack, onNavigate }) {
 
           <View style={styles.productsSection}>
             <Text style={styles.resultsText}>
-              {filteredProducts.length} résultats
+              {filteredProducts.length} nouveaux produits
             </Text>
             <View style={styles.productsGrid}>
               {filteredProducts.map((product) => (
@@ -127,6 +132,10 @@ export default function ProductListScreen({ onBack, onNavigate }) {
                   onPress={() => handleProductPress(product)}
                 >
                   <View style={styles.productImage}>
+                    <View style={styles.newBadge}>
+                      <MaterialCommunityIcons name="lightning-bolt" size={12} color="#fff" />
+                      <Text style={styles.newBadgeText}>NOUVEAU</Text>
+                    </View>
                     <Pressable 
                       style={styles.favoriteBtn}
                       onPress={(e) => {
@@ -175,8 +184,6 @@ export default function ProductListScreen({ onBack, onNavigate }) {
                       onNavigate?.('category_page');
                     } else if (item.label === 'Panier') {
                       onNavigate?.('cart');
-                    } else if (item.label === 'Nouveauté') {
-                      onNavigate?.('new_arrivals');
                     } else if (item.label === 'Commande') {
                       onNavigate?.('orders');
                     } else {
@@ -285,6 +292,35 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     color: '#94a3b8',
   },
+  bannerSection: {
+    paddingHorizontal: 16,
+    paddingBottom: 12,
+  },
+  banner: {
+    backgroundColor: '#1a2632',
+    borderRadius: 16,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#324d67',
+  },
+  bannerContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  bannerText: {
+    flex: 1,
+  },
+  bannerTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#fff',
+  },
+  bannerSubtitle: {
+    fontSize: 13,
+    color: '#94a3b8',
+    marginTop: 2,
+  },
   categoryTabs: {
     paddingHorizontal: 16,
     paddingVertical: 12,
@@ -339,6 +375,23 @@ const styles = StyleSheet.create({
   productImage: {
     aspectRatio: 1,
     backgroundColor: '#324d67',
+  },
+  newBadge: {
+    position: 'absolute',
+    top: 8,
+    left: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: '#FFD700',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  newBadgeText: {
+    fontSize: 10,
+    fontWeight: 'bold',
+    color: '#000',
   },
   favoriteBtn: {
     position: 'absolute',

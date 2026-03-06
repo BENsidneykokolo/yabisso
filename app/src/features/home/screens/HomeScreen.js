@@ -119,6 +119,12 @@ export default function HomeScreen({
   onOpenQr,
   onOpenSettings,
   onOpenNotifications,
+  onOpenLoba,
+  onOpenOrders,
+  onOpenRestaurant,
+  onOpenHotel,
+  onOpenServices,
+  onOpenRealEstate,
 }) {
   const [activeTab, setActiveTab] = useState('Accueil');
   const [showAllServices, setShowAllServices] = useState(false);
@@ -138,6 +144,7 @@ export default function HomeScreen({
     { label: 'Portefeuille', icon: 'wallet' },
     { label: 'Assistant IA', icon: 'robot' },
     { label: 'Services', icon: 'view-grid' },
+    { label: 'Commande', icon: 'shopping' },
     { label: 'Profil', icon: 'account' },
   ];
 
@@ -239,6 +246,21 @@ export default function HomeScreen({
                 if (item.key === 'market') {
                   onOpenMarket?.();
                 }
+                if (item.key === 'loba') {
+                  onOpenLoba?.();
+                }
+                if (item.key === 'food') {
+                  onOpenRestaurant?.();
+                }
+                if (item.key === 'hotels') {
+                  onOpenHotel?.();
+                }
+                if (item.key === 'services') {
+                  onOpenServices?.();
+                }
+                if (item.key === 'realestate') {
+                  onOpenRealEstate?.();
+                }
               }}
             >
               <View style={[styles.serviceIcon, { backgroundColor: item.color }]}>
@@ -332,15 +354,15 @@ export default function HomeScreen({
 
       <SafeAreaView style={styles.bottomNavWrapper}>
         <View style={styles.bottomNav}>
-            {navItems.map((item) => {
-              const isActive = activeTab === item.label;
-              return (
-                <Pressable
-                  key={item.label}
-                  style={({ pressed }) => [
-                    styles.navItem,
-                    pressed && styles.navItemPressed,
-                  ]}
+          {navItems.map((item) => {
+            const isActive = activeTab === item.label;
+            return (
+              <Pressable
+                key={item.label}
+                style={({ pressed }) => [
+                  styles.navItem,
+                  pressed && styles.navItemPressed,
+                ]}
                 onPress={() => {
                   setActiveTab(item.label);
                   if (item.label === 'Services') {
@@ -355,11 +377,14 @@ export default function HomeScreen({
                   if (item.label === 'Assistant IA') {
                     onOpenAssistant?.();
                   }
+                  if (item.label === 'Commande') {
+                    onOpenOrders?.();
+                  }
                   if (item.label === 'Profil') {
                     onOpenProfile?.();
                   }
                 }}
-                >
+              >
                 <View
                   style={[
                     styles.navIcon,
@@ -377,8 +402,8 @@ export default function HomeScreen({
                   {item.label}
                 </Text>
               </Pressable>
-              );
-            })}
+            );
+          })}
         </View>
       </SafeAreaView>
 
@@ -389,29 +414,29 @@ export default function HomeScreen({
         animationType="slide"
         onRequestClose={() => setShowVoiceModal(false)}
       >
-        <TouchableOpacity 
-          style={styles.modalOverlay} 
-          activeOpacity={1} 
+        <TouchableOpacity
+          style={styles.modalOverlay}
+          activeOpacity={1}
           onPress={() => setShowVoiceModal(false)}
         >
           <View style={styles.modalContent}>
             <Pressable style={styles.closeModalBtn} onPress={() => setShowVoiceModal(false)}>
               <MaterialCommunityIcons name="close" size={24} color="#fff" />
             </Pressable>
-            
+
             <View style={styles.voiceIconContainer}>
               <MaterialCommunityIcons name="microphone" size={64} color="#137fec" />
             </View>
-            
+
             <Text style={styles.modalTitle}>Recherche vocale</Text>
             <Text style={styles.modalSubtitle}>Parlez maintenant...</Text>
-            
+
             <View style={styles.voiceWaveContainer}>
               <View style={styles.voiceWave} />
               <View style={styles.voiceWave} />
               <View style={styles.voiceWave} />
             </View>
-            
+
             <Pressable style={styles.voiceCancelBtn} onPress={() => setShowVoiceModal(false)}>
               <Text style={styles.voiceCancelText}>Annuler</Text>
             </Pressable>
@@ -426,19 +451,19 @@ export default function HomeScreen({
         animationType="slide"
         onRequestClose={() => setShowCameraModal(false)}
       >
-        <TouchableOpacity 
-          style={styles.modalOverlay} 
-          activeOpacity={1} 
+        <TouchableOpacity
+          style={styles.modalOverlay}
+          activeOpacity={1}
           onPress={() => setShowCameraModal(false)}
         >
           <View style={styles.modalContent}>
             <Pressable style={styles.closeModalBtn} onPress={() => setShowCameraModal(false)}>
               <MaterialCommunityIcons name="close" size={24} color="#fff" />
             </Pressable>
-            
+
             <Text style={styles.modalTitle}>Recherche par image</Text>
             <Text style={styles.modalSubtitle}>Prenez une photo ou importez une image</Text>
-            
+
             <View style={styles.cameraOptions}>
               <Pressable style={styles.cameraOptionBtn}>
                 <View style={styles.cameraOptionIcon}>
@@ -446,7 +471,7 @@ export default function HomeScreen({
                 </View>
                 <Text style={styles.cameraOptionText}>Appareil photo</Text>
               </Pressable>
-              
+
               <Pressable style={styles.cameraOptionBtn}>
                 <View style={styles.cameraOptionIcon}>
                   <MaterialCommunityIcons name="image" size={32} color="#fff" />

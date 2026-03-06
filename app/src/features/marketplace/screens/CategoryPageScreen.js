@@ -47,9 +47,9 @@ const products = [
 const bottomNavItems = [
   { label: 'Boutique', icon: 'store' },
   { label: 'Catégories', icon: 'view-grid' },
-  { label: 'Chatbot', icon: 'robot' },
   { label: 'Nouveauté', icon: 'sparkles' },
   { label: 'Commande', icon: 'shopping' },
+  { label: 'Panier', icon: 'cart' },
 ];
 
 export default function CategoryPageScreen({ onBack, onNavigate }) {
@@ -192,6 +192,12 @@ export default function CategoryPageScreen({ onBack, onNavigate }) {
                       onNavigate?.('marketplace_home');
                     } else if (item.label === 'Catégories') {
                       onNavigate?.('product_list');
+                    } else if (item.label === 'Panier') {
+                      onNavigate?.('cart');
+                    } else if (item.label === 'Nouveauté') {
+                      onNavigate?.('new_arrivals');
+                    } else if (item.label === 'Commande') {
+                      onNavigate?.('orders');
                     } else {
                       setActiveTab(item.label);
                     }

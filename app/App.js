@@ -44,6 +44,7 @@ import SellerProfileScreen from './src/features/marketplace/screens/SellerProfil
 import MarketplaceHomeScreen from './src/features/marketplace/screens/MarketplaceHomeScreen';
 import ProductListScreen from './src/features/marketplace/screens/ProductListScreen';
 import CategoryPageScreen from './src/features/marketplace/screens/CategoryPageScreen';
+import NewArrivalsScreen from './src/features/marketplace/screens/NewArrivalsScreen';
 import ProductDetailsScreen from './src/features/marketplace/screens/ProductDetailsScreen';
 import CartScreen from './src/features/marketplace/screens/CartScreen';
 import CheckoutScreen from './src/features/marketplace/screens/CheckoutScreen';
@@ -51,6 +52,23 @@ import OrderStatusScreen from './src/features/marketplace/screens/OrderStatusScr
 import DeliveryTrackingScreen from './src/features/marketplace/screens/DeliveryTrackingScreen';
 import SellerComparisonScreen from './src/features/marketplace/screens/SellerComparisonScreen';
 import BlockedUserScreen from './src/features/marketplace/screens/BlockedUserScreen';
+import OrdersScreen from './src/features/marketplace/screens/OrdersScreen';
+import LobaHomeScreen from './src/features/loba/screens/LobaHomeScreen';
+import LobaFeedScreen from './src/features/loba/screens/LobaFeedScreen';
+import LobaProfileScreen from './src/features/loba/screens/LobaProfileScreen';
+import LobaStoriesScreen from './src/features/loba/screens/LobaStoriesScreen';
+import LobaRecordScreen from './src/features/loba/screens/LobaRecordScreen';
+import RestaurantHomeScreen from './src/features/restaurant/screens/RestaurantHomeScreen';
+import RestaurantDetailsScreen from './src/features/restaurant/screens/RestaurantDetailsScreen';
+import FoodItemDetailsScreen from './src/features/restaurant/screens/FoodItemDetailsScreen';
+import FoodCheckoutScreen from './src/features/restaurant/screens/FoodCheckoutScreen';
+import HotelHomeScreen from './src/features/hotel/screens/HotelHomeScreen';
+import ServicesHomeScreen from './src/features/services/screens/ServicesHomeScreen';
+import RealEstateHomeScreen from './src/features/real_estate/screens/RealEstateHomeScreen';
+import MarketplaceNotificationsScreen from './src/features/marketplace/screens/MarketplaceNotificationsScreen';
+import MarketplaceFavoritesScreen from './src/features/marketplace/screens/MarketplaceFavoritesScreen';
+import MarketplaceHistoryScreen from './src/features/marketplace/screens/MarketplaceHistoryScreen';
+import MarketplaceSettingsScreen from './src/features/marketplace/screens/MarketplaceSettingsScreen';
 
 export default function App() {
   const [screen, setScreen] = useState('welcome');
@@ -121,28 +139,34 @@ export default function App() {
   }
   if (screen === 'home') {
     content = (
-        <HomeScreen
-          onSignOut={() => setScreen('signup')}
-          onOpenWallet={() => {
-            setWalletActiveTab('home');
-            setActiveTab('Portefeuille');
-            setScreen('wallet');
-          }}
-          onOpenAssistant={() => {
-            setActiveTab('Assistant IA');
-            setScreen('assistant');
-          }}
-          onOpenProfile={() => {
-            setActiveTab('Profil');
-            setScreen('profile');
-          }}
-          onOpenMarket={() => setScreen('marketplace_home')}
-          onOpenQr={() => setScreen('home_qr')}
-          onOpenSettings={() => setScreen('home_settings')}
-          onOpenNotifications={() => setScreen('home_notifications')}
-          showAllServicesOverride={homeShowAllServices}
-        />
-      );
+      <HomeScreen
+        onSignOut={() => setScreen('signup')}
+        onOpenWallet={() => {
+          setWalletActiveTab('home');
+          setActiveTab('Portefeuille');
+          setScreen('wallet');
+        }}
+        onOpenAssistant={() => {
+          setActiveTab('Assistant IA');
+          setScreen('assistant');
+        }}
+        onOpenProfile={() => {
+          setActiveTab('Profil');
+          setScreen('profile');
+        }}
+        onOpenMarket={() => setScreen('marketplace_home')}
+        onOpenQr={() => setScreen('home_qr')}
+        onOpenSettings={() => setScreen('home_settings')}
+        onOpenNotifications={() => setScreen('home_notifications')}
+        onOpenLoba={() => setScreen('loba_home')}
+        onOpenOrders={() => setScreen('orders')}
+        onOpenRestaurant={() => setScreen('restaurant_home')}
+        onOpenHotel={() => setScreen('hotel_home')}
+        onOpenServices={() => setScreen('services_home')}
+        onOpenRealEstate={() => setScreen('real_estate_home')}
+        showAllServicesOverride={homeShowAllServices}
+      />
+    );
   }
   if (screen === 'home_qr') {
     content = <QrHubScreen onBack={() => setScreen('home')} />;
@@ -265,8 +289,8 @@ export default function App() {
   }
   if (screen === 'profile_notifications') {
     content = (
-      <NotificationsScreen 
-        onBack={() => setScreen('profile')} 
+      <NotificationsScreen
+        onBack={() => setScreen('profile')}
         onOpenHome={() => setScreen('profile')}
         onOpenAccount={() => setScreen('profile_account')}
         onOpenSecurity={() => setScreen('profile_security')}
@@ -328,10 +352,16 @@ export default function App() {
           if (screenName === 'wallet') { setWalletActiveTab('home'); setScreen('wallet'); }
           else if (screenName === 'profile') setScreen('profile');
           else if (screenName === 'cart') setScreen('cart');
-          else if (screenName === 'orders') setScreen('order_status');
+          else if (screenName === 'orders') setScreen('orders');
+          else if (screenName === 'order_status') setScreen('order_status');
           else if (screenName === 'product_list') setScreen('marketplace_product_list');
-          else if (screenName === 'category_page') setScreen('marketplace_category_page');
+          else if (screenName === 'category_page' || screenName === 'marketplace_category_page') setScreen('marketplace_category_page');
           else if (screenName === 'product_details') setScreen('marketplace_product_details');
+          else if (screenName === 'new_arrivals') setScreen('new_arrivals');
+          else if (screenName === 'marketplace_notifications') setScreen('marketplace_notifications');
+          else if (screenName === 'marketplace_favorites') setScreen('marketplace_favorites');
+          else if (screenName === 'marketplace_history') setScreen('marketplace_history');
+          else if (screenName === 'marketplace_settings') setScreen('marketplace_settings');
         }}
       />
     );
@@ -342,19 +372,40 @@ export default function App() {
         onBack={() => setScreen('marketplace_home')}
         onNavigate={(screenName) => {
           if (screenName === 'marketplace_home') setScreen('marketplace_home');
-          if (screenName === 'category_page') setScreen('marketplace_category_page');
+          if (screenName === 'category_page' || screenName === 'marketplace_category_page') setScreen('marketplace_category_page');
           if (screenName === 'marketplace_product_details') setScreen('marketplace_product_details');
           if (screenName === 'seller_comparison') setScreen('seller_comparison');
+          if (screenName === 'cart') setScreen('cart');
+          if (screenName === 'orders') setScreen('orders');
+          if (screenName === 'new_arrivals') setScreen('new_arrivals');
         }}
       />
     );
   }
-  if (screen === 'marketplace_category_page') {
+    if (screen === 'marketplace_category_page') {
     content = (
       <CategoryPageScreen
         onBack={() => setScreen('marketplace_product_list')}
         onNavigate={(screenName) => {
           if (screenName === 'marketplace_home') setScreen('marketplace_home');
+          if (screenName === 'new_arrivals') setScreen('new_arrivals');
+          if (screenName === 'product_list') setScreen('marketplace_product_list');
+          if (screenName === 'cart') setScreen('cart');
+          if (screenName === 'orders') setScreen('orders');
+        }}
+      />
+    );
+  }
+  if (screen === 'new_arrivals') {
+    content = (
+      <NewArrivalsScreen
+        onBack={() => setScreen('marketplace_home')}
+        onNavigate={(screenName) => {
+          if (screenName === 'marketplace_home') setScreen('marketplace_home');
+          if (screenName === 'category_page' || screenName === 'marketplace_category_page') setScreen('marketplace_category_page');
+          if (screenName === 'cart') setScreen('cart');
+          if (screenName === 'orders') setScreen('orders');
+          if (screenName === 'product_list') setScreen('marketplace_product_list');
         }}
       />
     );
@@ -376,6 +427,10 @@ export default function App() {
         onBack={() => setScreen('marketplace_home')}
         onNavigate={(screenName) => {
           if (screenName === 'checkout') setScreen('checkout');
+          if (screenName === 'marketplace_home') setScreen('marketplace_home');
+          if (screenName === 'category_page' || screenName === 'marketplace_category_page') setScreen('marketplace_category_page');
+          if (screenName === 'new_arrivals') setScreen('new_arrivals');
+          if (screenName === 'orders') setScreen('orders');
         }}
       />
     );
@@ -394,9 +449,24 @@ export default function App() {
   if (screen === 'order_status') {
     content = (
       <OrderStatusScreen
-        onBack={() => setScreen('cart')}
+        onBack={() => setScreen('orders')}
         onNavigate={(screenName) => {
           if (screenName === 'delivery_tracking') setScreen('delivery_tracking');
+        }}
+      />
+    );
+  }
+  if (screen === 'orders') {
+    content = (
+      <OrdersScreen
+        onBack={() => setScreen('marketplace_home')}
+        onNavigate={(screenName, params) => {
+          if (screenName === 'order_status') setScreen('order_status');
+          if (screenName === 'delivery_tracking') setScreen('delivery_tracking');
+          if (screenName === 'marketplace_home') setScreen('marketplace_home');
+          if (screenName === 'category_page' || screenName === 'marketplace_category_page') setScreen('marketplace_category_page');
+          if (screenName === 'cart') setScreen('cart');
+          if (screenName === 'new_arrivals') setScreen('new_arrivals');
         }}
       />
     );
@@ -427,6 +497,172 @@ export default function App() {
         onNavigate={(screenName) => {
           if (screenName === 'home') setScreen('home');
         }}
+      />
+    );
+  }
+  if (screen === 'loba_home') {
+    content = (
+      <LobaHomeScreen
+        onBack={() => setScreen('home')}
+        onNavigate={(screenName) => {
+          if (screenName === 'feed') setScreen('loba_feed');
+          if (screenName === 'profile') setScreen('loba_profile');
+        }}
+      />
+    );
+  }
+  if (screen === 'loba_feed') {
+    content = (
+      <LobaFeedScreen
+        onBack={() => setScreen('loba_home')}
+        onNavigate={(screenName) => {
+          if (screenName === 'home') setScreen('loba_home');
+          if (screenName === 'profile') setScreen('loba_profile');
+        }}
+      />
+    );
+  }
+  if (screen === 'loba_profile') {
+    content = (
+      <LobaProfileScreen
+        onBack={() => setScreen('loba_home')}
+        onNavigate={(screenName) => {
+          if (screenName === 'home') setScreen('loba_home');
+          if (screenName === 'feed') setScreen('loba_feed');
+        }}
+      />
+    );
+  }
+  if (screen === 'loba_stories') {
+    content = (
+      <LobaStoriesScreen
+        onBack={() => setScreen('loba_feed')}
+        onClose={() => setScreen('loba_feed')}
+      />
+    );
+  }
+  if (screen === 'loba_record') {
+    content = (
+      <LobaRecordScreen
+        onBack={() => setScreen('loba_home')}
+        onClose={() => setScreen('loba_home')}
+      />
+    );
+  }
+
+  // Restaurant Screens
+  if (screen === 'restaurant_home') {
+    content = (
+      <RestaurantHomeScreen
+        onBack={() => setScreen('home')}
+        onNavigate={(screenName, params) => {
+          if (screenName === 'restaurant_details') setScreen('restaurant_details');
+          if (screenName === 'orders') setScreen('orders');
+          if (screenName === 'cart') setScreen('cart');
+        }}
+      />
+    );
+  }
+  if (screen === 'restaurant_details') {
+    content = (
+      <RestaurantDetailsScreen
+        onBack={() => setScreen('restaurant_home')}
+        onNavigate={(screenName, params) => {
+          if (screenName === 'food_details') setScreen('food_details');
+          if (screenName === 'food_checkout') setScreen('food_checkout');
+        }}
+      />
+    );
+  }
+  if (screen === 'food_details') {
+    content = (
+      <FoodItemDetailsScreen
+        onBack={() => setScreen('restaurant_details')}
+        onNavigate={(screenName) => {
+          if (screenName === 'food_checkout') setScreen('food_checkout');
+        }}
+      />
+    );
+  }
+  if (screen === 'food_checkout') {
+    content = (
+      <FoodCheckoutScreen
+        onBack={() => setScreen('restaurant_details')}
+        onNavigate={(screenName) => {
+          if (screenName === 'order_status') setScreen('order_status');
+        }}
+      />
+    );
+  }
+
+  // Hotel Screens
+  if (screen === 'hotel_home') {
+    content = (
+      <HotelHomeScreen
+        onBack={() => setScreen('home')}
+        onNavigate={(screenName, params) => {
+          if (screenName === 'hotel_rooms') setScreen('hotel_rooms');
+        }}
+      />
+    );
+  }
+
+  // Services Screens
+  if (screen === 'services_home') {
+    content = (
+      <ServicesHomeScreen
+        onBack={() => setScreen('home')}
+        onNavigate={(screenName, params) => {
+          if (screenName === 'service_booking') setScreen('service_booking');
+        }}
+      />
+    );
+  }
+
+  // Real Estate Screens
+  if (screen === 'real_estate_home') {
+    content = (
+      <RealEstateHomeScreen
+        onBack={() => setScreen('home')}
+        onNavigate={(screenName, params) => {
+          if (screenName === 'property_details') setScreen('property_details');
+        }}
+      />
+    );
+  }
+
+  // Marketplace Notifications
+  if (screen === 'marketplace_notifications') {
+    content = (
+      <MarketplaceNotificationsScreen
+        onBack={() => setScreen('marketplace_home')}
+      />
+    );
+  }
+
+  // Marketplace Favorites
+  if (screen === 'marketplace_favorites') {
+    content = (
+      <MarketplaceFavoritesScreen
+        onBack={() => setScreen('marketplace_home')}
+      />
+    );
+  }
+
+  // Marketplace History
+  if (screen === 'marketplace_history') {
+    content = (
+      <MarketplaceHistoryScreen
+        onBack={() => setScreen('marketplace_home')}
+      />
+    );
+  }
+
+  // Marketplace Settings
+  if (screen === 'marketplace_settings') {
+    content = (
+      <MarketplaceSettingsScreen
+        onBack={() => setScreen('marketplace_home')}
       />
     );
   }
@@ -465,7 +701,12 @@ export default function App() {
     screen === 'seller_comparison' ||
     screen === 'blocked_user' ||
     screen === 'market_seller' ||
-    screen === 'market_add_product';
+    screen === 'market_add_product' ||
+    screen === 'loba_home' ||
+    screen === 'loba_feed' ||
+    screen === 'loba_profile' ||
+    screen === 'loba_stories' ||
+    screen === 'loba_record';
 
   return (
     <DatabaseProvider database={database}>

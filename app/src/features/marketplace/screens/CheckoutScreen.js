@@ -51,8 +51,8 @@ export default function CheckoutScreen({ onBack, onNavigate }) {
       'Voulez-vous confirmer cet achat?',
       [
         { text: 'Annuler', style: 'cancel' },
-        { 
-          text: 'Confirmer', 
+        {
+          text: 'Confirmer',
           onPress: () => {
             Alert.alert('Succès', 'Votre commande a été passée avec succès!');
             onNavigate?.('order_status');
@@ -84,9 +84,9 @@ export default function CheckoutScreen({ onBack, onNavigate }) {
         {/* Personal Info Section */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Informations personnelles</Text>
-          
+
           {/* Me */}
-          <Pressable 
+          <Pressable
             onPress={() => setPersonalInfo('me')}
             style={[
               styles.optionCard,
@@ -115,7 +115,7 @@ export default function CheckoutScreen({ onBack, onNavigate }) {
           </Pressable>
 
           {/* Not Me */}
-          <Pressable 
+          <Pressable
             onPress={() => setPersonalInfo('other')}
             style={[
               styles.optionCard,
@@ -143,9 +143,9 @@ export default function CheckoutScreen({ onBack, onNavigate }) {
         {/* Address Section */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Adresse de Livraison</Text>
-          
+
           {/* Home */}
-          <Pressable 
+          <Pressable
             onPress={() => setAddress('home')}
             style={[
               styles.optionCard,
@@ -178,7 +178,7 @@ export default function CheckoutScreen({ onBack, onNavigate }) {
           </Pressable>
 
           {/* Work */}
-          <Pressable 
+          <Pressable
             onPress={() => setAddress('work')}
             style={[
               styles.optionCard,
@@ -216,9 +216,9 @@ export default function CheckoutScreen({ onBack, onNavigate }) {
         {/* Delivery Method Section */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Mode de Livraison</Text>
-          
+
           {/* Standard */}
-          <Pressable 
+          <Pressable
             onPress={() => setDelivery('standard')}
             style={[
               styles.optionCard,
@@ -243,7 +243,7 @@ export default function CheckoutScreen({ onBack, onNavigate }) {
           </Pressable>
 
           {/* Express */}
-          <Pressable 
+          <Pressable
             onPress={() => setDelivery('express')}
             style={[
               styles.optionCard,
@@ -274,9 +274,9 @@ export default function CheckoutScreen({ onBack, onNavigate }) {
         {/* Payment Section */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Mode de Paiement</Text>
-          
+
           {/* Wallet */}
-          <Pressable 
+          <Pressable
             onPress={() => setPayment('wallet')}
             style={[
               styles.optionCard,
@@ -304,7 +304,7 @@ export default function CheckoutScreen({ onBack, onNavigate }) {
           </Pressable>
 
           {/* Mobile Money */}
-          <Pressable 
+          <Pressable
             onPress={() => setPayment('mobile')}
             style={[
               styles.optionCard,
@@ -334,7 +334,7 @@ export default function CheckoutScreen({ onBack, onNavigate }) {
           </Pressable>
 
           {/* Card */}
-          <Pressable 
+          <Pressable
             onPress={() => setPayment('card')}
             style={[
               styles.optionCard,
@@ -359,7 +359,7 @@ export default function CheckoutScreen({ onBack, onNavigate }) {
           </Pressable>
 
           {/* Cash on Delivery */}
-          <Pressable 
+          <Pressable
             onPress={() => setPayment('cod')}
             style={[
               styles.optionCard,
@@ -398,9 +398,9 @@ export default function CheckoutScreen({ onBack, onNavigate }) {
                 <Text style={styles.orderItemPrice}>{formatPrice(item.price)}</Text>
               </View>
             ))}
-            
+
             <View style={styles.summaryDivider} />
-            
+
             <View style={styles.summaryRow}>
               <Text style={styles.summaryLabel}>Sous-total</Text>
               <Text style={styles.summaryValue}>{formatPrice(subtotal)}</Text>
@@ -696,7 +696,7 @@ const styles = StyleSheet.create({
     color: '#fff',
   },
   bottomSpacer: {
-    height: 120,
+    height: 150,
   },
   bottomBar: {
     position: 'absolute',
@@ -706,8 +706,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#1c2a38',
     borderTopWidth: 1,
     borderTopColor: '#324d67',
-    padding: 16,
-    paddingBottom: 32,
+    paddingBottom: 60,
   },
   bottomBarContent: {
     flexDirection: 'row',
