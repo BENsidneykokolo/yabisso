@@ -33,17 +33,32 @@ const bottomNavItems = [
   { label: 'Boutique', icon: 'store' },
   { label: 'Catégories', icon: 'view-grid' },
   { label: 'Nouveauté', icon: 'sparkles' },
-  { label: 'Commande', icon: 'shopping' },
   { label: 'Panier', icon: 'cart' },
 ];
 
-export default function NewArrivalsScreen({ onBack, onNavigate }) {
+export default function NewArrivalsScreen({ onBack, onNavigate, favorites = [], onToggleFavorite }) {
   const [activeTab, setActiveTab] = useState('Nouveauté');
   const [selectedCategory, setSelectedCategory] = useState('Tous');
+  const [searchText, setSearchText] = useState('');
 
-  const filteredProducts = selectedCategory === 'Tous' 
-    ? newProducts 
-    : newProducts.filter((p) => p.category === selectedCategory);
+  const isFavorite = (productId) => favorites.some(f => f.id === productId);
+
+  const handleToggleFavorite = (product) => {
+    if (onToggleFavorite) {
+      onToggleFavorite(product);
+    }
+  };
+
+  const filteredProducts = searchText.trim()
+    ? newProducts.filter(p =>
+        p.name.toLowerCase().includes(searchText.toLowerCase()) ||
+        p.brand.toLowerCase().includes(searchText.toLowerCase())
+      )
+    : selectedCategory === 'Tous' 
+      ? newProducts 
+      : newProducts.filter((p) => p.category === selectedCategory);
+
+  const showSearchResults = searchText.trim().length > 0;
 
   const handleProductPress = (product) => {
     onNavigate?.('marketplace_product_details');
@@ -140,9 +155,14 @@ export default function NewArrivalsScreen({ onBack, onNavigate }) {
                       style={styles.favoriteBtn}
                       onPress={(e) => {
                         e.stopPropagation();
+                        handleToggleFavorite(product);
                       }}
                     >
-                      <MaterialCommunityIcons name="heart-outline" size={18} color="#fff" />
+                      <MaterialCommunityIcons 
+                        name={isFavorite(product.id) ? "heart" : "heart-outline"} 
+                        size={18} 
+                        color={isFavorite(product.id) ? "#ef4444" : "#fff"} 
+                      />
                     </Pressable>
                   </View>
                   <View style={styles.productInfo}>
@@ -184,8 +204,6 @@ export default function NewArrivalsScreen({ onBack, onNavigate }) {
                       onNavigate?.('category_page');
                     } else if (item.label === 'Panier') {
                       onNavigate?.('cart');
-                    } else if (item.label === 'Commande') {
-                      onNavigate?.('orders');
                     } else {
                       setActiveTab(item.label);
                     }
@@ -208,6 +226,22 @@ export default function NewArrivalsScreen({ onBack, onNavigate }) {
                 </Pressable>
               );
             })}
+            <Pressable
+              style={({ pressed }) => [
+                styles.navItem,
+                pressed && styles.navItemPressed,
+              ]}
+              onPress={() => onBack?.()}
+            >
+              <View style={styles.navIcon}>
+                <MaterialCommunityIcons
+                  name="arrow-left"
+                  size={20}
+                  color="#CBD5F5"
+                />
+              </View>
+              <Text style={styles.navLabel}>Retour</Text>
+            </Pressable>
           </View>
         </SafeAreaView>
       </View>

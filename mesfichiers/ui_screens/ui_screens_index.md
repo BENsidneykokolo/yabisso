@@ -74,6 +74,17 @@
 - Marketplace - Blocked User: `app/src/features/marketplace/screens/BlockedUserScreen.js`
 - Marketplace - Add Product: `app/src/features/marketplace/screens/AddProductScreen.js`
 - Marketplace - Seller Profile: `app/src/features/marketplace/screens/SellerProfileScreen.js`
+- Marketplace - Notifications: `app/src/features/marketplace/screens/MarketplaceNotificationsScreen.js`
+- Marketplace - Favoris: `app/src/features/marketplace/screens/MarketplaceFavoritesScreen.js`
+- Marketplace - Historique: `app/src/features/marketplace/screens/MarketplaceHistoryScreen.js`
+- Marketplace - Parametres: `app/src/features/marketplace/screens/MarketplaceSettingsScreen.js`
+- Restaurant - Home: `app/src/features/restaurant/screens/RestaurantHomeScreen.js`
+- Restaurant - Details: `app/src/features/restaurant/screens/RestaurantDetailsScreen.js`
+- Restaurant - Item Details: `app/src/features/restaurant/screens/FoodItemDetailsScreen.js`
+- Restaurant - Checkout: `app/src/features/restaurant/screens/FoodCheckoutScreen.js`
+- Hotels - Home: `app/src/features/hotel/screens/HotelHomeScreen.js`
+- Services - Home: `app/src/features/services/screens/ServicesHomeScreen.js`
+- Immobilier - Home: `app/src/features/real_estate/screens/RealEstateHomeScreen.js`
 - Marketplace - Cart Context: `app/src/features/marketplace/context/CartContext.js`
 - FloatingNav: `app/src/components/FloatingNav.js`
 

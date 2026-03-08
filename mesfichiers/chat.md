@@ -887,4 +887,61 @@ Pour tester :
 - Va sur Marché → Product List → bouton comparaison dans le header
 - Va sur Profil → "Statut Marketplace" dans les paramètres
 
+---
+
+## 2026-03-06 - Sessions recentes
+
+User: super, maintenant je veux que tu build le service: restaurant, hotel, services et appartement
+
+Assistant: [A cree les ecrans suivants]
+- Restaurant: RestaurantHomeScreen, RestaurantDetailsScreen, FoodItemDetailsScreen, FoodCheckoutScreen
+- Hotels: HotelHomeScreen
+- Services: ServicesHomeScreen
+- Immobilier: RealEstateHomeScreen
+- Integre dans App.js et connecte au HomeScreen
+
+User: super, maintenant je veux que tu build l'ecran "boutique" a ce design: [reference UI]
+
+Assistant: [A restaure l'ancien design de MarketplaceHomeScreen avec categories, deals, produits]
+
+User: voila l'ecran boutique [reference UI]
+
+Assistant: Ce design correspond a ce qui est deja implemente. Le design actuel de MarketplaceHomeScreen correspond a cette UI.
+
+User: super, ajoute une 5e categorie "Accessoire"
+
+Assistant: [A ajoute la categorie Accessoire avec icone watch et couleur violette]
+
+User: super, en haut au header sur l'icon de profil, je veux que ca soit le menu (3trais) et mets toutes les pages de "marche" dedans
+
+Assistant: [A ajoute]
+- Icone menu hamburger en haut a gauche
+- Menu lateral avec toutes les pages du marche:
+  - Accueil, Boutique, Categories, Nouveautes, Mes commandes, Panier, Favoris, Historique, Parametres, Aide & Support
+
+User: tu peux changer l'ecran "notification" a ca: [reference UI]
+
+Assistant: [A mis a jour HomeNotificationsScreen avec nouveau design]
+
+User: super, maintenant je veux que tu build l'ecran notification dans le service "marche" et le brancher a l'icon "notification"
+
+Assistant: [A cree]
+- MarketplaceNotificationsScreen
+- Connecte la cloche notification dans MarketplaceHomeScreen vers marketplace_notifications
+
+User: super, maintenant je veux que tu cree l'ecran "favoris" "historique" et que tu connecte l'ecran "parametre" dans le menu de l'ecran "boutique"
+
+Assistant: [A cree]
+- MarketplaceFavoritesScreen - liste des produits favoris
+- MarketplaceHistoryScreen - historique des achats
+- MarketplaceSettingsScreen - parametres (notifications, langue, mode sombre)
+- Connecte dans le menu lateral du marche:
+  - Favoris -> marketplace_favorites
+  - Historique -> marketplace_history
+  - Parametres -> marketplace_settings
+
+User: update tous les fichier .md
+
+Assistant: [A mis a jour project_memory.md avec les nouvelles functionalities]
+
 User: super, update tout ce que nous avons echanger ici dans les fichiers .md

@@ -16,7 +16,6 @@ const bottomNavItems = [
   { label: 'Boutique', icon: 'store' },
   { label: 'Catégories', icon: 'view-grid' },
   { label: 'Nouveauté', icon: 'sparkles' },
-  { label: 'Commande', icon: 'shopping' },
   { label: 'Panier', icon: 'cart' },
 ];
 
@@ -29,10 +28,14 @@ const categories = [
 ];
 
 const products = [
-  { id: 1, name: 'iPhone 13 Pro', brand: 'Apple', price: '450k' },
-  { id: 2, name: 'Air Zoom Pegasus', brand: 'Nike', price: '65k' },
-  { id: 3, name: 'Galaxy Watch 5', brand: 'Samsung', price: '120k' },
-  { id: 4, name: 'MacBook Air', brand: 'Apple', price: '680k' },
+  { id: 1, name: 'iPhone 15 Pro Max', brand: 'Apple', price: '950000', isNew: true },
+  { id: 2, name: 'Samsung Galaxy S24 Ultra', brand: 'Samsung', price: '780000', isNew: true },
+  { id: 3, name: 'Air Zoom Pegasus', brand: 'Nike', price: '65000', isNew: false },
+  { id: 4, name: 'Galaxy Watch 5', brand: 'Samsung', price: '120000', isNew: true },
+  { id: 5, name: 'MacBook Pro M3', brand: 'Apple', price: '1200000', isNew: true },
+  { id: 6, name: 'Nike Air Max 2024', brand: 'Nike', price: '85000', isNew: true },
+  { id: 7, name: 'Xiaomi 14 Ultra', brand: 'Xiaomi', price: '650000', isNew: false },
+  { id: 8, name: 'Sony WH-1000XM5', brand: 'Sony', price: '180000', isNew: true },
 ];
 
 const deals = [
@@ -40,12 +43,29 @@ const deals = [
   { id: 2, title: 'Tech Deals', subtitle: 'Arrivages récents', tag: 'NOUVEAU', tagColor: '#eab308' },
 ];
 
-export default function MarketplaceHomeScreen({ onBack, onNavigate }) {
+export default function MarketplaceHomeScreen({ onBack, onNavigate, favorites = [], onToggleFavorite }) {
   const [activeTab, setActiveTab] = useState('Boutique');
   const [showVoiceModal, setShowVoiceModal] = useState(false);
   const [showCameraModal, setShowCameraModal] = useState(false);
   const [searchText, setSearchText] = useState('');
   const [showMenu, setShowMenu] = useState(false);
+
+  const isFavorite = (productId) => favorites.some(f => f.id === productId);
+
+  const handleToggleFavorite = (product) => {
+    if (onToggleFavorite) {
+      onToggleFavorite(product);
+    }
+  };
+
+  const filteredProducts = searchText.trim() 
+    ? products.filter(p => 
+        p.name.toLowerCase().includes(searchText.toLowerCase()) ||
+        p.brand.toLowerCase().includes(searchText.toLowerCase())
+      )
+    : products;
+
+  const showSearchResults = searchText.trim().length > 0;
 
   const menuItems = [
     { label: 'Accueil', icon: 'home', screen: null },
@@ -163,32 +183,117 @@ export default function MarketplaceHomeScreen({ onBack, onNavigate }) {
             </View>
 
             {/* Products Grid */}
-            <View style={styles.productsSection}>
-              <View style={styles.productsHeader}>
-                <Text style={styles.sectionTitle}>Produits populaires</Text>
-                <Pressable>
-                  <Text style={styles.seeAll}>Voir tout</Text>
-                </Pressable>
+            {showSearchResults ? (
+              <View style={styles.productsSection}>
+                <View style={styles.productsHeader}>
+                  <Text style={styles.sectionTitle}>Résultats de recherche</Text>
+                  <Text style={styles.resultsCount}>{filteredProducts.length} produit(s)</Text>
+                </View>
+                {filteredProducts.length > 0 ? (
+                  <View style={styles.productsGrid}>
+                    {filteredProducts.map((product) => (
+                      <Pressable 
+                        key={product.id} 
+                        style={styles.productCard}
+                        onPress={() => onNavigate?.('product_details')}
+                      >
+                        <View style={styles.productImage}>
+                          {product.isNew && (
+                            <View style={styles.newBadge}>
+                              <MaterialCommunityIcons name="lightning-bolt" size={12} color="#fff" />
+                              <Text style={styles.newBadgeText}>NOUVEAU</Text>
+                            </View>
+                          )}
+                          <Pressable 
+                            style={styles.favoriteBtn}
+                            onPress={(e) => {
+                              e.stopPropagation();
+                              handleToggleFavorite(product);
+                            }}
+                          >
+                            <MaterialCommunityIcons 
+                              name={isFavorite(product.id) ? "heart" : "heart-outline"} 
+                              size={18} 
+                              color={isFavorite(product.id) ? "#ef4444" : "#fff"} 
+                            />
+                          </Pressable>
+                        </View>
+                        <View style={styles.productInfo}>
+                          <Text style={styles.productBrand}>{product.brand}</Text>
+                          <Text style={styles.productName} numberOfLines={1}>{product.name}</Text>
+                          <View style={styles.productBottom}>
+                            <Text style={styles.productPrice}>{product.price} FCA</Text>
+                            <Pressable 
+                              style={styles.addBtn}
+                            >
+                              <MaterialCommunityIcons name="plus" size={18} color="#fff" />
+                            </Pressable>
+                          </View>
+                        </View>
+                      </Pressable>
+                    ))}
+                  </View>
+                ) : (
+                  <View style={styles.noResults}>
+                    <MaterialCommunityIcons name="magnify" size={64} color="#324d67" />
+                    <Text style={styles.noResultsText}>Aucun résultat pour "{searchText}"</Text>
+                    <Text style={styles.noResultsSubtext}>Essayez avec un autre mot-clé</Text>
+                  </View>
+                )}
               </View>
-              <View style={styles.productsGrid}>
-                {products.map((product) => (
-                  <Pressable 
-                    key={product.id} 
-                    style={styles.productCard}
-                    onPress={() => onNavigate?.('product_details')}
-                  >
-                    <View style={styles.productImage}>
-                      <MaterialCommunityIcons name="image" size={40} color="#324d67" />
-                    </View>
-                    <View style={styles.productInfo}>
-                      <Text style={styles.productName} numberOfLines={1}>{product.name}</Text>
-                      <Text style={styles.productBrand}>{product.brand}</Text>
-                      <Text style={styles.productPrice}>{product.price}</Text>
-                    </View>
+            ) : (
+              <View style={styles.productsSection}>
+                <View style={styles.productsHeader}>
+                  <Text style={styles.sectionTitle}>Produits populaires</Text>
+                  <Pressable>
+                    <Text style={styles.seeAll}>Voir tout</Text>
                   </Pressable>
-                ))}
+                </View>
+                <View style={styles.productsGrid}>
+                  {products.map((product) => (
+                    <Pressable 
+                      key={product.id} 
+                      style={styles.productCard}
+                      onPress={() => onNavigate?.('product_details')}
+                    >
+                      <View style={styles.productImage}>
+                        {product.isNew && (
+                          <View style={styles.newBadge}>
+                            <MaterialCommunityIcons name="lightning-bolt" size={12} color="#fff" />
+                            <Text style={styles.newBadgeText}>NOUVEAU</Text>
+                          </View>
+                        )}
+                        <Pressable 
+                          style={styles.favoriteBtn}
+                          onPress={(e) => {
+                            e.stopPropagation();
+                            handleToggleFavorite(product);
+                          }}
+                        >
+                          <MaterialCommunityIcons 
+                            name={isFavorite(product.id) ? "heart" : "heart-outline"} 
+                            size={18} 
+                            color={isFavorite(product.id) ? "#ef4444" : "#fff"} 
+                          />
+                        </Pressable>
+                      </View>
+                      <View style={styles.productInfo}>
+                        <Text style={styles.productBrand}>{product.brand}</Text>
+                        <Text style={styles.productName} numberOfLines={1}>{product.name}</Text>
+                        <View style={styles.productBottom}>
+                          <Text style={styles.productPrice}>{product.price} FCA</Text>
+                          <Pressable 
+                            style={styles.addBtn}
+                          >
+                            <MaterialCommunityIcons name="plus" size={18} color="#fff" />
+                          </Pressable>
+                        </View>
+                      </View>
+                    </Pressable>
+                  ))}
+                </View>
               </View>
-            </View>
+            )}
           </View>
         </ScrollView>
 
@@ -296,8 +401,6 @@ export default function MarketplaceHomeScreen({ onBack, onNavigate }) {
                       onNavigate?.('cart');
                     } else if (item.label === 'Nouveauté') {
                       onNavigate?.('new_arrivals');
-                    } else if (item.label === 'Commande') {
-                      onNavigate?.('orders');
                     }
                   }}
                 >
@@ -318,6 +421,22 @@ export default function MarketplaceHomeScreen({ onBack, onNavigate }) {
                 </Pressable>
               );
             })}
+            <Pressable
+              style={({ pressed }) => [
+                styles.navItem,
+                pressed && styles.navItemPressed,
+              ]}
+              onPress={() => onBack?.()}
+            >
+              <View style={styles.navIcon}>
+                <MaterialCommunityIcons
+                  name="arrow-left"
+                  size={20}
+                  color="#CBD5F5"
+                />
+              </View>
+              <Text style={styles.navLabel}>Retour</Text>
+            </Pressable>
           </View>
         </SafeAreaView>
       </View>
@@ -538,34 +657,77 @@ const styles = StyleSheet.create({
   },
   productCard: {
     width: '47%',
-    backgroundColor: '#1c2630',
+    backgroundColor: '#1a2632',
     borderRadius: 12,
     overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: '#324d67',
   },
   productImage: {
-    height: 100,
-    backgroundColor: '#233648',
+    aspectRatio: 1,
+    backgroundColor: '#324d67',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  newBadge: {
+    position: 'absolute',
+    top: 8,
+    left: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: '#FFD700',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  newBadgeText: {
+    fontSize: 10,
+    fontWeight: 'bold',
+    color: '#000',
+  },
+  favoriteBtn: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: 'rgba(0,0,0,0.2)',
     alignItems: 'center',
     justifyContent: 'center',
   },
   productInfo: {
     padding: 12,
-  },
-  productName: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#fff',
+    gap: 4,
   },
   productBrand: {
     fontSize: 12,
-    color: '#64748b',
-    marginTop: 2,
+    color: '#94a3b8',
+  },
+  productName: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#fff',
+  },
+  productBottom: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 4,
   },
   productPrice: {
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: 'bold',
     color: '#137fec',
-    marginTop: 8,
+  },
+  addBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#137fec',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   modalOverlay: {
     flex: 1,
@@ -758,6 +920,26 @@ const styles = StyleSheet.create({
   },
   menuFooterText: {
     fontSize: 12,
+    color: '#64748b',
+  },
+  resultsCount: {
+    fontSize: 14,
+    color: '#94a3b8',
+  },
+  noResults: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 60,
+    gap: 12,
+  },
+  noResultsText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#e2e8f0',
+    marginTop: 8,
+  },
+  noResultsSubtext: {
+    fontSize: 14,
     color: '#64748b',
   },
 });

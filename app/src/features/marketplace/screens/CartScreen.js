@@ -237,8 +237,6 @@ export default function CartScreen({ onBack, onNavigate }) {
                     // Already on cart
                   } else if (item.label === 'Nouveauté') {
                     onNavigate?.('new_arrivals');
-                  } else if (item.label === 'Commande') {
-                    onNavigate?.('orders');
                   } else {
                     setActiveTab(item.label);
                   }
@@ -261,6 +259,22 @@ export default function CartScreen({ onBack, onNavigate }) {
               </Pressable>
             );
           })}
+          <Pressable
+            style={({ pressed }) => [
+              styles.navItem,
+              pressed && styles.navItemPressed,
+            ]}
+            onPress={() => onBack?.()}
+          >
+            <View style={styles.navIcon}>
+              <MaterialCommunityIcons
+                name="arrow-left"
+                size={20}
+                color="#CBD5F5"
+              />
+            </View>
+            <Text style={styles.navLabel}>Retour</Text>
+          </Pressable>
         </View>
       </SafeAreaView>
     </SafeAreaView>
@@ -655,6 +669,5 @@ const bottomNavItems = [
   { label: 'Boutique', icon: 'store' },
   { label: 'Catégories', icon: 'view-grid' },
   { label: 'Nouveauté', icon: 'sparkles' },
-  { label: 'Commande', icon: 'shopping' },
   { label: 'Panier', icon: 'cart' },
 ];

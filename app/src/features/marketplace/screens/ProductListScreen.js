@@ -19,30 +19,43 @@ const categories = [
 ];
 
 const products = [
-  { id: 1, name: 'iPhone 13 Pro', brand: 'Apple', price: '450000', category: 'Téléphones' },
-  { id: 2, name: 'Samsung Galaxy S23', brand: 'Samsung', price: '380000', category: 'Téléphones' },
-  { id: 3, name: 'MacBook Air M2', brand: 'Apple', price: '680000', category: 'Électronique' },
-  { id: 4, name: 'Air Zoom Pegasus', brand: 'Nike', price: '65000', category: 'Sports' },
-  { id: 5, name: 'Galaxy Watch 5', brand: 'Samsung', price: '120000', category: 'Téléphones' },
-  { id: 6, name: 'iPad Air', brand: 'Apple', price: '420000', category: 'Électronique' },
+  { id: 1, name: 'iPhone 15 Pro Max', brand: 'Apple', price: '950000', category: 'Téléphones', isNew: true },
+  { id: 2, name: 'Samsung Galaxy S24 Ultra', brand: 'Samsung', price: '780000', category: 'Téléphones', isNew: true },
+  { id: 3, name: 'MacBook Pro M3', brand: 'Apple', price: '1200000', category: 'Électronique', isNew: true },
+  { id: 4, name: 'Air Zoom Pegasus', brand: 'Nike', price: '65000', category: 'Sports', isNew: false },
+  { id: 5, name: 'Galaxy Watch 5', brand: 'Samsung', price: '120000', category: 'Téléphones', isNew: false },
+  { id: 6, name: 'iPad Air', brand: 'Apple', price: '420000', category: 'Électronique', isNew: true },
 ];
 
 const bottomNavItems = [
   { label: 'Boutique', icon: 'store' },
   { label: 'Catégories', icon: 'view-grid' },
   { label: 'Nouveauté', icon: 'sparkles' },
-  { label: 'Commande', icon: 'shopping' },
   { label: 'Panier', icon: 'cart' },
 ];
 
-export default function ProductListScreen({ onBack, onNavigate }) {
+export default function ProductListScreen({ onBack, onNavigate, favorites = [], onToggleFavorite }) {
   const [activeTab, setActiveTab] = useState('Boutique');
   const [selectedCategory, setSelectedCategory] = useState('Téléphones');
   const [selectedProduct, setSelectedProduct] = useState(null);
+  const [searchText, setSearchText] = useState('');
 
-  const filteredProducts = products.filter(
-    (p) => p.category === selectedCategory
-  );
+  const isFavorite = (productId) => favorites.some(f => f.id === productId);
+
+  const handleToggleFavorite = (product) => {
+    if (onToggleFavorite) {
+      onToggleFavorite(product);
+    }
+  };
+
+  const filteredProducts = searchText.trim()
+    ? products.filter(p =>
+        p.name.toLowerCase().includes(searchText.toLowerCase()) ||
+        p.brand.toLowerCase().includes(searchText.toLowerCase())
+      ).filter(p => p.category === selectedCategory)
+    : products.filter(p => p.category === selectedCategory);
+
+  const showSearchResults = searchText.trim().length > 0;
 
   const handleProductPress = (product) => {
     setSelectedProduct(product);
@@ -86,6 +99,17 @@ export default function ProductListScreen({ onBack, onNavigate }) {
                 <Text style={styles.statusText}>Syncronisé</Text>
               </View>
             </View>
+
+            <View style={styles.searchContainer}>
+              <MaterialCommunityIcons name="magnify" size={18} color="#7C8A9A" />
+              <TextInput
+                style={styles.searchInput}
+                placeholder="Rechercher un produit..."
+                placeholderTextColor="#7C8A9A"
+                value={searchText}
+                onChangeText={setSearchText}
+              />
+            </View>
           </View>
 
           <View style={styles.categoryTabs}>
@@ -117,43 +141,61 @@ export default function ProductListScreen({ onBack, onNavigate }) {
 
           <View style={styles.productsSection}>
             <Text style={styles.resultsText}>
-              {filteredProducts.length} résultats
+              {showSearchResults ? `${filteredProducts.length} résultat(s) pour "${searchText}"` : `${filteredProducts.length} résultats`}
             </Text>
-            <View style={styles.productsGrid}>
-              {filteredProducts.map((product) => (
-                <Pressable
-                  key={product.id}
-                  style={styles.productCard}
-                  onPress={() => handleProductPress(product)}
-                >
-                  <View style={styles.productImage}>
-                    <Pressable 
-                      style={styles.favoriteBtn}
-                      onPress={(e) => {
-                        e.stopPropagation();
-                      }}
-                    >
-                      <MaterialCommunityIcons name="heart-outline" size={18} color="#fff" />
-                    </Pressable>
-                  </View>
-                  <View style={styles.productInfo}>
-                    <Text style={styles.productBrand}>{product.brand}</Text>
-                    <Text style={styles.productName} numberOfLines={1}>{product.name}</Text>
-                    <View style={styles.productBottom}>
-                      <Text style={styles.productPrice}>{product.price} FCFA</Text>
+            {filteredProducts.length > 0 ? (
+              <View style={styles.productsGrid}>
+                {filteredProducts.map((product) => (
+                  <Pressable
+                    key={product.id}
+                    style={styles.productCard}
+                    onPress={() => handleProductPress(product)}
+                  >
+                    <View style={styles.productImage}>
+                      {product.isNew && (
+                        <View style={styles.newBadge}>
+                          <MaterialCommunityIcons name="lightning-bolt" size={12} color="#fff" />
+                          <Text style={styles.newBadgeText}>NOUVEAU</Text>
+                        </View>
+                      )}
                       <Pressable 
-                        style={styles.addBtn}
+                        style={styles.favoriteBtn}
                         onPress={(e) => {
                           e.stopPropagation();
+                          handleToggleFavorite(product);
                         }}
                       >
-                        <MaterialCommunityIcons name="plus" size={18} color="#fff" />
+                        <MaterialCommunityIcons 
+                          name={isFavorite(product.id) ? "heart" : "heart-outline"} 
+                          size={18} 
+                          color={isFavorite(product.id) ? "#ef4444" : "#fff"} 
+                        />
                       </Pressable>
                     </View>
-                  </View>
-                </Pressable>
-              ))}
-            </View>
+                    <View style={styles.productInfo}>
+                      <Text style={styles.productBrand}>{product.brand}</Text>
+                      <Text style={styles.productName} numberOfLines={1}>{product.name}</Text>
+                      <View style={styles.productBottom}>
+                        <Text style={styles.productPrice}>{product.price} FCA</Text>
+                        <Pressable 
+                          style={styles.addBtn}
+                          onPress={(e) => {
+                            e.stopPropagation();
+                          }}
+                        >
+                          <MaterialCommunityIcons name="plus" size={18} color="#fff" />
+                        </Pressable>
+                      </View>
+                    </View>
+                  </Pressable>
+                ))}
+              </View>
+            ) : (
+              <View style={styles.noResults}>
+                <MaterialCommunityIcons name="magnify" size={64} color="#324d67" />
+                <Text style={styles.noResultsText}>Aucun résultat pour "{searchText}"</Text>
+              </View>
+            )}
           </View>
         </ScrollView>
 
@@ -177,10 +219,6 @@ export default function ProductListScreen({ onBack, onNavigate }) {
                       onNavigate?.('cart');
                     } else if (item.label === 'Nouveauté') {
                       onNavigate?.('new_arrivals');
-                    } else if (item.label === 'Commande') {
-                      onNavigate?.('orders');
-                    } else {
-                      setActiveTab(item.label);
                     }
                   }}
                 >
@@ -201,6 +239,22 @@ export default function ProductListScreen({ onBack, onNavigate }) {
                 </Pressable>
               );
             })}
+            <Pressable
+              style={({ pressed }) => [
+                styles.navItem,
+                pressed && styles.navItemPressed,
+              ]}
+              onPress={() => onBack?.()}
+            >
+              <View style={styles.navIcon}>
+                <MaterialCommunityIcons
+                  name="arrow-left"
+                  size={20}
+                  color="#CBD5F5"
+                />
+              </View>
+              <Text style={styles.navLabel}>Retour</Text>
+            </Pressable>
           </View>
         </SafeAreaView>
       </View>
@@ -339,6 +393,23 @@ const styles = StyleSheet.create({
   productImage: {
     aspectRatio: 1,
     backgroundColor: '#324d67',
+  },
+  newBadge: {
+    position: 'absolute',
+    top: 8,
+    left: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: '#FFD700',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  newBadgeText: {
+    fontSize: 10,
+    fontWeight: 'bold',
+    color: '#000',
   },
   favoriteBtn: {
     position: 'absolute',

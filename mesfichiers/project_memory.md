@@ -38,7 +38,10 @@
 - UI Wallet complet: WalletScreen, RechargeScreen, SendScreen, ReceiveScreen, HistoryScreen
 - Bottom navigation wallet avec navigation et etat actif
 - Pages: Assistant IA (avec menu, clavier avoidance, 6 outils), Profil + sous-pages
-- Marketplace: MarketplaceHomeScreen, ProductListScreen, CategoryPageScreen
+- Marketplace: MarketplaceHomeScreen, ProductListScreen, CategoryPageScreen, CartScreen, CheckoutScreen
+- Menu lateral dans Marketplace (hamburger icon) avec: Favoris, Historique, Parametres, Aide
+- Notifications screen pour Marketplace
+- Services ajoutes: Restaurant (home, details, item details, checkout), Hotels, Services, Immobilier
 - FloatingNav: bouton flottant (bottom: 120)
 - Offline choix SMS/QR: modal active quand offline (NetInfo)
 - Schema DB local: profiles, sync_queue, signup_nonces, signup_verifications

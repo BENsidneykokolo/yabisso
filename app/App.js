@@ -31,7 +31,7 @@ import ReceiveRequestPaymentScreen from './src/features/wallet/screens/ReceiveRe
 import HistoryScreen from './src/features/wallet/screens/HistoryScreen';
 import AssistantScreen from './src/features/ai/screens/AssistantScreen';
 import ProfileScreen from './src/features/profile/screens/ProfileScreen';
-import FloatingNav from './src/components/FloatingNav';
+import HomeFloatingButton from './src/components/HomeFloatingButton';
 import AccountScreen from './src/features/profile/screens/AccountScreen';
 import SecurityScreen from './src/features/profile/screens/SecurityScreen';
 import NotificationsScreen from './src/features/profile/screens/NotificationsScreen';
@@ -76,6 +76,17 @@ export default function App() {
   const [homeShowAllServices, setHomeShowAllServices] = useState(false);
   const [walletMode, setWalletMode] = useState('fcfa');
   const [walletActiveTab, setWalletActiveTab] = useState('home');
+  const [favorites, setFavorites] = useState([]);
+
+  const toggleFavorite = (product) => {
+    setFavorites(prev => {
+      const exists = prev.find(p => p.id === product.id);
+      if (exists) {
+        return prev.filter(p => p.id !== product.id);
+      }
+      return [...prev, product];
+    });
+  };
 
   let content = null;
   if (screen === 'welcome') {
@@ -348,6 +359,8 @@ export default function App() {
     content = (
       <MarketplaceHomeScreen
         onBack={() => setScreen('home')}
+        favorites={favorites}
+        onToggleFavorite={toggleFavorite}
         onNavigate={(screenName) => {
           if (screenName === 'wallet') { setWalletActiveTab('home'); setScreen('wallet'); }
           else if (screenName === 'profile') setScreen('profile');
@@ -370,6 +383,8 @@ export default function App() {
     content = (
       <ProductListScreen
         onBack={() => setScreen('marketplace_home')}
+        favorites={favorites}
+        onToggleFavorite={toggleFavorite}
         onNavigate={(screenName) => {
           if (screenName === 'marketplace_home') setScreen('marketplace_home');
           if (screenName === 'category_page' || screenName === 'marketplace_category_page') setScreen('marketplace_category_page');
@@ -382,10 +397,12 @@ export default function App() {
       />
     );
   }
-    if (screen === 'marketplace_category_page') {
+  if (screen === 'marketplace_category_page') {
     content = (
       <CategoryPageScreen
         onBack={() => setScreen('marketplace_product_list')}
+        favorites={favorites}
+        onToggleFavorite={toggleFavorite}
         onNavigate={(screenName) => {
           if (screenName === 'marketplace_home') setScreen('marketplace_home');
           if (screenName === 'new_arrivals') setScreen('new_arrivals');
@@ -400,6 +417,8 @@ export default function App() {
     content = (
       <NewArrivalsScreen
         onBack={() => setScreen('marketplace_home')}
+        favorites={favorites}
+        onToggleFavorite={toggleFavorite}
         onNavigate={(screenName) => {
           if (screenName === 'marketplace_home') setScreen('marketplace_home');
           if (screenName === 'category_page' || screenName === 'marketplace_category_page') setScreen('marketplace_category_page');
@@ -645,6 +664,11 @@ export default function App() {
     content = (
       <MarketplaceFavoritesScreen
         onBack={() => setScreen('marketplace_home')}
+        favorites={favorites}
+        onToggleFavorite={toggleFavorite}
+        onNavigate={(screenName) => {
+          if (screenName === 'product_details') setScreen('marketplace_product_details');
+        }}
       />
     );
   }
@@ -667,53 +691,22 @@ export default function App() {
     );
   }
 
-  const showFloatingNav =
-    screen === 'wallet' ||
-    screen === 'wallet_recharge' ||
-    screen === 'wallet_kiosque_qr' ||
-    screen === 'wallet_kiosque_pin' ||
-    screen === 'wallet_send' ||
-    screen === 'wallet_send_qr_generate' ||
-    screen === 'wallet_send_qr_result' ||
-    screen === 'wallet_send_beneficiary' ||
-    screen === 'wallet_send_scan' ||
-    screen === 'wallet_send_confirm' ||
-    screen === 'wallet_receive' ||
-    screen === 'wallet_receive_scan' ||
-    screen === 'wallet_receive_notifications' ||
-    screen === 'wallet_receive_request' ||
-    screen === 'wallet_history' ||
-    screen === 'profile' ||
-    screen === 'profile_account' ||
-    screen === 'profile_security' ||
-    screen === 'profile_notifications' ||
-    screen === 'profile_language' ||
-    screen === 'profile_support' ||
-    screen === 'profile_logout' ||
-    screen === 'marketplace_home' ||
-    screen === 'marketplace_product_list' ||
-    screen === 'marketplace_category_page' ||
-    screen === 'marketplace_product_details' ||
-    screen === 'cart' ||
-    screen === 'checkout' ||
-    screen === 'order_status' ||
-    screen === 'delivery_tracking' ||
-    screen === 'seller_comparison' ||
-    screen === 'blocked_user' ||
-    screen === 'market_seller' ||
-    screen === 'market_add_product' ||
-    screen === 'loba_home' ||
-    screen === 'loba_feed' ||
-    screen === 'loba_profile' ||
-    screen === 'loba_stories' ||
-    screen === 'loba_record';
+  const showFloatingButton =
+    screen !== 'welcome' &&
+    screen !== 'language' &&
+    screen !== 'signup' &&
+    screen !== 'signup_pin' &&
+    screen !== 'signup_sms' &&
+    screen !== 'signup_qr' &&
+    screen !== 'login' &&
+    screen !== 'home';
 
   return (
     <DatabaseProvider database={database}>
       <View style={{ flex: 1 }}>
         {content}
-        {showFloatingNav && (
-          <FloatingNav
+        {showFloatingButton && (
+          <HomeFloatingButton
             activeTab={activeTab}
             onSelect={(label) => {
               setActiveTab(label);

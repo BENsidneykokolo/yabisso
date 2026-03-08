@@ -261,6 +261,9 @@ export default function HomeScreen({
                 if (item.key === 'realestate') {
                   onOpenRealEstate?.();
                 }
+                if (item.key === 'appartements') {
+                  onOpenRealEstate?.();
+                }
               }}
             >
               <View style={[styles.serviceIcon, { backgroundColor: item.color }]}>

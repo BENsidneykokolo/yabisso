@@ -2,33 +2,15 @@ import React from 'react';
 import { Pressable, SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 
-const favorites = [
-  {
-    id: 1,
-    name: 'iPhone 14 Pro Max',
-    price: 850000,
-    image: 'https://images.unsplash.com/photo-1592750475338-74b7b21085ab?w=400',
-    seller: 'Apple Store',
-  },
-  {
-    id: 2,
-    name: 'Nike Air Jordan',
-    price: 85000,
-    image: 'https://images.unsplash.com/photo-1600269452121-4f2416e55c28?w=400',
-    seller: 'Nike Official',
-  },
-  {
-    id: 3,
-    name: 'Samsung Galaxy S24',
-    price: 650000,
-    image: 'https://images.unsplash.com/photo-1610945415295-d9bbf067e59c?w=400',
-    seller: 'Samsung',
-  },
-];
-
-export default function MarketplaceFavoritesScreen({ onBack, onNavigate }) {
+export default function MarketplaceFavoritesScreen({ onBack, onNavigate, favorites = [], onToggleFavorite }) {
   const formatPrice = (price) => {
-    return price.toLocaleString('fr-FR') + ' XAF';
+    return price.toLocaleString('fr-FR') + ' FCA';
+  };
+
+  const handleRemoveFavorite = (product) => {
+    if (onToggleFavorite) {
+      onToggleFavorite(product);
+    }
   };
 
   return (
@@ -51,16 +33,16 @@ export default function MarketplaceFavoritesScreen({ onBack, onNavigate }) {
         ) : (
           <View style={styles.favoritesList}>
             {favorites.map((item) => (
-              <Pressable key={item.id} style={styles.favoriteCard}>
+              <Pressable key={item.id} style={styles.favoriteCard} onPress={() => onNavigate?.('product_details')}>
                 <View style={styles.productImage}>
                   <MaterialCommunityIcons name="image" size={32} color="#324d67" />
                 </View>
                 <View style={styles.productInfo}>
+                  <Text style={styles.productBrand}>{item.brand}</Text>
                   <Text style={styles.productName} numberOfLines={2}>{item.name}</Text>
-                  <Text style={styles.productSeller}>{item.seller}</Text>
                   <Text style={styles.productPrice}>{formatPrice(item.price)}</Text>
                 </View>
-                <Pressable style={styles.removeBtn}>
+                <Pressable style={styles.removeBtn} onPress={() => handleRemoveFavorite(item)}>
                   <MaterialCommunityIcons name="heart" size={20} color="#ef4444" />
                 </Pressable>
               </Pressable>

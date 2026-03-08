@@ -8,8 +8,16 @@ import {
   Image,
   SafeAreaView,
   StatusBar,
+  Pressable,
 } from 'react-native';
-import { MaterialIcons } from '@expo/vector-icons';
+import { MaterialIcons, MaterialCommunityIcons } from '@expo/vector-icons';
+
+const bottomNavItems = [
+  { label: 'Boutique', icon: 'store' },
+  { label: 'Catégories', icon: 'view-grid' },
+  { label: 'Nouveauté', icon: 'sparkles' },
+  { label: 'Panier', icon: 'cart' },
+];
 
 const MOCK_ORDERS = [
   {
@@ -207,6 +215,60 @@ export default function OrdersScreen({ onBack, onNavigate }) {
           </View>
         }
       />
+
+      <SafeAreaView style={styles.bottomNavWrapper}>
+        <View style={styles.bottomNav}>
+          {bottomNavItems.map((item) => {
+            return (
+              <Pressable
+                key={item.label}
+                style={({ pressed }) => [
+                  styles.navItem,
+                  pressed && styles.navItemPressed,
+                ]}
+                onPress={() => {
+                  if (item.label === 'Boutique') {
+                    onNavigate?.('marketplace_home');
+                  } else if (item.label === 'Catégories') {
+                    onNavigate?.('category_page');
+                  } else if (item.label === 'Nouveauté') {
+                    onNavigate?.('new_arrivals');
+                  } else if (item.label === 'Panier') {
+                    onNavigate?.('cart');
+                  }
+                }}
+              >
+                <View style={styles.navIcon}>
+                  <MaterialCommunityIcons
+                    name={item.icon}
+                    size={16}
+                    color="#CBD5F5"
+                  />
+                </View>
+                <Text style={styles.navLabel}>
+                  {item.label}
+                </Text>
+              </Pressable>
+            );
+          })}
+          <Pressable
+            style={({ pressed }) => [
+              styles.navItem,
+              pressed && styles.navItemPressed,
+            ]}
+            onPress={() => onBack?.()}
+          >
+            <View style={styles.navIcon}>
+              <MaterialCommunityIcons
+                name="arrow-left"
+                size={20}
+                color="#CBD5F5"
+              />
+            </View>
+            <Text style={styles.navLabel}>Retour</Text>
+          </Pressable>
+        </View>
+      </SafeAreaView>
     </SafeAreaView>
   );
 }
@@ -400,5 +462,57 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#94A3B8',
     marginTop: 4,
+  },
+  bottomNavWrapper: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    paddingHorizontal: 16,
+    paddingBottom: 36,
+  },
+  bottomNav: {
+    backgroundColor: 'rgba(22, 29, 37, 0.98)',
+    borderRadius: 24,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+    marginBottom: 4,
+  },
+  navItem: {
+    alignItems: 'center',
+    flex: 1,
+  },
+  navItemPressed: {
+    transform: [{ scale: 0.96 }],
+  },
+  navIcon: {
+    width: 22,
+    height: 22,
+    borderRadius: 6,
+    backgroundColor: 'rgba(255, 255, 255, 0.18)',
+    marginBottom: 6,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  navIconActive: {
+    backgroundColor: '#3B82F6',
+  },
+  navIconCenter: {
+    width: 34,
+    height: 34,
+    borderRadius: 12,
+    backgroundColor: '#3B82F6',
+    marginTop: -14,
+  },
+  navLabel: {
+    color: '#6B7280',
+    fontSize: 10,
+  },
+  navLabelActive: {
+    color: '#2BEE79',
   },
 });

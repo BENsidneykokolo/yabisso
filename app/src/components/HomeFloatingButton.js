@@ -10,7 +10,7 @@ const navItems = [
   { label: 'Profil', icon: 'account' },
 ];
 
-export default function FloatingNav({ activeTab, onSelect }) {
+export default function HomeFloatingButton({ activeTab, onSelect }) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -49,16 +49,15 @@ export default function FloatingNav({ activeTab, onSelect }) {
 
       <Pressable
         style={({ pressed }) => [
-          styles.fab,
-          pressed && styles.fabPressed,
-          open && styles.fabOpen,
+          styles.button,
+          pressed && styles.buttonPressed,
         ]}
         onPress={() => setOpen((prev) => !prev)}
       >
         <MaterialCommunityIcons
-          name={open ? 'close' : 'plus'}
-          size={26}
-          color="#0E151B"
+          name={open ? 'close' : 'home'}
+          size={24}
+          color="#FFFFFF"
         />
       </Pressable>
     </View>
@@ -68,11 +67,12 @@ export default function FloatingNav({ activeTab, onSelect }) {
 const styles = StyleSheet.create({
   wrapper: {
     position: 'absolute',
-    right: 16,
-    bottom: 90,
+    right: -26,
+    top: '75%',
     alignItems: 'flex-end',
   },
   menuContainer: {
+    marginRight: 26,
     marginBottom: 12,
   },
   menu: {
@@ -117,25 +117,21 @@ const styles = StyleSheet.create({
     color: '#0E151B',
     fontWeight: '700',
   },
-  fab: {
+  button: {
     width: 52,
     height: 52,
     borderRadius: 26,
-    backgroundColor: '#2BEE79',
+    backgroundColor: '#EF4444',
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 2,
-    borderColor: 'rgba(0, 0, 0, 0.15)',
-    shadowColor: '#2BEE79',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.4,
-    shadowRadius: 8,
-    elevation: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 2, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 6,
   },
-  fabPressed: {
+  buttonPressed: {
     transform: [{ scale: 0.95 }],
-  },
-  fabOpen: {
-    backgroundColor: '#F5B84C',
+    backgroundColor: '#DC2626',
   },
 });
