@@ -7,13 +7,14 @@ export const useCart = () => useContext(CartContext);
 export const CartProvider = ({ children }) => {
   const [cartItems, setCartItems] = useState([]);
 
-  const addToCart = (product, quantity = 1, selectedColor = null, selectedModel = null) => {
+  const addToCart = (product, quantity = 1, selectedColor = null, selectedModel = null, negotiatedPrice = null) => {
     setCartItems((prev) => {
       const existingIndex = prev.findIndex(
         (item) => 
           item.id === product.id && 
           item.selectedColor === selectedColor && 
-          item.selectedModel === selectedModel
+          item.selectedModel === selectedModel &&
+          item.negotiatedPrice === negotiatedPrice
       );
 
       if (existingIndex >= 0) {
@@ -27,23 +28,25 @@ export const CartProvider = ({ children }) => {
         quantity,
         selectedColor,
         selectedModel,
+        negotiatedPrice,
       }];
     });
   };
 
-  const removeFromCart = (productId, selectedColor = null, selectedModel = null) => {
+  const removeFromCart = (productId, selectedColor = null, selectedModel = null, negotiatedPrice = null) => {
     setCartItems((prev) => 
       prev.filter((item) => 
         !(item.id === productId && 
           item.selectedColor === selectedColor && 
-          item.selectedModel === selectedModel)
+          item.selectedModel === selectedModel &&
+          item.negotiatedPrice === negotiatedPrice)
       )
     );
   };
 
-  const updateQuantity = (productId, quantity, selectedColor = null, selectedModel = null) => {
+  const updateQuantity = (productId, quantity, selectedColor = null, selectedModel = null, negotiatedPrice = null) => {
     if (quantity <= 0) {
-      removeFromCart(productId, selectedColor, selectedModel);
+      removeFromCart(productId, selectedColor, selectedModel, negotiatedPrice);
       return;
     }
 
@@ -51,7 +54,8 @@ export const CartProvider = ({ children }) => {
       prev.map((item) => 
         item.id === productId && 
         item.selectedColor === selectedColor && 
-        item.selectedModel === selectedModel
+        item.selectedModel === selectedModel &&
+        item.negotiatedPrice === negotiatedPrice
           ? { ...item, quantity }
           : item
       )
@@ -64,7 +68,7 @@ export const CartProvider = ({ children }) => {
 
   const getCartTotal = () => {
     return cartItems.reduce((total, item) => {
-      const price = item.discountPrice || item.price;
+      const price = item.negotiatedPrice || item.discountPrice || item.price;
       return total + (price * item.quantity);
     }, 0);
   };

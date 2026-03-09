@@ -195,7 +195,7 @@ export default function MarketplaceHomeScreen({ onBack, onNavigate, favorites = 
                       <Pressable 
                         key={product.id} 
                         style={styles.productCard}
-                        onPress={() => onNavigate?.('product_details')}
+                        onPress={() => onNavigate?.('product_details', { product })}
                       >
                         <View style={styles.productImage}>
                           {product.isNew && (
@@ -254,7 +254,7 @@ export default function MarketplaceHomeScreen({ onBack, onNavigate, favorites = 
                     <Pressable 
                       key={product.id} 
                       style={styles.productCard}
-                      onPress={() => onNavigate?.('product_details')}
+                      onPress={() => onNavigate?.('product_details', { product })}
                     >
                       <View style={styles.productImage}>
                         {product.isNew && (

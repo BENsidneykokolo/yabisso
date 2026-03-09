@@ -6,8 +6,10 @@ import {
   Pressable,
   StyleSheet,
   SafeAreaView,
+  TextInput,
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useCart } from '../context/CartContext';
 
 const categories = [
   { name: 'Téléphones', icon: 'smartphone', color: '#137fec' },
@@ -35,6 +37,7 @@ const bottomNavItems = [
 ];
 
 export default function ProductListScreen({ onBack, onNavigate, favorites = [], onToggleFavorite }) {
+  const { addToCart } = useCart();
   const [activeTab, setActiveTab] = useState('Boutique');
   const [selectedCategory, setSelectedCategory] = useState('Téléphones');
   const [selectedProduct, setSelectedProduct] = useState(null);
@@ -50,9 +53,9 @@ export default function ProductListScreen({ onBack, onNavigate, favorites = [], 
 
   const filteredProducts = searchText.trim()
     ? products.filter(p =>
-        p.name.toLowerCase().includes(searchText.toLowerCase()) ||
-        p.brand.toLowerCase().includes(searchText.toLowerCase())
-      ).filter(p => p.category === selectedCategory)
+      p.name.toLowerCase().includes(searchText.toLowerCase()) ||
+      p.brand.toLowerCase().includes(searchText.toLowerCase())
+    ).filter(p => p.category === selectedCategory)
     : products.filter(p => p.category === selectedCategory);
 
   const showSearchResults = searchText.trim().length > 0;
@@ -74,7 +77,7 @@ export default function ProductListScreen({ onBack, onNavigate, favorites = [], 
               </Pressable>
               <Text style={styles.headerTitle}>{selectedCategory}</Text>
               <View style={styles.headerActions}>
-                <Pressable 
+                <Pressable
                   style={styles.actionBtn}
                   onPress={() => onNavigate?.('seller_comparison')}
                 >
@@ -158,17 +161,17 @@ export default function ProductListScreen({ onBack, onNavigate, favorites = [], 
                           <Text style={styles.newBadgeText}>NOUVEAU</Text>
                         </View>
                       )}
-                      <Pressable 
+                      <Pressable
                         style={styles.favoriteBtn}
                         onPress={(e) => {
                           e.stopPropagation();
                           handleToggleFavorite(product);
                         }}
                       >
-                        <MaterialCommunityIcons 
-                          name={isFavorite(product.id) ? "heart" : "heart-outline"} 
-                          size={18} 
-                          color={isFavorite(product.id) ? "#ef4444" : "#fff"} 
+                        <MaterialCommunityIcons
+                          name={isFavorite(product.id) ? "heart" : "heart-outline"}
+                          size={18}
+                          color={isFavorite(product.id) ? "#ef4444" : "#fff"}
                         />
                       </Pressable>
                     </View>
@@ -177,10 +180,12 @@ export default function ProductListScreen({ onBack, onNavigate, favorites = [], 
                       <Text style={styles.productName} numberOfLines={1}>{product.name}</Text>
                       <View style={styles.productBottom}>
                         <Text style={styles.productPrice}>{product.price} FCA</Text>
-                        <Pressable 
+                        <Pressable
                           style={styles.addBtn}
                           onPress={(e) => {
                             e.stopPropagation();
+                            const productToAdd = { ...product, price: parseInt(product.price) || 0 };
+                            addToCart(productToAdd, 1);
                           }}
                         >
                           <MaterialCommunityIcons name="plus" size={18} color="#fff" />
@@ -505,5 +510,33 @@ const styles = StyleSheet.create({
   },
   navLabelActive: {
     color: '#2BEE79',
+  },
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#1c2630',
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    marginHorizontal: 16,
+    marginTop: 12,
+    height: 44,
+  },
+  searchInput: {
+    flex: 1,
+    marginLeft: 8,
+    fontSize: 15,
+    color: '#fff',
+  },
+  noResults: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 60,
+    gap: 12,
+  },
+  noResultsText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#e2e8f0',
+    marginTop: 8,
   },
 });

@@ -8,54 +8,116 @@ import {
   SafeAreaView,
   Image,
   Alert,
+  Modal,
+  TextInput,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 
-const orderItems = [
-  {
-    id: 1,
-    name: 'Premium Wireless Headphones',
-    color: 'Noir',
-    quantity: 1,
-    price: 35000,
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCchntFWAuT-XnocLJ9GCml95154_J2wOCFBQG7m9N8xm4L3_M21vFNZcUvvh4BMJp5Pq_ueclsZj9e-kVATvfOKHyGiNnrnKfRMZ6oFqX9NKjztkXiEChbzhS4qYKPdyrEgJIYJbxNwxQCe-7WAGQsseHDXV9KvW-761juS-p7pERAeqLJboXWBSeVq6jhNpFLekJg2tqzhAM10qbtNLbc0oel1cjfXK0Pc0-ioZr6LwQtDb-3J6DP7As2NqV4X1r24bRi8sDi',
-  },
-  {
-    id: 2,
-    name: 'Series 7 Smart Watch',
-    color: 'Argent',
-    quantity: 1,
-    price: 80000,
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAN1yXJBKJGtp-3TDxOl6op6M6GF3e-BFaYA5vG7fYuqb8rjFdYhewObAYTi14kKwlnPYG4cVzR0cIsCNWVKX4W3JNw4kztrcg2Hk1-cPx--9q8xbORY4mIovrvqsW8hFDtkYw74mvviGw760UU2HB3O0T5ZE_oWc4sOJ7gqISlY_RQPxCoDNAjDds-Thw70RN_-AeUY5UrIW8LeV6XOO1q7dPot0laf9_qPgYpnWg8x3eG7OL3ZVzxU01_ek7CoZTzuQDX66PI',
-  },
-];
+import { useOrders } from '../context/OrderContext';
+import { useCart } from '../context/CartContext';
 
-export default function CheckoutScreen({ onBack, onNavigate }) {
+export default function CheckoutScreen({ onBack, onNavigate, route }) {
+  const { addOrder } = useOrders();
+  const { clearCart } = useCart();
   const [personalInfo, setPersonalInfo] = useState('me');
   const [address, setAddress] = useState('home');
   const [delivery, setDelivery] = useState('express');
   const [payment, setPayment] = useState('wallet');
+  
+  // Recipient Modal State
+  const [isRecipientModalVisible, setIsRecipientModalVisible] = useState(false);
+  const [recipientData, setRecipientData] = useState({
+    firstName: '',
+    lastName: '',
+    address: '',
+    phone: '',
+    city: '',
+    country: '',
+    comment: '',
+  });
+
+  // Get items from navigation params or use empty array
+  const orderItems = route?.params?.orderItems || [];
+
+  const handlePersonalInfoChange = (value) => {
+    if (value === 'other') {
+      setIsRecipientModalVisible(true);
+    } else {
+      setPersonalInfo('me');
+    }
+  };
+
+  const saveRecipientData = () => {
+    const { firstName, lastName, address, phone, city, country } = recipientData;
+    if (!firstName || !lastName || !address || !phone || !city || !country) {
+      Alert.alert('Erreur', 'Veuillez remplir tous les champs obligatoires.');
+      return;
+    }
+    setPersonalInfo('other');
+    setIsRecipientModalVisible(false);
+  };
 
   const formatPrice = (price) => {
     return price.toLocaleString('fr-FR') + ' XAF';
   };
 
-  const subtotal = orderItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  const subtotal = orderItems.reduce((sum, item) => {
+    const price = parseInt(item.negotiatedPrice || item.discountPrice || item.price) || 0;
+    return sum + (price * (item.quantity || 1));
+  }, 0);
+  
   const deliveryFee = delivery === 'express' ? 1500 : 0;
   const taxes = 0;
   const total = subtotal + deliveryFee + taxes;
+
+  const createOrder = (status) => {
+    const newOrder = {
+      id: `CMD-${Math.floor(1000 + Math.random() * 9000)}`,
+      date: new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' }),
+      status: status,
+      statusLabel: status === 'en_cours' ? 'En cours' : 'Annulée',
+      statusColor: status === 'en_cours' ? '#EAB308' : '#EF4444',
+      products: orderItems.map(item => ({
+        id: item.id,
+        name: item.name,
+        quantity: item.quantity,
+        price: parseInt(item.negotiatedPrice || item.discountPrice || item.price) || 0,
+        image: item.image,
+        selectedColor: item.selectedColor,
+        selectedModel: item.selectedModel,
+        negotiatedPrice: item.negotiatedPrice
+      })),
+      total: total,
+      seller: orderItems[0]?.seller?.name || 'Vendeur Yabisso',
+      deliveryMethod: delivery === 'express' ? 'Express' : 'Standard',
+    };
+    addOrder(newOrder);
+    clearCart(); // Vider le panier après commande
+    return newOrder;
+  };
 
   const handleConfirmPurchase = () => {
     Alert.alert(
       'Confirmation',
       'Voulez-vous confirmer cet achat?',
       [
-        { text: 'Annuler', style: 'cancel' },
+        { 
+          text: 'Annuler', 
+          style: 'cancel',
+          onPress: () => {
+            createOrder('annule');
+            Alert.alert('Annulée', 'La commande a été annulée et ajoutée à votre historique.');
+            onNavigate?.('orders');
+          }
+        },
         {
           text: 'Confirmer',
           onPress: () => {
+            const order = createOrder('en_cours');
             Alert.alert('Succès', 'Votre commande a été passée avec succès!');
-            onNavigate?.('order_status');
+            onNavigate?.('order_status', { orderId: order.id });
           }
         },
       ]
@@ -81,13 +143,23 @@ export default function CheckoutScreen({ onBack, onNavigate }) {
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false} style={styles.scrollView}>
-        {/* Personal Info Section */}
+        {orderItems.length === 0 ? (
+          <View style={styles.emptySection}>
+            <MaterialCommunityIcons name="cart-off" size={64} color="#324d67" />
+            <Text style={styles.emptyText}>Aucun article sélectionné pour le paiement.</Text>
+            <Pressable style={styles.returnBtn} onPress={onBack}>
+              <Text style={styles.returnBtnText}>Retourner au panier</Text>
+            </Pressable>
+          </View>
+        ) : (
+          <>
+            {/* Personal Info Section */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Informations personnelles</Text>
 
           {/* Me */}
           <Pressable
-            onPress={() => setPersonalInfo('me')}
+            onPress={() => handlePersonalInfoChange('me')}
             style={[
               styles.optionCard,
               personalInfo === 'me' && styles.optionCardSelected
@@ -116,19 +188,33 @@ export default function CheckoutScreen({ onBack, onNavigate }) {
 
           {/* Not Me */}
           <Pressable
-            onPress={() => setPersonalInfo('other')}
+            onPress={() => handlePersonalInfoChange('other')}
             style={[
               styles.optionCard,
               personalInfo === 'other' && styles.optionCardSelected
             ]}
           >
             <View style={styles.optionContent}>
-              <View style={styles.optionIcon}>
-                <MaterialCommunityIcons name="person-add" size={22} color="#64748b" />
+              <View style={[
+                styles.optionIcon,
+                personalInfo === 'other' && styles.optionIconSelected
+              ]}>
+                <MaterialCommunityIcons name="person-add" size={22} color={personalInfo === 'other' ? '#fff' : '#64748b'} />
               </View>
               <View style={styles.optionTextContainer}>
                 <Text style={styles.optionTitle}>Pas Moi</Text>
-                <Text style={styles.optionSubtitle}>Envoyer à quelqu'un d'autre</Text>
+                {personalInfo === 'other' && recipientData.firstName ? (
+                  <>
+                    <Text style={styles.optionSubtitle}>
+                      {recipientData.firstName} {recipientData.lastName} • {recipientData.phone}
+                    </Text>
+                    <Text style={styles.optionSubtitle}>
+                      {recipientData.address}, {recipientData.city}
+                    </Text>
+                  </>
+                ) : (
+                  <Text style={styles.optionSubtitle}>Envoyer à quelqu'un d'autre</Text>
+                )}
               </View>
             </View>
             <View style={styles.radioOuter}>
@@ -388,16 +474,39 @@ export default function CheckoutScreen({ onBack, onNavigate }) {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Résumé de la Commande</Text>
           <View style={styles.summaryCard}>
-            {orderItems.map((item) => (
-              <View key={item.id} style={styles.orderItem}>
-                <Image source={{ uri: item.image }} style={styles.orderItemImage} />
-                <View style={styles.orderItemDetails}>
-                  <Text style={styles.orderItemName} numberOfLines={1}>{item.name}</Text>
-                  <Text style={styles.orderItemVariant}>{item.color} • Qty {item.quantity}</Text>
+            {orderItems.map((item, index) => {
+              const displayPrice = item.negotiatedPrice || item.discountPrice || item.price;
+              const variantText = [
+                item.selectedColor, 
+                item.selectedModel
+              ].filter(Boolean).join(' • ');
+
+              return (
+                <View key={`${item.id}-${index}`} style={styles.orderItem}>
+                  <Image 
+                    source={{ uri: item.image || 'https://via.placeholder.com/60' }} 
+                    style={styles.orderItemImage} 
+                  />
+                  <View style={styles.orderItemDetails}>
+                    <Text style={styles.orderItemName} numberOfLines={1}>{item.name}</Text>
+                    <Text style={styles.orderItemVariant}>
+                      {variantText ? `${variantText} • ` : ''}Qty {item.quantity}
+                    </Text>
+                  </View>
+                  <View style={{ alignItems: 'flex-end' }}>
+                    <Text style={[
+                      styles.orderItemPrice, 
+                      item.negotiatedPrice && { color: '#22c55e' }
+                    ]}>
+                      {formatPrice(displayPrice)}
+                    </Text>
+                    {item.negotiatedPrice && (
+                      <Text style={{ fontSize: 9, color: '#22c55e', fontWeight: 'bold' }}>NÉGOCIÉ</Text>
+                    )}
+                  </View>
                 </View>
-                <Text style={styles.orderItemPrice}>{formatPrice(item.price)}</Text>
-              </View>
-            ))}
+              );
+            })}
 
             <View style={styles.summaryDivider} />
 
@@ -421,6 +530,8 @@ export default function CheckoutScreen({ onBack, onNavigate }) {
         </View>
 
         <View style={styles.bottomSpacer} />
+          </>
+        )}
       </ScrollView>
 
       {/* Bottom Bar */}
@@ -436,6 +547,106 @@ export default function CheckoutScreen({ onBack, onNavigate }) {
           </Pressable>
         </View>
       </View>
+      {/* Recipient Modal */}
+      <Modal
+        visible={isRecipientModalVisible}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setIsRecipientModalVisible(false)}
+      >
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={styles.modalOverlay}
+        >
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Informations du destinataire</Text>
+              <Pressable onPress={() => setIsRecipientModalVisible(false)}>
+                <MaterialCommunityIcons name="close" size={24} color="#fff" />
+              </Pressable>
+            </View>
+
+            <ScrollView style={styles.modalBody} showsVerticalScrollIndicator={false}>
+              <Text style={styles.inputLabel}>Prénom *</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Ex: Jean"
+                placeholderTextColor="#64748b"
+                value={recipientData.firstName}
+                onChangeText={(text) => setRecipientData({ ...recipientData, firstName: text })}
+              />
+
+              <Text style={styles.inputLabel}>Nom *</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Ex: Dupont"
+                placeholderTextColor="#64748b"
+                value={recipientData.lastName}
+                onChangeText={(text) => setRecipientData({ ...recipientData, lastName: text })}
+              />
+
+              <Text style={styles.inputLabel}>Téléphone *</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Ex: +237 6..."
+                placeholderTextColor="#64748b"
+                keyboardType="phone-pad"
+                value={recipientData.phone}
+                onChangeText={(text) => setRecipientData({ ...recipientData, phone: text })}
+              />
+
+              <Text style={styles.inputLabel}>Adresse *</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Ex: Rue 123, Bastos"
+                placeholderTextColor="#64748b"
+                value={recipientData.address}
+                onChangeText={(text) => setRecipientData({ ...recipientData, address: text })}
+              />
+
+              <View style={styles.rowInputs}>
+                <View style={styles.halfInputContainer}>
+                  <Text style={styles.inputLabel}>Ville *</Text>
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Ex: Yaoundé"
+                    placeholderTextColor="#64748b"
+                    value={recipientData.city}
+                    onChangeText={(text) => setRecipientData({ ...recipientData, city: text })}
+                  />
+                </View>
+                <View style={styles.halfInputContainer}>
+                  <Text style={styles.inputLabel}>Pays *</Text>
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Ex: Cameroun"
+                    placeholderTextColor="#64748b"
+                    value={recipientData.country}
+                    onChangeText={(text) => setRecipientData({ ...recipientData, country: text })}
+                  />
+                </View>
+              </View>
+
+              <Text style={styles.inputLabel}>Commentaire (Optionnel)</Text>
+              <TextInput
+                style={[styles.input, styles.textArea]}
+                placeholder="Instructions spéciales..."
+                placeholderTextColor="#64748b"
+                multiline
+                numberOfLines={3}
+                value={recipientData.comment}
+                onChangeText={(text) => setRecipientData({ ...recipientData, comment: text })}
+              />
+
+              <Pressable onPress={saveRecipientData} style={styles.saveBtn}>
+                <Text style={styles.saveBtnText}>Enregistrer</Text>
+              </Pressable>
+              
+              <View style={{ height: 40 }} />
+            </ScrollView>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -725,6 +936,29 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#fff',
   },
+  emptySection: {
+    flex: 1,
+    padding: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 16,
+  },
+  emptyText: {
+    fontSize: 16,
+    color: '#94a3b8',
+    textAlign: 'center',
+    lineHeight: 24,
+  },
+  returnBtn: {
+    backgroundColor: '#137fec',
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 12,
+  },
+  returnBtnText: {
+    color: '#fff',
+    fontWeight: 'bold',
+  },
   confirmBtn: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -739,5 +973,75 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: 'bold',
     color: '#0E151B',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.7)',
+    justifyContent: 'flex-end',
+  },
+  modalContent: {
+    backgroundColor: '#1a2632',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    paddingBottom: Platform.OS === 'ios' ? 40 : 24,
+    maxHeight: '90%',
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255,255,255,0.05)',
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#fff',
+  },
+  modalBody: {
+    padding: 20,
+  },
+  inputLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#e2e8f0',
+    marginBottom: 8,
+    marginTop: 4,
+  },
+  input: {
+    backgroundColor: '#101922',
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    height: 50,
+    color: '#fff',
+    borderWidth: 1,
+    borderColor: '#324d67',
+    marginBottom: 16,
+  },
+  textArea: {
+    height: 100,
+    paddingTop: 16,
+    textAlignVertical: 'top',
+  },
+  rowInputs: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  halfInputContainer: {
+    flex: 1,
+  },
+  saveBtn: {
+    backgroundColor: '#137fec',
+    height: 52,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 12,
+  },
+  saveBtnText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#fff',
   },
 });

@@ -69,9 +69,12 @@ import MarketplaceNotificationsScreen from './src/features/marketplace/screens/M
 import MarketplaceFavoritesScreen from './src/features/marketplace/screens/MarketplaceFavoritesScreen';
 import MarketplaceHistoryScreen from './src/features/marketplace/screens/MarketplaceHistoryScreen';
 import MarketplaceSettingsScreen from './src/features/marketplace/screens/MarketplaceSettingsScreen';
+import { CartProvider } from './src/features/marketplace/context/CartContext';
+import { OrderProvider } from './src/features/marketplace/context/OrderContext';
 
 export default function App() {
   const [screen, setScreen] = useState('welcome');
+  const [screenParams, setScreenParams] = useState({});
   const [activeTab, setActiveTab] = useState('Accueil');
   const [homeShowAllServices, setHomeShowAllServices] = useState(false);
   const [walletMode, setWalletMode] = useState('fcfa');
@@ -88,293 +91,290 @@ export default function App() {
     });
   };
 
+  const navigate = (screenName, params = {}) => {
+    setScreenParams(params);
+    setScreen(screenName);
+  };
+
   let content = null;
   if (screen === 'welcome') {
     content = (
       <WelcomeScreen
-        onGetStarted={() => setScreen('language')}
-        onSignIn={() => setScreen('login')}
+        onGetStarted={() => navigate('language')}
+        onSignIn={() => navigate('login')}
       />
     );
   }
   if (screen === 'language') {
     content = (
       <LanguageScreen
-        onBack={() => setScreen('welcome')}
-        onContinue={() => setScreen('signup')}
+        onBack={() => navigate('welcome')}
+        onContinue={() => navigate('signup')}
       />
     );
   }
   if (screen === 'signup') {
     content = (
       <SignupScreen
-        onBack={() => setScreen('language')}
-        onPin={() => setScreen('signup_pin')}
-        onOfflineSms={() => setScreen('signup_sms')}
-        onOfflineQr={() => setScreen('signup_qr')}
+        onBack={() => navigate('language')}
+        onPin={() => navigate('signup_pin')}
+        onOfflineSms={() => navigate('signup_sms')}
+        onOfflineQr={() => navigate('signup_qr')}
       />
     );
   }
   if (screen === 'login') {
     content = (
       <LoginScreen
-        onBack={() => setScreen('welcome')}
-        onLogin={() => setScreen('home')}
-        onCreateAccount={() => setScreen('signup')}
+        onBack={() => navigate('welcome')}
+        onLogin={() => navigate('home')}
+        onCreateAccount={() => navigate('signup')}
       />
     );
   }
   if (screen === 'signup_pin') {
     content = (
       <PinSignupScreen
-        onBack={() => setScreen('signup')}
-        onOk={() => setScreen('home')}
+        onBack={() => navigate('signup')}
+        onOk={() => navigate('home')}
       />
     );
   }
   if (screen === 'signup_sms') {
     content = (
       <SmsSignupScreen
-        onBack={() => setScreen('signup')}
-        onOk={() => setScreen('home')}
+        onBack={() => navigate('signup')}
+        onOk={() => navigate('home')}
       />
     );
   }
   if (screen === 'signup_qr') {
     content = (
       <QrSignupScreen
-        onBack={() => setScreen('signup')}
-        onOk={() => setScreen('home')}
+        onBack={() => navigate('signup')}
+        onOk={() => navigate('home')}
       />
     );
   }
   if (screen === 'home') {
     content = (
       <HomeScreen
-        onSignOut={() => setScreen('signup')}
+        onSignOut={() => navigate('signup')}
         onOpenWallet={() => {
           setWalletActiveTab('home');
           setActiveTab('Portefeuille');
-          setScreen('wallet');
+          navigate('wallet');
         }}
         onOpenAssistant={() => {
           setActiveTab('Assistant IA');
-          setScreen('assistant');
+          navigate('assistant');
         }}
         onOpenProfile={() => {
           setActiveTab('Profil');
-          setScreen('profile');
+          navigate('profile');
         }}
-        onOpenMarket={() => setScreen('marketplace_home')}
-        onOpenQr={() => setScreen('home_qr')}
-        onOpenSettings={() => setScreen('home_settings')}
-        onOpenNotifications={() => setScreen('home_notifications')}
-        onOpenLoba={() => setScreen('loba_home')}
-        onOpenOrders={() => setScreen('orders')}
-        onOpenRestaurant={() => setScreen('restaurant_home')}
-        onOpenHotel={() => setScreen('hotel_home')}
-        onOpenServices={() => setScreen('services_home')}
-        onOpenRealEstate={() => setScreen('real_estate_home')}
+        onOpenMarket={() => navigate('marketplace_home')}
+        onOpenQr={() => navigate('home_qr')}
+        onOpenSettings={() => navigate('home_settings')}
+        onOpenNotifications={() => navigate('home_notifications')}
+        onOpenLoba={() => navigate('loba_home')}
+        onOpenOrders={() => navigate('orders')}
+        onOpenRestaurant={() => navigate('restaurant_home')}
+        onOpenHotel={() => navigate('hotel_home')}
+        onOpenServices={() => navigate('services_home')}
+        onOpenRealEstate={() => navigate('real_estate_home')}
         showAllServicesOverride={homeShowAllServices}
       />
     );
   }
   if (screen === 'home_qr') {
-    content = <QrHubScreen onBack={() => setScreen('home')} />;
+    content = <QrHubScreen onBack={() => navigate('home')} />;
   }
   if (screen === 'home_settings') {
-    content = <HomeSettingsScreen onBack={() => setScreen('home')} />;
+    content = <HomeSettingsScreen onBack={() => navigate('home')} />;
   }
   if (screen === 'home_notifications') {
-    content = <HomeNotificationsScreen onBack={() => setScreen('home')} />;
+    content = <HomeNotificationsScreen onBack={() => navigate('home')} />;
   }
   if (screen === 'wallet') {
-    content = <WalletScreen onBack={() => setScreen('home')} onOpenHome={() => { setWalletActiveTab('home'); setScreen('wallet'); }} onOpenRecharge={() => { setWalletActiveTab('recharge'); setScreen('wallet_recharge'); }} onOpenSend={() => { setWalletActiveTab('send'); setScreen('wallet_send'); }} onOpenReceive={() => { setWalletActiveTab('receive'); setScreen('wallet_receive'); }} onOpenHistory={() => { setWalletActiveTab('history'); setScreen('wallet_history'); }} walletMode={walletMode} setWalletMode={setWalletMode} activeTab={walletActiveTab} />;
+    content = <WalletScreen onBack={() => navigate('home')} onOpenHome={() => { setWalletActiveTab('home'); navigate('wallet'); }} onOpenRecharge={() => { setWalletActiveTab('recharge'); navigate('wallet_recharge'); }} onOpenSend={() => { setWalletActiveTab('send'); navigate('wallet_send'); }} onOpenReceive={() => { setWalletActiveTab('receive'); navigate('wallet_receive'); }} onOpenHistory={() => { setWalletActiveTab('history'); navigate('wallet_history'); }} walletMode={walletMode} setWalletMode={setWalletMode} activeTab={walletActiveTab} />;
   }
   if (screen === 'wallet_recharge') {
-    content = <RechargeScreen onBack={() => setScreen('wallet')} onComplete={() => setScreen('wallet')} onOpenQRScan={() => setScreen('wallet_kiosque_qr')} onOpenPinEntry={() => setScreen('wallet_kiosque_pin')} walletMode={walletMode} onNavigate={(key, mode) => {
+    content = <RechargeScreen onBack={() => navigate('wallet')} onComplete={() => navigate('wallet')} onOpenQRScan={() => navigate('wallet_kiosque_qr')} onOpenPinEntry={() => navigate('wallet_kiosque_pin')} walletMode={walletMode} onNavigate={(key, mode) => {
       setWalletActiveTab(key);
-      if (key === 'home') setScreen('wallet');
-      if (key === 'recharge') setScreen('wallet_recharge');
-      if (key === 'send') setScreen('wallet_send');
-      if (key === 'receive') setScreen('wallet_receive');
-      if (key === 'history') setScreen('wallet_history');
+      if (key === 'home') navigate('wallet');
+      if (key === 'recharge') navigate('wallet_recharge');
+      if (key === 'send') navigate('wallet_send');
+      if (key === 'receive') navigate('wallet_receive');
+      if (key === 'history') navigate('wallet_history');
     }} />;
   }
   if (screen === 'wallet_kiosque_qr') {
-    content = <KiosqueQRScreen onBack={() => setScreen('wallet_recharge')} onComplete={() => { setWalletActiveTab('recharge'); setScreen('wallet'); }} />;
+    content = <KiosqueQRScreen onBack={() => navigate('wallet_recharge')} onComplete={() => { setWalletActiveTab('recharge'); navigate('wallet'); }} />;
   }
   if (screen === 'wallet_kiosque_pin') {
-    content = <KiosquePinScreen onBack={() => setScreen('wallet_recharge')} onComplete={() => { setWalletActiveTab('recharge'); setScreen('wallet'); }} walletMode={walletMode} />;
+    content = <KiosquePinScreen onBack={() => navigate('wallet_recharge')} onComplete={() => { setWalletActiveTab('recharge'); navigate('wallet'); }} walletMode={walletMode} />;
   }
   if (screen === 'wallet_send') {
-    content = <SendScreen onBack={() => setScreen('wallet')} onOpenQRGenerate={() => setScreen('wallet_send_qr_generate')} onOpenSelectBeneficiary={() => setScreen('wallet_send_beneficiary')} onOpenScanQR={() => setScreen('wallet_send_scan')} walletMode={walletMode} onNavigate={(key, mode) => {
+    content = <SendScreen onBack={() => navigate('wallet')} onOpenQRGenerate={() => navigate('wallet_send_qr_generate')} onOpenSelectBeneficiary={() => navigate('wallet_send_beneficiary')} onOpenScanQR={() => navigate('wallet_send_scan')} walletMode={walletMode} onNavigate={(key, mode) => {
       setWalletActiveTab(key);
-      if (key === 'home') setScreen('wallet');
-      if (key === 'recharge') setScreen('wallet_recharge');
-      if (key === 'send') setScreen('wallet_send');
-      if (key === 'receive') setScreen('wallet_receive');
-      if (key === 'history') setScreen('wallet_history');
+      if (key === 'home') navigate('wallet');
+      if (key === 'recharge') navigate('wallet_recharge');
+      if (key === 'send') navigate('wallet_send');
+      if (key === 'receive') navigate('wallet_receive');
+      if (key === 'history') navigate('wallet_history');
     }} />;
   }
   if (screen === 'wallet_send_qr_generate') {
-    content = <SendQRGenerateScreen onBack={() => setScreen('wallet_send')} onCreateQR={() => setScreen('wallet_send_qr_result')} walletMode={walletMode} />;
+    content = <SendQRGenerateScreen onBack={() => navigate('wallet_send')} onCreateQR={() => navigate('wallet_send_qr_result')} walletMode={walletMode} />;
   }
   if (screen === 'wallet_send_qr_result') {
-    content = <SendQRResultScreen onBack={() => setScreen('wallet_send_qr_generate')} onComplete={() => { setWalletActiveTab('send'); setScreen('wallet'); }} amount="5000" walletMode={walletMode} />;
+    content = <SendQRResultScreen onBack={() => navigate('wallet_send_qr_generate')} onComplete={() => { setWalletActiveTab('send'); navigate('wallet'); }} amount="5000" walletMode={walletMode} />;
   }
   if (screen === 'wallet_send_beneficiary') {
-    content = <SendSelectBeneficiaryScreen onBack={() => setScreen('wallet_send')} onSendMoney={() => { setWalletActiveTab('send'); setScreen('wallet'); }} walletMode={walletMode} />;
+    content = <SendSelectBeneficiaryScreen onBack={() => navigate('wallet_send')} onSendMoney={() => { setWalletActiveTab('send'); navigate('wallet'); }} walletMode={walletMode} />;
   }
   if (screen === 'wallet_send_scan') {
-    content = <SendScanQRScreen onBack={() => setScreen('wallet_send')} onConfirm={() => { setWalletActiveTab('send'); setScreen('wallet'); }} onShowPassword={(amount) => {
-      setScreen('wallet_send_confirm');
+    content = <SendScanQRScreen onBack={() => navigate('wallet_send')} onConfirm={() => { setWalletActiveTab('send'); navigate('wallet'); }} onShowPassword={(amount) => {
+      navigate('wallet_send_confirm');
     }} walletMode={walletMode} />;
   }
   if (screen === 'wallet_send_confirm') {
-    content = <SendConfirmPaymentScreen onBack={() => setScreen('wallet_send_scan')} onConfirm={() => { setWalletActiveTab('send'); setScreen('wallet'); }} amount="5000" recipientName="Jean Dupont" walletMode={walletMode} />;
+    content = <SendConfirmPaymentScreen onBack={() => navigate('wallet_send_scan')} onConfirm={() => { setWalletActiveTab('send'); navigate('wallet'); }} amount="5000" recipientName="Jean Dupont" walletMode={walletMode} />;
   }
   if (screen === 'wallet_receive') {
-    content = <ReceiveScreen onBack={() => setScreen('wallet')} onOpenScanQR={() => setScreen('wallet_receive_scan')} onOpenNotifications={() => setScreen('wallet_receive_notifications')} onOpenRequestPayment={() => setScreen('wallet_receive_request')} walletMode={walletMode} onNavigate={(key, mode) => {
+    content = <ReceiveScreen onBack={() => navigate('wallet')} onOpenScanQR={() => navigate('wallet_receive_scan')} onOpenNotifications={() => navigate('wallet_receive_notifications')} onOpenRequestPayment={() => navigate('wallet_receive_request')} walletMode={walletMode} onNavigate={(key, mode) => {
       setWalletActiveTab(key);
-      if (key === 'home') setScreen('wallet');
-      if (key === 'recharge') setScreen('wallet_recharge');
-      if (key === 'send') setScreen('wallet_send');
-      if (key === 'receive') setScreen('wallet_receive');
-      if (key === 'history') setScreen('wallet_history');
+      if (key === 'home') navigate('wallet');
+      if (key === 'recharge') navigate('wallet_recharge');
+      if (key === 'send') navigate('wallet_send');
+      if (key === 'receive') navigate('wallet_receive');
+      if (key === 'history') navigate('wallet_history');
     }} />;
   }
   if (screen === 'wallet_receive_scan') {
-    content = <ReceiveScanQRScreen onBack={() => setScreen('wallet_receive')} onComplete={() => { setWalletActiveTab('receive'); setScreen('wallet'); }} walletMode={walletMode} />;
+    content = <ReceiveScanQRScreen onBack={() => navigate('wallet_receive')} onComplete={() => { setWalletActiveTab('receive'); navigate('wallet'); }} walletMode={walletMode} />;
   }
   if (screen === 'wallet_receive_notifications') {
-    content = <ReceiveNotificationsScreen onBack={() => setScreen('wallet_receive')} walletMode={walletMode} />;
+    content = <ReceiveNotificationsScreen onBack={() => navigate('wallet_receive')} walletMode={walletMode} />;
   }
   if (screen === 'wallet_receive_request') {
-    content = <ReceiveRequestPaymentScreen onBack={() => setScreen('wallet_receive')} onCreateQR={() => setScreen('wallet_send_qr_result')} onSendToContact={() => { setWalletActiveTab('receive'); setScreen('wallet'); }} walletMode={walletMode} />;
+    content = <ReceiveRequestPaymentScreen onBack={() => navigate('wallet_receive')} onCreateQR={() => navigate('wallet_send_qr_result')} onSendToContact={() => { setWalletActiveTab('receive'); navigate('wallet'); }} walletMode={walletMode} />;
   }
   if (screen === 'wallet_history') {
-    content = <HistoryScreen onBack={() => setScreen('wallet')} walletMode={walletMode} onNavigate={(key, mode) => {
+    content = <HistoryScreen onBack={() => navigate('wallet')} walletMode={walletMode} onNavigate={(key, mode) => {
       setWalletActiveTab(key);
-      if (key === 'home') setScreen('wallet');
-      if (key === 'recharge') setScreen('wallet_recharge');
-      if (key === 'send') setScreen('wallet_send');
-      if (key === 'receive') setScreen('wallet_receive');
-      if (key === 'history') setScreen('wallet_history');
+      if (key === 'home') navigate('wallet');
+      if (key === 'recharge') navigate('wallet_recharge');
+      if (key === 'send') navigate('wallet_send');
+      if (key === 'receive') navigate('wallet_receive');
+      if (key === 'history') navigate('wallet_history');
     }} />;
   }
   if (screen === 'assistant') {
-    content = <AssistantScreen onBack={() => setScreen('home')} onNavigate={(screenName) => {
-      if (screenName === 'home') setScreen('home');
-      if (screenName === 'wallet') { setWalletActiveTab('home'); setScreen('wallet'); }
-      if (screenName === 'profile') setScreen('profile');
-      if (screenName === 'services') { setHomeShowAllServices(true); setScreen('home'); }
-      if (screenName === 'settings') setScreen('home_settings');
+    content = <AssistantScreen onBack={() => navigate('home')} onNavigate={(screenName) => {
+      if (screenName === 'home') navigate('home');
+      if (screenName === 'wallet') { setWalletActiveTab('home'); navigate('wallet'); }
+      if (screenName === 'profile') navigate('profile');
+      if (screenName === 'services') { setHomeShowAllServices(true); navigate('home'); }
+      if (screenName === 'settings') navigate('home_settings');
     }} />;
   }
   if (screen === 'profile') {
     content = (
       <ProfileScreen
-        onBack={() => setScreen('home')}
-        onOpenHome={() => setScreen('profile')}
-        onOpenAccount={() => setScreen('profile_account')}
-        onOpenSecurity={() => setScreen('profile_security')}
-        onOpenNotifications={() => setScreen('profile_notifications')}
-        onOpenLanguage={() => setScreen('profile_language')}
-        onOpenSupport={() => setScreen('profile_support')}
-        onOpenLogout={() => setScreen('profile_logout')}
+        onBack={() => navigate('home')}
+        onOpenHome={() => navigate('profile')}
+        onOpenAccount={() => navigate('profile_account')}
+        onOpenSecurity={() => navigate('profile_security')}
+        onOpenNotifications={() => navigate('profile_notifications')}
+        onOpenLanguage={() => navigate('profile_language')}
+        onOpenSupport={() => navigate('profile_support')}
+        onOpenLogout={() => navigate('profile_logout')}
         onOpenWallet={() => {
           setWalletActiveTab('home');
           setActiveTab('Portefeuille');
-          setScreen('wallet');
+          navigate('wallet');
         }}
-        onOpenBlockedUser={() => setScreen('blocked_user')}
+        onOpenBlockedUser={() => navigate('blocked_user')}
       />
     );
   }
   if (screen === 'profile_account') {
-    content = <AccountScreen onBack={() => setScreen('profile')} onOpenHome={() => setScreen('profile')} onOpenSecurity={() => setScreen('profile_security')} onOpenSupport={() => setScreen('profile_support')} onOpenLogout={() => setScreen('profile_logout')} />;
+    content = <AccountScreen onBack={() => navigate('profile')} onOpenHome={() => navigate('profile')} onOpenSecurity={() => navigate('profile_security')} onOpenSupport={() => navigate('profile_support')} onOpenLogout={() => navigate('profile_logout')} />;
   }
   if (screen === 'profile_security') {
-    content = <SecurityScreen onBack={() => setScreen('profile')} onOpenHome={() => setScreen('profile')} onOpenAccount={() => setScreen('profile_account')} onOpenSupport={() => setScreen('profile_support')} onOpenLogout={() => setScreen('profile_logout')} />;
+    content = <SecurityScreen onBack={() => navigate('profile')} onOpenHome={() => navigate('profile')} onOpenAccount={() => navigate('profile_account')} onOpenSupport={() => navigate('profile_support')} onOpenLogout={() => navigate('profile_logout')} />;
   }
   if (screen === 'profile_notifications') {
     content = (
       <NotificationsScreen
-        onBack={() => setScreen('profile')}
-        onOpenHome={() => setScreen('profile')}
-        onOpenAccount={() => setScreen('profile_account')}
-        onOpenSecurity={() => setScreen('profile_security')}
-        onOpenSupport={() => setScreen('profile_support')}
-        onOpenNotifications={() => setScreen('profile_notifications')}
-        onOpenLogout={() => setScreen('profile_logout')}
-        onOpenEditProfile={() => setScreen('profile_edit')}
+        onBack={() => navigate('profile')}
+        onOpenHome={() => navigate('profile')}
+        onOpenAccount={() => navigate('profile_account')}
+        onOpenSecurity={() => navigate('profile_security')}
+        onOpenSupport={() => navigate('profile_support')}
+        onOpenNotifications={() => navigate('profile_notifications')}
+        onOpenLogout={() => navigate('profile_logout')}
+        onOpenEditProfile={() => navigate('profile_edit')}
       />
     );
   }
   if (screen === 'profile_language') {
-    content = <LanguageSettingsScreen onBack={() => setScreen('profile')} />;
+    content = <LanguageSettingsScreen onBack={() => navigate('profile')} />;
   }
   if (screen === 'profile_support') {
-    content = <SupportScreen onBack={() => setScreen('profile')} onOpenHome={() => setScreen('profile')} onOpenAccount={() => setScreen('profile_account')} onOpenSecurity={() => setScreen('profile_security')} onOpenLogout={() => setScreen('profile_logout')} />;
+    content = <SupportScreen onBack={() => navigate('profile')} onOpenHome={() => navigate('profile')} onOpenAccount={() => navigate('profile_account')} onOpenSecurity={() => navigate('profile_security')} onOpenLogout={() => navigate('profile_logout')} />;
   }
   if (screen === 'profile_logout') {
     content = (
       <LogoutScreen
-        onBack={() => setScreen('profile')}
-        onConfirm={() => setScreen('welcome')}
+        onBack={() => navigate('profile')}
+        onConfirm={() => navigate('welcome')}
       />
     );
   }
   if (screen === 'profile_edit') {
     content = (
       <EditProfileScreen
-        onBack={() => setScreen('profile')}
-        onOpenHome={() => setScreen('profile')}
-        onOpenAccount={() => setScreen('profile_account')}
-        onOpenSecurity={() => setScreen('profile_security')}
-        onOpenSupport={() => setScreen('profile_support')}
-        onOpenNotifications={() => setScreen('profile_notifications')}
-        onOpenLogout={() => setScreen('profile_logout')}
+        onBack={() => navigate('profile')}
+        onOpenHome={() => navigate('profile')}
+        onOpenAccount={() => navigate('profile_account')}
+        onOpenSecurity={() => navigate('profile_security')}
+        onOpenSupport={() => navigate('profile_support')}
+        onOpenNotifications={() => navigate('profile_notifications')}
+        onOpenLogout={() => navigate('profile_logout')}
       />
     );
   }
   if (screen === 'market_seller') {
     content = (
       <SellerProfileScreen
-        onBack={() => setScreen('home')}
-        onOpenAddProduct={() => setScreen('market_add_product')}
+        onBack={() => navigate('home')}
+        onOpenAddProduct={() => navigate('market_add_product')}
       />
     );
   }
   if (screen === 'market_add_product') {
     content = (
       <AddProductScreen
-        onBack={() => setScreen('market_seller')}
-        onOpenSellerProfile={() => setScreen('market_seller')}
+        onBack={() => navigate('market_seller')}
+        onOpenSellerProfile={() => navigate('market_seller')}
       />
     );
   }
   if (screen === 'marketplace_home') {
     content = (
       <MarketplaceHomeScreen
-        onBack={() => setScreen('home')}
+        onBack={() => navigate('home')}
         favorites={favorites}
         onToggleFavorite={toggleFavorite}
-        onNavigate={(screenName) => {
-          if (screenName === 'wallet') { setWalletActiveTab('home'); setScreen('wallet'); }
-          else if (screenName === 'profile') setScreen('profile');
-          else if (screenName === 'cart') setScreen('cart');
-          else if (screenName === 'orders') setScreen('orders');
-          else if (screenName === 'order_status') setScreen('order_status');
-          else if (screenName === 'product_list') setScreen('marketplace_product_list');
-          else if (screenName === 'category_page' || screenName === 'marketplace_category_page') setScreen('marketplace_category_page');
-          else if (screenName === 'product_details') setScreen('marketplace_product_details');
-          else if (screenName === 'new_arrivals') setScreen('new_arrivals');
-          else if (screenName === 'marketplace_notifications') setScreen('marketplace_notifications');
-          else if (screenName === 'marketplace_favorites') setScreen('marketplace_favorites');
-          else if (screenName === 'marketplace_history') setScreen('marketplace_history');
-          else if (screenName === 'marketplace_settings') setScreen('marketplace_settings');
+        onNavigate={(screenName, params) => {
+          let target = screenName;
+          if (screenName === 'product_details') target = 'marketplace_product_details';
+          if (screenName === 'category_page') target = 'marketplace_category_page';
+          if (screenName === 'product_list') target = 'marketplace_product_list';
+          navigate(target, params);
         }}
       />
     );
@@ -382,17 +382,19 @@ export default function App() {
   if (screen === 'marketplace_product_list') {
     content = (
       <ProductListScreen
-        onBack={() => setScreen('marketplace_home')}
+        onBack={() => navigate('marketplace_home')}
         favorites={favorites}
         onToggleFavorite={toggleFavorite}
-        onNavigate={(screenName) => {
-          if (screenName === 'marketplace_home') setScreen('marketplace_home');
-          if (screenName === 'category_page' || screenName === 'marketplace_category_page') setScreen('marketplace_category_page');
-          if (screenName === 'marketplace_product_details') setScreen('marketplace_product_details');
-          if (screenName === 'seller_comparison') setScreen('seller_comparison');
-          if (screenName === 'cart') setScreen('cart');
-          if (screenName === 'orders') setScreen('orders');
-          if (screenName === 'new_arrivals') setScreen('new_arrivals');
+        onNavigate={(screenName, params) => {
+          let target = screenName;
+          if (screenName === 'product_details') target = 'marketplace_product_details';
+          if (screenName === 'category_page') target = 'marketplace_category_page';
+          if (screenName === 'marketplace_home') target = 'marketplace_home';
+          if (screenName === 'cart') target = 'cart';
+          if (screenName === 'seller_comparison') target = 'seller_comparison';
+          if (screenName === 'orders') target = 'orders';
+          if (screenName === 'new_arrivals') target = 'new_arrivals';
+          navigate(target, params);
         }}
       />
     );
@@ -400,15 +402,18 @@ export default function App() {
   if (screen === 'marketplace_category_page') {
     content = (
       <CategoryPageScreen
-        onBack={() => setScreen('marketplace_product_list')}
+        onBack={() => navigate('marketplace_product_list')}
         favorites={favorites}
         onToggleFavorite={toggleFavorite}
-        onNavigate={(screenName) => {
-          if (screenName === 'marketplace_home') setScreen('marketplace_home');
-          if (screenName === 'new_arrivals') setScreen('new_arrivals');
-          if (screenName === 'product_list') setScreen('marketplace_product_list');
-          if (screenName === 'cart') setScreen('cart');
-          if (screenName === 'orders') setScreen('orders');
+        onNavigate={(screenName, params) => {
+          let target = screenName;
+          if (screenName === 'product_details') target = 'marketplace_product_details';
+          if (screenName === 'marketplace_home') target = 'marketplace_home';
+          if (screenName === 'product_list') target = 'marketplace_product_list';
+          if (screenName === 'new_arrivals') target = 'new_arrivals';
+          if (screenName === 'cart') target = 'cart';
+          if (screenName === 'orders') target = 'orders';
+          navigate(target, params);
         }}
       />
     );
@@ -416,15 +421,18 @@ export default function App() {
   if (screen === 'new_arrivals') {
     content = (
       <NewArrivalsScreen
-        onBack={() => setScreen('marketplace_home')}
+        onBack={() => navigate('marketplace_home')}
         favorites={favorites}
         onToggleFavorite={toggleFavorite}
-        onNavigate={(screenName) => {
-          if (screenName === 'marketplace_home') setScreen('marketplace_home');
-          if (screenName === 'category_page' || screenName === 'marketplace_category_page') setScreen('marketplace_category_page');
-          if (screenName === 'cart') setScreen('cart');
-          if (screenName === 'orders') setScreen('orders');
-          if (screenName === 'product_list') setScreen('marketplace_product_list');
+        onNavigate={(screenName, params) => {
+          let target = screenName;
+          if (screenName === 'product_details') target = 'marketplace_product_details';
+          if (screenName === 'category_page') target = 'marketplace_category_page';
+          if (screenName === 'product_list') target = 'marketplace_product_list';
+          if (screenName === 'marketplace_home') target = 'marketplace_home';
+          if (screenName === 'cart') target = 'cart';
+          if (screenName === 'orders') target = 'orders';
+          navigate(target, params);
         }}
       />
     );
@@ -432,78 +440,59 @@ export default function App() {
   if (screen === 'marketplace_product_details') {
     content = (
       <ProductDetailsScreen
-        onBack={() => setScreen('marketplace_product_list')}
-        onNavigate={(action, data) => {
-          if (action === 'cart') setScreen('cart');
-          if (action === 'seller_comparison') setScreen('seller_comparison');
-        }}
+        product={screenParams?.product}
+        onBack={() => navigate('marketplace_product_list')}
+        onNavigate={(action, data) => navigate(action, data)}
       />
     );
   }
   if (screen === 'cart') {
     content = (
       <CartScreen
-        onBack={() => setScreen('marketplace_home')}
-        onNavigate={(screenName) => {
-          if (screenName === 'checkout') setScreen('checkout');
-          if (screenName === 'marketplace_home') setScreen('marketplace_home');
-          if (screenName === 'category_page' || screenName === 'marketplace_category_page') setScreen('marketplace_category_page');
-          if (screenName === 'new_arrivals') setScreen('new_arrivals');
-          if (screenName === 'orders') setScreen('orders');
-        }}
+        onBack={() => navigate('marketplace_home')}
+        onNavigate={(screenName, params) => navigate(screenName, params)}
       />
     );
   }
   if (screen === 'checkout') {
     content = (
       <CheckoutScreen
-        onBack={() => setScreen('cart')}
-        onNavigate={(screenName) => {
-          if (screenName === 'home') setScreen('home');
-          if (screenName === 'order_status') setScreen('order_status');
-        }}
+        onBack={() => navigate('cart')}
+        onNavigate={(screenName, params) => navigate(screenName, params)}
+        route={{ params: screenParams }}
       />
     );
   }
   if (screen === 'order_status') {
     content = (
       <OrderStatusScreen
-        onBack={() => setScreen('orders')}
-        onNavigate={(screenName) => {
-          if (screenName === 'delivery_tracking') setScreen('delivery_tracking');
-        }}
+        onBack={() => navigate('orders')}
+        onNavigate={(screenName, params) => navigate(screenName, params)}
       />
     );
   }
   if (screen === 'orders') {
     content = (
       <OrdersScreen
-        onBack={() => setScreen('marketplace_home')}
-        onNavigate={(screenName, params) => {
-          if (screenName === 'order_status') setScreen('order_status');
-          if (screenName === 'delivery_tracking') setScreen('delivery_tracking');
-          if (screenName === 'marketplace_home') setScreen('marketplace_home');
-          if (screenName === 'category_page' || screenName === 'marketplace_category_page') setScreen('marketplace_category_page');
-          if (screenName === 'cart') setScreen('cart');
-          if (screenName === 'new_arrivals') setScreen('new_arrivals');
-        }}
+        onBack={() => navigate('marketplace_home')}
+        onNavigate={(screenName, params) => navigate(screenName, params)}
       />
     );
   }
   if (screen === 'delivery_tracking') {
     content = (
       <DeliveryTrackingScreen
-        onBack={() => setScreen('order_status')}
+        onBack={() => navigate('order_status')}
       />
     );
   }
   if (screen === 'seller_comparison') {
     content = (
       <SellerComparisonScreen
-        onBack={() => setScreen('marketplace_product_details')}
+        onBack={() => navigate('marketplace_product_details')}
         onNavigate={(action, data) => {
           if (action === 'select_seller') {
-            setScreen('marketplace_product_details');
+            navigate('marketplace_product_details');
           }
         }}
       />
@@ -512,59 +501,48 @@ export default function App() {
   if (screen === 'blocked_user') {
     content = (
       <BlockedUserScreen
-        onBack={() => setScreen('home')}
-        onNavigate={(screenName) => {
-          if (screenName === 'home') setScreen('home');
-        }}
+        onBack={() => navigate('home')}
+        onNavigate={(screenName) => navigate(screenName)}
       />
     );
   }
   if (screen === 'loba_home') {
     content = (
       <LobaHomeScreen
-        onBack={() => setScreen('home')}
-        onNavigate={(screenName) => {
-          if (screenName === 'feed') setScreen('loba_feed');
-          if (screenName === 'profile') setScreen('loba_profile');
-        }}
+        onBack={() => navigate('home')}
+        onNavigate={(screenName) => navigate(screenName)}
       />
     );
   }
   if (screen === 'loba_feed') {
     content = (
       <LobaFeedScreen
-        onBack={() => setScreen('loba_home')}
-        onNavigate={(screenName) => {
-          if (screenName === 'home') setScreen('loba_home');
-          if (screenName === 'profile') setScreen('loba_profile');
-        }}
+        onBack={() => navigate('loba_home')}
+        onNavigate={(screenName) => navigate(screenName)}
       />
     );
   }
   if (screen === 'loba_profile') {
     content = (
       <LobaProfileScreen
-        onBack={() => setScreen('loba_home')}
-        onNavigate={(screenName) => {
-          if (screenName === 'home') setScreen('loba_home');
-          if (screenName === 'feed') setScreen('loba_feed');
-        }}
+        onBack={() => navigate('loba_home')}
+        onNavigate={(screenName) => navigate(screenName)}
       />
     );
   }
   if (screen === 'loba_stories') {
     content = (
       <LobaStoriesScreen
-        onBack={() => setScreen('loba_feed')}
-        onClose={() => setScreen('loba_feed')}
+        onBack={() => navigate('loba_feed')}
+        onClose={() => navigate('loba_feed')}
       />
     );
   }
   if (screen === 'loba_record') {
     content = (
       <LobaRecordScreen
-        onBack={() => setScreen('loba_home')}
-        onClose={() => setScreen('loba_home')}
+        onBack={() => navigate('loba_home')}
+        onClose={() => navigate('loba_home')}
       />
     );
   }
@@ -573,43 +551,32 @@ export default function App() {
   if (screen === 'restaurant_home') {
     content = (
       <RestaurantHomeScreen
-        onBack={() => setScreen('home')}
-        onNavigate={(screenName, params) => {
-          if (screenName === 'restaurant_details') setScreen('restaurant_details');
-          if (screenName === 'orders') setScreen('orders');
-          if (screenName === 'cart') setScreen('cart');
-        }}
+        onBack={() => navigate('home')}
+        onNavigate={(screenName, params) => navigate(screenName, params)}
       />
     );
   }
   if (screen === 'restaurant_details') {
     content = (
       <RestaurantDetailsScreen
-        onBack={() => setScreen('restaurant_home')}
-        onNavigate={(screenName, params) => {
-          if (screenName === 'food_details') setScreen('food_details');
-          if (screenName === 'food_checkout') setScreen('food_checkout');
-        }}
+        onBack={() => navigate('restaurant_home')}
+        onNavigate={(screenName, params) => navigate(screenName, params)}
       />
     );
   }
   if (screen === 'food_details') {
     content = (
       <FoodItemDetailsScreen
-        onBack={() => setScreen('restaurant_details')}
-        onNavigate={(screenName) => {
-          if (screenName === 'food_checkout') setScreen('food_checkout');
-        }}
+        onBack={() => navigate('restaurant_details')}
+        onNavigate={(screenName, params) => navigate(screenName, params)}
       />
     );
   }
   if (screen === 'food_checkout') {
     content = (
       <FoodCheckoutScreen
-        onBack={() => setScreen('restaurant_details')}
-        onNavigate={(screenName) => {
-          if (screenName === 'order_status') setScreen('order_status');
-        }}
+        onBack={() => navigate('restaurant_details')}
+        onNavigate={(screenName, params) => navigate(screenName, params)}
       />
     );
   }
@@ -618,10 +585,8 @@ export default function App() {
   if (screen === 'hotel_home') {
     content = (
       <HotelHomeScreen
-        onBack={() => setScreen('home')}
-        onNavigate={(screenName, params) => {
-          if (screenName === 'hotel_rooms') setScreen('hotel_rooms');
-        }}
+        onBack={() => navigate('home')}
+        onNavigate={(screenName, params) => navigate(screenName, params)}
       />
     );
   }
@@ -630,10 +595,8 @@ export default function App() {
   if (screen === 'services_home') {
     content = (
       <ServicesHomeScreen
-        onBack={() => setScreen('home')}
-        onNavigate={(screenName, params) => {
-          if (screenName === 'service_booking') setScreen('service_booking');
-        }}
+        onBack={() => navigate('home')}
+        onNavigate={(screenName, params) => navigate(screenName, params)}
       />
     );
   }
@@ -642,10 +605,8 @@ export default function App() {
   if (screen === 'real_estate_home') {
     content = (
       <RealEstateHomeScreen
-        onBack={() => setScreen('home')}
-        onNavigate={(screenName, params) => {
-          if (screenName === 'property_details') setScreen('property_details');
-        }}
+        onBack={() => navigate('home')}
+        onNavigate={(screenName, params) => navigate(screenName, params)}
       />
     );
   }
@@ -654,7 +615,7 @@ export default function App() {
   if (screen === 'marketplace_notifications') {
     content = (
       <MarketplaceNotificationsScreen
-        onBack={() => setScreen('marketplace_home')}
+        onBack={() => navigate('marketplace_home')}
       />
     );
   }
@@ -663,12 +624,10 @@ export default function App() {
   if (screen === 'marketplace_favorites') {
     content = (
       <MarketplaceFavoritesScreen
-        onBack={() => setScreen('marketplace_home')}
+        onBack={() => navigate('marketplace_home')}
         favorites={favorites}
         onToggleFavorite={toggleFavorite}
-        onNavigate={(screenName) => {
-          if (screenName === 'product_details') setScreen('marketplace_product_details');
-        }}
+        onNavigate={(screenName, params) => navigate(screenName, params)}
       />
     );
   }
@@ -677,7 +636,7 @@ export default function App() {
   if (screen === 'marketplace_history') {
     content = (
       <MarketplaceHistoryScreen
-        onBack={() => setScreen('marketplace_home')}
+        onBack={() => navigate('marketplace_home')}
       />
     );
   }
@@ -686,7 +645,7 @@ export default function App() {
   if (screen === 'marketplace_settings') {
     content = (
       <MarketplaceSettingsScreen
-        onBack={() => setScreen('marketplace_home')}
+        onBack={() => navigate('marketplace_home')}
       />
     );
   }
@@ -703,40 +662,44 @@ export default function App() {
 
   return (
     <DatabaseProvider database={database}>
-      <View style={{ flex: 1 }}>
-        {content}
-        {showFloatingButton && (
-          <HomeFloatingButton
-            activeTab={activeTab}
-            onSelect={(label) => {
-              setActiveTab(label);
-              if (label === 'Accueil') {
-                setHomeShowAllServices(false);
-                setScreen('home');
-                return;
-              }
-              if (label === 'Services') {
-                setHomeShowAllServices(true);
-                setScreen('home');
-                return;
-              }
-              if (label === 'Portefeuille') {
-                setWalletActiveTab('home');
-                setScreen('wallet');
-                return;
-              }
-              if (label === 'Assistant IA') {
-                setScreen('assistant');
-                return;
-              }
-              if (label === 'Profil') {
-                setScreen('profile');
-              }
-            }}
-          />
-        )}
-        <StatusBar style="light" />
-      </View>
+      <CartProvider>
+        <OrderProvider>
+          <View style={{ flex: 1 }}>
+            {content}
+            {showFloatingButton && (
+              <HomeFloatingButton
+                activeTab={activeTab}
+                onSelect={(label) => {
+                  setActiveTab(label);
+                  if (label === 'Accueil') {
+                    setHomeShowAllServices(false);
+                    setScreen('home');
+                    return;
+                  }
+                  if (label === 'Services') {
+                    setHomeShowAllServices(true);
+                    setScreen('home');
+                    return;
+                  }
+                  if (label === 'Portefeuille') {
+                    setWalletActiveTab('home');
+                    setScreen('wallet');
+                    return;
+                  }
+                  if (label === 'Assistant IA') {
+                    setScreen('assistant');
+                    return;
+                  }
+                  if (label === 'Profil') {
+                    setScreen('profile');
+                  }
+                }}
+              />
+            )}
+            <StatusBar style="light" />
+          </View>
+        </OrderProvider>
+      </CartProvider>
     </DatabaseProvider>
   );
 }

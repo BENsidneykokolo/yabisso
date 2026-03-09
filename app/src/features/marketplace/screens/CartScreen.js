@@ -10,66 +10,39 @@ import {
   Alert,
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-
-const sampleCartItems = [
-  {
-    id: 1,
-    name: 'Premium Wireless Headphones',
-    brand: 'BassPro',
-    price: 35000,
-    color: 'Noir',
-    quantity: 1,
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCchntFWAuT-XnocLJ9GCml95154_J2wOCFBQG7m9N8xm4L3_M21vFNZcUvvh4BMJp5Pq_ueclsZj9e-kVATvfOKHyGiNnrnKfRMZ6oFqX9NKjztkXiEChbzhS4qYKPdyrEgJIYJbxNwxQCe-7WAGQsseHDXV9KvW-761juS-p7pERAeqLJboXWBSeVq6jhNpFLekJg2tqzhAM10qbtNLbc0oel1cjfXK0Pc0-ioZr6LwQtDb-3J6DP7As2NqV4X1r24bRi8sDi',
-  },
-  {
-    id: 2,
-    name: 'Series 7 Smart Watch',
-    brand: 'TechWear',
-    price: 80000,
-    color: 'Argent',
-    quantity: 1,
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAN1yXJBKJGtp-3TDxOl6op6M6GF3e-BFaYA5vG7fYuqb8rjFdYhewObAYTi14kKwlnPYG4cVzR0cIsCNWVKX4W3JNw4kztrcg2Hk1-cPx--9q8xbORY4mIovrvqsW8hFDtkYw74mvviGw760UU2HB3O0T5ZE_oWc4sOJ7gqISlY_RQPxCoDNAjDds-Thw70RN_-AeUY5UrIW8LeV6XOO1q7dPot0laf9_qPgYpnWg8x3eG7OL3ZVzxU01_ek7CoZTzuQDX66PI',
-  },
-];
+import { useCart } from '../context/CartContext';
 
 export default function CartScreen({ onBack, onNavigate }) {
-  const [cartItems, setCartItems] = useState(sampleCartItems);
-  const [selectedItems, setSelectedItems] = useState([1, 2]);
+  const { cartItems, removeFromCart, updateQuantity, getCartTotal } = useCart();
+  const [selectedItems, setSelectedItems] = useState(cartItems.map(item => `${item.id}-${item.selectedColor}-${item.selectedModel}-${item.negotiatedPrice}`));
   const [activeTab, setActiveTab] = useState('Panier');
 
   const formatPrice = (price) => {
     return price.toLocaleString('fr-FR') + ' XAF';
   };
 
-  const subtotal = cartItems
-    .filter(item => selectedItems.includes(item.id))
-    .reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  const getItemKey = (item) => `${item.id}-${item.selectedColor}-${item.selectedModel}-${item.negotiatedPrice}`;
+
+  const selectedCartItems = cartItems.filter(item => selectedItems.includes(getItemKey(item)));
+
+  const subtotal = selectedCartItems.reduce((sum, item) => {
+    const price = item.negotiatedPrice || item.discountPrice || item.price;
+    return sum + (price * item.quantity);
+  }, 0);
 
   const deliveryFee = selectedItems.length > 0 ? 1500 : 0;
   const taxes = 0;
   const total = subtotal + deliveryFee + taxes;
 
-  const toggleItemSelection = (itemId) => {
+  const toggleItemSelection = (itemKey) => {
     setSelectedItems(prev =>
-      prev.includes(itemId)
-        ? prev.filter(id => id !== itemId)
-        : [...prev, itemId]
+      prev.includes(itemKey)
+        ? prev.filter(key => key !== itemKey)
+        : [...prev, itemKey]
     );
   };
 
-  const updateQuantity = (itemId, delta) => {
-    setCartItems(prev =>
-      prev.map(item => {
-        if (item.id === itemId) {
-          const newQty = item.quantity + delta;
-          return newQty > 0 ? { ...item, quantity: newQty } : item;
-        }
-        return item;
-      })
-    );
-  };
-
-  const removeItem = (itemId) => {
+  const handleRemove = (item) => {
     Alert.alert(
       'Supprimer',
       'Voulez-vous supprimer cet article du panier?',
@@ -79,8 +52,9 @@ export default function CartScreen({ onBack, onNavigate }) {
           text: 'Supprimer',
           style: 'destructive',
           onPress: () => {
-            setCartItems(prev => prev.filter(item => item.id !== itemId));
-            setSelectedItems(prev => prev.filter(id => id !== itemId));
+            removeFromCart(item.id, item.selectedColor, item.selectedModel, item.negotiatedPrice);
+            const key = getItemKey(item);
+            setSelectedItems(prev => prev.filter(k => k !== key));
           }
         },
       ]
@@ -92,7 +66,12 @@ export default function CartScreen({ onBack, onNavigate }) {
       Alert.alert('Panier vide', 'Veuillez sélectionner au moins un article');
       return;
     }
-    onNavigate?.('checkout');
+    // Filter cart items to get only selected ones
+    const itemsToCheckout = cartItems.filter(item => 
+      selectedItems.includes(getItemKey(item))
+    );
+    
+    onNavigate?.('checkout', { orderItems: itemsToCheckout });
   };
 
   return (
@@ -111,110 +90,140 @@ export default function CartScreen({ onBack, onNavigate }) {
       <ScrollView showsVerticalScrollIndicator={false} style={styles.scrollView}>
         {/* Cart Items */}
         <View style={styles.itemsSection}>
-          {cartItems.map((item) => (
-            <View key={item.id} style={styles.cartItem}>
-              {/* Checkbox */}
-              <Pressable
-                onPress={() => toggleItemSelection(item.id)}
-                style={styles.checkboxContainer}
-              >
-                <View style={[
-                  styles.checkbox,
-                  selectedItems.includes(item.id) && styles.checkboxSelected
-                ]}>
-                  {selectedItems.includes(item.id) && (
-                    <MaterialCommunityIcons name="check" size={14} color="#fff" />
-                  )}
-                </View>
-              </Pressable>
+          {cartItems.length > 0 ? (
+            cartItems.map((item) => {
+              const itemKey = getItemKey(item);
+              const displayPrice = item.negotiatedPrice || item.discountPrice || item.price;
 
-              {/* Product Image */}
-              <Image source={{ uri: item.image }} style={styles.itemImage} />
+              return (
+                <View key={itemKey} style={styles.cartItem}>
+                  {/* Checkbox */}
+                  <Pressable
+                    onPress={() => toggleItemSelection(itemKey)}
+                    style={styles.checkboxContainer}
+                  >
+                    <View style={[
+                      styles.checkbox,
+                      selectedItems.includes(itemKey) && styles.checkboxSelected
+                    ]}>
+                      {selectedItems.includes(itemKey) && (
+                        <MaterialCommunityIcons name="check" size={14} color="#fff" />
+                      )}
+                    </View>
+                  </Pressable>
 
-              {/* Item Details */}
-              <View style={styles.itemDetails}>
-                <Text style={styles.itemName} numberOfLines={2}>{item.name}</Text>
-                <Text style={styles.itemVariant}>{item.color}</Text>
-                <View style={styles.itemBottom}>
-                  <Text style={styles.itemPrice}>{formatPrice(item.price)}</Text>
-                  <View style={styles.quantityControl}>
-                    <Pressable
-                      onPress={() => updateQuantity(item.id, -1)}
-                      style={styles.qtyBtn}
-                    >
-                      <MaterialCommunityIcons name="minus" size={14} color="#fff" />
-                    </Pressable>
-                    <Text style={styles.qtyText}>{item.quantity}</Text>
-                    <Pressable
-                      onPress={() => updateQuantity(item.id, 1)}
-                      style={styles.qtyBtn}
-                    >
-                      <MaterialCommunityIcons name="plus" size={14} color="#fff" />
-                    </Pressable>
+                  {/* Product Image */}
+                  <Image source={{ uri: item.image || 'https://via.placeholder.com/80' }} style={styles.itemImage} />
+
+                  {/* Item Details */}
+                  <View style={styles.itemDetails}>
+                    <Text style={styles.itemName} numberOfLines={2}>{item.name}</Text>
+                    <Text style={styles.itemVariant}>
+                      {item.selectedColor}{item.selectedModel ? ` • ${item.selectedModel}` : ''}
+                    </Text>
+                    <View style={styles.itemBottom}>
+                      <View>
+                        <Text style={[styles.itemPrice, item.negotiatedPrice && styles.negotiatedPrice]}>
+                          {formatPrice(displayPrice)}
+                        </Text>
+                        {item.negotiatedPrice && (
+                          <Text style={styles.negotiatedLabel}>Prix négocié</Text>
+                        )}
+                      </View>
+                      <View style={styles.quantityControl}>
+                        <Pressable
+                          onPress={() => updateQuantity(item.id, item.quantity - 1, item.selectedColor, item.selectedModel, item.negotiatedPrice)}
+                          style={styles.qtyBtn}
+                        >
+                          <MaterialCommunityIcons name="minus" size={14} color="#fff" />
+                        </Pressable>
+                        <Text style={styles.qtyText}>{item.quantity}</Text>
+                        <Pressable
+                          onPress={() => updateQuantity(item.id, item.quantity + 1, item.selectedColor, item.selectedModel, item.negotiatedPrice)}
+                          style={styles.qtyBtn}
+                        >
+                          <MaterialCommunityIcons name="plus" size={14} color="#fff" />
+                        </Pressable>
+                      </View>
+                    </View>
                   </View>
+
+                  {/* Delete Button */}
+                  <Pressable
+                    onPress={() => handleRemove(item)}
+                    style={styles.deleteBtn}
+                  >
+                    <MaterialCommunityIcons name="delete-outline" size={22} color="#ef4444" />
+                  </Pressable>
+                </View>
+              );
+            })
+          ) : (
+            <View style={styles.emptyCart}>
+              <MaterialCommunityIcons name="cart-outline" size={64} color="#324d67" />
+              <Text style={styles.emptyCartText}>Votre panier est vide</Text>
+              <Pressable style={styles.startShoppingBtn} onPress={() => onNavigate?.('marketplace_home')}>
+                <Text style={styles.startShoppingText}>Commencer mes achats</Text>
+              </Pressable>
+            </View>
+          )}
+        </View>
+
+        {cartItems.length > 0 && (
+          <>
+            {/* Summary */}
+            <View style={styles.summarySection}>
+              <Text style={styles.summaryTitle}>Résumé de la commande</Text>
+              <View style={styles.summaryCard}>
+                <View style={styles.summaryRow}>
+                  <Text style={styles.summaryLabel}>Sous-total</Text>
+                  <Text style={styles.summaryValue}>{formatPrice(subtotal)}</Text>
+                </View>
+                <View style={styles.summaryRow}>
+                  <Text style={styles.summaryLabel}>Frais de livraison</Text>
+                  <Text style={styles.summaryValue}>
+                    {selectedItems.length > 0 ? formatPrice(deliveryFee) : '0 XAF'}
+                  </Text>
+                </View>
+                <View style={styles.summaryRow}>
+                  <Text style={styles.summaryLabel}>Taxes</Text>
+                  <Text style={styles.summaryValue}>{formatPrice(taxes)}</Text>
+                </View>
+                <View style={styles.summaryDivider} />
+                <View style={styles.summaryRow}>
+                  <Text style={styles.totalLabel}>Total</Text>
+                  <Text style={styles.totalValue}>{formatPrice(total)}</Text>
                 </View>
               </View>
-
-              {/* Delete Button */}
-              <Pressable
-                onPress={() => removeItem(item.id)}
-                style={styles.deleteBtn}
-              >
-                <MaterialCommunityIcons name="delete-outline" size={22} color="#ef4444" />
-              </Pressable>
             </View>
-          ))}
-        </View>
-
-        {/* Summary */}
-        <View style={styles.summarySection}>
-          <Text style={styles.summaryTitle}>Résumé de la commande</Text>
-          <View style={styles.summaryCard}>
-            <View style={styles.summaryRow}>
-              <Text style={styles.summaryLabel}>Sous-total</Text>
-              <Text style={styles.summaryValue}>{formatPrice(subtotal)}</Text>
-            </View>
-            <View style={styles.summaryRow}>
-              <Text style={styles.summaryLabel}>Frais de livraison</Text>
-              <Text style={styles.summaryValue}>
-                {selectedItems.length > 0 ? formatPrice(deliveryFee) : '0 XAF'}
-              </Text>
-            </View>
-            <View style={styles.summaryRow}>
-              <Text style={styles.summaryLabel}>Taxes</Text>
-              <Text style={styles.summaryValue}>{formatPrice(taxes)}</Text>
-            </View>
-            <View style={styles.summaryDivider} />
-            <View style={styles.summaryRow}>
-              <Text style={styles.totalLabel}>Total</Text>
-              <Text style={styles.totalValue}>{formatPrice(total)}</Text>
-            </View>
-          </View>
-        </View>
+          </>
+        )}
 
         <View style={styles.bottomSpacer} />
       </ScrollView>
 
       {/* Bottom Bar */}
-      <View style={styles.bottomBar}>
-        <View style={styles.bottomBarContent}>
-          <View style={styles.totalContainer}>
-            <Text style={styles.totalLabelSmall}>Montant Total</Text>
-            <Text style={styles.totalValueSmall}>{formatPrice(total)}</Text>
+      {cartItems.length > 0 && (
+        <View style={styles.bottomBar}>
+          <View style={styles.bottomBarContent}>
+            <View style={styles.totalContainer}>
+              <Text style={styles.totalLabelSmall}>Montant Total</Text>
+              <Text style={styles.totalValueSmall}>{formatPrice(total)}</Text>
+            </View>
+            <Pressable
+              onPress={handleCheckout}
+              style={[
+                styles.buyBtn,
+                selectedItems.length === 0 && styles.buyBtnDisabled
+              ]}
+              disabled={selectedItems.length === 0}
+            >
+              <Text style={styles.buyBtnText}>Acheter</Text>
+              <MaterialCommunityIcons name="cart-check" size={20} color="#000" />
+            </Pressable>
           </View>
-          <Pressable
-            onPress={handleCheckout}
-            style={[
-              styles.buyBtn,
-              selectedItems.length === 0 && styles.buyBtnDisabled
-            ]}
-            disabled={selectedItems.length === 0}
-          >
-            <Text style={styles.buyBtnText}>Acheter</Text>
-            <MaterialCommunityIcons name="cart-check" size={20} color="#000" />
-          </Pressable>
         </View>
-      </View>
+      )}
 
       {/* Bottom Navigation */}
       <SafeAreaView style={styles.bottomNavWrapper}>
@@ -232,7 +241,7 @@ export default function CartScreen({ onBack, onNavigate }) {
                   if (item.label === 'Boutique') {
                     onNavigate?.('marketplace_home');
                   } else if (item.label === 'Catégories') {
-                    onNavigate?.('marketplace_category_page');
+                    onNavigate?.('category_page');
                   } else if (item.label === 'Panier') {
                     // Already on cart
                   } else if (item.label === 'Nouveauté') {
@@ -280,6 +289,13 @@ export default function CartScreen({ onBack, onNavigate }) {
     </SafeAreaView>
   );
 }
+
+const bottomNavItems = [
+  { label: 'Boutique', icon: 'store' },
+  { label: 'Catégories', icon: 'view-grid' },
+  { label: 'Nouveauté', icon: 'sparkles' },
+  { label: 'Panier', icon: 'cart' },
+];
 
 const styles = StyleSheet.create({
   container: {
@@ -381,6 +397,15 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#137fec',
   },
+  negotiatedPrice: {
+    color: '#22c55e',
+  },
+  negotiatedLabel: {
+    fontSize: 10,
+    color: '#22c55e',
+    fontWeight: 'bold',
+    textTransform: 'uppercase',
+  },
   quantityControl: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -406,6 +431,27 @@ const styles = StyleSheet.create({
   deleteBtn: {
     marginLeft: 8,
     justifyContent: 'center',
+  },
+  emptyCart: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 60,
+    gap: 16,
+  },
+  emptyCartText: {
+    fontSize: 16,
+    color: '#94a3b8',
+    fontWeight: '500',
+  },
+  startShoppingBtn: {
+    backgroundColor: '#137fec',
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 12,
+  },
+  startShoppingText: {
+    color: '#fff',
+    fontWeight: 'bold',
   },
   summarySection: {
     padding: 16,
@@ -463,53 +509,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#1c2a38',
     borderTopWidth: 1,
     borderTopColor: '#324d67',
-    padding: 12,
-    paddingBottom: 50,
-  },
-  bottomBarContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  totalContainer: {
-    flex: 1,
-  },
-  totalLabelSmall: {
-    fontSize: 12,
-    color: '#64748b',
-  },
-  totalValueSmall: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#fff',
-  },
-  buyBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    backgroundColor: '#FFFFFF',
-    paddingHorizontal: 32,
-    paddingVertical: 14,
-    borderRadius: 12,
-    marginTop: 8,
-  },
-  buyBtnDisabled: {
-    backgroundColor: '#475569',
-  },
-  buyBtnText: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#000000',
-  },
-  bottomBar: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: '#1c2a38',
-    borderTopWidth: 1,
-    borderTopColor: '#324d67',
     padding: 16,
     paddingBottom: 110,
   },
@@ -530,30 +529,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#fff',
   },
-  checkoutBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    backgroundColor: '#fff',
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    borderRadius: 12,
-    flex: 1,
-  },
-  checkoutBtnDisabled: {
-    backgroundColor: '#475569',
-  },
-  checkoutBtnText: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: '#0E151B',
-  },
-  buttonRow: {
-    flexDirection: 'row',
-    gap: 8,
-    flex: 1.5,
-  },
   buyBtn: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -573,7 +548,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#000',
   },
-  marketplaceBottomNav: {
+  bottomNavWrapper: {
     position: 'absolute',
     left: 0,
     right: 0,
@@ -581,7 +556,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingBottom: 36,
   },
-  bottomNavInner: {
+  bottomNav: {
     backgroundColor: 'rgba(22, 29, 37, 0.98)',
     borderRadius: 24,
     paddingVertical: 10,
@@ -625,49 +600,5 @@ const styles = StyleSheet.create({
   navLabelActive: {
     color: '#2BEE79',
   },
-  bottomNavWrapper: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
-    paddingHorizontal: 16,
-    paddingBottom: 36,
-  },
-  bottomNav: {
-    backgroundColor: 'rgba(22, 29, 37, 0.98)',
-    borderRadius: 24,
-    paddingVertical: 10,
-    paddingHorizontal: 12,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.08)',
-    marginBottom: 4,
-  },
-  navIcon: {
-    width: 22,
-    height: 22,
-    borderRadius: 6,
-    backgroundColor: 'rgba(255, 255, 255, 0.18)',
-    marginBottom: 6,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  navIconActive: {
-    backgroundColor: '#3B82F6',
-  },
-  navLabel: {
-    color: '#6B7280',
-    fontSize: 10,
-  },
-  navLabelActive: {
-    color: '#2BEE79',
-  },
 });
 
-const bottomNavItems = [
-  { label: 'Boutique', icon: 'store' },
-  { label: 'Catégories', icon: 'view-grid' },
-  { label: 'Nouveauté', icon: 'sparkles' },
-  { label: 'Panier', icon: 'cart' },
-];

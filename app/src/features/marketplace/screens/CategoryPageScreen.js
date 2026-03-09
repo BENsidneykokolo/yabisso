@@ -11,6 +11,7 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useCart } from '../context/CartContext';
 
 const categories = [
   { name: 'Tout', icon: 'apps' },
@@ -34,14 +35,22 @@ const brands = [
 ];
 
 const products = [
-  { id: 1, name: 'iPhone 15 Pro Max', brand: 'Apple', price: '950000', isNew: true },
-  { id: 2, name: 'Samsung Galaxy S24 Ultra', brand: 'Samsung', price: '780000', isNew: true },
-  { id: 3, name: 'MacBook Pro M3', brand: 'Apple', price: '1200000', isNew: true },
-  { id: 4, name: 'Tecno Camon 20', brand: 'Tecno', price: '145000', isNew: false },
-  { id: 5, name: 'Samsung TV 55"', brand: 'Samsung', price: '350000', isNew: false },
-  { id: 6, name: 'AirPods Pro', brand: 'Apple', price: '95000', isNew: true },
-  { id: 7, name: 'Infinix Note 30', brand: 'Infinix', price: '125000', isNew: false },
-  { id: 8, name: 'Xiaomi Redmi 12', brand: 'Xiaomi', price: '110000', isNew: false },
+  { id: 1, name: 'iPhone 15 Pro Max', brand: 'Apple', price: '950000', isNew: true, category: 'Téléphones' },
+  { id: 2, name: 'Samsung Galaxy S24 Ultra', brand: 'Samsung', price: '780000', isNew: true, category: 'Téléphones' },
+  { id: 3, name: 'MacBook Pro M3', brand: 'Apple', price: '1200000', isNew: true, category: 'Ordinateurs' },
+  { id: 4, name: 'Tecno Camon 20', brand: 'Tecno', price: '145000', isNew: false, category: 'Téléphones' },
+  { id: 5, name: 'Samsung TV 55"', brand: 'Samsung', price: '350000', isNew: false, category: 'Télévisions' },
+  { id: 6, name: 'AirPods Pro', brand: 'Apple', price: '95000', isNew: true, category: 'Audio' },
+  { id: 7, name: 'Infinix Note 30', brand: 'Infinix', price: '125000', isNew: false, category: 'Téléphones' },
+  { id: 8, name: 'Xiaomi Redmi 12', brand: 'Xiaomi', price: '110000', isNew: false, category: 'Téléphones' },
+  { id: 9, name: 'iPad Pro M4', brand: 'Apple', price: '950000', isNew: true, category: 'Ordinateurs' },
+  { id: 10, name: 'Sony WH-1000XM5', brand: 'Sony', price: '180000', isNew: true, category: 'Audio' },
+  { id: 11, name: 'Dell XPS 15', brand: 'Dell', price: '850000', isNew: false, category: 'Ordinateurs' },
+  { id: 12, name: 'Apple Watch Ultra 2', brand: 'Apple', price: '450000', isNew: true, category: 'Accessoires' },
+  { id: 13, name: 'PlayStation 5', brand: 'Sony', price: '450000', isNew: true, category: 'Gaming' },
+  { id: 14, name: 'Canon EOS R5', brand: 'Canon', price: '1200000', isNew: false, category: 'Photo' },
+  { id: 15, name: 'Samsung Galaxy Watch 5', brand: 'Samsung', price: '150000', isNew: false, category: 'Accessoires' },
+  { id: 16, name: 'Nintendo Switch', brand: 'Nintendo', price: '250000', isNew: true, category: 'Gaming' },
 ];
 
 const bottomNavItems = [
@@ -52,6 +61,7 @@ const bottomNavItems = [
 ];
 
 export default function CategoryPageScreen({ onBack, onNavigate, favorites = [], onToggleFavorite }) {
+  const { addToCart } = useCart();
   const [activeTab, setActiveTab] = useState('Catégories');
   const [selectedCategory, setSelectedCategory] = useState('Tout');
   const [selectedBrand, setSelectedBrand] = useState('Tout');
@@ -69,10 +79,12 @@ export default function CategoryPageScreen({ onBack, onNavigate, favorites = [],
 
   const filteredProducts = searchText.trim()
     ? products.filter(p =>
-        p.name.toLowerCase().includes(searchText.toLowerCase()) ||
-        p.brand.toLowerCase().includes(searchText.toLowerCase())
-      )
-    : products;
+      p.name.toLowerCase().includes(searchText.toLowerCase()) ||
+      p.brand.toLowerCase().includes(searchText.toLowerCase())
+    )
+    : selectedCategory === 'Tout'
+      ? products
+      : products.filter(p => p.category === selectedCategory);
 
   const showSearchResults = searchText.trim().length > 0;
 
@@ -188,7 +200,7 @@ export default function CategoryPageScreen({ onBack, onNavigate, favorites = [],
                     <Pressable
                       key={product.id}
                       style={styles.productCard}
-                      onPress={() => onNavigate?.('product_details')}
+                      onPress={() => onNavigate?.('product_details', { product })}
                     >
                       <View style={styles.productImage}>
                         {product.isNew && (
@@ -204,10 +216,10 @@ export default function CategoryPageScreen({ onBack, onNavigate, favorites = [],
                             handleToggleFavorite(product);
                           }}
                         >
-                          <MaterialCommunityIcons 
-                            name={isFavorite(product.id) ? "heart" : "heart-outline"} 
-                            size={18} 
-                            color={isFavorite(product.id) ? "#ef4444" : "#fff"} 
+                          <MaterialCommunityIcons
+                            name={isFavorite(product.id) ? "heart" : "heart-outline"}
+                            size={18}
+                            color={isFavorite(product.id) ? "#ef4444" : "#fff"}
                           />
                         </Pressable>
                       </View>
@@ -220,6 +232,8 @@ export default function CategoryPageScreen({ onBack, onNavigate, favorites = [],
                             style={styles.addBtn}
                             onPress={(e) => {
                               e.stopPropagation();
+                              const productToAdd = { ...product, price: parseInt(product.price) || 0 };
+                              addToCart(productToAdd, 1);
                             }}
                           >
                             <MaterialCommunityIcons name="plus" size={18} color="#fff" />
@@ -239,52 +253,66 @@ export default function CategoryPageScreen({ onBack, onNavigate, favorites = [],
             </View>
           ) : (
             <View style={styles.productsSection}>
-              <View style={styles.productsGrid}>
-                {products.map((product) => (
-                  <Pressable
-                    key={product.id}
-                    style={styles.productCard}
-                    onPress={() => onNavigate?.('product_details')}
-                  >
-                    <View style={styles.productImage}>
-                      {product.isNew && (
-                        <View style={styles.newBadge}>
-                          <MaterialCommunityIcons name="lightning-bolt" size={12} color="#fff" />
-                          <Text style={styles.newBadgeText}>NOUVEAU</Text>
-                        </View>
-                      )}
-                      <Pressable
-                        style={styles.favoriteBtn}
-                        onPress={(e) => {
-                          e.stopPropagation();
-                          handleToggleFavorite(product);
-                        }}
-                      >
-                        <MaterialCommunityIcons 
-                          name={isFavorite(product.id) ? "heart" : "heart-outline"} 
-                          size={18} 
-                          color={isFavorite(product.id) ? "#ef4444" : "#fff"} 
-                        />
-                      </Pressable>
-                    </View>
-                    <View style={styles.productInfo}>
-                      <Text style={styles.productBrand}>{product.brand}</Text>
-                      <Text style={styles.productName} numberOfLines={1}>{product.name}</Text>
-                      <View style={styles.productBottom}>
-                        <Text style={styles.productPrice}>{product.price} FCA</Text>
+              <View style={styles.productsHeader}>
+                <Text style={styles.sectionTitle}>{selectedCategory === 'Tout' ? 'Tous les produits' : selectedCategory}</Text>
+                <Text style={styles.resultsCount}>{filteredProducts.length} produit(s)</Text>
+              </View>
+              {filteredProducts.length > 0 ? (
+                <View style={styles.productsGrid}>
+                  {filteredProducts.map((product) => (
+                    <Pressable
+                      key={product.id}
+                      style={styles.productCard}
+                      onPress={() => onNavigate?.('product_details', { product })}
+                    >
+                      <View style={styles.productImage}>
+                        {product.isNew && (
+                          <View style={styles.newBadge}>
+                            <MaterialCommunityIcons name="lightning-bolt" size={12} color="#fff" />
+                            <Text style={styles.newBadgeText}>NOUVEAU</Text>
+                          </View>
+                        )}
                         <Pressable
-                          style={styles.addBtn}
+                          style={styles.favoriteBtn}
                           onPress={(e) => {
                             e.stopPropagation();
+                            handleToggleFavorite(product);
                           }}
                         >
-                          <MaterialCommunityIcons name="plus" size={18} color="#fff" />
+                          <MaterialCommunityIcons
+                            name={isFavorite(product.id) ? "heart" : "heart-outline"}
+                            size={18}
+                            color={isFavorite(product.id) ? "#ef4444" : "#fff"}
+                          />
                         </Pressable>
                       </View>
-                    </View>
-                  </Pressable>
-                ))}
-              </View>
+                      <View style={styles.productInfo}>
+                        <Text style={styles.productBrand}>{product.brand}</Text>
+                        <Text style={styles.productName} numberOfLines={1}>{product.name}</Text>
+                        <View style={styles.productBottom}>
+                          <Text style={styles.productPrice}>{product.price} FCFA</Text>
+                          <Pressable
+                            style={styles.addBtn}
+                            onPress={(e) => {
+                              e.stopPropagation();
+                              const productToAdd = { ...product, price: parseInt(product.price) || 0 };
+                              addToCart(productToAdd, 1);
+                            }}
+                          >
+                            <MaterialCommunityIcons name="plus" size={18} color="#fff" />
+                          </Pressable>
+                        </View>
+                      </View>
+                    </Pressable>
+                  ))}
+                </View>
+              ) : (
+                <View style={styles.noResults}>
+                  <MaterialCommunityIcons name="magnify" size={64} color="#324d67" />
+                  <Text style={styles.noResultsText}>Aucun résultat pour "{searchText}"</Text>
+                  <Text style={styles.noResultsSubtext}>Essayez avec un autre mot-clé</Text>
+                </View>
+              )}
             </View>
           )}
         </ScrollView>
@@ -349,7 +377,7 @@ export default function CategoryPageScreen({ onBack, onNavigate, favorites = [],
         </SafeAreaView>
 
         {/* Voice Search Modal */}
-        <Modal
+        < Modal
           visible={showVoiceModal}
           transparent
           animationType="slide"
@@ -364,20 +392,16 @@ export default function CategoryPageScreen({ onBack, onNavigate, favorites = [],
               <Pressable style={styles.closeModalBtn} onPress={() => setShowVoiceModal(false)}>
                 <MaterialCommunityIcons name="close" size={24} color="#fff" />
               </Pressable>
-
               <View style={styles.voiceIconContainer}>
                 <MaterialCommunityIcons name="microphone" size={64} color="#137fec" />
               </View>
-
               <Text style={styles.modalTitle}>Recherche vocale</Text>
               <Text style={styles.modalSubtitle}>Parlez maintenant...</Text>
-
               <View style={styles.voiceWaveContainer}>
                 <View style={styles.voiceWave} />
                 <View style={styles.voiceWave} />
                 <View style={styles.voiceWave} />
               </View>
-
               <Pressable style={styles.voiceCancelBtn} onPress={() => setShowVoiceModal(false)}>
                 <Text style={styles.voiceCancelText}>Annuler</Text>
               </Pressable>
@@ -401,10 +425,8 @@ export default function CategoryPageScreen({ onBack, onNavigate, favorites = [],
               <Pressable style={styles.closeModalBtn} onPress={() => setShowCameraModal(false)}>
                 <MaterialCommunityIcons name="close" size={24} color="#fff" />
               </Pressable>
-
               <Text style={styles.modalTitle}>Recherche par image</Text>
               <Text style={styles.modalSubtitle}>Prenez une photo ou importez une image</Text>
-
               <View style={styles.cameraOptions}>
                 <Pressable style={styles.cameraOptionBtn}>
                   <View style={styles.cameraOptionIcon}>
@@ -412,7 +434,6 @@ export default function CategoryPageScreen({ onBack, onNavigate, favorites = [],
                   </View>
                   <Text style={styles.cameraOptionText}>Appareil photo</Text>
                 </Pressable>
-
                 <Pressable style={styles.cameraOptionBtn}>
                   <View style={styles.cameraOptionIcon}>
                     <MaterialCommunityIcons name="image" size={32} color="#fff" />
@@ -842,5 +863,36 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#fff',
     fontWeight: '500',
+  },
+  resultsCount: {
+    fontSize: 14,
+    color: '#94a3b8',
+  },
+  productsHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#e2e8f0',
+  },
+  noResults: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 60,
+    gap: 12,
+  },
+  noResultsText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#e2e8f0',
+    marginTop: 8,
+  },
+  noResultsSubtext: {
+    fontSize: 14,
+    color: '#64748b',
   },
 });

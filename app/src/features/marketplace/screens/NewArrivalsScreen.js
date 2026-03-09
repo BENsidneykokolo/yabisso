@@ -6,8 +6,10 @@ import {
   Pressable,
   StyleSheet,
   SafeAreaView,
+  TextInput,
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useCart } from '../context/CartContext';
 
 const categories = [
   { name: 'Tous', icon: 'apps', color: '#137fec' },
@@ -37,6 +39,7 @@ const bottomNavItems = [
 ];
 
 export default function NewArrivalsScreen({ onBack, onNavigate, favorites = [], onToggleFavorite }) {
+  const { addToCart } = useCart();
   const [activeTab, setActiveTab] = useState('Nouveauté');
   const [selectedCategory, setSelectedCategory] = useState('Tous');
   const [searchText, setSearchText] = useState('');
@@ -51,17 +54,17 @@ export default function NewArrivalsScreen({ onBack, onNavigate, favorites = [], 
 
   const filteredProducts = searchText.trim()
     ? newProducts.filter(p =>
-        p.name.toLowerCase().includes(searchText.toLowerCase()) ||
-        p.brand.toLowerCase().includes(searchText.toLowerCase())
-      )
-    : selectedCategory === 'Tous' 
-      ? newProducts 
+      p.name.toLowerCase().includes(searchText.toLowerCase()) ||
+      p.brand.toLowerCase().includes(searchText.toLowerCase())
+    )
+    : selectedCategory === 'Tous'
+      ? newProducts
       : newProducts.filter((p) => p.category === selectedCategory);
 
   const showSearchResults = searchText.trim().length > 0;
 
   const handleProductPress = (product) => {
-    onNavigate?.('marketplace_product_details');
+    onNavigate?.('marketplace_product_details', { product });
   };
 
   return (
@@ -93,6 +96,17 @@ export default function NewArrivalsScreen({ onBack, onNavigate, favorites = [], 
                 <MaterialCommunityIcons name="cloud-check-outline" size={14} color="#137fec" />
                 <Text style={styles.statusText}>Synchronisé</Text>
               </View>
+            </View>
+
+            <View style={styles.searchContainer}>
+              <MaterialCommunityIcons name="magnify" size={18} color="#7C8A9A" />
+              <TextInput
+                style={styles.searchInput}
+                placeholder="Rechercher un produit..."
+                placeholderTextColor="#7C8A9A"
+                value={searchText}
+                onChangeText={setSearchText}
+              />
             </View>
           </View>
 
@@ -137,53 +151,63 @@ export default function NewArrivalsScreen({ onBack, onNavigate, favorites = [], 
 
           <View style={styles.productsSection}>
             <Text style={styles.resultsText}>
-              {filteredProducts.length} nouveaux produits
+              {showSearchResults ? `${filteredProducts.length} résultat(s)` : `${filteredProducts.length} nouveaux produits`}
             </Text>
-            <View style={styles.productsGrid}>
-              {filteredProducts.map((product) => (
-                <Pressable
-                  key={product.id}
-                  style={styles.productCard}
-                  onPress={() => handleProductPress(product)}
-                >
-                  <View style={styles.productImage}>
-                    <View style={styles.newBadge}>
-                      <MaterialCommunityIcons name="lightning-bolt" size={12} color="#fff" />
-                      <Text style={styles.newBadgeText}>NOUVEAU</Text>
-                    </View>
-                    <Pressable 
-                      style={styles.favoriteBtn}
-                      onPress={(e) => {
-                        e.stopPropagation();
-                        handleToggleFavorite(product);
-                      }}
-                    >
-                      <MaterialCommunityIcons 
-                        name={isFavorite(product.id) ? "heart" : "heart-outline"} 
-                        size={18} 
-                        color={isFavorite(product.id) ? "#ef4444" : "#fff"} 
-                      />
-                    </Pressable>
-                  </View>
-                  <View style={styles.productInfo}>
-                    <Text style={styles.productBrand}>{product.brand}</Text>
-                    <Text style={styles.productName} numberOfLines={1}>{product.name}</Text>
-                    <View style={styles.productBottom}>
-                      <Text style={styles.productPrice}>{product.price} FCFA</Text>
-                      <Pressable 
-                        style={styles.addBtn}
+            {filteredProducts.length > 0 ? (
+              <View style={styles.productsGrid}>
+                {filteredProducts.map((product) => (
+                  <Pressable
+                    key={product.id}
+                    style={styles.productCard}
+                    onPress={() => handleProductPress(product)}
+                  >
+                    <View style={styles.productImage}>
+                      <View style={styles.newBadge}>
+                        <MaterialCommunityIcons name="lightning-bolt" size={12} color="#fff" />
+                        <Text style={styles.newBadgeText}>NOUVEAU</Text>
+                      </View>
+                      <Pressable
+                        style={styles.favoriteBtn}
                         onPress={(e) => {
                           e.stopPropagation();
+                          handleToggleFavorite(product);
                         }}
                       >
-                        <MaterialCommunityIcons name="plus" size={18} color="#fff" />
+                        <MaterialCommunityIcons 
+                          name={isFavorite(product.id) ? "heart" : "heart-outline"} 
+                          size={18} 
+                          color={isFavorite(product.id) ? "#ef4444" : "#fff"} 
+                        />
                       </Pressable>
                     </View>
-                  </View>
-                </Pressable>
-              ))}
-            </View>
+                    <View style={styles.productInfo}>
+                      <Text style={styles.productBrand}>{product.brand}</Text>
+                      <Text style={styles.productName} numberOfLines={1}>{product.name}</Text>
+                      <View style={styles.productBottom}>
+                        <Text style={styles.productPrice}>{product.price} XAF</Text>
+                        <Pressable 
+                          style={styles.addBtn}
+                          onPress={(e) => {
+                            e.stopPropagation();
+                            const productToAdd = { ...product, price: parseInt(product.price) || 0 };
+                            addToCart(productToAdd, 1);
+                          }}
+                        >
+                          <MaterialCommunityIcons name="plus" size={18} color="#fff" />
+                        </Pressable>
+                      </View>
+                    </View>
+                  </Pressable>
+                ))}
+              </View>
+            ) : (
+              <View style={styles.noResults}>
+                <MaterialCommunityIcons name="magnify" size={64} color="#324d67" />
+                <Text style={styles.noResultsText}>Aucun résultat pour "{searchText}"</Text>
+              </View>
+            )}
           </View>
+          <View style={{ height: 100 }} />
         </ScrollView>
 
         <SafeAreaView style={styles.bottomNavWrapper}>
@@ -300,6 +324,8 @@ const styles = StyleSheet.create({
   statusRow: {
     flexDirection: 'row',
     gap: 8,
+    paddingHorizontal: 16,
+    marginBottom: 12,
   },
   statusChip: {
     flexDirection: 'row',
@@ -386,7 +412,7 @@ const styles = StyleSheet.create({
   },
   productsSection: {
     paddingHorizontal: 16,
-    paddingBottom: 100,
+    paddingBottom: 20,
   },
   resultsText: {
     fontSize: 14,
@@ -521,5 +547,32 @@ const styles = StyleSheet.create({
   },
   navLabelActive: {
     color: '#2BEE79',
+  },
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#1c2630',
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    marginTop: 12,
+    height: 44,
+  },
+  searchInput: {
+    flex: 1,
+    marginLeft: 8,
+    fontSize: 15,
+    color: '#fff',
+  },
+  noResults: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 60,
+    gap: 12,
+  },
+  noResultsText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#e2e8f0',
+    marginTop: 8,
   },
 });

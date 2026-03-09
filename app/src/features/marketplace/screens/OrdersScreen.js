@@ -9,83 +9,19 @@ import {
   SafeAreaView,
   StatusBar,
   Pressable,
+  Alert,
+  Modal,
+  ScrollView,
 } from 'react-native';
 import { MaterialIcons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { useOrders } from '../context/OrderContext';
+import { useCart } from '../context/CartContext';
 
 const bottomNavItems = [
   { label: 'Boutique', icon: 'store' },
   { label: 'Catégories', icon: 'view-grid' },
   { label: 'Nouveauté', icon: 'sparkles' },
   { label: 'Panier', icon: 'cart' },
-];
-
-const MOCK_ORDERS = [
-  {
-    id: 'CMD-8821',
-    date: '15 oct 2024',
-    status: 'en_cours',
-    statusLabel: 'En cours',
-    statusColor: '#EAB308',
-    products: [
-      { name: 'Nike Air Max', quantity: 1, price: 25000, image: 'https://picsum.photos/100' },
-    ],
-    total: 25000,
-    seller: 'Boutique Sport',
-    deliveryMethod: 'Standard',
-  },
-  {
-    id: 'CMD-8820',
-    date: '14 oct 2024',
-    status: 'livre',
-    statusLabel: 'Livrée',
-    statusColor: '#22C55E',
-    products: [
-      { name: 'iPhone 13 Pro', quantity: 1, price: 450000, image: 'https://picsum.photos/101' },
-    ],
-    total: 450000,
-    seller: 'Tech Store',
-    deliveryMethod: 'Express',
-  },
-  {
-    id: 'CMD-8819',
-    date: '12 oct 2024',
-    status: 'livre',
-    statusLabel: 'Livrée',
-    statusColor: '#22C55E',
-    products: [
-      { name: 'Robe Summer', quantity: 2, price: 15000, image: 'https://picsum.photos/102' },
-    ],
-    total: 30000,
-    seller: 'Mode Africa',
-    deliveryMethod: 'Standard',
-  },
-  {
-    id: 'CMD-8818',
-    date: '10 oct 2024',
-    status: 'annule',
-    statusLabel: 'Annulée',
-    statusColor: '#EF4444',
-    products: [
-      { name: 'Samsung Galaxy S21', quantity: 1, price: 180000, image: 'https://picsum.photos/103' },
-    ],
-    total: 180000,
-    seller: 'Electro Plus',
-    deliveryMethod: 'Standard',
-  },
-  {
-    id: 'CMD-8817',
-    date: '08 oct 2024',
-    status: 'livre',
-    statusLabel: 'Livrée',
-    statusColor: '#22C55E',
-    products: [
-      { name: 'Basket Adidas', quantity: 1, price: 35000, image: 'https://picsum.photos/104' },
-      { name: 'Chaussettes Sport', quantity: 3, price: 3000, image: 'https://picsum.photos/105' },
-    ],
-    total: 44000,
-    seller: 'Sports World',
-    deliveryMethod: 'Standard',
-  },
 ];
 
 const FILTERS = [
@@ -96,11 +32,18 @@ const FILTERS = [
 ];
 
 export default function OrdersScreen({ onBack, onNavigate }) {
+  const { orders, updateOrderStatus } = useOrders();
+  const { addToCart } = useCart();
   const [activeFilter, setActiveFilter] = useState('all');
 
+  // Reorder Modal State
+  const [isReorderModalVisible, setIsReorderModalVisible] = useState(false);
+  const [selectedOrderToReorder, setSelectedOrderToReorder] = useState(null);
+  const [editingProducts, setEditingProducts] = useState([]);
+
   const filteredOrders = activeFilter === 'all'
-    ? MOCK_ORDERS
-    : MOCK_ORDERS.filter(order => order.status === activeFilter);
+    ? orders
+    : orders.filter(order => order.status === activeFilter);
 
   const getStatusIcon = (status) => {
     switch (status) {
@@ -113,6 +56,59 @@ export default function OrdersScreen({ onBack, onNavigate }) {
       default:
         return 'help-outline';
     }
+  };
+
+  const handleMarkAsDelivered = (orderId) => {
+    Alert.alert(
+      'Confirmer la réception',
+      'Avez-vous bien reçu cette commande ?',
+      [
+        { text: 'Non', style: 'cancel' },
+        { 
+          text: 'Oui, reçue', 
+          onPress: () => updateOrderStatus(orderId, 'livre')
+        }
+      ]
+    );
+  };
+
+  const handleOpenReorder = (order) => {
+    setSelectedOrderToReorder(order);
+    // Clone products to allow local editing in modal
+    setEditingProducts(order.products.map(p => ({ ...p })));
+    setIsReorderModalVisible(true);
+  };
+
+  const updateProductQty = (index, delta) => {
+    const newProducts = [...editingProducts];
+    const newQty = (newProducts[index].quantity || 1) + delta;
+    if (newQty > 0) {
+      newProducts[index].quantity = newQty;
+      setEditingProducts(newProducts);
+    }
+  };
+
+  const handleConfirmReorder = () => {
+    editingProducts.forEach(product => {
+      // Re-add to cart with potentially modified data
+      addToCart(
+        { id: product.id, name: product.name, price: product.price, image: product.image },
+        product.quantity,
+        product.selectedColor,
+        product.selectedModel,
+        product.negotiatedPrice
+      );
+    });
+    
+    setIsReorderModalVisible(false);
+    Alert.alert(
+      'Articles ajoutés',
+      'Les articles de votre commande ont été ajoutés à votre panier.',
+      [
+        { text: 'Voir le panier', onPress: () => onNavigate?.('cart') },
+        { text: 'Continuer' }
+      ]
+    );
   };
 
   const renderOrderItem = ({ item }) => (
@@ -134,7 +130,7 @@ export default function OrdersScreen({ onBack, onNavigate }) {
       <View style={styles.productsSection}>
         {item.products.map((product, index) => (
           <View key={index} style={styles.productRow}>
-            <Image source={{ uri: product.image }} style={styles.productImage} />
+            <Image source={{ uri: product.image || 'https://via.placeholder.com/50' }} style={styles.productImage} />
             <View style={styles.productInfo}>
               <Text style={styles.productName} numberOfLines={1}>{product.name}</Text>
               <Text style={styles.productQty}>Qty: {product.quantity}</Text>
@@ -156,12 +152,31 @@ export default function OrdersScreen({ onBack, onNavigate }) {
       </View>
 
       {item.status === 'en_cours' && (
+        <View style={styles.actionsRow}>
+          <TouchableOpacity
+            style={styles.trackButton}
+            onPress={() => onNavigate && onNavigate('delivery_tracking', { orderId: item.id })}
+          >
+            <MaterialIcons name="location-on" size={18} color="#FFFFFF" />
+            <Text style={styles.trackButtonText}>Suivre</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.deliveredButton}
+            onPress={() => handleMarkAsDelivered(item.id)}
+          >
+            <MaterialCommunityIcons name="check-circle-outline" size={18} color="#FFFFFF" />
+            <Text style={styles.trackButtonText}>Reçu</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
+      {item.status === 'annule' && (
         <TouchableOpacity
-          style={styles.trackButton}
-          onPress={() => onNavigate && onNavigate('delivery_tracking', { orderId: item.id })}
+          style={styles.reorderButton}
+          onPress={() => handleOpenReorder(item)}
         >
-          <MaterialIcons name="location-on" size={18} color="#FFFFFF" />
-          <Text style={styles.trackButtonText}>Suivre la livraison</Text>
+          <MaterialIcons name="refresh" size={18} color="#FFFFFF" />
+          <Text style={styles.trackButtonText}>Reprendre la commande</Text>
         </TouchableOpacity>
       )}
     </TouchableOpacity>
@@ -269,6 +284,62 @@ export default function OrdersScreen({ onBack, onNavigate }) {
           </Pressable>
         </View>
       </SafeAreaView>
+
+      {/* Reorder Modal */}
+      <Modal
+        visible={isReorderModalVisible}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setIsReorderModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Modifier et Reprendre</Text>
+              <Pressable onPress={() => setIsReorderModalVisible(false)}>
+                <MaterialIcons name="close" size={24} color="#1E293B" />
+              </Pressable>
+            </View>
+
+            <ScrollView style={styles.modalBody}>
+              {editingProducts.map((product, index) => (
+                <View key={index} style={styles.editProductCard}>
+                  <Image source={{ uri: product.image || 'https://via.placeholder.com/60' }} style={styles.editProductImage} />
+                  <View style={styles.editProductDetails}>
+                    <Text style={styles.productName} numberOfLines={1}>{product.name}</Text>
+                    <Text style={styles.productPrice}>{product.price.toLocaleString()} XAF</Text>
+                    
+                    <View style={styles.editActions}>
+                      <View style={styles.qtyControl}>
+                        <Pressable onPress={() => updateProductQty(index, -1)} style={styles.qtyBtn}>
+                          <MaterialIcons name="remove" size={16} color="#1E293B" />
+                        </Pressable>
+                        <Text style={styles.qtyText}>{product.quantity}</Text>
+                        <Pressable onPress={() => updateProductQty(index, 1)} style={styles.qtyBtn}>
+                          <MaterialIcons name="add" size={16} color="#1E293B" />
+                        </Pressable>
+                      </View>
+                      
+                      <View style={styles.variantBadge}>
+                        <Text style={styles.variantText}>{product.selectedColor || 'Standard'}</Text>
+                      </View>
+                    </View>
+                  </View>
+                </View>
+              ))}
+            </ScrollView>
+
+            <View style={styles.modalFooter}>
+              <TouchableOpacity style={styles.cancelBtn} onPress={() => setIsReorderModalVisible(false)}>
+                <Text style={styles.cancelBtnText}>Annuler</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.confirmReorderBtn} onPress={handleConfirmReorder}>
+                <Text style={styles.confirmReorderText}>Ajouter au panier</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -439,11 +510,155 @@ const styles = StyleSheet.create({
     backgroundColor: '#137FEC',
     borderRadius: 12,
     paddingVertical: 12,
-    marginTop: 12,
+    flex: 1,
     gap: 8,
   },
   trackButtonText: {
     fontSize: 14,
+    fontWeight: '600',
+    color: '#FFFFFF',
+  },
+  actionsRow: {
+    flexDirection: 'row',
+    gap: 12,
+    marginTop: 12,
+  },
+  deliveredButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#22C55E',
+    borderRadius: 12,
+    paddingVertical: 12,
+    flex: 1,
+    gap: 8,
+  },
+  reorderButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#64748B',
+    borderRadius: 12,
+    paddingVertical: 12,
+    marginTop: 12,
+    gap: 8,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'flex-end',
+  },
+  modalContent: {
+    backgroundColor: '#FFFFFF',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    paddingBottom: 40,
+    maxHeight: '80%',
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F1F5F9',
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#1E293B',
+  },
+  modalBody: {
+    padding: 20,
+  },
+  editProductCard: {
+    flexDirection: 'row',
+    backgroundColor: '#F8FAFC',
+    borderRadius: 16,
+    padding: 12,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  editProductImage: {
+    width: 70,
+    height: 70,
+    borderRadius: 12,
+    backgroundColor: '#CBD5E1',
+  },
+  editProductDetails: {
+    flex: 1,
+    marginLeft: 12,
+    justifyContent: 'center',
+    gap: 4,
+  },
+  editActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: 8,
+  },
+  qtyControl: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    padding: 2,
+  },
+  qtyBtn: {
+    width: 28,
+    height: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  qtyText: {
+    width: 30,
+    textAlign: 'center',
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#1E293B',
+  },
+  variantBadge: {
+    backgroundColor: '#E2E8F0',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 8,
+  },
+  variantText: {
+    fontSize: 12,
+    fontWeight: '500',
+    color: '#64748B',
+  },
+  modalFooter: {
+    flexDirection: 'row',
+    padding: 20,
+    gap: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#F1F5F9',
+  },
+  cancelBtn: {
+    flex: 1,
+    paddingVertical: 14,
+    borderRadius: 12,
+    alignItems: 'center',
+    backgroundColor: '#F1F5F9',
+  },
+  cancelBtnText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#64748B',
+  },
+  confirmReorderBtn: {
+    flex: 2,
+    paddingVertical: 14,
+    borderRadius: 12,
+    alignItems: 'center',
+    backgroundColor: '#137FEC',
+  },
+  confirmReorderText: {
+    fontSize: 15,
     fontWeight: '600',
     color: '#FFFFFF',
   },

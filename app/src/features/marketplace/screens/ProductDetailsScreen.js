@@ -9,10 +9,15 @@ import {
   Image,
   Dimensions,
   Alert,
+  Modal,
+  TextInput,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useCart } from '../context/CartContext';
 
-const { width } = Dimensions.get('window');
+const { width, height } = Dimensions.get('window');
 
 const productImages = [
   'https://lh3.googleusercontent.com/aida-public/AB6AXuCcH_wkhL9Vsdh3YOxVm8TuEpTlNbPnwEr08XwJFX8cQOKmYsov5xRS4oviF8wwFiErmeKAJE8wqc7HHjgknnv4KzHoszV5hLciu_pQp54wIA4QipzyT5tU4G2ungf-XnZCIvC9vCT45QSSAR-hngMPz8OFZUvmLzbxqjSGIQUG4VDjviScm2kUyCw6UrlhV9Adzej29zBtQdbaPpoRjqKgFgwvA_zZkcDHFEgZmG4fpm8r4dpAVhMvIcrZ3SkKgmzuYEaulaXF',
@@ -37,13 +42,19 @@ const seller = {
 const hasMultipleSellers = true;
 
 export default function ProductDetailsScreen({ onBack, onNavigate, product }) {
+  const { addToCart } = useCart();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [selectedColor, setSelectedColor] = useState(colors[0]);
   const [selectedModel, setSelectedModel] = useState(models[0]);
   const [quantity, setQuantity] = useState(1);
   const [isFavorite, setIsFavorite] = useState(false);
 
-  const productData = product || {
+  // Negotiation States
+  const [isOfferModalVisible, setIsOfferModalVisible] = useState(false);
+  const [offerAmount, setOfferAmount] = useState('');
+  const [negotiatedPrice, setNegotiatedPrice] = useState(null);
+
+  const defaultProduct = {
     id: 1,
     name: 'BassPro Wireless Noise-Canceling Headphones',
     brand: 'AfroTech Gadgets',
@@ -59,21 +70,22 @@ export default function ProductDetailsScreen({ onBack, onNavigate, product }) {
       battery: '30 Hours',
       connectivity: 'Bluetooth 5.2',
     },
+    // Négociation Mock Data
+    canNegotiate: true,
+    minPrice: 100000,
+    maxPrice: 150000,
   };
 
+  const productData = product ? { ...defaultProduct, ...product } : defaultProduct;
+
   const formatPrice = (price) => {
-    return price.toLocaleString('fr-FR') + ' XAF';
+    const numPrice = typeof price === 'string' ? parseInt(price) : price;
+    return (numPrice || 0).toLocaleString('fr-FR') + ' XAF';
   };
 
   const handleAddToCart = () => {
-    if (onNavigate) {
-      onNavigate('add_to_cart', {
-        product: productData,
-        quantity,
-        selectedColor: selectedColor.name,
-        selectedModel,
-      });
-    }
+    addToCart(productData, quantity, selectedColor.name, selectedModel, negotiatedPrice);
+
     Alert.alert(
       'Ajouté au panier',
       `${quantity} article(s) ajouté(s) à votre panier`,
@@ -85,8 +97,40 @@ export default function ProductDetailsScreen({ onBack, onNavigate, product }) {
   };
 
   const handleMakeOffer = () => {
-    Alert.alert('Faire une offre', 'Fonctionnalité de négociationcoming soon...');
+    setIsOfferModalVisible(true);
   };
+
+  const handleSubmitOffer = () => {
+    const amount = parseInt(offerAmount);
+    if (isNaN(amount) || amount <= 0) {
+      Alert.alert('Erreur', 'Veuillez entrer un montant valide.');
+      return;
+    }
+
+    if (amount >= productData.minPrice && amount <= productData.maxPrice) {
+      setNegotiatedPrice(amount);
+      setIsOfferModalVisible(false);
+      Alert.alert(
+        'Offre Acceptée !',
+        `Le vendeur a accepté votre offre de ${formatPrice(amount)}. Vous pouvez maintenant ajouter l'article au panier à ce prix.`,
+        [{ text: 'Super !' }]
+      );
+    } else if (amount < productData.minPrice) {
+      Alert.alert(
+        'Offre Refusée',
+        'Votre offre est trop basse. Le vendeur ne peut pas accepter ce prix.',
+        [{ text: 'Réessayer' }]
+      );
+    } else {
+      Alert.alert(
+        'Offre Inutile',
+        'Votre offre est supérieure au prix actuel. Vous devriez plutôt acheter au prix affiché !',
+        [{ text: 'D\'accord' }]
+      );
+    }
+  };
+
+  const currentDisplayPrice = negotiatedPrice || productData.discountPrice || productData.price;
 
   return (
     <SafeAreaView style={styles.container}>
@@ -156,13 +200,19 @@ export default function ProductDetailsScreen({ onBack, onNavigate, product }) {
           <View style={styles.titleRow}>
             <Text style={styles.productName}>{productData.name}</Text>
             <View style={styles.priceContainer}>
-              {productData.discount > 0 && (
-                <Text style={styles.discountBadge}>-{productData.discount}%</Text>
+              {negotiatedPrice ? (
+                <View style={styles.negotiatedBadge}>
+                  <Text style={styles.negotiatedText}>Prix négocié</Text>
+                </View>
+              ) : (
+                productData.discount > 0 && (
+                  <Text style={styles.discountBadge}>-{productData.discount}%</Text>
+                )
               )}
-              <Text style={styles.price}>
-                {formatPrice(productData.discountPrice || productData.price)}
+              <Text style={[styles.price, negotiatedPrice && styles.negotiatedPriceText]}>
+                {formatPrice(currentDisplayPrice)}
               </Text>
-              {productData.discount > 0 && (
+              {(productData.discount > 0 || negotiatedPrice) && (
                 <Text style={styles.originalPrice}>
                   {formatPrice(productData.price)}
                 </Text>
@@ -264,15 +314,15 @@ export default function ProductDetailsScreen({ onBack, onNavigate, product }) {
         <View style={styles.sellerSection}>
           <View style={styles.sellerCard}>
             <Image
-              source={{ uri: productData.seller.avatar }}
+              source={{ uri: productData.seller?.avatar || 'https://via.placeholder.com/48' }}
               style={styles.sellerAvatar}
             />
             <View style={styles.sellerInfo}>
-              <Text style={styles.sellerName}>{productData.seller.name}</Text>
+              <Text style={styles.sellerName}>{productData.seller?.name || 'Vendeur inconnu'}</Text>
               <View style={styles.sellerRating}>
                 <MaterialCommunityIcons name="star" size={14} color="#eab308" />
                 <Text style={styles.sellerRatingText}>
-                  {productData.seller.rating} Note vendeur
+                  {productData.seller?.rating || '0.0'} Note vendeur
                 </Text>
               </View>
             </View>
@@ -315,8 +365,13 @@ export default function ProductDetailsScreen({ onBack, onNavigate, product }) {
       {/* Bottom Action Bar */}
       <View style={styles.bottomBar}>
         <View style={styles.bottomBarContent}>
-          <Pressable onPress={handleMakeOffer} style={styles.offerBtn}>
-            <Text style={styles.offerBtnText}>Faire une offre</Text>
+          <Pressable
+            onPress={handleMakeOffer}
+            style={[styles.offerBtn, negotiatedPrice && styles.offerBtnNegotiated]}
+          >
+            <Text style={styles.offerBtnText}>
+              {negotiatedPrice ? 'Modifier l\'offre' : 'Faire une offre'}
+            </Text>
           </Pressable>
           <Pressable onPress={handleAddToCart} style={styles.addToCartBtn}>
             <MaterialCommunityIcons name="cart-plus" size={20} color="#0E151B" />
@@ -324,6 +379,59 @@ export default function ProductDetailsScreen({ onBack, onNavigate, product }) {
           </Pressable>
         </View>
       </View>
+
+      {/* Offer Modal */}
+      <Modal
+        visible={isOfferModalVisible}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setIsOfferModalVisible(false)}
+      >
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={styles.modalOverlay}
+        >
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Faire une offre</Text>
+              <Pressable onPress={() => setIsOfferModalVisible(false)}>
+                <MaterialCommunityIcons name="close" size={24} color="#fff" />
+              </Pressable>
+            </View>
+
+            <View style={styles.modalBody}>
+              <Text style={styles.modalSubtitle}>
+                Quel prix souhaitez-vous proposer pour ce produit ?
+              </Text>
+
+              <View style={styles.inputContainer}>
+                <TextInput
+                  style={styles.priceInput}
+                  placeholder="Ex: 130000"
+                  placeholderTextColor="#64748b"
+                  keyboardType="numeric"
+                  value={offerAmount}
+                  onChangeText={setOfferAmount}
+                  autoFocus
+                />
+                <Text style={styles.currencyLabel}>XAF</Text>
+              </View>
+
+              <Text style={styles.priceHint}>
+                Prix actuel : {formatPrice(productData.discountPrice || productData.price)}
+              </Text>
+
+              <Pressable onPress={handleSubmitOffer} style={styles.submitOfferBtn}>
+                <Text style={styles.submitOfferBtnText}>Envoyer l'offre</Text>
+              </Pressable>
+
+              <Text style={styles.negotiationInfo}>
+                Le vendeur a déjà défini des limites de négociation. Votre offre sera acceptée instantanément si elle est dans la plage autorisée.
+              </Text>
+            </View>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -439,10 +547,26 @@ const styles = StyleSheet.create({
     marginBottom: 4,
     textTransform: 'uppercase',
   },
+  negotiatedBadge: {
+    backgroundColor: '#22c55e',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+    marginBottom: 4,
+  },
+  negotiatedText: {
+    color: '#fff',
+    fontSize: 10,
+    fontWeight: 'bold',
+    textTransform: 'uppercase',
+  },
   price: {
     fontSize: 20,
     fontWeight: 'bold',
     color: '#137fec',
+  },
+  negotiatedPriceText: {
+    color: '#22c55e',
   },
   originalPrice: {
     fontSize: 14,
@@ -680,6 +804,8 @@ const styles = StyleSheet.create({
   bottomBarContent: {
     flexDirection: 'row',
     gap: 12,
+    paddingHorizontal: 20,
+    paddingTop: 12,
   },
   offerBtn: {
     flex: 1,
@@ -690,6 +816,10 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  offerBtnNegotiated: {
+    borderColor: '#22c55e',
+    backgroundColor: 'rgba(34, 197, 94, 0.1)',
   },
   offerBtnText: {
     fontSize: 14,
@@ -716,4 +846,87 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#0E151B',
   },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.7)',
+    justifyContent: 'flex-end',
+  },
+  modalContent: {
+    backgroundColor: '#1a2632',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    paddingBottom: Platform.OS === 'ios' ? 40 : 24,
+    maxHeight: height * 0.8,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255,255,255,0.05)',
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#fff',
+  },
+  modalBody: {
+    padding: 20,
+  },
+  modalSubtitle: {
+    fontSize: 15,
+    color: '#94a3b8',
+    marginBottom: 20,
+    lineHeight: 22,
+  },
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#101922',
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    borderWidth: 1,
+    borderColor: '#324d67',
+    marginBottom: 12,
+  },
+  priceInput: {
+    flex: 1,
+    height: 56,
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#fff',
+  },
+  currencyLabel: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#137fec',
+    marginLeft: 8,
+  },
+  priceHint: {
+    fontSize: 13,
+    color: '#64748b',
+    marginBottom: 24,
+  },
+  submitOfferBtn: {
+    height: 52,
+    borderRadius: 12,
+    backgroundColor: '#137fec',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 20,
+  },
+  submitOfferBtnText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#fff',
+  },
+  negotiationInfo: {
+    fontSize: 12,
+    color: '#64748b',
+    textAlign: 'center',
+    lineHeight: 18,
+    fontStyle: 'italic',
+  },
 });
+
