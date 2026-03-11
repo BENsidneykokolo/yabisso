@@ -38,11 +38,17 @@
 - UI Wallet complet: WalletScreen, RechargeScreen, SendScreen, ReceiveScreen, HistoryScreen
 - Bottom navigation wallet avec navigation et etat actif
 - Pages: Assistant IA (avec menu, clavier avoidance, 6 outils), Profil + sous-pages
-- Marketplace: MarketplaceHomeScreen, ProductListScreen, CategoryPageScreen, CartScreen, CheckoutScreen
+- Marketplace (COMPLET S5) : MarketplaceHomeScreen, ProductListScreen, CategoryPageScreen, CartScreen, CheckoutScreen, OrdersScreen, OrderStatusScreen, DeliveryTrackingScreen
+- Modules Marketplace avancés :
+  - **Négociation** : Modal de prix, validation min/max price, mise à jour prix panier
+  - **Gestion Commandes** : OrderContext (En cours, Livré, Annulé), persistance locale
+  - **Reprise de commande** : Possibilité de modifier et rajouter au panier une commande annulée
+  - **Option "Pas Moi"** : Popup de saisie d'informations destinataire complet (Nom, Prénom, Adresse, Tel, Ville, Pays, Commentaire)
 - Menu lateral dans Marketplace (hamburger icon) avec: Favoris, Historique, Parametres, Aide
 - Notifications screen pour Marketplace
 - Services ajoutes: Restaurant (home, details, item details, checkout), Hotels, Services, Immobilier
 - FloatingNav: bouton flottant (bottom: 120)
+- Contextes : CartProvider, OrderProvider (états partagés)
 - Offline choix SMS/QR: modal active quand offline (NetInfo)
 - Schema DB local: profiles, sync_queue, signup_nonces, signup_verifications
 - Service offline signup: generation payload + enqueue SyncQueue (non connecte a l'UI)

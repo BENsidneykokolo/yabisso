@@ -11,6 +11,7 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useCart } from '../context/CartContext';
 
 const bottomNavItems = [
   { label: 'Boutique', icon: 'store' },
@@ -20,6 +21,7 @@ const bottomNavItems = [
 ];
 
 const categories = [
+  { name: 'Tout', icon: 'apps', color: '#324d67' },
   { name: 'Téléphones', icon: 'smartphone', color: '#137fec' },
   { name: 'Mode', icon: 'tshirt-crew', color: '#eab308' },
   { name: 'Maison', icon: 'sofa', color: '#22c55e' },
@@ -28,19 +30,25 @@ const categories = [
 ];
 
 const products = [
-  { id: 1, name: 'iPhone 15 Pro Max', brand: 'Apple', price: '950000', isNew: true },
-  { id: 2, name: 'Samsung Galaxy S24 Ultra', brand: 'Samsung', price: '780000', isNew: true },
-  { id: 3, name: 'Air Zoom Pegasus', brand: 'Nike', price: '65000', isNew: false },
-  { id: 4, name: 'Galaxy Watch 5', brand: 'Samsung', price: '120000', isNew: true },
-  { id: 5, name: 'MacBook Pro M3', brand: 'Apple', price: '1200000', isNew: true },
-  { id: 6, name: 'Nike Air Max 2024', brand: 'Nike', price: '85000', isNew: true },
-  { id: 7, name: 'Xiaomi 14 Ultra', brand: 'Xiaomi', price: '650000', isNew: false },
-  { id: 8, name: 'Sony WH-1000XM5', brand: 'Sony', price: '180000', isNew: true },
+  { id: 1, name: 'iPhone 15 Pro Max', brand: 'Apple', price: '950000', isNew: true, category: 'Téléphones' },
+  { id: 2, name: 'Samsung Galaxy S24 Ultra', brand: 'Samsung', price: '780000', isNew: true, category: 'Téléphones' },
+  { id: 3, name: 'Air Zoom Pegasus', brand: 'Nike', price: '65000', isNew: false, category: 'Mode' },
+  { id: 4, name: 'Galaxy Watch 5', brand: 'Samsung', price: '120000', isNew: true, category: 'Accessoire' },
+  { id: 5, name: 'MacBook Pro M3', brand: 'Apple', price: '1200000', isNew: true, category: 'Téléphones' },
+  { id: 6, name: 'Nike Air Max 2024', brand: 'Nike', price: '85000', isNew: true, category: 'Mode' },
+  { id: 7, name: 'Xiaomi 14 Ultra', brand: 'Xiaomi', price: '650000', isNew: false, category: 'Téléphones' },
+  { id: 8, name: 'Sony WH-1000XM5', brand: 'Sony', price: '180000', isNew: true, category: 'Accessoire' },
+  { id: 9, name: 'iPad Pro M4', brand: 'Apple', price: '950000', isNew: true, category: 'Téléphones' },
+  { id: 10, name: 'Samsung TV 55"', brand: 'Samsung', price: '350000', isNew: false, category: 'Maison' },
+  { id: 11, name: 'AirPods Pro', brand: 'Apple', price: '95000', isNew: true, category: 'Accessoire' },
+  { id: 12, name: 'Apple Watch Ultra 2', brand: 'Apple', price: '450000', isNew: true, category: 'Accessoire' },
 ];
 
 const deals = [
-  { id: 1, title: 'Grande Vente', subtitle: 'Électronique & Accessoires', tag: 'PROMO -50%', tagColor: '#ef4444' },
-  { id: 2, title: 'Tech Deals', subtitle: 'Arrivages récents', tag: 'NOUVEAU', tagColor: '#eab308' },
+  { id: 1, title: 'Grande Vente', subtitle: 'Électronique & Accessoires', tag: 'PROMO -50%', tagColor: '#ef4444', category: 'Téléphones' },
+  { id: 2, title: 'Tech Deals', subtitle: 'Arrivages récents', tag: 'NOUVEAU', tagColor: '#eab308', category: 'Mode' },
+  { id: 3, title: 'Beauté', subtitle: 'Cosmétiques & Soins', tag: 'PROMO -30%', tagColor: '#ef4444', category: 'Beauté' },
+  { id: 4, title: 'Maison', subtitle: 'Décoration & Ameublement', tag: 'NOUVEAU', tagColor: '#22c55e', category: 'Maison' },
 ];
 
 export default function MarketplaceHomeScreen({ onBack, onNavigate, favorites = [], onToggleFavorite }) {
@@ -49,6 +57,9 @@ export default function MarketplaceHomeScreen({ onBack, onNavigate, favorites = 
   const [showCameraModal, setShowCameraModal] = useState(false);
   const [searchText, setSearchText] = useState('');
   const [showMenu, setShowMenu] = useState(false);
+  const [showCartPopup, setShowCartPopup] = useState(false);
+  const [addedProduct, setAddedProduct] = useState(null);
+  const { addToCart } = useCart();
 
   const isFavorite = (productId) => favorites.some(f => f.id === productId);
 
@@ -103,10 +114,10 @@ export default function MarketplaceHomeScreen({ onBack, onNavigate, favorites = 
                 <Pressable style={styles.menuBtn} onPress={() => setShowMenu(true)}>
                   <MaterialCommunityIcons name="menu" size={26} color="#fff" />
                 </Pressable>
-                <View>
-                  <Text style={styles.greeting}>Bonjour, Alex</Text>
+                <Pressable onPress={() => onNavigate?.('profile')}>
+                  <Text style={styles.greeting}>Bonjour, Kwesi</Text>
                   <Text style={styles.location}>Abidjan, CI</Text>
-                </View>
+                </Pressable>
               </View>
               <Pressable style={styles.notificationBtn} onPress={() => onNavigate?.('marketplace_notifications')}>
                 <MaterialCommunityIcons name="bell-outline" size={24} color="#fff" />
@@ -129,7 +140,7 @@ export default function MarketplaceHomeScreen({ onBack, onNavigate, favorites = 
               <MaterialCommunityIcons name="magnify" size={18} color="#7C8A9A" />
               <TextInput
                 style={styles.searchInput}
-                placeholder="Rechercher un service (ex: resto)"
+                placeholder="Rechercher un produit (ex: iphone)"
                 placeholderTextColor="#7C8A9A"
                 value={searchText}
                 onChangeText={setSearchText}
@@ -152,12 +163,16 @@ export default function MarketplaceHomeScreen({ onBack, onNavigate, favorites = 
               <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                 <View style={styles.categoriesRow}>
                   {categories.map((cat, index) => (
-                    <View key={index} style={styles.categoryItem}>
+                    <Pressable 
+                      key={index} 
+                      style={styles.categoryItem}
+                      onPress={() => onNavigate?.('category_page', { category: cat.name })}
+                    >
                       <View style={[styles.categoryIcon, { backgroundColor: cat.color }]}>
                         <MaterialCommunityIcons name={cat.icon} size={20} color="#fff" />
                       </View>
                       <Text style={styles.categoryName}>{cat.name}</Text>
-                    </View>
+                    </Pressable>
                   ))}
                 </View>
               </ScrollView>
@@ -168,7 +183,11 @@ export default function MarketplaceHomeScreen({ onBack, onNavigate, favorites = 
               <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                 <View style={styles.dealsRow}>
                   {deals.map((deal) => (
-                    <View key={deal.id} style={styles.dealCard}>
+                    <Pressable 
+                      key={deal.id} 
+                      style={styles.dealCard}
+                      onPress={() => onNavigate?.('category_page', { category: deal.category })}
+                    >
                       <View style={styles.dealContent}>
                         <View style={[styles.dealTag, { backgroundColor: deal.tagColor }]}>
                           <Text style={styles.dealTagText}>{deal.tag}</Text>
@@ -176,7 +195,7 @@ export default function MarketplaceHomeScreen({ onBack, onNavigate, favorites = 
                         <Text style={styles.dealTitle}>{deal.title}</Text>
                         <Text style={styles.dealSubtitle}>{deal.subtitle}</Text>
                       </View>
-                    </View>
+                    </Pressable>
                   ))}
                 </View>
               </ScrollView>
@@ -225,6 +244,13 @@ export default function MarketplaceHomeScreen({ onBack, onNavigate, favorites = 
                             <Text style={styles.productPrice}>{product.price} FCA</Text>
                             <Pressable 
                               style={styles.addBtn}
+                              onPress={(e) => {
+                                e.stopPropagation();
+                                const productToAdd = { ...product, price: parseInt(product.price) || 0 };
+                                addToCart(productToAdd, 1);
+                                setAddedProduct(product);
+                                setShowCartPopup(true);
+                              }}
                             >
                               <MaterialCommunityIcons name="plus" size={18} color="#fff" />
                             </Pressable>
@@ -280,14 +306,21 @@ export default function MarketplaceHomeScreen({ onBack, onNavigate, favorites = 
                       <View style={styles.productInfo}>
                         <Text style={styles.productBrand}>{product.brand}</Text>
                         <Text style={styles.productName} numberOfLines={1}>{product.name}</Text>
-                        <View style={styles.productBottom}>
-                          <Text style={styles.productPrice}>{product.price} FCA</Text>
-                          <Pressable 
-                            style={styles.addBtn}
-                          >
-                            <MaterialCommunityIcons name="plus" size={18} color="#fff" />
-                          </Pressable>
-                        </View>
+                          <View style={styles.productBottom}>
+                            <Text style={styles.productPrice}>{product.price} FCA</Text>
+                            <Pressable 
+                              style={styles.addBtn}
+                              onPress={(e) => {
+                                e.stopPropagation();
+                                const productToAdd = { ...product, price: parseInt(product.price) || 0 };
+                                addToCart(productToAdd, 1);
+                                setAddedProduct(product);
+                                setShowCartPopup(true);
+                              }}
+                            >
+                              <MaterialCommunityIcons name="plus" size={18} color="#fff" />
+                            </Pressable>
+                          </View>
                       </View>
                     </Pressable>
                   ))}
@@ -438,6 +471,43 @@ export default function MarketplaceHomeScreen({ onBack, onNavigate, favorites = 
               <Text style={styles.navLabel}>Retour</Text>
             </Pressable>
           </View>
+
+          {/* Cart Popup */}
+          <Modal
+            visible={showCartPopup}
+            transparent
+            animationType="fade"
+            onRequestClose={() => setShowCartPopup(false)}
+          >
+            <Pressable style={styles.popupOverlay} onPress={() => setShowCartPopup(false)}>
+              <View style={styles.popupContent}>
+                <View style={styles.popupIcon}>
+                  <MaterialCommunityIcons name="cart-check" size={40} color="#22c55e" />
+                </View>
+                <Text style={styles.popupTitle}>Produit ajouté !</Text>
+                <Text style={styles.popupText}>
+                  {addedProduct?.name} a été ajouté au panier.
+                </Text>
+                <View style={styles.popupButtons}>
+                  <Pressable 
+                    style={styles.popupBtnContinue}
+                    onPress={() => setShowCartPopup(false)}
+                  >
+                    <Text style={styles.popupBtnContinueText}>Continuer</Text>
+                  </Pressable>
+                  <Pressable 
+                    style={styles.popupBtnCart}
+                    onPress={() => {
+                      setShowCartPopup(false);
+                      onNavigate?.('cart');
+                    }}
+                  >
+                    <Text style={styles.popupBtnCartText}>Voir panier</Text>
+                  </Pressable>
+                </View>
+              </View>
+            </Pressable>
+          </Modal>
         </SafeAreaView>
       </View>
     </SafeAreaView>
@@ -556,9 +626,9 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   searchMini: {
-    width: 32,
-    height: 32,
-    borderRadius: 8,
+    width: 28,
+    height: 28,
+    borderRadius: 6,
     backgroundColor: '#233648',
     alignItems: 'center',
     justifyContent: 'center',
@@ -645,6 +715,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 12,
   },
+  resultsCount: {
+    fontSize: 14,
+    color: '#94a3b8',
+  },
   seeAll: {
     fontSize: 14,
     color: '#137fec',
@@ -653,12 +727,12 @@ const styles = StyleSheet.create({
   productsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 12,
+    gap: 8,
   },
   productCard: {
-    width: '47%',
+    width: '48%',
     backgroundColor: '#1a2632',
-    borderRadius: 12,
+    borderRadius: 14,
     overflow: 'hidden',
     borderWidth: 1,
     borderColor: '#324d67',
@@ -666,8 +740,7 @@ const styles = StyleSheet.create({
   productImage: {
     aspectRatio: 1,
     backgroundColor: '#324d67',
-    alignItems: 'center',
-    justifyContent: 'center',
+    position: 'relative',
   },
   newBadge: {
     position: 'absolute',
@@ -698,17 +771,18 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   productInfo: {
-    padding: 12,
-    gap: 4,
+    padding: 10,
+    gap: 2,
+  },
+  productName: {
+    fontSize: 13,
+    fontWeight: 'bold',
+    color: '#fff',
+    lineHeight: 16,
   },
   productBrand: {
     fontSize: 12,
     color: '#94a3b8',
-  },
-  productName: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: '#fff',
   },
   productBottom: {
     flexDirection: 'row',
@@ -800,58 +874,6 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: '500',
   },
-  bottomNavWrapper: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
-    paddingHorizontal: 16,
-    paddingBottom: 36,
-  },
-  bottomNav: {
-    backgroundColor: 'rgba(22, 29, 37, 0.98)',
-    borderRadius: 24,
-    paddingVertical: 10,
-    paddingHorizontal: 12,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.08)',
-    marginBottom: 4,
-  },
-  navItem: {
-    alignItems: 'center',
-    flex: 1,
-  },
-  navItemPressed: {
-    transform: [{ scale: 0.96 }],
-  },
-  navIcon: {
-    width: 22,
-    height: 22,
-    borderRadius: 6,
-    backgroundColor: 'rgba(255, 255, 255, 0.18)',
-    marginBottom: 6,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  navIconActive: {
-    backgroundColor: '#3B82F6',
-  },
-  navIconCenter: {
-    width: 34,
-    height: 34,
-    borderRadius: 12,
-    backgroundColor: '#3B82F6',
-    marginTop: -14,
-  },
-  navLabel: {
-    color: '#6B7280',
-    fontSize: 10,
-  },
-  navLabelActive: {
-    color: '#2BEE79',
-  },
   menuOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
@@ -922,24 +944,122 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#64748b',
   },
-  resultsCount: {
-    fontSize: 14,
-    color: '#94a3b8',
+  bottomNavWrapper: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    paddingHorizontal: 16,
+    paddingBottom: 36,
   },
-  noResults: {
+  bottomNav: {
+    backgroundColor: 'rgba(22, 29, 37, 0.98)',
+    borderRadius: 24,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+    marginBottom: 4,
+  },
+  navItem: {
+    alignItems: 'center',
+    flex: 1,
+  },
+  navItemPressed: {
+    transform: [{ scale: 0.96 }],
+  },
+  navIcon: {
+    width: 22,
+    height: 22,
+    borderRadius: 6,
+    backgroundColor: 'rgba(255, 255, 255, 0.18)',
+    marginBottom: 6,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 60,
-    gap: 12,
   },
-  noResultsText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#e2e8f0',
-    marginTop: 8,
+  navIconActive: {
+    backgroundColor: '#3B82F6',
   },
-  noResultsSubtext: {
+  navIconCenter: {
+    width: 34,
+    height: 34,
+    borderRadius: 12,
+    backgroundColor: '#3B82F6',
+    marginTop: -14,
+  },
+  navLabel: {
+    color: '#6B7280',
+    fontSize: 10,
+  },
+  navLabelActive: {
+    color: '#2BEE79',
+  },
+  popupOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  popupContent: {
+    backgroundColor: '#1a2633',
+    borderRadius: 16,
+    padding: 24,
+    width: '100%',
+    maxWidth: 320,
+    alignItems: 'center',
+  },
+  popupIcon: {
+    width: 70,
+    height: 70,
+    borderRadius: 35,
+    backgroundColor: 'rgba(34, 197, 94, 0.1)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  popupTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#fff',
+    marginBottom: 8,
+  },
+  popupText: {
     fontSize: 14,
-    color: '#64748b',
+    color: '#94a3b8',
+    textAlign: 'center',
+    marginBottom: 24,
+  },
+  popupButtons: {
+    flexDirection: 'row',
+    gap: 12,
+    width: '100%',
+  },
+  popupBtnContinue: {
+    flex: 1,
+    paddingVertical: 14,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#324d67',
+    alignItems: 'center',
+  },
+  popupBtnContinueText: {
+    color: '#94a3b8',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  popupBtnCart: {
+    flex: 1,
+    paddingVertical: 14,
+    borderRadius: 12,
+    backgroundColor: '#137fec',
+    alignItems: 'center',
+  },
+  popupBtnCartText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
   },
 });

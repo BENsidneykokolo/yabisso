@@ -16,10 +16,12 @@ import { useCart } from '../context/CartContext';
 const categories = [
   { name: 'Tout', icon: 'apps' },
   { name: 'Téléphones', icon: 'smartphone' },
+  { name: 'Mode', icon: 'tshirt-crew' },
+  { name: 'Maison', icon: 'sofa' },
+  { name: 'Beauté', icon: 'face-woman' },
+  { name: 'Accessoire', icon: 'watch' },
   { name: 'Ordinateurs', icon: 'laptop' },
-  { name: 'Télévisions', icon: 'television' },
   { name: 'Audio', icon: 'headphones' },
-  { name: 'Accessoires', icon: 'watch' },
   { name: 'Gaming', icon: 'gamepad-variant' },
   { name: 'Photo', icon: 'camera' },
 ];
@@ -32,6 +34,11 @@ const brands = [
   { name: 'Infinix', icon: 'cellphone' },
   { name: 'Xiaomi', icon: 'cellphone' },
   { name: 'Huawei', icon: 'cellphone' },
+  { name: 'Nike', icon: 'run' },
+  { name: 'Sony', icon: 'headphones' },
+  { name: 'Dell', icon: 'laptop' },
+  { name: 'Canon', icon: 'camera' },
+  { name: 'Nintendo', icon: 'gamepad-variant' },
 ];
 
 const products = [
@@ -39,18 +46,22 @@ const products = [
   { id: 2, name: 'Samsung Galaxy S24 Ultra', brand: 'Samsung', price: '780000', isNew: true, category: 'Téléphones' },
   { id: 3, name: 'MacBook Pro M3', brand: 'Apple', price: '1200000', isNew: true, category: 'Ordinateurs' },
   { id: 4, name: 'Tecno Camon 20', brand: 'Tecno', price: '145000', isNew: false, category: 'Téléphones' },
-  { id: 5, name: 'Samsung TV 55"', brand: 'Samsung', price: '350000', isNew: false, category: 'Télévisions' },
+  { id: 5, name: 'Samsung TV 55"', brand: 'Samsung', price: '350000', isNew: false, category: 'Maison' },
   { id: 6, name: 'AirPods Pro', brand: 'Apple', price: '95000', isNew: true, category: 'Audio' },
   { id: 7, name: 'Infinix Note 30', brand: 'Infinix', price: '125000', isNew: false, category: 'Téléphones' },
   { id: 8, name: 'Xiaomi Redmi 12', brand: 'Xiaomi', price: '110000', isNew: false, category: 'Téléphones' },
   { id: 9, name: 'iPad Pro M4', brand: 'Apple', price: '950000', isNew: true, category: 'Ordinateurs' },
   { id: 10, name: 'Sony WH-1000XM5', brand: 'Sony', price: '180000', isNew: true, category: 'Audio' },
   { id: 11, name: 'Dell XPS 15', brand: 'Dell', price: '850000', isNew: false, category: 'Ordinateurs' },
-  { id: 12, name: 'Apple Watch Ultra 2', brand: 'Apple', price: '450000', isNew: true, category: 'Accessoires' },
+  { id: 12, name: 'Apple Watch Ultra 2', brand: 'Apple', price: '450000', isNew: true, category: 'Accessoire' },
   { id: 13, name: 'PlayStation 5', brand: 'Sony', price: '450000', isNew: true, category: 'Gaming' },
   { id: 14, name: 'Canon EOS R5', brand: 'Canon', price: '1200000', isNew: false, category: 'Photo' },
-  { id: 15, name: 'Samsung Galaxy Watch 5', brand: 'Samsung', price: '150000', isNew: false, category: 'Accessoires' },
+  { id: 15, name: 'Samsung Galaxy Watch 5', brand: 'Samsung', price: '150000', isNew: false, category: 'Accessoire' },
   { id: 16, name: 'Nintendo Switch', brand: 'Nintendo', price: '250000', isNew: true, category: 'Gaming' },
+  { id: 17, name: 'Air Zoom Pegasus', brand: 'Nike', price: '65000', isNew: false, category: 'Mode' },
+  { id: 18, name: 'Nike Air Max 2024', brand: 'Nike', price: '85000', isNew: true, category: 'Mode' },
+  { id: 19, name: 'Xiaomi 14 Ultra', brand: 'Xiaomi', price: '650000', isNew: false, category: 'Téléphones' },
+  { id: 20, name: 'Galaxy Watch 5', brand: 'Samsung', price: '120000', isNew: true, category: 'Accessoire' },
 ];
 
 const bottomNavItems = [
@@ -60,14 +71,16 @@ const bottomNavItems = [
   { label: 'Panier', icon: 'cart' },
 ];
 
-export default function CategoryPageScreen({ onBack, onNavigate, favorites = [], onToggleFavorite }) {
+export default function CategoryPageScreen({ onBack, onNavigate, favorites = [], onToggleFavorite, category }) {
   const { addToCart } = useCart();
   const [activeTab, setActiveTab] = useState('Catégories');
-  const [selectedCategory, setSelectedCategory] = useState('Tout');
+  const [selectedCategory, setSelectedCategory] = useState(category || 'Tout');
   const [selectedBrand, setSelectedBrand] = useState('Tout');
   const [showVoiceModal, setShowVoiceModal] = useState(false);
   const [showCameraModal, setShowCameraModal] = useState(false);
   const [searchText, setSearchText] = useState('');
+  const [showCartPopup, setShowCartPopup] = useState(false);
+  const [addedProduct, setAddedProduct] = useState(null);
 
   const isFavorite = (productId) => favorites.some(f => f.id === productId);
 
@@ -82,9 +95,11 @@ export default function CategoryPageScreen({ onBack, onNavigate, favorites = [],
       p.name.toLowerCase().includes(searchText.toLowerCase()) ||
       p.brand.toLowerCase().includes(searchText.toLowerCase())
     )
-    : selectedCategory === 'Tout'
-      ? products
-      : products.filter(p => p.category === selectedCategory);
+    : products.filter(p => {
+        const categoryMatch = selectedCategory === 'Tout' || p.category === selectedCategory;
+        const brandMatch = selectedBrand === 'Tout' || p.brand === selectedBrand;
+        return categoryMatch && brandMatch;
+      });
 
   const showSearchResults = searchText.trim().length > 0;
 
@@ -122,7 +137,7 @@ export default function CategoryPageScreen({ onBack, onNavigate, favorites = [],
                 <MaterialCommunityIcons name="magnify" size={18} color="#7C8A9A" />
                 <TextInput
                   style={styles.searchInput}
-                  placeholder="Rechercher un produit..."
+                  placeholder="Rechercher un produit (ex: iphone)"
                   placeholderTextColor="#7C8A9A"
                   value={searchText}
                   onChangeText={setSearchText}
@@ -234,6 +249,8 @@ export default function CategoryPageScreen({ onBack, onNavigate, favorites = [],
                               e.stopPropagation();
                               const productToAdd = { ...product, price: parseInt(product.price) || 0 };
                               addToCart(productToAdd, 1);
+                              setAddedProduct(product);
+                              setShowCartPopup(true);
                             }}
                           >
                             <MaterialCommunityIcons name="plus" size={18} color="#fff" />
@@ -297,6 +314,8 @@ export default function CategoryPageScreen({ onBack, onNavigate, favorites = [],
                               e.stopPropagation();
                               const productToAdd = { ...product, price: parseInt(product.price) || 0 };
                               addToCart(productToAdd, 1);
+                              setAddedProduct(product);
+                              setShowCartPopup(true);
                             }}
                           >
                             <MaterialCommunityIcons name="plus" size={18} color="#fff" />
@@ -444,6 +463,43 @@ export default function CategoryPageScreen({ onBack, onNavigate, favorites = [],
             </View>
           </TouchableOpacity>
         </Modal>
+
+        {/* Cart Popup */}
+        <Modal
+          visible={showCartPopup}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setShowCartPopup(false)}
+        >
+          <Pressable style={styles.popupOverlay} onPress={() => setShowCartPopup(false)}>
+            <View style={styles.popupContent}>
+              <View style={styles.popupIcon}>
+                <MaterialCommunityIcons name="cart-check" size={40} color="#22c55e" />
+              </View>
+              <Text style={styles.popupTitle}>Produit ajouté !</Text>
+              <Text style={styles.popupText}>
+                {addedProduct?.name} a été ajouté au panier.
+              </Text>
+              <View style={styles.popupButtons}>
+                <Pressable 
+                  style={styles.popupBtnContinue}
+                  onPress={() => setShowCartPopup(false)}
+                >
+                  <Text style={styles.popupBtnContinueText}>Continuer</Text>
+                </Pressable>
+                <Pressable 
+                  style={styles.popupBtnCart}
+                  onPress={() => {
+                    setShowCartPopup(false);
+                    onNavigate?.('cart');
+                  }}
+                >
+                  <Text style={styles.popupBtnCartText}>Voir panier</Text>
+                </Pressable>
+              </View>
+            </View>
+          </Pressable>
+        </Modal>
       </View>
     </SafeAreaView>
   );
@@ -481,29 +537,28 @@ const styles = StyleSheet.create({
   },
   searchBar: {
     flex: 1,
-    backgroundColor: 'rgba(24, 32, 40, 0.9)',
-    borderRadius: 18,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
+    backgroundColor: '#1c2630',
+    borderRadius: 12,
+    paddingHorizontal: 12,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.08)',
+    height: 44,
   },
   searchInput: {
     flex: 1,
     fontSize: 14,
     color: '#7C8A9A',
+    marginLeft: 4,
   },
   searchRight: {
     flexDirection: 'row',
   },
   searchMini: {
-    width: 24,
-    height: 24,
-    borderRadius: 8,
-    backgroundColor: 'rgba(255, 255, 255, 0.06)',
+    width: 28,
+    height: 28,
+    borderRadius: 6,
+    backgroundColor: '#1c2630',
     marginLeft: 8,
     alignItems: 'center',
     justifyContent: 'center',
@@ -894,5 +949,71 @@ const styles = StyleSheet.create({
   noResultsSubtext: {
     fontSize: 14,
     color: '#64748b',
+  },
+  popupOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  popupContent: {
+    backgroundColor: '#1a2633',
+    borderRadius: 16,
+    padding: 24,
+    width: '100%',
+    maxWidth: 320,
+    alignItems: 'center',
+  },
+  popupIcon: {
+    width: 70,
+    height: 70,
+    borderRadius: 35,
+    backgroundColor: 'rgba(34, 197, 94, 0.1)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  popupTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#fff',
+    marginBottom: 8,
+  },
+  popupText: {
+    fontSize: 14,
+    color: '#94a3b8',
+    textAlign: 'center',
+    marginBottom: 24,
+  },
+  popupButtons: {
+    flexDirection: 'row',
+    gap: 12,
+    width: '100%',
+  },
+  popupBtnContinue: {
+    flex: 1,
+    paddingVertical: 14,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#324d67',
+    alignItems: 'center',
+  },
+  popupBtnContinueText: {
+    color: '#94a3b8',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  popupBtnCart: {
+    flex: 1,
+    paddingVertical: 14,
+    borderRadius: 12,
+    backgroundColor: '#137fec',
+    alignItems: 'center',
+  },
+  popupBtnCartText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
   },
 });

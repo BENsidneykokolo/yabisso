@@ -103,9 +103,12 @@
 
 | Tâche | Status | Priorité | Sprint |
 |-------|--------|----------|--------|
-| Marketplace offline catalog | Not Started | P2 | S4 |
-| Negotiation module (min_price rules) | Not Started | P2 | S5 |
-| Purchase flow + SMS fallback | Not Started | P2 | S5 |
+| Marketplace offline catalog | Done | P2 | S4 |
+| Negotiation module (min_price rules) | Done | P2 | S5 |
+| Purchase flow + SMS fallback | Done | P2 | S5 |
+| Order Re-entry & Modification (cancelled orders) | Done | P2 | S5 |
+| Recipient Info Popup (Not Me option) | Done | P2 | S5 |
+| Order lifecycle (En cours, Livré, Annulé) | Done | P2 | S5 |
 | Swap QR/Scan | Not Started | P2 | S6 |
 | Courier signup & KYC | Not Started | P2 | S8 |
 | Dispatch engine v1 | Not Started | P2 | S8 |

@@ -944,4 +944,9 @@ User: update tous les fichier .md
 
 Assistant: [A mis a jour project_memory.md avec les nouvelles functionalities]
 
-User: super, update tout ce que nous avons echanger ici dans les fichiers .md
+User: dans l'ecran favorie dans le service "marche" quand je clique sur un produit que j'ai mis en favorie, je ne vois rien, fix le, je dois etre capable de voir le produit (l'ecran "produit") pour etre capable de commander, contacter le vendeur etc...
+
+Assistant: [A corriger]
+- MarketplaceFavoritesScreen : Passage de l'objet `product` lors du clic sur un favori via `onNavigate`.
+- App.js : Mise a jour du routeur pour mapper `product_details` vers `marketplace_product_details` dans l'ecran favoris, permettant l'affichage correct des informations du produit.
+

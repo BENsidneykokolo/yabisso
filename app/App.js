@@ -73,13 +73,16 @@ import { CartProvider } from './src/features/marketplace/context/CartContext';
 import { OrderProvider } from './src/features/marketplace/context/OrderContext';
 
 export default function App() {
-  const [screen, setScreen] = useState('welcome');
-  const [screenParams, setScreenParams] = useState({});
+  const [history, setHistory] = useState([{ screen: 'welcome', params: {} }]);
   const [activeTab, setActiveTab] = useState('Accueil');
   const [homeShowAllServices, setHomeShowAllServices] = useState(false);
   const [walletMode, setWalletMode] = useState('fcfa');
   const [walletActiveTab, setWalletActiveTab] = useState('home');
   const [favorites, setFavorites] = useState([]);
+
+  const current = history[history.length - 1];
+  const screen = current.screen;
+  const screenParams = current.params;
 
   const toggleFavorite = (product) => {
     setFavorites(prev => {
@@ -92,8 +95,17 @@ export default function App() {
   };
 
   const navigate = (screenName, params = {}) => {
-    setScreenParams(params);
-    setScreen(screenName);
+    setHistory(prev => [...prev, { screen: screenName, params }]);
+  };
+
+  const goBack = () => {
+    if (history.length > 1) {
+      setHistory(prev => prev.slice(0, -1));
+    }
+  };
+
+  const resetTo = (screenName, params = {}) => {
+    setHistory([{ screen: screenName, params }]);
   };
 
   let content = null;
@@ -108,7 +120,7 @@ export default function App() {
   if (screen === 'language') {
     content = (
       <LanguageScreen
-        onBack={() => navigate('welcome')}
+        onBack={() => goBack()}
         onContinue={() => navigate('signup')}
       />
     );
@@ -116,7 +128,7 @@ export default function App() {
   if (screen === 'signup') {
     content = (
       <SignupScreen
-        onBack={() => navigate('language')}
+        onBack={() => goBack()}
         onPin={() => navigate('signup_pin')}
         onOfflineSms={() => navigate('signup_sms')}
         onOfflineQr={() => navigate('signup_qr')}
@@ -126,8 +138,8 @@ export default function App() {
   if (screen === 'login') {
     content = (
       <LoginScreen
-        onBack={() => navigate('welcome')}
-        onLogin={() => navigate('home')}
+        onBack={() => goBack()}
+        onLogin={() => resetTo('home')}
         onCreateAccount={() => navigate('signup')}
       />
     );
@@ -135,31 +147,31 @@ export default function App() {
   if (screen === 'signup_pin') {
     content = (
       <PinSignupScreen
-        onBack={() => navigate('signup')}
-        onOk={() => navigate('home')}
+        onBack={() => goBack()}
+        onOk={() => resetTo('home')}
       />
     );
   }
   if (screen === 'signup_sms') {
     content = (
       <SmsSignupScreen
-        onBack={() => navigate('signup')}
-        onOk={() => navigate('home')}
+        onBack={() => goBack()}
+        onOk={() => resetTo('home')}
       />
     );
   }
   if (screen === 'signup_qr') {
     content = (
       <QrSignupScreen
-        onBack={() => navigate('signup')}
-        onOk={() => navigate('home')}
+        onBack={() => goBack()}
+        onOk={() => resetTo('home')}
       />
     );
   }
   if (screen === 'home') {
     content = (
       <HomeScreen
-        onSignOut={() => navigate('signup')}
+        onSignOut={() => resetTo('welcome')}
         onOpenWallet={() => {
           setWalletActiveTab('home');
           setActiveTab('Portefeuille');
@@ -188,19 +200,19 @@ export default function App() {
     );
   }
   if (screen === 'home_qr') {
-    content = <QrHubScreen onBack={() => navigate('home')} />;
+    content = <QrHubScreen onBack={() => goBack()} />;
   }
   if (screen === 'home_settings') {
-    content = <HomeSettingsScreen onBack={() => navigate('home')} />;
+    content = <HomeSettingsScreen onBack={() => goBack()} />;
   }
   if (screen === 'home_notifications') {
-    content = <HomeNotificationsScreen onBack={() => navigate('home')} />;
+    content = <HomeNotificationsScreen onBack={() => goBack()} />;
   }
   if (screen === 'wallet') {
-    content = <WalletScreen onBack={() => navigate('home')} onOpenHome={() => { setWalletActiveTab('home'); navigate('wallet'); }} onOpenRecharge={() => { setWalletActiveTab('recharge'); navigate('wallet_recharge'); }} onOpenSend={() => { setWalletActiveTab('send'); navigate('wallet_send'); }} onOpenReceive={() => { setWalletActiveTab('receive'); navigate('wallet_receive'); }} onOpenHistory={() => { setWalletActiveTab('history'); navigate('wallet_history'); }} walletMode={walletMode} setWalletMode={setWalletMode} activeTab={walletActiveTab} />;
+    content = <WalletScreen onBack={() => goBack()} onOpenHome={() => { setWalletActiveTab('home'); navigate('wallet'); }} onOpenRecharge={() => { setWalletActiveTab('recharge'); navigate('wallet_recharge'); }} onOpenSend={() => { setWalletActiveTab('send'); navigate('wallet_send'); }} onOpenReceive={() => { setWalletActiveTab('receive'); navigate('wallet_receive'); }} onOpenHistory={() => { setWalletActiveTab('history'); navigate('wallet_history'); }} walletMode={walletMode} setWalletMode={setWalletMode} activeTab={walletActiveTab} />;
   }
   if (screen === 'wallet_recharge') {
-    content = <RechargeScreen onBack={() => navigate('wallet')} onComplete={() => navigate('wallet')} onOpenQRScan={() => navigate('wallet_kiosque_qr')} onOpenPinEntry={() => navigate('wallet_kiosque_pin')} walletMode={walletMode} onNavigate={(key, mode) => {
+    content = <RechargeScreen onBack={() => goBack()} onComplete={() => navigate('wallet')} onOpenQRScan={() => navigate('wallet_kiosque_qr')} onOpenPinEntry={() => navigate('wallet_kiosque_pin')} walletMode={walletMode} onNavigate={(key, mode) => {
       setWalletActiveTab(key);
       if (key === 'home') navigate('wallet');
       if (key === 'recharge') navigate('wallet_recharge');
@@ -210,13 +222,13 @@ export default function App() {
     }} />;
   }
   if (screen === 'wallet_kiosque_qr') {
-    content = <KiosqueQRScreen onBack={() => navigate('wallet_recharge')} onComplete={() => { setWalletActiveTab('recharge'); navigate('wallet'); }} />;
+    content = <KiosqueQRScreen onBack={() => goBack()} onComplete={() => { setWalletActiveTab('recharge'); navigate('wallet'); }} />;
   }
   if (screen === 'wallet_kiosque_pin') {
-    content = <KiosquePinScreen onBack={() => navigate('wallet_recharge')} onComplete={() => { setWalletActiveTab('recharge'); navigate('wallet'); }} walletMode={walletMode} />;
+    content = <KiosquePinScreen onBack={() => goBack()} onComplete={() => { setWalletActiveTab('recharge'); navigate('wallet'); }} walletMode={walletMode} />;
   }
   if (screen === 'wallet_send') {
-    content = <SendScreen onBack={() => navigate('wallet')} onOpenQRGenerate={() => navigate('wallet_send_qr_generate')} onOpenSelectBeneficiary={() => navigate('wallet_send_beneficiary')} onOpenScanQR={() => navigate('wallet_send_scan')} walletMode={walletMode} onNavigate={(key, mode) => {
+    content = <SendScreen onBack={() => goBack()} onOpenQRGenerate={() => navigate('wallet_send_qr_generate')} onOpenSelectBeneficiary={() => navigate('wallet_send_beneficiary')} onOpenScanQR={() => navigate('wallet_send_scan')} walletMode={walletMode} onNavigate={(key, mode) => {
       setWalletActiveTab(key);
       if (key === 'home') navigate('wallet');
       if (key === 'recharge') navigate('wallet_recharge');
@@ -226,24 +238,24 @@ export default function App() {
     }} />;
   }
   if (screen === 'wallet_send_qr_generate') {
-    content = <SendQRGenerateScreen onBack={() => navigate('wallet_send')} onCreateQR={() => navigate('wallet_send_qr_result')} walletMode={walletMode} />;
+    content = <SendQRGenerateScreen onBack={() => goBack()} onCreateQR={() => navigate('wallet_send_qr_result')} walletMode={walletMode} />;
   }
   if (screen === 'wallet_send_qr_result') {
-    content = <SendQRResultScreen onBack={() => navigate('wallet_send_qr_generate')} onComplete={() => { setWalletActiveTab('send'); navigate('wallet'); }} amount="5000" walletMode={walletMode} />;
+    content = <SendQRResultScreen onBack={() => goBack()} onComplete={() => { setWalletActiveTab('send'); navigate('wallet'); }} amount="5000" walletMode={walletMode} />;
   }
   if (screen === 'wallet_send_beneficiary') {
-    content = <SendSelectBeneficiaryScreen onBack={() => navigate('wallet_send')} onSendMoney={() => { setWalletActiveTab('send'); navigate('wallet'); }} walletMode={walletMode} />;
+    content = <SendSelectBeneficiaryScreen onBack={() => goBack()} onSendMoney={() => { setWalletActiveTab('send'); navigate('wallet'); }} walletMode={walletMode} />;
   }
   if (screen === 'wallet_send_scan') {
-    content = <SendScanQRScreen onBack={() => navigate('wallet_send')} onConfirm={() => { setWalletActiveTab('send'); navigate('wallet'); }} onShowPassword={(amount) => {
+    content = <SendScanQRScreen onBack={() => goBack()} onConfirm={() => { setWalletActiveTab('send'); navigate('wallet'); }} onShowPassword={(amount) => {
       navigate('wallet_send_confirm');
     }} walletMode={walletMode} />;
   }
   if (screen === 'wallet_send_confirm') {
-    content = <SendConfirmPaymentScreen onBack={() => navigate('wallet_send_scan')} onConfirm={() => { setWalletActiveTab('send'); navigate('wallet'); }} amount="5000" recipientName="Jean Dupont" walletMode={walletMode} />;
+    content = <SendConfirmPaymentScreen onBack={() => goBack()} onConfirm={() => { setWalletActiveTab('send'); navigate('wallet'); }} amount="5000" recipientName="Jean Dupont" walletMode={walletMode} />;
   }
   if (screen === 'wallet_receive') {
-    content = <ReceiveScreen onBack={() => navigate('wallet')} onOpenScanQR={() => navigate('wallet_receive_scan')} onOpenNotifications={() => navigate('wallet_receive_notifications')} onOpenRequestPayment={() => navigate('wallet_receive_request')} walletMode={walletMode} onNavigate={(key, mode) => {
+    content = <ReceiveScreen onBack={() => goBack()} onOpenScanQR={() => navigate('wallet_receive_scan')} onOpenNotifications={() => navigate('wallet_receive_notifications')} onOpenRequestPayment={() => navigate('wallet_receive_request')} walletMode={walletMode} onNavigate={(key, mode) => {
       setWalletActiveTab(key);
       if (key === 'home') navigate('wallet');
       if (key === 'recharge') navigate('wallet_recharge');
@@ -253,16 +265,16 @@ export default function App() {
     }} />;
   }
   if (screen === 'wallet_receive_scan') {
-    content = <ReceiveScanQRScreen onBack={() => navigate('wallet_receive')} onComplete={() => { setWalletActiveTab('receive'); navigate('wallet'); }} walletMode={walletMode} />;
+    content = <ReceiveScanQRScreen onBack={() => goBack()} onComplete={() => { setWalletActiveTab('receive'); navigate('wallet'); }} walletMode={walletMode} />;
   }
   if (screen === 'wallet_receive_notifications') {
-    content = <ReceiveNotificationsScreen onBack={() => navigate('wallet_receive')} walletMode={walletMode} />;
+    content = <ReceiveNotificationsScreen onBack={() => goBack()} walletMode={walletMode} />;
   }
   if (screen === 'wallet_receive_request') {
-    content = <ReceiveRequestPaymentScreen onBack={() => navigate('wallet_receive')} onCreateQR={() => navigate('wallet_send_qr_result')} onSendToContact={() => { setWalletActiveTab('receive'); navigate('wallet'); }} walletMode={walletMode} />;
+    content = <ReceiveRequestPaymentScreen onBack={() => goBack()} onCreateQR={() => navigate('wallet_send_qr_result')} onSendToContact={() => { setWalletActiveTab('receive'); navigate('wallet'); }} walletMode={walletMode} />;
   }
   if (screen === 'wallet_history') {
-    content = <HistoryScreen onBack={() => navigate('wallet')} walletMode={walletMode} onNavigate={(key, mode) => {
+    content = <HistoryScreen onBack={() => goBack()} walletMode={walletMode} onNavigate={(key, mode) => {
       setWalletActiveTab(key);
       if (key === 'home') navigate('wallet');
       if (key === 'recharge') navigate('wallet_recharge');
@@ -272,7 +284,7 @@ export default function App() {
     }} />;
   }
   if (screen === 'assistant') {
-    content = <AssistantScreen onBack={() => navigate('home')} onNavigate={(screenName) => {
+    content = <AssistantScreen onBack={() => goBack()} onNavigate={(screenName) => {
       if (screenName === 'home') navigate('home');
       if (screenName === 'wallet') { setWalletActiveTab('home'); navigate('wallet'); }
       if (screenName === 'profile') navigate('profile');
@@ -283,7 +295,7 @@ export default function App() {
   if (screen === 'profile') {
     content = (
       <ProfileScreen
-        onBack={() => navigate('home')}
+        onBack={() => goBack()}
         onOpenHome={() => navigate('profile')}
         onOpenAccount={() => navigate('profile_account')}
         onOpenSecurity={() => navigate('profile_security')}
@@ -301,15 +313,15 @@ export default function App() {
     );
   }
   if (screen === 'profile_account') {
-    content = <AccountScreen onBack={() => navigate('profile')} onOpenHome={() => navigate('profile')} onOpenSecurity={() => navigate('profile_security')} onOpenSupport={() => navigate('profile_support')} onOpenLogout={() => navigate('profile_logout')} />;
+    content = <AccountScreen onBack={() => goBack()} onOpenHome={() => navigate('profile')} onOpenSecurity={() => navigate('profile_security')} onOpenSupport={() => navigate('profile_support')} onOpenLogout={() => navigate('profile_logout')} />;
   }
   if (screen === 'profile_security') {
-    content = <SecurityScreen onBack={() => navigate('profile')} onOpenHome={() => navigate('profile')} onOpenAccount={() => navigate('profile_account')} onOpenSupport={() => navigate('profile_support')} onOpenLogout={() => navigate('profile_logout')} />;
+    content = <SecurityScreen onBack={() => goBack()} onOpenHome={() => navigate('profile')} onOpenAccount={() => navigate('profile_account')} onOpenSupport={() => navigate('profile_support')} onOpenLogout={() => navigate('profile_logout')} />;
   }
   if (screen === 'profile_notifications') {
     content = (
       <NotificationsScreen
-        onBack={() => navigate('profile')}
+        onBack={() => goBack()}
         onOpenHome={() => navigate('profile')}
         onOpenAccount={() => navigate('profile_account')}
         onOpenSecurity={() => navigate('profile_security')}
@@ -321,23 +333,23 @@ export default function App() {
     );
   }
   if (screen === 'profile_language') {
-    content = <LanguageSettingsScreen onBack={() => navigate('profile')} />;
+    content = <LanguageSettingsScreen onBack={() => goBack()} />;
   }
   if (screen === 'profile_support') {
-    content = <SupportScreen onBack={() => navigate('profile')} onOpenHome={() => navigate('profile')} onOpenAccount={() => navigate('profile_account')} onOpenSecurity={() => navigate('profile_security')} onOpenLogout={() => navigate('profile_logout')} />;
+    content = <SupportScreen onBack={() => goBack()} onOpenHome={() => navigate('profile')} onOpenAccount={() => navigate('profile_account')} onOpenSecurity={() => navigate('profile_security')} onOpenLogout={() => navigate('profile_logout')} />;
   }
   if (screen === 'profile_logout') {
     content = (
       <LogoutScreen
-        onBack={() => navigate('profile')}
-        onConfirm={() => navigate('welcome')}
+        onBack={() => goBack()}
+        onConfirm={() => resetTo('welcome')}
       />
     );
   }
   if (screen === 'profile_edit') {
     content = (
       <EditProfileScreen
-        onBack={() => navigate('profile')}
+        onBack={() => goBack()}
         onOpenHome={() => navigate('profile')}
         onOpenAccount={() => navigate('profile_account')}
         onOpenSecurity={() => navigate('profile_security')}
@@ -350,7 +362,7 @@ export default function App() {
   if (screen === 'market_seller') {
     content = (
       <SellerProfileScreen
-        onBack={() => navigate('home')}
+        onBack={() => goBack()}
         onOpenAddProduct={() => navigate('market_add_product')}
       />
     );
@@ -358,7 +370,7 @@ export default function App() {
   if (screen === 'market_add_product') {
     content = (
       <AddProductScreen
-        onBack={() => navigate('market_seller')}
+        onBack={() => goBack()}
         onOpenSellerProfile={() => navigate('market_seller')}
       />
     );
@@ -366,7 +378,7 @@ export default function App() {
   if (screen === 'marketplace_home') {
     content = (
       <MarketplaceHomeScreen
-        onBack={() => navigate('home')}
+        onBack={() => goBack()}
         favorites={favorites}
         onToggleFavorite={toggleFavorite}
         onNavigate={(screenName, params) => {
@@ -382,7 +394,7 @@ export default function App() {
   if (screen === 'marketplace_product_list') {
     content = (
       <ProductListScreen
-        onBack={() => navigate('marketplace_home')}
+        onBack={() => goBack()}
         favorites={favorites}
         onToggleFavorite={toggleFavorite}
         onNavigate={(screenName, params) => {
@@ -402,9 +414,10 @@ export default function App() {
   if (screen === 'marketplace_category_page') {
     content = (
       <CategoryPageScreen
-        onBack={() => navigate('marketplace_product_list')}
+        onBack={() => goBack()}
         favorites={favorites}
         onToggleFavorite={toggleFavorite}
+        category={screenParams?.category}
         onNavigate={(screenName, params) => {
           let target = screenName;
           if (screenName === 'product_details') target = 'marketplace_product_details';
@@ -421,7 +434,7 @@ export default function App() {
   if (screen === 'new_arrivals') {
     content = (
       <NewArrivalsScreen
-        onBack={() => navigate('marketplace_home')}
+        onBack={() => goBack()}
         favorites={favorites}
         onToggleFavorite={toggleFavorite}
         onNavigate={(screenName, params) => {
@@ -441,7 +454,7 @@ export default function App() {
     content = (
       <ProductDetailsScreen
         product={screenParams?.product}
-        onBack={() => navigate('marketplace_product_list')}
+        onBack={() => goBack()}
         onNavigate={(action, data) => navigate(action, data)}
       />
     );
@@ -449,7 +462,7 @@ export default function App() {
   if (screen === 'cart') {
     content = (
       <CartScreen
-        onBack={() => navigate('marketplace_home')}
+        onBack={() => goBack()}
         onNavigate={(screenName, params) => navigate(screenName, params)}
       />
     );
@@ -457,7 +470,7 @@ export default function App() {
   if (screen === 'checkout') {
     content = (
       <CheckoutScreen
-        onBack={() => navigate('cart')}
+        onBack={() => goBack()}
         onNavigate={(screenName, params) => navigate(screenName, params)}
         route={{ params: screenParams }}
       />
@@ -466,7 +479,7 @@ export default function App() {
   if (screen === 'order_status') {
     content = (
       <OrderStatusScreen
-        onBack={() => navigate('orders')}
+        onBack={() => goBack()}
         onNavigate={(screenName, params) => navigate(screenName, params)}
       />
     );
@@ -474,7 +487,7 @@ export default function App() {
   if (screen === 'orders') {
     content = (
       <OrdersScreen
-        onBack={() => navigate('marketplace_home')}
+        onBack={() => goBack()}
         onNavigate={(screenName, params) => navigate(screenName, params)}
       />
     );
@@ -482,14 +495,14 @@ export default function App() {
   if (screen === 'delivery_tracking') {
     content = (
       <DeliveryTrackingScreen
-        onBack={() => navigate('order_status')}
+        onBack={() => goBack()}
       />
     );
   }
   if (screen === 'seller_comparison') {
     content = (
       <SellerComparisonScreen
-        onBack={() => navigate('marketplace_product_details')}
+        onBack={() => goBack()}
         onNavigate={(action, data) => {
           if (action === 'select_seller') {
             navigate('marketplace_product_details');
@@ -501,7 +514,7 @@ export default function App() {
   if (screen === 'blocked_user') {
     content = (
       <BlockedUserScreen
-        onBack={() => navigate('home')}
+        onBack={() => goBack()}
         onNavigate={(screenName) => navigate(screenName)}
       />
     );
@@ -509,7 +522,7 @@ export default function App() {
   if (screen === 'loba_home') {
     content = (
       <LobaHomeScreen
-        onBack={() => navigate('home')}
+        onBack={() => goBack()}
         onNavigate={(screenName) => navigate(screenName)}
       />
     );
@@ -517,7 +530,7 @@ export default function App() {
   if (screen === 'loba_feed') {
     content = (
       <LobaFeedScreen
-        onBack={() => navigate('loba_home')}
+        onBack={() => goBack()}
         onNavigate={(screenName) => navigate(screenName)}
       />
     );
@@ -525,7 +538,7 @@ export default function App() {
   if (screen === 'loba_profile') {
     content = (
       <LobaProfileScreen
-        onBack={() => navigate('loba_home')}
+        onBack={() => goBack()}
         onNavigate={(screenName) => navigate(screenName)}
       />
     );
@@ -533,7 +546,7 @@ export default function App() {
   if (screen === 'loba_stories') {
     content = (
       <LobaStoriesScreen
-        onBack={() => navigate('loba_feed')}
+        onBack={() => goBack()}
         onClose={() => navigate('loba_feed')}
       />
     );
@@ -541,7 +554,7 @@ export default function App() {
   if (screen === 'loba_record') {
     content = (
       <LobaRecordScreen
-        onBack={() => navigate('loba_home')}
+        onBack={() => goBack()}
         onClose={() => navigate('loba_home')}
       />
     );
@@ -551,7 +564,7 @@ export default function App() {
   if (screen === 'restaurant_home') {
     content = (
       <RestaurantHomeScreen
-        onBack={() => navigate('home')}
+        onBack={() => goBack()}
         onNavigate={(screenName, params) => navigate(screenName, params)}
       />
     );
@@ -559,7 +572,7 @@ export default function App() {
   if (screen === 'restaurant_details') {
     content = (
       <RestaurantDetailsScreen
-        onBack={() => navigate('restaurant_home')}
+        onBack={() => goBack()}
         onNavigate={(screenName, params) => navigate(screenName, params)}
       />
     );
@@ -567,7 +580,7 @@ export default function App() {
   if (screen === 'food_details') {
     content = (
       <FoodItemDetailsScreen
-        onBack={() => navigate('restaurant_details')}
+        onBack={() => goBack()}
         onNavigate={(screenName, params) => navigate(screenName, params)}
       />
     );
@@ -575,7 +588,7 @@ export default function App() {
   if (screen === 'food_checkout') {
     content = (
       <FoodCheckoutScreen
-        onBack={() => navigate('restaurant_details')}
+        onBack={() => goBack()}
         onNavigate={(screenName, params) => navigate(screenName, params)}
       />
     );
@@ -585,7 +598,7 @@ export default function App() {
   if (screen === 'hotel_home') {
     content = (
       <HotelHomeScreen
-        onBack={() => navigate('home')}
+        onBack={() => goBack()}
         onNavigate={(screenName, params) => navigate(screenName, params)}
       />
     );
@@ -595,7 +608,7 @@ export default function App() {
   if (screen === 'services_home') {
     content = (
       <ServicesHomeScreen
-        onBack={() => navigate('home')}
+        onBack={() => goBack()}
         onNavigate={(screenName, params) => navigate(screenName, params)}
       />
     );
@@ -605,7 +618,7 @@ export default function App() {
   if (screen === 'real_estate_home') {
     content = (
       <RealEstateHomeScreen
-        onBack={() => navigate('home')}
+        onBack={() => goBack()}
         onNavigate={(screenName, params) => navigate(screenName, params)}
       />
     );
@@ -615,7 +628,7 @@ export default function App() {
   if (screen === 'marketplace_notifications') {
     content = (
       <MarketplaceNotificationsScreen
-        onBack={() => navigate('marketplace_home')}
+        onBack={() => goBack()}
       />
     );
   }
@@ -624,10 +637,14 @@ export default function App() {
   if (screen === 'marketplace_favorites') {
     content = (
       <MarketplaceFavoritesScreen
-        onBack={() => navigate('marketplace_home')}
+        onBack={() => goBack()}
         favorites={favorites}
         onToggleFavorite={toggleFavorite}
-        onNavigate={(screenName, params) => navigate(screenName, params)}
+        onNavigate={(screenName, params) => {
+          let target = screenName;
+          if (screenName === 'product_details') target = 'marketplace_product_details';
+          navigate(target, params);
+        }}
       />
     );
   }
@@ -636,7 +653,7 @@ export default function App() {
   if (screen === 'marketplace_history') {
     content = (
       <MarketplaceHistoryScreen
-        onBack={() => navigate('marketplace_home')}
+        onBack={() => goBack()}
       />
     );
   }
@@ -645,7 +662,7 @@ export default function App() {
   if (screen === 'marketplace_settings') {
     content = (
       <MarketplaceSettingsScreen
-        onBack={() => navigate('marketplace_home')}
+        onBack={() => goBack()}
       />
     );
   }

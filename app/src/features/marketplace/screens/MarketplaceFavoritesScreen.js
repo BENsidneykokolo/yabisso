@@ -33,7 +33,11 @@ export default function MarketplaceFavoritesScreen({ onBack, onNavigate, favorit
         ) : (
           <View style={styles.favoritesList}>
             {favorites.map((item) => (
-              <Pressable key={item.id} style={styles.favoriteCard} onPress={() => onNavigate?.('product_details')}>
+              <Pressable 
+                key={item.id} 
+                style={styles.favoriteCard} 
+                onPress={() => onNavigate?.('product_details', { product: item })}
+              >
                 <View style={styles.productImage}>
                   <MaterialCommunityIcons name="image" size={32} color="#324d67" />
                 </View>

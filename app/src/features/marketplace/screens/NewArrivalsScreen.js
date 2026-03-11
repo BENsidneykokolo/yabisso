@@ -7,6 +7,7 @@ import {
   StyleSheet,
   SafeAreaView,
   TextInput,
+  Modal,
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useCart } from '../context/CartContext';
@@ -43,6 +44,10 @@ export default function NewArrivalsScreen({ onBack, onNavigate, favorites = [], 
   const [activeTab, setActiveTab] = useState('Nouveauté');
   const [selectedCategory, setSelectedCategory] = useState('Tous');
   const [searchText, setSearchText] = useState('');
+  const [showCartPopup, setShowCartPopup] = useState(false);
+  const [addedProduct, setAddedProduct] = useState(null);
+  const [showVoiceModal, setShowVoiceModal] = useState(false);
+  const [showCameraModal, setShowCameraModal] = useState(false);
 
   const isFavorite = (productId) => favorites.some(f => f.id === productId);
 
@@ -102,11 +107,19 @@ export default function NewArrivalsScreen({ onBack, onNavigate, favorites = [], 
               <MaterialCommunityIcons name="magnify" size={18} color="#7C8A9A" />
               <TextInput
                 style={styles.searchInput}
-                placeholder="Rechercher un produit..."
+                placeholder="Rechercher un produit (ex: iphone)"
                 placeholderTextColor="#7C8A9A"
                 value={searchText}
                 onChangeText={setSearchText}
               />
+              <View style={styles.searchRight}>
+                <Pressable style={styles.searchMini} onPress={() => setShowVoiceModal(true)}>
+                  <MaterialCommunityIcons name="microphone" size={14} color="#CBD5F5" />
+                </Pressable>
+                <Pressable style={styles.searchMini} onPress={() => setShowCameraModal(true)}>
+                  <MaterialCommunityIcons name="camera" size={14} color="#CBD5F5" />
+                </Pressable>
+              </View>
             </View>
           </View>
 
@@ -191,6 +204,8 @@ export default function NewArrivalsScreen({ onBack, onNavigate, favorites = [], 
                             e.stopPropagation();
                             const productToAdd = { ...product, price: parseInt(product.price) || 0 };
                             addToCart(productToAdd, 1);
+                            setAddedProduct(product);
+                            setShowCartPopup(true);
                           }}
                         >
                           <MaterialCommunityIcons name="plus" size={18} color="#fff" />
@@ -267,6 +282,85 @@ export default function NewArrivalsScreen({ onBack, onNavigate, favorites = [], 
               <Text style={styles.navLabel}>Retour</Text>
             </Pressable>
           </View>
+
+          {/* Voice Modal */}
+          <Modal visible={showVoiceModal} transparent animationType="slide">
+            <Pressable style={styles.modalOverlay} onPress={() => setShowVoiceModal(false)}>
+              <View style={styles.modalContent}>
+                <Text style={styles.modalTitle}>Recherche vocale</Text>
+                <Text style={styles.modalSubtitle}>Parler maintenant...</Text>
+                <View style={styles.voiceWaveContainer}>
+                  {[1,2,3,4,5].map(i => (
+                    <View key={i} style={[styles.voiceWave, { height: 20 + Math.random() * 30 }]} />
+                  ))}
+                </View>
+                <Pressable style={styles.voiceCancelBtn} onPress={() => setShowVoiceModal(false)}>
+                  <Text style={styles.voiceCancelText}>Annuler</Text>
+                </Pressable>
+              </View>
+            </Pressable>
+          </Modal>
+
+          {/* Camera Modal */}
+          <Modal visible={showCameraModal} transparent animationType="slide">
+            <Pressable style={styles.modalOverlay} onPress={() => setShowCameraModal(false)}>
+              <View style={styles.modalContent}>
+                <Text style={styles.modalTitle}>Scanner</Text>
+                <Text style={styles.modalSubtitle}> Scanner un code QR ou produit</Text>
+                <View style={styles.cameraOptions}>
+                  <Pressable style={styles.cameraOptionBtn}>
+                    <View style={styles.cameraOptionIcon}>
+                      <MaterialCommunityIcons name="qrcode-scan" size={32} color="#fff" />
+                    </View>
+                    <Text style={styles.cameraOptionText}>Scanner QR</Text>
+                  </Pressable>
+                  <Pressable style={styles.cameraOptionBtn}>
+                    <View style={styles.cameraOptionIcon}>
+                      <MaterialCommunityIcons name="camera" size={32} color="#fff" />
+                    </View>
+                    <Text style={styles.cameraOptionText}>Photo produit</Text>
+                  </Pressable>
+                </View>
+              </View>
+            </Pressable>
+          </Modal>
+
+          {/* Cart Popup */}
+          <Modal
+            visible={showCartPopup}
+            transparent
+            animationType="fade"
+            onRequestClose={() => setShowCartPopup(false)}
+          >
+            <Pressable style={styles.popupOverlay} onPress={() => setShowCartPopup(false)}>
+              <View style={styles.popupContent}>
+                <View style={styles.popupIcon}>
+                  <MaterialCommunityIcons name="cart-check" size={40} color="#22c55e" />
+                </View>
+                <Text style={styles.popupTitle}>Produit ajouté !</Text>
+                <Text style={styles.popupText}>
+                  {addedProduct?.name} a été ajouté au panier.
+                </Text>
+                <View style={styles.popupButtons}>
+                  <Pressable 
+                    style={styles.popupBtnContinue}
+                    onPress={() => setShowCartPopup(false)}
+                  >
+                    <Text style={styles.popupBtnContinueText}>Continuer</Text>
+                  </Pressable>
+                  <Pressable 
+                    style={styles.popupBtnCart}
+                    onPress={() => {
+                      setShowCartPopup(false);
+                      onNavigate?.('cart');
+                    }}
+                  >
+                    <Text style={styles.popupBtnCartText}>Voir panier</Text>
+                  </Pressable>
+                </View>
+              </View>
+            </Pressable>
+          </Modal>
         </SafeAreaView>
       </View>
     </SafeAreaView>
@@ -560,8 +654,20 @@ const styles = StyleSheet.create({
   searchInput: {
     flex: 1,
     marginLeft: 8,
-    fontSize: 15,
-    color: '#fff',
+    fontSize: 14,
+    color: '#7C8A9A',
+  },
+  searchRight: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  searchMini: {
+    width: 28,
+    height: 28,
+    borderRadius: 6,
+    backgroundColor: '#233648',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   noResults: {
     alignItems: 'center',
@@ -574,5 +680,139 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#e2e8f0',
     marginTop: 8,
+  },
+  popupOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  popupContent: {
+    backgroundColor: '#1a2633',
+    borderRadius: 16,
+    padding: 24,
+    width: '100%',
+    maxWidth: 320,
+    alignItems: 'center',
+  },
+  popupIcon: {
+    width: 70,
+    height: 70,
+    borderRadius: 35,
+    backgroundColor: 'rgba(34, 197, 94, 0.1)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  popupTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#fff',
+    marginBottom: 8,
+  },
+  popupText: {
+    fontSize: 14,
+    color: '#94a3b8',
+    textAlign: 'center',
+    marginBottom: 24,
+  },
+  popupButtons: {
+    flexDirection: 'row',
+    gap: 12,
+    width: '100%',
+  },
+  popupBtnContinue: {
+    flex: 1,
+    paddingVertical: 14,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#324d67',
+    alignItems: 'center',
+  },
+  popupBtnContinueText: {
+    color: '#94a3b8',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  popupBtnCart: {
+    flex: 1,
+    paddingVertical: 14,
+    borderRadius: 12,
+    backgroundColor: '#137fec',
+    alignItems: 'center',
+  },
+  popupBtnCartText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    justifyContent: 'flex-end',
+  },
+  modalContent: {
+    backgroundColor: '#1a2633',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    padding: 24,
+    paddingBottom: 40,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#fff',
+    marginBottom: 8,
+  },
+  modalSubtitle: {
+    fontSize: 14,
+    color: '#94a3b8',
+    marginBottom: 24,
+  },
+  voiceWaveContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: 60,
+    gap: 8,
+  },
+  voiceWave: {
+    width: 6,
+    backgroundColor: '#137fec',
+    borderRadius: 3,
+  },
+  voiceCancelBtn: {
+    marginTop: 24,
+    paddingVertical: 16,
+    alignItems: 'center',
+  },
+  voiceCancelText: {
+    color: '#94a3b8',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  cameraOptions: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 24,
+    marginTop: 16,
+  },
+  cameraOptionBtn: {
+    alignItems: 'center',
+    gap: 12,
+  },
+  cameraOptionIcon: {
+    width: 70,
+    height: 70,
+    borderRadius: 16,
+    backgroundColor: '#233648',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  cameraOptionText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '500',
   },
 });

@@ -59,23 +59,26 @@ Build dev client a revalider
 - UI: `app/src/features/marketplace/screens/MarketplaceHomeScreen.js`
 - UI: `app/src/features/marketplace/screens/ProductListScreen.js`
 - UI: `app/src/features/marketplace/screens/CategoryPageScreen.js`
-- UI: `app/src/features/marketplace/screens/ProductDetailsScreen.js` (+ compare button si plusieurs vendeurs)
+- UI: `app/src/features/marketplace/screens/ProductDetailsScreen.js` (+ négociation & compare)
 - UI: `app/src/features/marketplace/screens/CartScreen.js`
-- UI: `app/src/features/marketplace/screens/CheckoutScreen.js`
+- UI: `app/src/features/marketplace/screens/CheckoutScreen.js` (+ recipient popup)
+- UI: `app/src/features/marketplace/screens/OrdersScreen.js` (+ reorder & status update)
 - UI: `app/src/features/marketplace/screens/OrderStatusScreen.js`
 - UI: `app/src/features/marketplace/screens/DeliveryTrackingScreen.js`
 - UI: `app/src/features/marketplace/screens/SellerComparisonScreen.js`
 - UI: `app/src/features/marketplace/screens/BlockedUserScreen.js`
 - Context: `app/src/features/marketplace/context/CartContext.js`
+- Context: `app/src/features/marketplace/context/OrderContext.js`
 - Screens supplementaires: AddProductScreen, SellerProfileScreen
 
 ## Parcours marketplace (flow complet)
 1. MarketplaceHome -> ProductList -> ProductDetails
-2. ProductDetails -> Cart -> Checkout -> OrderStatus
-3. OrderStatus -> DeliveryTracking
-4. ProductDetails (si plusieurs vendeurs) -> SellerComparison
-5. ProductList header -> SellerComparison
-6. Profile -> BlockedUser (Statut Marketplace)
+2. ProductDetails (Négociation possible) -> Cart -> Checkout
+3. Checkout (Option Moi / Pas Moi avec Popup) -> Confirmation -> OrderStatus / Orders
+4. Orders (En cours -> Livré) ou (Annulé -> Reprendre/Modifier -> Cart)
+5. OrderStatus -> DeliveryTracking
+6. ProductDetails (si plusieurs vendeurs) -> SellerComparison
+7. Profile -> BlockedUser (Statut Marketplace)
 
 ## Auth et securite
 PIN hashe SHA-256, jamais stocke en clair
