@@ -12,6 +12,8 @@ import {
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useCart } from '../context/CartContext';
+import { useVoiceSearch } from '../../../hooks/useVoiceSearch';
+import { usePhotoSearch } from '../../../hooks/usePhotoSearch';
 
 const categories = [
   { name: 'Tout', icon: 'apps' },
@@ -81,6 +83,30 @@ export default function CategoryPageScreen({ onBack, onNavigate, favorites = [],
   const [searchText, setSearchText] = useState('');
   const [showCartPopup, setShowCartPopup] = useState(false);
   const [addedProduct, setAddedProduct] = useState(null);
+
+  // Real Voice Search Hook
+  const { 
+    isListening, 
+    transcript, 
+    error: voiceError, 
+    startVoice, 
+    stopVoice 
+  } = useVoiceSearch((text) => {
+    setSearchText(text);
+    setShowVoiceModal(false);
+  });
+
+  // Real Photo Search Hook
+  const { 
+    isProcessing: isPhotoProcessing, 
+    takePhoto, 
+    pickFromGallery 
+  } = usePhotoSearch((results) => {
+    if (results && results.length > 0) {
+      setSearchText(results[0]);
+    }
+    setShowCameraModal(false);
+  });
 
   const isFavorite = (productId) => favorites.some(f => f.id === productId);
 
@@ -396,34 +422,57 @@ export default function CategoryPageScreen({ onBack, onNavigate, favorites = [],
         </SafeAreaView>
 
         {/* Voice Search Modal */}
-        < Modal
+        <Modal
           visible={showVoiceModal}
           transparent
           animationType="slide"
-          onRequestClose={() => setShowVoiceModal(false)}
+          onRequestClose={() => !isListening && setShowVoiceModal(false)}
         >
           <TouchableOpacity
             style={styles.modalOverlay}
             activeOpacity={1}
-            onPress={() => setShowVoiceModal(false)}
+            onPress={() => !isListening && setShowVoiceModal(false)}
           >
             <View style={styles.modalContent}>
-              <Pressable style={styles.closeModalBtn} onPress={() => setShowVoiceModal(false)}>
-                <MaterialCommunityIcons name="close" size={24} color="#fff" />
-              </Pressable>
-              <View style={styles.voiceIconContainer}>
-                <MaterialCommunityIcons name="microphone" size={64} color="#137fec" />
-              </View>
               <Text style={styles.modalTitle}>Recherche vocale</Text>
-              <Text style={styles.modalSubtitle}>Parlez maintenant...</Text>
-              <View style={styles.voiceWaveContainer}>
-                <View style={styles.voiceWave} />
-                <View style={styles.voiceWave} />
-                <View style={styles.voiceWave} />
-              </View>
-              <Pressable style={styles.voiceCancelBtn} onPress={() => setShowVoiceModal(false)}>
-                <Text style={styles.voiceCancelText}>Annuler</Text>
-              </Pressable>
+              
+              {isListening ? (
+                <>
+                  <Text style={styles.modalSubtitleRecording}>Écoute en cours... Parler maintenant</Text>
+                  <View style={styles.voiceRecordingContainer}>
+                    <MaterialCommunityIcons name="microphone" size={64} color="#ef4444" />
+                    <View style={styles.recordingPulse} />
+                  </View>
+                  <Text style={styles.voiceTranscript}>"{transcript}"</Text>
+                  <Pressable style={styles.voiceStopBtn} onPress={stopVoice}>
+                    <MaterialCommunityIcons name="stop" size={24} color="#fff" />
+                    <Text style={styles.voiceStopBtnText}>Arrêter</Text>
+                  </Pressable>
+                </>
+              ) : (
+                <>
+                  <Text style={styles.modalSubtitle}>Cliquer sur le micro pour parler</Text>
+                  <View style={styles.voiceWaveContainer}>
+                    {[1,2,3,4,5].map(i => (
+                      <View key={i} style={[styles.voiceWave, { height: 20 + Math.random() * 30 }]} />
+                    ))}
+                  </View>
+                  {voiceError && <Text style={styles.errorText}>{voiceError}</Text>}
+                  <Pressable style={styles.voiceSearchBtn} onPress={startVoice}>
+                    <MaterialCommunityIcons name="microphone" size={24} color="#fff" />
+                    <Text style={styles.voiceSearchBtnText}>Commencer</Text>
+                  </Pressable>
+                </>
+              )}
+
+              {!isListening && (
+                <Pressable 
+                  style={styles.voiceCancelBtn} 
+                  onPress={() => setShowVoiceModal(false)}
+                >
+                  <Text style={styles.voiceCancelText}>Fermer</Text>
+                </Pressable>
+              )}
             </View>
           </TouchableOpacity>
         </Modal>
@@ -433,33 +482,54 @@ export default function CategoryPageScreen({ onBack, onNavigate, favorites = [],
           visible={showCameraModal}
           transparent
           animationType="slide"
-          onRequestClose={() => setShowCameraModal(false)}
+          onRequestClose={() => !isPhotoProcessing && setShowCameraModal(false)}
         >
           <TouchableOpacity
             style={styles.modalOverlay}
             activeOpacity={1}
-            onPress={() => setShowCameraModal(false)}
+            onPress={() => !isPhotoProcessing && setShowCameraModal(false)}
           >
             <View style={styles.modalContent}>
-              <Pressable style={styles.closeModalBtn} onPress={() => setShowCameraModal(false)}>
-                <MaterialCommunityIcons name="close" size={24} color="#fff" />
-              </Pressable>
-              <Text style={styles.modalTitle}>Recherche par image</Text>
-              <Text style={styles.modalSubtitle}>Prenez une photo ou importez une image</Text>
+              <Text style={styles.modalTitle}>Recherche par photo</Text>
+              <Text style={styles.modalSubtitle}>Prenez une photo ou choisissez une image</Text>
+              
               <View style={styles.cameraOptions}>
-                <Pressable style={styles.cameraOptionBtn}>
-                  <View style={styles.cameraOptionIcon}>
+                <Pressable 
+                  style={styles.cameraOptionBtn} 
+                  onPress={takePhoto}
+                  disabled={isPhotoProcessing}
+                >
+                  <View style={[styles.cameraIconBg, { backgroundColor: '#137fec' }]}>
                     <MaterialCommunityIcons name="camera" size={32} color="#fff" />
                   </View>
                   <Text style={styles.cameraOptionText}>Appareil photo</Text>
                 </Pressable>
-                <Pressable style={styles.cameraOptionBtn}>
-                  <View style={styles.cameraOptionIcon}>
-                    <MaterialCommunityIcons name="image" size={32} color="#fff" />
+                
+                <Pressable 
+                  style={styles.cameraOptionBtn} 
+                  onPress={pickFromGallery}
+                  disabled={isPhotoProcessing}
+                >
+                  <View style={[styles.galleryIconBg, { backgroundColor: '#22c55e' }]}>
+                    <MaterialCommunityIcons name="image-multiple" size={32} color="#fff" />
                   </View>
                   <Text style={styles.cameraOptionText}>Galerie</Text>
                 </Pressable>
               </View>
+
+              {isPhotoProcessing && (
+                <View style={styles.processingContainer}>
+                  <Text style={styles.processingText}>Analyse de l'image...</Text>
+                </View>
+              )}
+
+              <Pressable 
+                style={styles.voiceCancelBtn} 
+                onPress={() => setShowCameraModal(false)}
+                disabled={isPhotoProcessing}
+              >
+                <Text style={styles.voiceCancelText}>Annuler</Text>
+              </Pressable>
             </View>
           </TouchableOpacity>
         </Modal>
@@ -891,22 +961,124 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderRadius: 24,
     backgroundColor: '#324d67',
+    marginTop: 16,
+  },
+  voiceCancelBtnDisabled: {
+    opacity: 0.5,
   },
   voiceCancelText: {
     fontSize: 16,
     color: '#fff',
     fontWeight: '600',
   },
+  voiceSearchBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    paddingVertical: 16,
+    paddingHorizontal: 32,
+    borderRadius: 24,
+    backgroundColor: '#137fec',
+    marginTop: 16,
+    width: '100%',
+  },
+  voiceSearchBtnText: {
+    fontSize: 16,
+    color: '#fff',
+    fontWeight: '600',
+  },
+  voiceStopBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    paddingVertical: 16,
+    paddingHorizontal: 32,
+    borderRadius: 24,
+    backgroundColor: '#ef4444',
+    marginTop: 24,
+    width: '100%',
+  },
+  voiceStopBtnText: {
+    fontSize: 16,
+    color: '#fff',
+    fontWeight: '600',
+  },
+  recordingPulse: {
+    position: 'absolute',
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: 'rgba(239, 68, 68, 0.3)',
+  },
+  modalSubtitleRecording: {
+    fontSize: 14,
+    color: '#ef4444',
+    marginBottom: 24,
+    textAlign: 'center',
+    width: '100%',
+  },
+  recordedTextContainer: {
+    backgroundColor: '#233648',
+    padding: 20,
+    borderRadius: 12,
+    marginBottom: 16,
+    width: '100%',
+  },
+  recordedText: {
+    fontSize: 20,
+    color: '#fff',
+    fontWeight: '600',
+    textAlign: 'center',
+  },
+  voiceButtonsRow: {
+    flexDirection: 'row',
+    gap: 12,
+    width: '100%',
+  },
+  voiceRetryBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    paddingVertical: 14,
+    borderRadius: 12,
+    backgroundColor: '#324d67',
+  },
+  voiceRetryBtnText: {
+    fontSize: 14,
+    color: '#fff',
+    fontWeight: '600',
+  },
+  voiceApplyBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    paddingVertical: 14,
+    borderRadius: 12,
+    backgroundColor: '#137fec',
+  },
+  voiceApplyBtnText: {
+    fontSize: 14,
+    color: '#fff',
+    fontWeight: '600',
+  },
+  voiceRecordingText: {
+    fontSize: 18,
+    color: '#137fec',
+    fontWeight: '600',
+    fontStyle: 'italic',
+  },
   cameraOptions: {
     flexDirection: 'row',
     gap: 24,
     marginTop: 24,
   },
-  cameraOptionBtn: {
-    alignItems: 'center',
-    gap: 12,
-  },
-  cameraOptionIcon: {
+  cameraIconBg: {
     width: 80,
     height: 80,
     borderRadius: 20,
@@ -914,10 +1086,41 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  galleryIconBg: {
+    width: 80,
+    height: 80,
+    borderRadius: 20,
+    backgroundColor: '#22c55e',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   cameraOptionText: {
     fontSize: 14,
     color: '#fff',
     fontWeight: '500',
+  },
+  processingContainer: {
+    marginTop: 20,
+    alignItems: 'center',
+  },
+  processingText: {
+    color: '#137fec',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  voiceTranscript: {
+    fontSize: 18,
+    color: '#fff',
+    fontWeight: '600',
+    textAlign: 'center',
+    marginTop: 10,
+    paddingHorizontal: 20,
+  },
+  errorText: {
+    color: '#ef4444',
+    fontSize: 14,
+    textAlign: 'center',
+    marginBottom: 10,
   },
   resultsCount: {
     fontSize: 14,

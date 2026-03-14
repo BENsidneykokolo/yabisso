@@ -950,3 +950,11 @@ Assistant: [A corriger]
 - MarketplaceFavoritesScreen : Passage de l'objet `product` lors du clic sur un favori via `onNavigate`.
 - App.js : Mise a jour du routeur pour mapper `product_details` vers `marketplace_product_details` dans l'ecran favoris, permettant l'affichage correct des informations du produit.
 
+User: tu peux verifier tous les fichiers .md dans le repo "mesfichiers" qui se trouve ici: C:\Users\Utilisateur\Documents\Ben\myapp\yabisso\mesfichiers
+
+Assistant: [A verifie et mis a jour les fichiers .md]
+- Probleme.md : Ajout du BUG-006 (minSdkVersion 24 pour expo-av).
+- Task.md : Ajout du choix de statut (Utilisateur, Partner, Kiosque, Affilier) et mise a jour des statuts.
+- Project_memory.md & Implementation.md : Mise a jour de la pile technique (ML Kit, Speech Recognition) et des roles utilisateur.
+- Chat.md : Mise a jour de l'historique.
+

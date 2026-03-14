@@ -14,30 +14,35 @@
 | expo-secure-store | ^15.0.8 | ✅ Installe |
 | NetInfo | ^12.0.1 | ✅ Installe |
 | react-native-get-sms-android | ^1.2.0 | ✅ Installe (Android only) |
-| expo-camera | ~17.0.5 | ✅ Installe |
+| expo-camera | ~17.0.10 | ✅ Installe |
 | expo-image-picker | ~16.0.10 | ✅ Installe |
 | expo-document-picker | ~13.0.6 | ✅ Installe |
 | expo-location | ~19.0.10 | ✅ Installe |
 | expo-contacts | ~14.0.6 | ✅ Installe |
-| expo-av | ~16.0.5 | ✅ Installe |
-| expo-barcode-scanner | - | ✅ Installe |
+| expo-av | ~16.0.8 | ✅ Installe |
 | expo-file-system | ~19.0.6 | ✅ Installe |
 | expo-constants | ~18.0.5 | ✅ Installe |
+| react-native-ble-plx | ^3.5.1 | ✅ Installe |
+| react-native-qrcode-svg | ^6.3.21 | ✅ Installe |
+| @react-native-ml-kit/image-labeling | ^2.0.0 | ✅ Installe |
+| @react-native-ml-kit/text-recognition | ^2.0.0 | ✅ Installe |
+| expo-speech-recognition | ^3.1.1 | ✅ Installe |
 | Supabase | - | 🔄 A installer |
 | React Navigation | - | 🔄 A installer |
 | Zustand | - | 🔄 A installer |
-| BLE/WiFi Direct libs | - | ⏳ Phase 2-3 |
+| WiFi Direct libs | - | ⏳ Phase 2-3 |
 
-**Build dev client Android** : 🔄 A revalider (nouvelles dependances natives installees)
+**Build dev client Android** : ✅ Build local configuré (correction `local.properties` / NDK)
 **iOS** : Simple (Expo Go suffit pour Phase 1)
 **DB locale** : WatermelonDB + SQLiteAdapter (SQLCipher prevu pour chiffrement)
 
 ##Etat actuel (verifie dans le code)
-- UI onboarding/auth: Welcome, Language, Signup, Login, SMS, QR
+- UI onboarding/auth: Welcome, Language, Signup, Login, SMS, QR, Offline Login complet
+- Choix de statut : Utilisateur, Partner, Kiosque, Affilier (Implemente)
 - Dashboard/Home + pages QR/Settings/Notifications
-- UI Wallet complet: WalletScreen, RechargeScreen, SendScreen, ReceiveScreen, HistoryScreen
+- UI Wallet complet: WalletScreen, RechargeScreen, SendScreen, ReceiveScreen, HistoryScreen (Conversion FCFA/Points dynamique intégrée)
 - Bottom navigation wallet avec navigation et etat actif
-- Pages: Assistant IA (avec menu, clavier avoidance, 6 outils), Profil + sous-pages
+- Pages: Assistant IA (Entièrement réécrit: clavier, layout stable, menu, 6 outils), Profil + sous-pages
 - Marketplace (COMPLET S5) : MarketplaceHomeScreen, ProductListScreen, CategoryPageScreen, CartScreen, CheckoutScreen, OrdersScreen, OrderStatusScreen, DeliveryTrackingScreen
 - Modules Marketplace avancés :
   - **Négociation** : Modal de prix, validation min/max price, mise à jour prix panier
@@ -51,7 +56,8 @@
 - Contextes : CartProvider, OrderProvider (états partagés)
 - Offline choix SMS/QR: modal active quand offline (NetInfo)
 - Schema DB local: profiles, sync_queue, signup_nonces, signup_verifications
-- Service offline signup: generation payload + enqueue SyncQueue (non connecte a l'UI)
+- Service offline signup: generation payload + enqueue SyncQueue (connecté à l'UI et fonctionnel)
+- Bluetooth Low Energy (BLE): intégré pour communication locale
 - Supabase/OTP: pas encore integre
 
 ## Principes fondamentaux
@@ -121,6 +127,7 @@
 - Sprint 1: Marketplace (MarketplaceHomeScreen, ProductListScreen, CategoryPageScreen)
 - Sprint 1: FloatingNav.position bottom: 120
 - Sprint 1: Search bar style dashboard + Voice/Camera popups
+- Sprint 1.5: Fix configuration build Android local (local.properties SDK path)
 
 ## Decisions techniques additionnelles
 - Navigation: React Navigation (a installer)

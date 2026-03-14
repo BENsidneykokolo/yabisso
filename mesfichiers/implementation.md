@@ -11,15 +11,19 @@
 - react-native-get-sms-android (SMS fallback Android)
 
 ## Stack natives installees (Assistant IA)
-- expo-camera (camera - photo)
+- expo-camera (camera - photo - QR code)
 - expo-image-picker (galerie photos)
 - expo-document-picker (fichiers)
 - expo-location (geolocalisation)
 - expo-contacts (contacts)
 - expo-av (audio)
-- expo-barcode-scanner (QR code)
 - expo-file-system
 - expo-constants
+- react-native-ble-plx (Bluetooth Low Energy)
+- react-native-qrcode-svg (Generation de QR)
+- @react-native-ml-kit/image-labeling
+- @react-native-ml-kit/text-recognition
+- expo-speech-recognition
 
 ## Stack planifiee (a installer)
 - Supabase (+ Edge Functions)
@@ -29,7 +33,6 @@
 - expo-crypto
 - Africa's Talking (SMS)
 - Flutterwave + MTN/Airtel
-- react-native-ble-plx (BLE mesh custom)
 - expo-nearby-connections (WiFi Direct)
 
 ## Design system (obligatoire)
@@ -53,7 +56,7 @@ UI Wallet implemente (WalletScreen, RechargeScreen, SendScreen, ReceiveScreen, H
 Bottom navigation wallet avec navigation entre ecrans et etat actif
 FloatingNav (bouton flottant gauche) sur certaines pages
 UI Assistant IA implemente avec menu navigation, barre multiline, clavier avoidance, et 6 outils (Camera, Photo, Fichier, Position, Contact, Audio)
-Build dev client a revalider
+Build dev client Android configuré (`local.properties` pointant sur AppData SDK) et build Gradle validé
 
 ## Modules marketplace implementes (code)
 - UI: `app/src/features/marketplace/screens/MarketplaceHomeScreen.js`

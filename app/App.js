@@ -10,6 +10,10 @@ import SmsSignupScreen from './src/features/auth/screens/SmsSignupScreen';
 import QrSignupScreen from './src/features/auth/screens/QrSignupScreen';
 import PinSignupScreen from './src/features/auth/screens/PinSignupScreen';
 import LoginScreen from './src/features/auth/screens/LoginScreen';
+import BleSignupScreen from './src/features/bluetooth/screens/BleSignupScreen';
+import BleKioskScreen from './src/features/bluetooth/screens/BleKioskScreen';
+import KioskValidationScreen from './src/features/kiosk/screens/KioskValidationScreen';
+
 import HomeScreen from './src/features/home/screens/HomeScreen';
 import QrHubScreen from './src/features/home/screens/QrHubScreen';
 import HomeSettingsScreen from './src/features/home/screens/HomeSettingsScreen';
@@ -132,6 +136,8 @@ export default function App() {
         onPin={() => navigate('signup_pin')}
         onOfflineSms={() => navigate('signup_sms')}
         onOfflineQr={() => navigate('signup_qr')}
+        onOfflineBle={() => navigate('signup_ble')}
+        onKioskMode={() => navigate('kiosk_validation')}
       />
     );
   }
@@ -165,6 +171,29 @@ export default function App() {
       <QrSignupScreen
         onBack={() => goBack()}
         onOk={() => resetTo('home')}
+      />
+    );
+  }
+  if (screen === 'signup_ble') {
+    content = (
+      <BleSignupScreen
+        navigation={{ navigate, goBack }}
+        route={{ params: screenParams }}
+      />
+    );
+  }
+  if (screen === 'kiosk_ble') {
+    content = (
+      <BleKioskScreen
+        navigation={{ navigate, goBack }}
+      />
+    );
+  }
+  if (screen === 'kiosk_validation') {
+    content = (
+      <KioskValidationScreen
+        navigation={{ navigate, goBack }}
+        route={{ params: screenParams }}
       />
     );
   }

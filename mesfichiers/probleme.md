@@ -52,6 +52,13 @@
 - **Solution** : Forcer Kotlin 2.1.21 via `expo-build-properties` + config EAS
 - **Statut** : ✅ Résolu
 
+### BUG-006 — Conflit minSdkVersion (expo-av)
+- **Date** : 2026-03-13
+- **Problème** : `expo-av` nécessite `minSdkVersion 24`, le projet était à 23.
+- **Cause** : Dépendances natives exigeant une version SDK Android supérieure.
+- **Solution** : Passage à `minSdkVersion 24` dans `app.json` via `expo-build-properties`.
+- **Statut** : ✅ Résolu
+
 ---
 
 ## Risques connus à surveiller

@@ -31,6 +31,11 @@
         "WRITE_EXTERNAL_STORAGE",
         "ACCESS_COARSE_LOCATION",
         "ACCESS_FINE_LOCATION",
+        "BLUETOOTH",
+        "BLUETOOTH_ADMIN",
+        "BLUETOOTH_SCAN",
+        "BLUETOOTH_CONNECT",
+        "BLUETOOTH_ADVERTISE",
         "READ_CONTACTS"
       ],
       "kotlinVersion": "2.1.21"
@@ -49,7 +54,10 @@
         "expo-build-properties",
         {
           "android": {
-            "kotlinVersion": "2.1.21"
+            "kotlinVersion": "2.1.21",
+            "minSdkVersion": 24,
+            "targetSdkVersion": 35,
+            "compileSdkVersion": 35
           }
         }
       ],
@@ -59,7 +67,23 @@
       "expo-document-picker",
       "expo-location",
       "expo-contacts",
-      "expo-av"
+      "expo-av",
+      [
+        "expo-speech-recognition",
+        {
+          "microphonePermission": "Autoriser l'accès au microphone pour la recherche vocale",
+          "speechRecognitionPermission": "Autoriser la reconnaissance vocale",
+          "androidSpeechServicePackages": ["com.google.android.googlequicksearchbox"]
+        }
+      ],
+      [
+        "react-native-ble-plx",
+        {
+          "isBackgroundEnabled": true,
+          "modes": ["peripheral", "central"],
+          "bluetoothAlwaysPermission": "Autoriser Yabisso à utiliser le Bluetooth P2P pour l'inscription offline."
+        }
+      ]
     ]
   }
 }

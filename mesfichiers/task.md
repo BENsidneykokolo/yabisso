@@ -14,6 +14,7 @@
 | Installer expo-dev-client | Done | P1 | S0 |
 | Installer EAS CLI | Done | P1 | S0 |
 | Configurer EAS dev client + build Android | Done | P1 | S0 |
+| Configurer build local Android (Correction SDK/NDK) | Done | P1 | S0 |
 | Fix WatermelonDB adapter import (SQLiteAdapter) | Done | P1 | S0 |
 | Local storage init (WatermelonDB + SecureStore) | Done | P1 | S0 |
 | Design system de base (YScreen/YText/YButton/YInput) | Not Started | P1 | S0 |
@@ -24,6 +25,7 @@
 | Creer SmsSignupScreen | Done | P1 | S1 |
 | Creer QrSignupScreen | Done | P1 | S1 |
 | Creer PinSignupScreen | Done | P1 | S1 |
+| Implémenter le choix de statut (Utilisateur, Partner, Kiosque, Affilier) | Done | P1 | S1 |
 | Creer LoginScreen | Done | P1 | S1 |
 | Creer HomeScreen (dashboard) | Done | P1 | S1 |
 | Creer FloatingNav (bouton flottant) | Done | P1 | S1 |
@@ -56,8 +58,8 @@
 | SMS fallback automatique (user/super admin) | In Progress | P1 | S1 |
 | Configuration SMS (Africa's Talking) | Not Started | P1 | S1 |
 | Definir stack SMS fallback (Android only) | Done | P1 | S1 |
-| Configurer permissions BLE/WiFi/SMS Android | In Progress | P1 | S1 |
-| Offline Signup (flow complet) | In Progress | P1 | S1 |
+| Configurer permissions BLE/WiFi/SMS Android | Done | P1 | S1 |
+| Offline Signup (flow complet) | Done | P1 | S1 |
 | QR kiosque (scan/validate) | Not Started | P1 | S1 |
 | Auth kiosque offline (QR activation locale) | Not Started | P1 | S1 |
 | Secure local DB (SQLite chiffré) | Not Started | P1 | S1 |
@@ -123,8 +125,8 @@
 | Tâche | Status | Priorité | Sprint |
 |-------|--------|----------|--------|
 | WiFi Direct P2P setup | Not Started | P2 | S6 |
-| Bluetooth simple P2P (pas mesh) | Not Started | P2 | S7 |
-| Choisir stack BLE mesh (ble-plx vs nearby) | Not Started | P3 | S7 |
+| Bluetooth simple P2P (pas mesh) | Done | P2 | S7 |
+| Choisir stack BLE mesh (ble-plx vs nearby) | Done | P3 | S7 |
 | Bluetooth Mesh (multi-hop) | Not Started | P3 | Post-MVP |
 | Mesh orchestrator POC | Not Started | P3 | Post-MVP |
 | Definir mesh routing BLE (multi-hop) | Not Started | P3 | Post-MVP |

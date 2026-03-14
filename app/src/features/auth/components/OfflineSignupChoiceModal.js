@@ -7,6 +7,7 @@ export default function OfflineSignupChoiceModal({
   onPin,
   onSms,
   onQr,
+  onBle,
 }) {
   return (
     <Modal visible={visible} transparent animationType="fade">
@@ -27,6 +28,10 @@ export default function OfflineSignupChoiceModal({
 
           <Pressable style={styles.secondaryButton} onPress={onQr}>
             <Text style={styles.secondaryButtonText}>Inscription via QR code</Text>
+          </Pressable>
+
+          <Pressable style={styles.secondaryButton} onPress={onBle}>
+            <Text style={styles.secondaryButtonText}>Inscription via Bluetooth (BLE)</Text>
           </Pressable>
 
           <Pressable style={styles.closeButton} onPress={onClose}>

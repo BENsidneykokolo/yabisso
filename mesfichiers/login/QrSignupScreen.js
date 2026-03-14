@@ -536,7 +536,7 @@ const s = StyleSheet.create({
   errorTitle: { color: C.error, fontSize: 22, fontWeight: '700' },
   errorMsg:   { color: C.textMuted, fontSize: 14, textAlign: 'center', lineHeight: 22 },
   btnRetry:   { height: 52, paddingHorizontal: 40, backgroundColor: C.surfaceAlt,
-                 borderRadius: 14, alignItems: 'center', justifyContent: 'center',
-                 borderWidth: 1, borderColor: C.error },
+                borderRadius: 14, alignItems: 'center', justifyContent: 'center',
+                borderWidth: 1, borderColor: C.error },
   btnRetryText: { color: C.error, fontSize: 15, fontWeight: '600' },
 });

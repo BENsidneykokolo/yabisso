@@ -15,6 +15,8 @@ export default function SignupScreen({
   onPin,
   onOfflineSms,
   onOfflineQr,
+  onOfflineBle,
+  onKioskMode,
 }) {
   const [showOfflineChoice, setShowOfflineChoice] = useState(false);
   const [selectedRole, setSelectedRole] = useState('user');
@@ -143,6 +145,22 @@ export default function SignupScreen({
               Pour vendre les recharges Yabisso, valider les users offline et recharger des points.
             </Text>
           </Pressable>
+
+          <Pressable
+            style={[
+              styles.roleCard,
+              selectedRole === 'affiliate' && styles.roleCardActive,
+            ]}
+            onPress={() => setSelectedRole('affiliate')}
+          >
+            <View style={[styles.roleBadge, styles.roleBadgeAffiliate]}>
+              <Text style={styles.roleBadgeText}>Affilier</Text>
+            </View>
+            <Text style={styles.roleCardTitle}>Affilier</Text>
+            <Text style={styles.roleCardDesc}>
+              Pour promouvoir Yabisso et gagner des commissions sur chaque parrainage.
+            </Text>
+          </Pressable>
         </View>
 
         <Text style={styles.legal}>
@@ -153,10 +171,17 @@ export default function SignupScreen({
         <Pressable
           style={styles.primaryButton}
           onPress={() => {
-            setShowOfflineChoice(true);
+            if (selectedRole === 'kiosk') {
+              if (onKioskMode) onKioskMode();
+              else setShowOfflineChoice(true);
+            } else {
+              setShowOfflineChoice(true);
+            }
           }}
         >
-          <Text style={styles.primaryButtonText}>S'inscrire</Text>
+          <Text style={styles.primaryButtonText}>
+            {selectedRole === 'kiosk' ? 'Activer Mode Kiosque' : "S'inscrire"}
+          </Text>
         </Pressable>
 
         <View style={styles.divider}>
@@ -198,6 +223,12 @@ export default function SignupScreen({
           setShowOfflineChoice(false);
           if (onOfflineQr) {
             onOfflineQr();
+          }
+        }}
+        onBle={() => {
+          setShowOfflineChoice(false);
+          if (onOfflineBle) {
+            onOfflineBle();
           }
         }}
       />
@@ -419,6 +450,9 @@ const styles = StyleSheet.create({
   },
   roleBadgeKiosk: {
     backgroundColor: 'rgba(239, 68, 68, 0.18)',
+  },
+  roleBadgeAffiliate: {
+    backgroundColor: 'rgba(34, 197, 94, 0.18)',
   },
   roleBadgeText: {
     color: '#E6EDF3',

@@ -26,14 +26,16 @@ Sprint 1: auth offline partiel, SMS fallback, DB locale
 Sprint 1.5: refonte UI/UX Hub terminee
 
 ## Etat actuel (verifie dans le code)
-- UI onboarding/auth: Welcome, Language, Signup, Login, SMS, QR
+- UI onboarding/auth: Welcome, Language, Signup, Login, SMS, QR, Offline Login complet
 - Dashboard/Home + pages QR/Settings/Notifications
-- Pages: Wallet, Assistant IA, Profil + sous-pages (Compte, Securite, Notifications, Langue, Support, Deconnexion)
+- Pages: Wallet (conversion FCFA/Points), Assistant IA (Réécrit), Profil + sous-pages
 - Wallet: Recharge, Envoyer (PIN/QR/Scan), Recevoir (Request/Scan), Historique.
-- Mode Points: conversion 1:1 avec saisie FCFA et affichage Points temps-réel.
+- Mode Points: conversion dynamique (1:1), saisie FCFA et affichage Points temps-réel intégrés.
 - Offline choix SMS/QR: modal active quand offline (NetInfo)
 - Schema DB local: profiles, sync_queue, signup_nonces, signup_verifications
-- Service offline signup: generation payload + enqueue SyncQueue (non connecte a l'UI)
+- Service offline signup: generation payload + enqueue SyncQueue (connecté à l'UI)
+- Bluetooth Low Energy (BLE) intégré
+- Configuration Build Android local : Résolution NDK/SDK via `local.properties`
 - Supabase/OTP: pas encore integre
 
 ## Marketplace - Sprint 4 & 5 (COMPLETED)
