@@ -26,9 +26,13 @@ import { CameraView, useCameraPermissions } from 'expo-camera';
  * AssistantScreen - A robust rewrite of the AI Assistant screen.
  * Handles keyboard positioning, multiline text entry, and modular menus.
  */
-export default function AssistantScreen({
+import { withObservables } from '@nozbe/watermelondb/react';
+import { database } from '../../../lib/db';
+
+function AssistantScreen({
   onBack,
-  onNavigate
+  onNavigate,
+  messages = []
 }) {
   // --- States ---
   const [inputText, setInputText] = useState('');
@@ -37,6 +41,7 @@ export default function AssistantScreen({
   const [showCameraModal, setShowCameraModal] = useState(false);
   const [permission, requestPermission] = useCameraPermissions();
   const [capturedImage, setCapturedImage] = useState(null);
+  const scrollViewRef = useRef(null);
 
   // --- Static Data ---
   const suggestions = [
@@ -203,6 +208,32 @@ export default function AssistantScreen({
     profile: () => { setShowMenuModal(false); if (onNavigate) onNavigate('profile'); },
   };
 
+  const handleSend = async () => {
+    if (!inputText.trim()) return;
+
+    const userText = inputText.trim();
+    setInputText('');
+    
+    await database.write(async () => {
+      // 1. Save user message
+      await database.get('assistant_messages').create(msg => {
+        msg.role = 'user';
+        msg.content = userText;
+      });
+
+      // 2. Simulate bot response (for now, just a placeholder)
+      // In a real app, this would call an API then save
+      setTimeout(async () => {
+        await database.write(async () => {
+          await database.get('assistant_messages').create(msg => {
+            msg.role = 'assistant';
+            msg.content = `J'ai bien reçu votre message: "${userText}". Comment puis-je vous aider davantage ?`;
+          });
+        });
+      }, 500);
+    });
+  };
+
   const handleMenuPress = (action) => {
     setShowMenuModal(false);
     if (menuActions[action]) menuActions[action]();
@@ -234,25 +265,54 @@ export default function AssistantScreen({
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
-          {/* Hero Section */}
-          <View style={styles.heroSection}>
-            <View style={styles.robotContainer}>
-              <MaterialCommunityIcons name="robot" size={80} color="#2BEE79" />
-            </View>
-            <Text style={styles.heroTitle}>Comment puis-je vous aider ?</Text>
+      {/* Hero Section */}
+      {messages.length === 0 && (
+        <View style={styles.heroSection}>
+          <View style={styles.robotContainer}>
+            <MaterialCommunityIcons name="robot" size={80} color="#2BEE79" />
           </View>
+          <Text style={styles.heroTitle}>Comment puis-je vous aider ?</Text>
+        </View>
+      )}
 
-          {/* Suggestions List */}
-          <View style={styles.suggestionsContainer}>
-            <View style={styles.suggestionsRow}>
-              {suggestions.map((item, idx) => (
-                <Pressable key={idx} style={styles.suggestionChip}>
-                  <Text style={styles.suggestionText}>{item}</Text>
-                </Pressable>
-              ))}
+      {/* Messages List */}
+      {messages.length > 0 && (
+        <ScrollView
+          ref={scrollViewRef}
+          style={styles.chatContainer}
+          contentContainerStyle={styles.chatContent}
+          onContentSizeChange={() => scrollViewRef.current?.scrollToEnd({ animated: true })}
+        >
+          {messages.map((msg) => (
+            <View
+              key={msg.id}
+              style={[
+                styles.messageBubble,
+                msg.role === 'user' ? styles.userBubble : styles.botBubble
+              ]}
+            >
+              <Text style={styles.messageText}>{msg.content}</Text>
+              <Text style={styles.messageTime}>
+                {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+              </Text>
             </View>
-          </View>
+          ))}
         </ScrollView>
+      )}
+
+      {/* Suggestions List */}
+      {messages.length === 0 && (
+        <View style={styles.suggestionsContainer}>
+          <View style={styles.suggestionsRow}>
+            {suggestions.map((item, idx) => (
+              <Pressable key={idx} style={styles.suggestionChip} onPress={() => setInputText(item)}>
+                <Text style={styles.suggestionText}>{item}</Text>
+              </Pressable>
+            ))}
+          </View>
+        </View>
+      )}
+    </ScrollView>
 
         {/* Persistent Input Bar */}
         <View style={styles.inputContainer}>
@@ -270,8 +330,15 @@ export default function AssistantScreen({
               maxLength={500}
               textAlignVertical="top"
             />
-            <Pressable style={styles.micButton}>
-              <Ionicons name="mic" size={20} color="#0E151B" />
+            <Pressable 
+              style={[styles.micButton, inputText.trim() && { backgroundColor: '#3B82F6' }]} 
+              onPress={inputText.trim() ? handleSend : null}
+            >
+              <Ionicons 
+                name={inputText.trim() ? "send" : "mic"} 
+                size={20} 
+                color={inputText.trim() ? "#fff" : "#0E151B"} 
+              />
             </Pressable>
           </View>
         </View>
@@ -612,3 +679,9 @@ const styles = StyleSheet.create({
     marginLeft: 4,
   },
 });
+
+const enhance = withObservables([], () => ({
+  messages: database.get('assistant_messages').query().observe(),
+}));
+
+export default enhance(AssistantScreen);

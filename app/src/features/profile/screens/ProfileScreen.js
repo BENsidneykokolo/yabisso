@@ -27,6 +27,7 @@ export default function ProfileScreen({
   onOpenWallet,
   onOpenEditProfile,
   onOpenBlockedUser,
+  onNavigate,
 }) {
   const [activeTab, setActiveTab] = useState('Compte');
 
@@ -54,7 +55,9 @@ export default function ProfileScreen({
             <View style={styles.avatarDot} />
           </View>
           <View style={styles.profileInfo}>
-            <Text style={styles.profileName}>Kwesi</Text>
+            <Pressable onPress={onOpenAccount}>
+              <Text style={styles.profileName}>Kwesi</Text>
+            </Pressable>
             <Text style={styles.profileSubtitle}>Compte verifie</Text>
             <View style={styles.badgeRow}>
               <View style={styles.badgeChip}>
@@ -118,6 +121,14 @@ export default function ProfileScreen({
             <MaterialCommunityIcons name="store-alert" size={20} color="#f59e0b" />
           </View>
           <Text style={styles.settingLabel}>Statut Marketplace</Text>
+          <Ionicons name="chevron-forward" size={18} color="#6B7280" />
+        </Pressable>
+
+        <Pressable style={styles.settingRow} onPress={() => onNavigate('profile_addresses')}>
+          <View style={[styles.settingIcon, { backgroundColor: 'rgba(43, 238, 121, 0.2)' }]}>
+            <MaterialCommunityIcons name="map-marker-radius" size={20} color="#2BEE79" />
+          </View>
+          <Text style={styles.settingLabel}>Mes Adresses</Text>
           <Ionicons name="chevron-forward" size={18} color="#6B7280" />
         </Pressable>
 

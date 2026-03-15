@@ -59,6 +59,20 @@
 - **Solution** : Passage à `minSdkVersion 24` dans `app.json` via `expo-build-properties`.
 - **Statut** : ✅ Résolu
 
+### BUG-007 — AddAddress bouton enregistre ne s'activait pas avec categorie
+- **Date** : 2026-03-15
+- **Problème** : Bouton "Enregistrer l'adresse" désactivé si pas de nom rentré, même avec catégorie sélectionnée
+- **Cause** : Condition `!name` dans le disabled state
+- **Solution** : Modifier la condition pour accepter aussi `category` comme valeur valide
+- **Statut** : ✅ Résolu
+
+### BUG-008 — Marketplace Notification Crash (params undefined)
+- **Date** : 2026-03-15
+- **Problème** : Crash lors du clic sur une notification marketplace ("Cannot read property 'params' of undefined")
+- **Cause** : Erreur de référence à `params` au lieu de `screenParams` dans `App.js` + définition `bottomNavItems` manquante dans `ProductListScreen.js`
+- **Solution** : Correction des références dans `App.js`, ajout de la constante manquante et implémentation du deep-linking fonctionnel (filtres promo/orders)
+- **Statut** : ✅ Résolu
+
 ---
 
 ## Risques connus à surveiller

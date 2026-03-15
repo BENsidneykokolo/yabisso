@@ -6,34 +6,67 @@ import {
   Pressable,
   StyleSheet,
   SafeAreaView,
+  Alert,
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-
-const cartItems = [
-  {
-    id: 1,
-    name: 'Jollof Rice with Chicken',
-    price: 2500,
-    quantity: 2,
-    restaurant: 'Chicken Republic',
-  },
-  {
-    id: 2,
-    name: 'Suya Platter',
-    price: 1800,
-    quantity: 1,
-    restaurant: 'Chicken Republic',
-  },
-];
+import { useRestaurantCart } from '../context/RestaurantCartContext';
+import { useRestaurantOrders } from '../context/RestaurantOrdersContext';
 
 export default function FoodCheckoutScreen({ onBack, onNavigate }) {
+  const { cartItems, currentRestaurant, getCartTotal, clearCart } = useRestaurantCart();
+  const { addOrder } = useRestaurantOrders();
   const [selectedDelivery, setSelectedDelivery] = useState('standard');
   const [selectedPayment, setSelectedPayment] = useState('card');
 
-  const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  const subtotal = getCartTotal();
   const deliveryFee = selectedDelivery === 'express' ? 500 : 200;
   const serviceFee = 100;
   const total = subtotal + deliveryFee + serviceFee;
+
+  const handlePlaceOrder = () => {
+    // Save the order
+    addOrder({
+      restaurant: currentRestaurant?.name || 'Restaurant',
+      total: total,
+      items: items.map(item => ({
+        name: item.name,
+        quantity: item.quantity,
+      })),
+      deliveryFee: deliveryFee,
+      serviceFee: serviceFee,
+      deliveryType: selectedDelivery,
+    });
+
+    Alert.alert(
+      'Commande passée !',
+      `Votre commande de FCFA ${total.toLocaleString()} a été envoyée au restaurant ${currentRestaurant?.name || ''}.`,
+      [
+        {
+          text: 'OK',
+          onPress: () => {
+            clearCart();
+            onNavigate?.('restaurant_orders');
+          },
+        },
+      ]
+    );
+  };
+
+  // Mock cart items if empty (for testing)
+  const items = cartItems.length > 0 ? cartItems : [
+    {
+      id: 1,
+      name: 'Jollof Rice with Chicken',
+      price: 2500,
+      quantity: 2,
+    },
+    {
+      id: 2,
+      name: 'Suya Platter',
+      price: 1800,
+      quantity: 1,
+    },
+  ];
 
   return (
     <SafeAreaView style={styles.container}>
@@ -47,28 +80,37 @@ export default function FoodCheckoutScreen({ onBack, onNavigate }) {
           <View style={styles.placeholder} />
         </View>
 
+        {/* Restaurant Info */}
+        {currentRestaurant && (
+          <View style={styles.restaurantBanner}>
+            <MaterialCommunityIcons name="store" size={20} color="#137fec" />
+            <Text style={styles.restaurantName}>{currentRestaurant.name}</Text>
+          </View>
+        )}
+
         {/* Delivery Address */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Delivery Address</Text>
-          <View style={styles.addressCard}>
+          <Text style={styles.sectionTitle}>Adresse de livraison</Text>
+          <Pressable 
+            style={styles.addressCard}
+            onPress={() => onNavigate?.('profile_addresses')}
+          >
             <View style={styles.addressIcon}>
               <MaterialCommunityIcons name="map-marker" size={24} color="#137fec" />
             </View>
             <View style={styles.addressInfo}>
-              <Text style={styles.addressLabel}>Home</Text>
+              <Text style={styles.addressLabel}>Maison</Text>
               <Text style={styles.addressText}>
-                12 Lekki Phase 1, Lagos, Nigeria
+                Choisir une adresse de livraison
               </Text>
             </View>
-            <Pressable style={styles.changeBtn}>
-              <Text style={styles.changeText}>Change</Text>
-            </Pressable>
-          </View>
+            <MaterialCommunityIcons name="chevron-right" size={24} color="#64748b" />
+          </Pressable>
         </View>
 
         {/* Delivery Time */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Delivery Time</Text>
+          <Text style={styles.sectionTitle}>Heure de livraison</Text>
           <View style={styles.optionsRow}>
             <Pressable 
               style={[styles.optionCard, selectedDelivery === 'standard' && styles.optionCardActive]}
@@ -80,10 +122,9 @@ export default function FoodCheckoutScreen({ onBack, onNavigate }) {
                 color={selectedDelivery === 'standard' ? '#137fec' : '#64748b'} 
               />
               <Text style={[styles.optionTitle, selectedDelivery === 'standard' && styles.optionTitleActive]}>
-                Standard
+                Standard (30-40 min)
               </Text>
-              <Text style={styles.optionDesc}>30-40 min</Text>
-              <Text style={styles.optionPrice}>₦200</Text>
+              <Text style={styles.optionPrice}>FCFA 200</Text>
             </Pressable>
             <Pressable 
               style={[styles.optionCard, selectedDelivery === 'express' && styles.optionCardActive]}
@@ -95,26 +136,29 @@ export default function FoodCheckoutScreen({ onBack, onNavigate }) {
                 color={selectedDelivery === 'express' ? '#137fec' : '#64748b'} 
               />
               <Text style={[styles.optionTitle, selectedDelivery === 'express' && styles.optionTitleActive]}>
-                Express
+                Express (15-20 min)
               </Text>
-              <Text style={styles.optionDesc}>15-20 min</Text>
-              <Text style={styles.optionPrice}>₦500</Text>
+              <Text style={styles.optionPrice}>FCFA 500</Text>
             </Pressable>
           </View>
         </View>
 
         {/* Order Items */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Order Summary</Text>
-          {cartItems.map((item) => (
-            <View key={item.id} style={styles.orderItem}>
+          <Text style={styles.sectionTitle}>Résumé de la commande</Text>
+          {items.map((item, index) => (
+            <View key={`${item.id}-${index}`} style={styles.orderItem}>
               <View style={styles.orderItemInfo}>
                 <Text style={styles.orderItemName}>{item.name}</Text>
-                <Text style={styles.orderItemRestaurant}>{item.restaurant}</Text>
+                {item.restaurantName && (
+                  <Text style={styles.orderItemRestaurant}>{item.restaurantName}</Text>
+                )}
               </View>
               <View style={styles.orderItemRight}>
                 <Text style={styles.orderItemQty}>x{item.quantity}</Text>
-                <Text style={styles.orderItemPrice}>₦{(item.price * item.quantity).toLocaleString()}</Text>
+                <Text style={styles.orderItemPrice}>
+                  FCFA {(item.totalPrice || (item.price * item.quantity)).toLocaleString()}
+                </Text>
               </View>
             </View>
           ))}
@@ -122,20 +166,20 @@ export default function FoodCheckoutScreen({ onBack, onNavigate }) {
 
         {/* Payment Method */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Payment Method</Text>
+          <Text style={styles.sectionTitle}>Mode de paiement</Text>
           <Pressable style={styles.paymentCard}>
             <View style={styles.paymentLeft}>
               <MaterialCommunityIcons name="credit-card" size={24} color="#137fec" />
               <View style={styles.paymentInfo}>
                 <Text style={styles.paymentTitle}>Visa •••• 4242</Text>
-                <Text style={styles.paymentSubtitle}>Expires 12/25</Text>
+                <Text style={styles.paymentSubtitle}>Expire 12/25</Text>
               </View>
             </View>
             <MaterialCommunityIcons name="check-circle" size={24} color="#22c55e" />
           </Pressable>
           <Pressable style={styles.addPaymentBtn}>
             <MaterialCommunityIcons name="plus" size={20} color="#137fec" />
-            <Text style={styles.addPaymentText}>Add new payment method</Text>
+            <Text style={styles.addPaymentText}>Ajouter un paiement</Text>
           </Pressable>
         </View>
 
@@ -145,20 +189,20 @@ export default function FoodCheckoutScreen({ onBack, onNavigate }) {
           <View style={styles.summaryCard}>
             <View style={styles.summaryRow}>
               <Text style={styles.summaryLabel}>Subtotal</Text>
-              <Text style={styles.summaryValue}>₦{subtotal.toLocaleString()}</Text>
+              <Text style={styles.summaryValue}>FCFA {subtotal.toLocaleString()}</Text>
             </View>
             <View style={styles.summaryRow}>
-              <Text style={styles.summaryLabel}>Delivery Fee</Text>
-              <Text style={styles.summaryValue}>₦{deliveryFee}</Text>
+              <Text style={styles.summaryLabel}>Frais de livraison</Text>
+              <Text style={styles.summaryValue}>FCFA {deliveryFee}</Text>
             </View>
             <View style={styles.summaryRow}>
               <Text style={styles.summaryLabel}>Service Fee</Text>
-              <Text style={styles.summaryValue}>₦{serviceFee}</Text>
+              <Text style={styles.summaryValue}>FCFA {serviceFee}</Text>
             </View>
             <View style={styles.divider} />
             <View style={styles.summaryRow}>
               <Text style={styles.totalLabel}>Total</Text>
-              <Text style={styles.totalValue}>₦{total.toLocaleString()}</Text>
+              <Text style={styles.totalValue}>FCFA {total.toLocaleString()}</Text>
             </View>
           </View>
         </View>
@@ -171,13 +215,13 @@ export default function FoodCheckoutScreen({ onBack, onNavigate }) {
         <View style={styles.bottomBarContent}>
           <View>
             <Text style={styles.bottomTotalLabel}>Total</Text>
-            <Text style={styles.bottomTotalValue}>₦{total.toLocaleString()}</Text>
+            <Text style={styles.bottomTotalValue}>FCFA {total.toLocaleString()}</Text>
           </View>
           <Pressable 
             style={styles.placeOrderBtn}
-            onPress={() => onNavigate?.('order_status')}
+            onPress={handlePlaceOrder}
           >
-            <Text style={styles.placeOrderText}>Place Order</Text>
+            <Text style={styles.placeOrderText}>Passer la commande</Text>
             <MaterialCommunityIcons name="arrow-right" size={20} color="#0E151B" />
           </Pressable>
         </View>
@@ -214,6 +258,21 @@ const styles = StyleSheet.create({
   },
   placeholder: {
     width: 40,
+  },
+  restaurantBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(19, 127, 236, 0.15)',
+    marginHorizontal: 16,
+    marginTop: 16,
+    padding: 12,
+    borderRadius: 12,
+    gap: 8,
+  },
+  restaurantName: {
+    color: '#137fec',
+    fontSize: 14,
+    fontWeight: '600',
   },
   section: {
     paddingHorizontal: 16,

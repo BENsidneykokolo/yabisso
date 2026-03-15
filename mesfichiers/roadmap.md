@@ -20,12 +20,7 @@ S8: chat + notifications (risque realtime sync)
 S9-S12: packs, WiFi Direct, kiosque, security/testing
 S13-S16: reservations, services, admin console, Play Store launch
 
-## Etat precedent (resume)
-Sprint 0: setup + design system termines
-Sprint 1: auth offline partiel, SMS fallback, DB locale
-Sprint 1.5: refonte UI/UX Hub terminee
-
-## Etat actuel (verifie dans le code)
+##Etat actuel (verifie dans le code) - Mars 2026
 - UI onboarding/auth: Welcome, Language, Signup, Login, SMS, QR, Offline Login complet
 - Dashboard/Home + pages QR/Settings/Notifications
 - Pages: Wallet (conversion FCFA/Points), Assistant IA (Réécrit), Profil + sous-pages
@@ -36,7 +31,12 @@ Sprint 1.5: refonte UI/UX Hub terminee
 - Service offline signup: generation payload + enqueue SyncQueue (connecté à l'UI)
 - Bluetooth Low Energy (BLE) intégré
 - Configuration Build Android local : Résolution NDK/SDK via `local.properties`
-- Supabase/OTP: pas encore integre
+- Marketplace complet: Home, ProductList, ProductDetails, Cart, Checkout, Orders, etc.
+- Notifications fonctionnel: navigation vers produits promo, nouveautés, commandes, wallet
+- AddAddress: geolocalisation + categories sans necessite de nom
+- Profil: Nom cliquable vers ecran Compte avec details inscription
+- Menu Boutique: "Accueil" remplacé par "Profil"
+- **Universal Offline-First integration completed** for Marketplace, Wallet, Loba, and AI Assistant.
 
 ## Marketplace - Sprint 4 & 5 (COMPLETED)
 - Marketplace: Home, Product List, Category Page, Product Details

@@ -21,25 +21,25 @@ const categories = [
 ];
 
 const products = [
-  { id: 1, name: 'iPhone 15 Pro Max', brand: 'Apple', price: '950000', category: 'Téléphones', isNew: true },
-  { id: 2, name: 'Samsung Galaxy S24 Ultra', brand: 'Samsung', price: '780000', category: 'Téléphones', isNew: true },
+  { id: 1, name: 'iPhone 15 Pro Max', brand: 'Apple', price: '950000', originalPrice: '1200000', category: 'Téléphones', isNew: true, isPromo: true, discount: '-50%' },
+  { id: 2, name: 'Samsung Galaxy S24 Ultra', brand: 'Samsung', price: '780000', originalPrice: '950000', category: 'Téléphones', isNew: true, isPromo: true, discount: '-30%' },
   { id: 3, name: 'MacBook Pro M3', brand: 'Apple', price: '1200000', category: 'Électronique', isNew: true },
-  { id: 4, name: 'Air Zoom Pegasus', brand: 'Nike', price: '65000', category: 'Sports', isNew: false },
-  { id: 5, name: 'Galaxy Watch 5', brand: 'Samsung', price: '120000', category: 'Téléphones', isNew: false },
+  { id: 4, name: 'Air Zoom Pegasus', brand: 'Nike', price: '65000', originalPrice: '85000', category: 'Sports', isNew: false, isPromo: true, discount: '-25%' },
+  { id: 5, name: 'Galaxy Watch 5', brand: 'Samsung', price: '120000', originalPrice: '150000', category: 'Téléphones', isNew: false, isPromo: true, discount: '-20%' },
   { id: 6, name: 'iPad Air', brand: 'Apple', price: '420000', category: 'Électronique', isNew: true },
 ];
 
 const bottomNavItems = [
-  { label: 'Boutique', icon: 'store' },
+  { label: 'Marketplace', icon: 'store' },
   { label: 'Catégories', icon: 'view-grid' },
   { label: 'Nouveauté', icon: 'sparkles' },
   { label: 'Panier', icon: 'cart' },
 ];
 
-export default function ProductListScreen({ onBack, onNavigate, favorites = [], onToggleFavorite }) {
+export default function ProductListScreen({ onBack, onNavigate, favorites = [], onToggleFavorite, filter }) {
   const { addToCart } = useCart();
-  const [activeTab, setActiveTab] = useState('Boutique');
-  const [selectedCategory, setSelectedCategory] = useState('Téléphones');
+  const [activeTab, setActiveTab] = useState('Marketplace');
+  const [selectedCategory, setSelectedCategory] = useState(filter === 'promo' ? 'Promotions' : 'Téléphones');
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [searchText, setSearchText] = useState('');
 
@@ -51,14 +51,27 @@ export default function ProductListScreen({ onBack, onNavigate, favorites = [], 
     }
   };
 
-  const filteredProducts = searchText.trim()
-    ? products.filter(p =>
-      p.name.toLowerCase().includes(searchText.toLowerCase()) ||
-      p.brand.toLowerCase().includes(searchText.toLowerCase())
-    ).filter(p => p.category === selectedCategory)
-    : products.filter(p => p.category === selectedCategory);
+  // Filter by promo if filter='promo', otherwise by category
+  const filteredProducts = (() => {
+    let baseProducts = products;
+    
+    // If filter is promo, show only promo products
+    if (filter === 'promo') {
+      baseProducts = products.filter(p => p.isPromo);
+    }
+    
+    if (searchText.trim()) {
+      return baseProducts.filter(p =>
+        p.name.toLowerCase().includes(searchText.toLowerCase()) ||
+        p.brand.toLowerCase().includes(searchText.toLowerCase())
+      );
+    }
+    
+    return baseProducts;
+  })();
 
   const showSearchResults = searchText.trim().length > 0;
+  const screenTitle = filter === 'promo' ? 'Promotions' : selectedCategory;
 
   const handleProductPress = (product) => {
     setSelectedProduct(product);
@@ -75,7 +88,7 @@ export default function ProductListScreen({ onBack, onNavigate, favorites = [], 
               <Pressable onPress={onBack} style={styles.backBtn}>
                 <MaterialCommunityIcons name="arrow-left" size={24} color="#fff" />
               </Pressable>
-              <Text style={styles.headerTitle}>{selectedCategory}</Text>
+              <Text style={styles.headerTitle}>{screenTitle}</Text>
               <View style={styles.headerActions}>
                 <Pressable
                   style={styles.actionBtn}
@@ -216,7 +229,7 @@ export default function ProductListScreen({ onBack, onNavigate, favorites = [], 
                     pressed && styles.navItemPressed,
                   ]}
                   onPress={() => {
-                    if (item.label === 'Boutique') {
+                    if (item.label === 'Marketplace') {
                       onNavigate?.('marketplace_home');
                     } else if (item.label === 'Catégories') {
                       onNavigate?.('category_page');

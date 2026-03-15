@@ -1,5 +1,11 @@
 # TASK MANAGER
 
+## APK Build
+- **Chemin** : `app/android/app/build/outputs/apk/debug/app-debug.apk`
+- **Taille** : ~249 MB
+- **Date** : 14 mars 2026 à 23:45
+- **Statut** : ✅ Créé
+
 ## Légende
 - **Priorité** : P1 (critique) > P2 (important) > P3 (optionnel)
 - **Sprint** : S0=Setup, S1=Auth+SMS, S2=Wallet+Sync, S3=Flutterwave+Loba, S4=Media+Marketplace, S5=Négociation, S6=WiFi Direct, S7=Bluetooth, S8-S11=Delivery+Kiosque+AI, S12=Security+Pilot
@@ -80,6 +86,17 @@
 | Wallet - Recevoir Request Payment | Done | P1 | S1 |
 | Wallet - Historique Screen | Done | P1 | S1 |
 | Wallet - Mode Points & Conversion 1:1 | Done | P1 | S1 |
+| Marketplace - Menu drawer avec Profil | Done | P1 | S4 |
+| Marketplace - Notifications fonctionnel | Done | P1 | S4 |
+| Notifications - Navigation Promotion -> Liste promo | Done | P1 | S4 |
+| Notifications - Navigation Nouveauté -> new_arrivals | Done | P1 | S4 |
+| Notifications - Navigation Commande -> orders | Done | P1 | S4 |
+| Notifications - Navigation Paiement -> wallet | Done | P1 | S4 |
+| AddAddress - Bouton enregistre avec categorie sans nom | Done | P1 | S4 |
+| AddAddress - Fix zone systeme (paddingBottom: 60) | Done | P1 | S4 |
+| Checkout - Moi affiche details profil inscription | Done | P1 | S4 |
+| Profile - Nom cliquable vers ecran Compte | Done | P1 | S4 |
+| Menu Boutique - Remplace Accueil par Profil | Done | P1 | S4 |
 
 ---
 
@@ -138,6 +155,6 @@
 | Tâche | Status | Priorité | Sprint |
 |-------|--------|----------|--------|
 | AI ingest pipeline (Loba) | Not Started | P2 | S11 |
-| Offline Chat | Not Started | P2 | S3 |
+| Offline Chat | Done | P2 | S3 |
 | KMS & key rotation | Not Started | P1 | S12 |
 | Pilot deployment (1 city) | Not Started | P2 | S12 |

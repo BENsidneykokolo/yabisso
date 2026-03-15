@@ -14,6 +14,7 @@ import {
   Platform,
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { database } from '../../../lib/db';
 
 import { useOrders } from '../context/OrderContext';
 import { useCart } from '../context/CartContext';
@@ -37,6 +38,26 @@ export default function CheckoutScreen({ onBack, onNavigate, route }) {
     country: '',
     comment: '',
   });
+
+  const [savedAddresses, setSavedAddresses] = useState([]);
+  const [selectedAddressId, setSelectedAddressId] = useState(null);
+
+  React.useEffect(() => {
+    const loadAddresses = async () => {
+      try {
+        const addressCollection = database.get('addresses');
+        const list = await addressCollection.query().fetch();
+        setSavedAddresses(list);
+        if (list.length > 0) {
+          setSelectedAddressId(list[0].id);
+          setAddress(list[0].uniqueId);
+        }
+      } catch (error) {
+        console.error('Error loading addresses for checkokut:', error);
+      }
+    };
+    loadAddresses();
+  }, []);
 
   // Get items from navigation params or use empty array
   const orderItems = route?.params?.orderItems || [];
@@ -174,8 +195,7 @@ export default function CheckoutScreen({ onBack, onNavigate, route }) {
               </View>
               <View style={styles.optionTextContainer}>
                 <Text style={styles.optionTitle}>Moi</Text>
-                <Text style={styles.optionSubtitle}>Nana Franky • +237 671 23 45 67</Text>
-                <Text style={styles.optionSubtitle}>franky@yabisso.cm</Text>
+                <Text style={styles.optionSubtitle}>Kwesi • +237 000 000 000</Text>
               </View>
             </View>
             <View style={styles.radioOuter}>
@@ -230,70 +250,61 @@ export default function CheckoutScreen({ onBack, onNavigate, route }) {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Adresse de Livraison</Text>
 
-          {/* Home */}
-          <Pressable
-            onPress={() => setAddress('home')}
-            style={[
-              styles.optionCard,
-              address === 'home' && styles.optionCardSelected
-            ]}
-          >
-            <View style={styles.optionContent}>
-              <View style={[
-                styles.optionIcon,
-                address === 'home' && styles.optionIconSelected
-              ]}>
-                <MaterialCommunityIcons name="home" size={22} color={address === 'home' ? '#fff' : '#64748b'} />
-              </View>
-              <View style={styles.optionTextContainer}>
-                <View style={styles.titleRow}>
-                  <Text style={styles.optionTitle}>Maison</Text>
-                  <View style={styles.tagBadge}>
-                    <Text style={styles.tagBadgeText}>YB-987-AX</Text>
+          {savedAddresses.length === 0 ? (
+            <View style={styles.noAddressContainer}>
+              <Text style={styles.noAddressText}>Aucune adresse enregistrée.</Text>
+              <Pressable 
+                style={styles.addAddressInlineBtn}
+                onPress={() => onNavigate?.('profile_add_address')}
+              >
+                <Text style={styles.addAddressInlineText}>Ajouter une adresse</Text>
+              </Pressable>
+            </View>
+          ) : (
+            savedAddresses.map((addr) => (
+              <Pressable
+                key={addr.id}
+                onPress={() => {
+                  setSelectedAddressId(addr.id);
+                  setAddress(addr.uniqueId);
+                }}
+                style={[
+                  styles.optionCard,
+                  selectedAddressId === addr.id && styles.optionCardSelected
+                ]}
+              >
+                <View style={styles.optionContent}>
+                  <View style={[
+                    styles.optionIcon,
+                    selectedAddressId === addr.id && styles.optionIconSelected
+                  ]}>
+                    <MaterialCommunityIcons 
+                      name={addr.category === 'Maison' ? 'home' : (addr.category === 'Travail' ? 'briefcase' : 'map-marker')} 
+                      size={22} 
+                      color={selectedAddressId === addr.id ? '#fff' : '#64748b'} 
+                    />
+                  </View>
+                  <View style={styles.optionTextContainer}>
+                    <View style={styles.titleRow}>
+                      <Text style={styles.optionTitle}>{addr.name}</Text>
+                      <View style={styles.tagBadge}>
+                        <Text style={styles.tagBadgeText}>{addr.uniqueId}</Text>
+                      </View>
+                    </View>
+                    <Text style={styles.optionSubtitle}>{addr.fullAddress || 'Coordonnées GPS'}</Text>
                   </View>
                 </View>
-                <Text style={styles.optionSubtitle}>Rue 1.023, Quartier Bastos, Yaoundé</Text>
-              </View>
-            </View>
-            <View style={styles.radioOuter}>
-              <View style={[
-                styles.radioInner,
-                address === 'home' && styles.radioInnerSelected
-              ]} />
-            </View>
-          </Pressable>
-
-          {/* Work */}
-          <Pressable
-            onPress={() => setAddress('work')}
-            style={[
-              styles.optionCard,
-              address === 'work' && styles.optionCardSelected
-            ]}
-          >
-            <View style={styles.optionContent}>
-              <View style={styles.optionIcon}>
-                <MaterialCommunityIcons name="work" size={22} color="#64748b" />
-              </View>
-              <View style={styles.optionTextContainer}>
-                <View style={styles.titleRow}>
-                  <Text style={styles.optionTitle}>Travail</Text>
-                  <View style={[styles.tagBadge, styles.tagBadgeSecondary]}>
-                    <Text style={styles.tagBadgeText}>YB-123-BZ</Text>
-                  </View>
+                <View style={styles.radioOuter}>
+                  <View style={[
+                    styles.radioInner,
+                    selectedAddressId === addr.id && styles.radioInnerSelected
+                  ]} />
                 </View>
-                <Text style={styles.optionSubtitle}>Immeuble CAA, Avenue Marchand</Text>
-              </View>
-            </View>
-            <View style={styles.radioOuter}>
-              <View style={[
-                styles.radioInner,
-                address === 'work' && styles.radioInnerSelected
-              ]} />
-            </View>
-          </Pressable>
+              </Pressable>
+            ))
+          )}
 
-          <Pressable style={styles.manageAddressBtn}>
+          <Pressable style={styles.manageAddressBtn} onPress={() => onNavigate?.('profile_addresses')}>
             <MaterialCommunityIcons name="cog" size={16} color="#137fec" />
             <Text style={styles.manageAddressText}>Gérer les adresses</Text>
           </Pressable>
@@ -1043,5 +1054,28 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     color: '#fff',
+  },
+  noAddressContainer: {
+    backgroundColor: '#1c2a38',
+    borderRadius: 12,
+    padding: 20,
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  noAddressText: {
+    color: '#94a3b8',
+    marginBottom: 12,
+  },
+  addAddressInlineBtn: {
+    backgroundColor: 'rgba(19, 127, 236, 0.1)',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#137fec',
+  },
+  addAddressInlineText: {
+    color: '#137fec',
+    fontWeight: 'bold',
   },
 });

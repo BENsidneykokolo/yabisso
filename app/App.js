@@ -66,6 +66,8 @@ import RestaurantHomeScreen from './src/features/restaurant/screens/RestaurantHo
 import RestaurantDetailsScreen from './src/features/restaurant/screens/RestaurantDetailsScreen';
 import FoodItemDetailsScreen from './src/features/restaurant/screens/FoodItemDetailsScreen';
 import FoodCheckoutScreen from './src/features/restaurant/screens/FoodCheckoutScreen';
+import RestaurantOrdersScreen from './src/features/restaurant/screens/RestaurantOrdersScreen';
+import RestaurantTrackingScreen from './src/features/restaurant/screens/RestaurantTrackingScreen';
 import HotelHomeScreen from './src/features/hotel/screens/HotelHomeScreen';
 import ServicesHomeScreen from './src/features/services/screens/ServicesHomeScreen';
 import RealEstateHomeScreen from './src/features/real_estate/screens/RealEstateHomeScreen';
@@ -73,16 +75,30 @@ import MarketplaceNotificationsScreen from './src/features/marketplace/screens/M
 import MarketplaceFavoritesScreen from './src/features/marketplace/screens/MarketplaceFavoritesScreen';
 import MarketplaceHistoryScreen from './src/features/marketplace/screens/MarketplaceHistoryScreen';
 import MarketplaceSettingsScreen from './src/features/marketplace/screens/MarketplaceSettingsScreen';
+import ProfileAddressesScreen from './src/features/profile/screens/ProfileAddressesScreen';
+import AddAddressScreen from './src/features/profile/screens/AddAddressScreen';
+import AddressDetailScreen from './src/features/profile/screens/AddressDetailScreen';
 import { CartProvider } from './src/features/marketplace/context/CartContext';
 import { OrderProvider } from './src/features/marketplace/context/OrderContext';
+import { RestaurantCartProvider } from './src/features/restaurant/context/RestaurantCartContext';
+import { RestaurantOrdersProvider } from './src/features/restaurant/context/RestaurantOrdersContext';
+import { RestaurantFavoritesProvider } from './src/features/restaurant/context/RestaurantFavoritesContext';
+import RestaurantFavoritesScreen from './src/features/restaurant/screens/RestaurantFavoritesScreen';
+import { seedDatabase } from './src/lib/db/seed';
+import { useEffect } from 'react';
 
 export default function App() {
+  useEffect(() => {
+    seedDatabase().catch(console.error);
+  }, []);
+
   const [history, setHistory] = useState([{ screen: 'welcome', params: {} }]);
   const [activeTab, setActiveTab] = useState('Accueil');
   const [homeShowAllServices, setHomeShowAllServices] = useState(false);
   const [walletMode, setWalletMode] = useState('fcfa');
   const [walletActiveTab, setWalletActiveTab] = useState('home');
   const [favorites, setFavorites] = useState([]);
+  const [selectedAddress, setSelectedAddress] = useState(null);
 
   const current = history[history.length - 1];
   const screen = current.screen;
@@ -338,6 +354,36 @@ export default function App() {
           navigate('wallet');
         }}
         onOpenBlockedUser={() => navigate('blocked_user')}
+        onNavigate={(screenName) => navigate(screenName)}
+      />
+    );
+  }
+  if (screen === 'profile_addresses') {
+    content = (
+      <ProfileAddressesScreen
+        onBack={() => goBack()}
+        onAddAddress={() => navigate('add_address')}
+        onSelectAddress={(addr) => {
+          setSelectedAddress(addr);
+          goBack();
+        }}
+        onNavigate={(screenName, params) => navigate(screenName, params)}
+      />
+    );
+  }
+  if (screen === 'profile_add_address') {
+    content = (
+      <AddAddressScreen 
+        onBack={() => goBack()} 
+        onSave={() => goBack()} 
+      />
+    );
+  }
+  if (screen === 'profile_address_detail') {
+    content = (
+      <AddressDetailScreen 
+        address={screenParams?.address} 
+        onBack={() => goBack()} 
       />
     );
   }
@@ -421,11 +467,13 @@ export default function App() {
     );
   }
   if (screen === 'marketplace_product_list') {
+    const filter = screenParams?.filter || null;
     content = (
       <ProductListScreen
         onBack={() => goBack()}
         favorites={favorites}
         onToggleFavorite={toggleFavorite}
+        filter={filter}
         onNavigate={(screenName, params) => {
           let target = screenName;
           if (screenName === 'product_details') target = 'marketplace_product_details';
@@ -518,6 +566,7 @@ export default function App() {
       <OrdersScreen
         onBack={() => goBack()}
         onNavigate={(screenName, params) => navigate(screenName, params)}
+        filter={screenParams?.filter}
       />
     );
   }
@@ -603,6 +652,7 @@ export default function App() {
       <RestaurantDetailsScreen
         onBack={() => goBack()}
         onNavigate={(screenName, params) => navigate(screenName, params)}
+        route={{ params: screenParams }}
       />
     );
   }
@@ -611,12 +661,45 @@ export default function App() {
       <FoodItemDetailsScreen
         onBack={() => goBack()}
         onNavigate={(screenName, params) => navigate(screenName, params)}
+        route={{ params: screenParams }}
       />
     );
   }
   if (screen === 'food_checkout') {
     content = (
       <FoodCheckoutScreen
+        onBack={() => goBack()}
+        onNavigate={(screenName, params) => navigate(screenName, params)}
+        route={{ params: screenParams }}
+      />
+    );
+  }
+
+  // Restaurant Orders
+  if (screen === 'restaurant_orders') {
+    content = (
+      <RestaurantOrdersScreen
+        onBack={() => goBack()}
+        onNavigate={(screenName, params) => navigate(screenName, params)}
+      />
+    );
+  }
+
+  // Restaurant Tracking
+  if (screen === 'restaurant_tracking') {
+    content = (
+      <RestaurantTrackingScreen
+        onBack={() => goBack()}
+        onNavigate={(screenName, params) => navigate(screenName, params)}
+        route={{ params: screenParams }}
+      />
+    );
+  }
+
+  // Restaurant Favorites
+  if (screen === 'restaurant_favorites') {
+    content = (
+      <RestaurantFavoritesScreen
         onBack={() => goBack()}
         onNavigate={(screenName, params) => navigate(screenName, params)}
       />
@@ -629,6 +712,7 @@ export default function App() {
       <HotelHomeScreen
         onBack={() => goBack()}
         onNavigate={(screenName, params) => navigate(screenName, params)}
+        route={{ params: screenParams }}
       />
     );
   }
@@ -639,6 +723,7 @@ export default function App() {
       <ServicesHomeScreen
         onBack={() => goBack()}
         onNavigate={(screenName, params) => navigate(screenName, params)}
+        route={{ params: screenParams }}
       />
     );
   }
@@ -649,6 +734,7 @@ export default function App() {
       <RealEstateHomeScreen
         onBack={() => goBack()}
         onNavigate={(screenName, params) => navigate(screenName, params)}
+        route={{ params: screenParams }}
       />
     );
   }
@@ -658,6 +744,7 @@ export default function App() {
     content = (
       <MarketplaceNotificationsScreen
         onBack={() => goBack()}
+        onNavigate={(screenName, params) => navigate(screenName, params)}
       />
     );
   }
@@ -710,8 +797,11 @@ export default function App() {
     <DatabaseProvider database={database}>
       <CartProvider>
         <OrderProvider>
-          <View style={{ flex: 1 }}>
-            {content}
+          <RestaurantCartProvider>
+            <RestaurantOrdersProvider>
+            <RestaurantFavoritesProvider>
+              <View style={{ flex: 1 }}>
+              {content}
             {showFloatingButton && (
               <HomeFloatingButton
                 activeTab={activeTab}
@@ -719,31 +809,34 @@ export default function App() {
                   setActiveTab(label);
                   if (label === 'Accueil') {
                     setHomeShowAllServices(false);
-                    setScreen('home');
+                    navigate('home');
                     return;
                   }
                   if (label === 'Services') {
                     setHomeShowAllServices(true);
-                    setScreen('home');
+                    navigate('home');
                     return;
                   }
                   if (label === 'Portefeuille') {
                     setWalletActiveTab('home');
-                    setScreen('wallet');
+                    navigate('wallet');
                     return;
                   }
                   if (label === 'Assistant IA') {
-                    setScreen('assistant');
+                    navigate('assistant');
                     return;
                   }
                   if (label === 'Profil') {
-                    setScreen('profile');
+                    navigate('profile');
                   }
                 }}
               />
             )}
             <StatusBar style="light" />
           </View>
+          </RestaurantFavoritesProvider>
+          </RestaurantOrdersProvider>
+          </RestaurantCartProvider>
         </OrderProvider>
       </CartProvider>
     </DatabaseProvider>

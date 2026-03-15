@@ -1,5 +1,31 @@
 # YABISSO AI CHAT HISTORY
 
+## APK Build
+- **Chemin** : `app/android/app/build/outputs/apk/debug/app-debug.apk`
+- **Taille** : ~249 MB
+- **Date** : 14 mars 2026 à 23:45
+
+## 2026-03-15 - Sessions recentes
+- **Notifications fonctionnelles** : Ajout navigation depuis les notifications
+  - Promotion → Liste produits en promotion (filter: promo)
+  - Nouveauté → Nouveautés (new_arrivals)
+  - Commande/En cours → Commandes (orders)
+  - Paiement → Portefeuille (wallet)
+- **Ecran add address** : Bouton enregistre fonctionne avec categorie sans nom
+- **Menu boutique** : Changé "Accueil" par "Profil" avec icon account-circle
+- **Profil** : Nom cliquable → va vers ecran compte avec details inscription
+- **Restaurant** : 
+  - Categories功能性 (Tout, Popular, Rice, Soups, Swallows, Proteins) avec filtre
+  - Prix en FCAF
+  - Ecran Commandes (RestaurantOrdersScreen) - en français
+  - Ecran Suivi livraison (RestaurantTrackingScreen) - en français
+  - Header en français (Livraison à, Commandes, etc.)
+  - Calcul total (quantité × prix)
+  - Menu en haut (Accueil, Favoris, Commandes, Panier)
+  - Recherche avec icônes micro et photo
+  - Ecran Favoris fonctionnel (ajouter/retirer favoris)
+  - Commandes sauvegardées dans RestaurantOrdersContext
+
 ## Historique complet
 
 Assistant: What do you want to work on? If it involves code changes, tell me the file or feature and I'll dive in.
@@ -958,3 +984,22 @@ Assistant: [A verifie et mis a jour les fichiers .md]
 - Project_memory.md & Implementation.md : Mise a jour de la pile technique (ML Kit, Speech Recognition) et des roles utilisateur.
 - Chat.md : Mise a jour de l'historique.
 
+
+User: tu peux verifier tous les fichiers .md dans le repo "mesfichiers" qui se trouve ici: C:\Users\Utilisateur\Documents\Ben\myapp\yabisso\mesfichiers
+
+Assistant: J'ai v�rifie tous les fichiers .md dans le r�pertoire mesfichiers. J'ai synchronise la documentation avec l'etat actuel du code, notamment en ajoutant les ecran des modules loba et estaurant qui �taient pr�sents mais non list�s. J'ai �galement mis a jour chat.md et 	ask.md pour refleter ces changements. La documentation est maintenant totalement a jour avec le code source.
+
+User: tu peux fixer ces 2 erreurs: C:\Users\Utilisateur\Documents\Ben\myapp\yabisso\mesfichiers\erreur
+
+Assistant: J'ai corrig� les deux erreurs identifi�es dans les captures d'�cran :
+1. Erreur 'showMenu' dans MarketplaceHomeScreen.js : �tat manquant ajout�.
+2. Erreur 'setScreen' dans App.js : Remplac� par 'navigate' pour le bouton flottant.
+Ces deux �crans devraient maintenant fonctionner sans planter.
+
+User: [Demande d'impl�mentation du syst�me d'adresses multiples avec g�olocalisation, ID uniques et QR codes]
+
+Assistant: J'ai impl�ment� le syst�me complet de gestion d'adresses.
+1. Mod�le et table 'addresses' ajout�s � la base de donn�es.
+2. �crans de liste, d'ajout (via GPS) et de d�tails (avec QR) cr��s.
+3. Int�gration du partage (WhatsApp, SMS) et g�n�ration d'identifiants uniques YB-XXX-ZZ.
+4. S�lection dynamique des adresses ajout�e au tunnel de commande (Checkout).

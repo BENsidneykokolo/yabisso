@@ -1,5 +1,5 @@
 import React from 'react';
-import { Pressable, SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, SafeAreaView, ScrollView, StyleSheet, Text, View, Alert } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 const notifications = [
@@ -12,6 +12,8 @@ const notifications = [
     icon: 'check-circle',
     iconColor: '#22c55e',
     bgColor: 'rgba(34, 197, 94, 0.15)',
+    action: 'orders',
+    filter: 'livre',
   },
   {
     id: 2,
@@ -22,6 +24,8 @@ const notifications = [
     icon: 'gift',
     iconColor: '#eab308',
     bgColor: 'rgba(234, 179, 8, 0.15)',
+    action: 'product_list',
+    filter: 'promo',
   },
   {
     id: 3,
@@ -32,6 +36,7 @@ const notifications = [
     icon: 'information',
     iconColor: '#137fec',
     bgColor: 'rgba(19, 127, 236, 0.15)',
+    action: null,
   },
   {
     id: 4,
@@ -42,6 +47,7 @@ const notifications = [
     icon: 'wallet',
     iconColor: '#8b5cf6',
     bgColor: 'rgba(139, 92, 246, 0.15)',
+    action: 'wallet',
   },
   {
     id: 5,
@@ -52,10 +58,32 @@ const notifications = [
     icon: 'truck-delivery',
     iconColor: '#f97316',
     bgColor: 'rgba(249, 115, 22, 0.15)',
+    action: 'orders',
+    filter: 'en_cours',
+  },
+  {
+    id: 6,
+    type: 'new',
+    title: 'Nouveauté',
+    message: 'Découvrez les nouveaux articles',
+    time: 'Aujourd hui',
+    icon: 'sparkles',
+    iconColor: '#ec4899',
+    bgColor: 'rgba(236, 72, 153, 0.15)',
+    action: 'new_arrivals',
   },
 ];
 
-export default function MarketplaceNotificationsScreen({ onBack }) {
+export default function MarketplaceNotificationsScreen({ onBack, onNavigate }) {
+  const handleNotificationPress = (notification) => {
+    if (!notification.action) {
+      Alert.alert('Info', notification.message);
+      return;
+    }
+
+    onNavigate?.(notification.action, { filter: notification.filter });
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
@@ -70,7 +98,11 @@ export default function MarketplaceNotificationsScreen({ onBack }) {
 
       <ScrollView showsVerticalScrollIndicator={false} style={styles.scrollView}>
         {notifications.map((notification) => (
-          <View key={notification.id} style={styles.notificationCard}>
+          <Pressable 
+            key={notification.id} 
+            style={styles.notificationCard}
+            onPress={() => handleNotificationPress(notification)}
+          >
             <View style={[styles.iconContainer, { backgroundColor: notification.bgColor }]}>
               <MaterialCommunityIcons 
                 name={notification.icon} 
@@ -85,7 +117,7 @@ export default function MarketplaceNotificationsScreen({ onBack }) {
               </View>
               <Text style={styles.notificationMessage}>{notification.message}</Text>
             </View>
-          </View>
+          </Pressable>
         ))}
         
         <View style={styles.bottomSpacer} />

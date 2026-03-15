@@ -24,7 +24,7 @@ Supabase (Auth + RLS + Edge Functions)
 - Wallet Send: `app/src/features/wallet/screens/SendScreen.js` + sub-screens
 - Wallet Receive: `app/src/features/wallet/screens/ReceiveScreen.js` + sub-screens
 - Wallet History: `app/src/features/wallet/screens/HistoryScreen.js`
-- DB locale WatermelonDB: `app/src/lib/db/schema.ts`
+- DB locale WatermelonDB: `app/src/lib/db/schema.ts` (tables localisées: profiles, products, wallet_transactions, loba_posts, assistant_messages)
 
 ## Principes offline-first
 L'app doit fonctionner sans internet.

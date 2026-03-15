@@ -14,6 +14,8 @@ import {
   Share,
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { withObservables } from '@nozbe/watermelondb/react';
+import { database } from '../../../lib/db';
 
 const { width, height } = Dimensions.get('window');
 
@@ -79,7 +81,7 @@ const posts = [
   },
 ];
 
-export default function LobaHomeScreen({ onBack, onNavigate }) {
+function LobaHomeScreen({ onBack, onNavigate }) {
   const [activeTab, setActiveTab] = useState('For You');
   const [activeTabNav, setActiveTabNav] = useState('Loba');
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
@@ -764,3 +766,9 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
 });
+
+const enhance = withObservables([], () => ({
+  posts: database.get('loba_posts').query().observe(),
+}));
+
+export default enhance(LobaHomeScreen);

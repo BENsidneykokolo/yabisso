@@ -18,7 +18,7 @@ import { useOrders } from '../context/OrderContext';
 import { useCart } from '../context/CartContext';
 
 const bottomNavItems = [
-  { label: 'Boutique', icon: 'store' },
+  { label: 'Marketplace', icon: 'store' },
   { label: 'Catégories', icon: 'view-grid' },
   { label: 'Nouveauté', icon: 'sparkles' },
   { label: 'Panier', icon: 'cart' },
@@ -31,10 +31,10 @@ const FILTERS = [
   { key: 'annule', label: 'Annulées' },
 ];
 
-export default function OrdersScreen({ onBack, onNavigate }) {
+export default function OrdersScreen({ onBack, onNavigate, filter }) {
   const { orders, updateOrderStatus } = useOrders();
   const { addToCart } = useCart();
-  const [activeFilter, setActiveFilter] = useState('all');
+  const [activeFilter, setActiveFilter] = useState(filter || 'all');
 
   // Reorder Modal State
   const [isReorderModalVisible, setIsReorderModalVisible] = useState(false);
@@ -242,7 +242,7 @@ export default function OrdersScreen({ onBack, onNavigate }) {
                   pressed && styles.navItemPressed,
                 ]}
                 onPress={() => {
-                  if (item.label === 'Boutique') {
+                  if (item.label === 'Marketplace') {
                     onNavigate?.('marketplace_home');
                   } else if (item.label === 'Catégories') {
                     onNavigate?.('category_page');

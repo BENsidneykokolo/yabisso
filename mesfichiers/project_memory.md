@@ -43,20 +43,18 @@
 - UI Wallet complet: WalletScreen, RechargeScreen, SendScreen, ReceiveScreen, HistoryScreen (Conversion FCFA/Points dynamique intégrée)
 - Bottom navigation wallet avec navigation et etat actif
 - Pages: Assistant IA (Entièrement réécrit: clavier, layout stable, menu, 6 outils), Profil + sous-pages
-- Marketplace (COMPLET S5) : MarketplaceHomeScreen, ProductListScreen, CategoryPageScreen, CartScreen, CheckoutScreen, OrdersScreen, OrderStatusScreen, DeliveryTrackingScreen
-- Modules Marketplace avancés :
-  - **Négociation** : Modal de prix, validation min/max price, mise à jour prix panier
-  - **Gestion Commandes** : OrderContext (En cours, Livré, Annulé), persistance locale
-  - **Reprise de commande** : Possibilité de modifier et rajouter au panier une commande annulée
-  - **Option "Pas Moi"** : Popup de saisie d'informations destinataire complet (Nom, Prénom, Adresse, Tel, Ville, Pays, Commentaire)
-- Menu lateral dans Marketplace (hamburger icon) avec: Favoris, Historique, Parametres, Aide
-- Notifications screen pour Marketplace
-- Services ajoutes: Restaurant (home, details, item details, checkout), Hotels, Services, Immobilier
+- **Loba (Vidéo)** : LobaHomeScreen, LobaFeedScreen, LobaRecordScreen, LobaProfileScreen, LobaStoriesScreen (Implémenté)
+- **Restaurant** : RestaurantHomeScreen, RestaurantDetailsScreen, FoodItemDetailsScreen, FoodCheckoutScreen (Implémenté)
+- **Hotels** : HotelHomeScreen (UI Base Implémenté)
+- **Services** : ServicesHomeScreen (UI Base Implémenté)
+- **Immobilier** : RealEstateHomeScreen (UI Base Implémenté)
+- Marketplace (COMPLET S5) : MarketplaceHomeScreen, ProductListScreen, CategoryPageScreen, CartScreen, CheckoutScreen, OrdersScreen, OrderStatusScreen, DeliveryTrackingScreen, AddProductScreen, SellerProfileScreen, SellerComparisonScreen, BlockedUserScreen, MarketplaceFavoritesScreen, MarketplaceHistoryScreen, MarketplaceNotificationsScreen, MarketplaceSettingsScreen
 - FloatingNav: bouton flottant (bottom: 120)
 - Contextes : CartProvider, OrderProvider (états partagés)
 - Offline choix SMS/QR: modal active quand offline (NetInfo)
-- Schema DB local: profiles, sync_queue, signup_nonces, signup_verifications
+- Schema DB local: profiles, sync_queue, signup_nonces, signup_verifications, products, wallet_transactions, loba_posts, assistant_messages
 - Service offline signup: generation payload + enqueue SyncQueue (connecté à l'UI et fonctionnel)
+- **Universal Offline-First**: Marketplace, Wallet, Loba, et Assistant utilisent désormais WatermelonDB pour le stockage local (Sprint 4/5)
 - Bluetooth Low Energy (BLE): intégré pour communication locale
 - Supabase/OTP: pas encore integre
 
@@ -128,6 +126,13 @@
 - Sprint 1: FloatingNav.position bottom: 120
 - Sprint 1: Search bar style dashboard + Voice/Camera popups
 - Sprint 1.5: Fix configuration build Android local (local.properties SDK path)
+- Sprint 4: Notifications fonctionnel (Promotion -> liste promo, Nouveauté -> new_arrivals, etc.)
+- Sprint 4: AddAddress - bouton enregistre avec categorie sans nom, fix zone systeme
+- Sprint 4: Checkout - "Moi" affiche details profil inscription (Kwesi, +237 000 000 000)
+- Sprint 4: Profile - Nom cliquable vers ecran Compte
+- Sprint 4: Menu Boutique - "Accueil" remplace par "Profil" avec icon account-circle
+- Sprint 5: Universal Offline-First Integration (Marketplace, Wallet, Loba, AI Assistant)
+- Sprint 5: Notifications - Navigation Promotion, Nouveauté, Commande, Paiement fonctionnelle (Deep-linking)
 
 ## Decisions techniques additionnelles
 - Navigation: React Navigation (a installer)

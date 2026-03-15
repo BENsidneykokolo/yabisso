@@ -14,9 +14,11 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useCart } from '../context/CartContext';
 import { useVoiceSearch } from '../../../hooks/useVoiceSearch';
 import { usePhotoSearch } from '../../../hooks/usePhotoSearch';
+import { withObservables } from '@nozbe/watermelondb/react';
+import { database } from '../../../lib/db';
 
 const bottomNavItems = [
-  { label: 'Boutique', icon: 'store' },
+  { label: 'Marketplace', icon: 'store' },
   { label: 'Catégories', icon: 'view-grid' },
   { label: 'Nouveauté', icon: 'sparkles' },
   { label: 'Panier', icon: 'cart' },
@@ -31,21 +33,6 @@ const categories = [
   { name: 'Accessoire', icon: 'watch', color: '#8b5cf6' },
 ];
 
-const products = [
-  { id: 1, name: 'iPhone 15 Pro Max', brand: 'Apple', price: '950000', isNew: true, category: 'Téléphones' },
-  { id: 2, name: 'Samsung Galaxy S24 Ultra', brand: 'Samsung', price: '780000', isNew: true, category: 'Téléphones' },
-  { id: 3, name: 'Air Zoom Pegasus', brand: 'Nike', price: '65000', isNew: false, category: 'Mode' },
-  { id: 4, name: 'Galaxy Watch 5', brand: 'Samsung', price: '120000', isNew: true, category: 'Accessoire' },
-  { id: 5, name: 'MacBook Pro M3', brand: 'Apple', price: '1200000', isNew: true, category: 'Téléphones' },
-  { id: 6, name: 'Nike Air Max 2024', brand: 'Nike', price: '85000', isNew: true, category: 'Mode' },
-  { id: 7, name: 'Xiaomi 14 Ultra', brand: 'Xiaomi', price: '650000', isNew: false, category: 'Téléphones' },
-  { id: 8, name: 'Sony WH-1000XM5', brand: 'Sony', price: '180000', isNew: true, category: 'Accessoire' },
-  { id: 9, name: 'iPad Pro M4', brand: 'Apple', price: '950000', isNew: true, category: 'Téléphones' },
-  { id: 10, name: 'Samsung TV 55"', brand: 'Samsung', price: '350000', isNew: false, category: 'Maison' },
-  { id: 11, name: 'AirPods Pro', brand: 'Apple', price: '95000', isNew: true, category: 'Accessoire' },
-  { id: 12, name: 'Apple Watch Ultra 2', brand: 'Apple', price: '450000', isNew: true, category: 'Accessoire' },
-];
-
 const deals = [
   { id: 1, title: 'Grande Vente', subtitle: 'Électronique & Accessoires', tag: 'PROMO -50%', tagColor: '#ef4444', category: 'Téléphones' },
   { id: 2, title: 'Tech Deals', subtitle: 'Arrivages récents', tag: 'NOUVEAU', tagColor: '#eab308', category: 'Mode' },
@@ -53,8 +40,9 @@ const deals = [
   { id: 4, title: 'Maison', subtitle: 'Décoration & Ameublement', tag: 'NOUVEAU', tagColor: '#22c55e', category: 'Maison' },
 ];
 
-export default function MarketplaceHomeScreen({ onBack, onNavigate, favorites = [], onToggleFavorite }) {
+function MarketplaceHomeScreen({ onBack, onNavigate, favorites = [], onToggleFavorite, products = [] }) {
   const [activeTab, setActiveTab] = useState('Boutique');
+  const [showMenu, setShowMenu] = useState(false);
   const [showVoiceModal, setShowVoiceModal] = useState(false);
   const [showCameraModal, setShowCameraModal] = useState(false);
   const [searchText, setSearchText] = useState('');
@@ -94,7 +82,7 @@ export default function MarketplaceHomeScreen({ onBack, onNavigate, favorites = 
   const showSearchResults = searchText.trim().length > 0;
 
   const menuItems = [
-    { label: 'Accueil', icon: 'home', screen: null },
+    { label: 'Profil', icon: 'account-circle', screen: 'profile' },
     { label: 'Boutique', icon: 'store', screen: 'marketplace_home' },
     { label: 'Catégories', icon: 'view-grid', screen: 'category_page' },
     { label: 'Nouveautés', icon: 'sparkles', screen: 'new_arrivals' },
@@ -103,19 +91,13 @@ export default function MarketplaceHomeScreen({ onBack, onNavigate, favorites = 
     { label: 'Favoris', icon: 'heart', screen: 'marketplace_favorites' },
     { label: 'Historique', icon: 'history', screen: 'marketplace_history' },
     { label: 'Paramètres', icon: 'cog', screen: 'marketplace_settings' },
-    { label: 'Aide & Support', icon: 'help-circle', screen: null },
+    { label: 'Aide & Support', icon: 'help-circle', screen: 'profile_support' },
   ];
 
   const handleMenuPress = (item) => {
     setShowMenu(false);
     if (item.screen) {
-      if (item.screen === 'marketplace_home') {
-        // Already on home
-      } else {
-        onNavigate?.(item.screen);
-      }
-    } else if (item.label === 'Accueil') {
-      onBack?.();
+      onNavigate?.(item.screen);
     }
   };
 
@@ -1239,3 +1221,9 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
 });
+
+const enhance = withObservables([], () => ({
+  products: database.get('products').query().observe(),
+}));
+
+export default enhance(MarketplaceHomeScreen);

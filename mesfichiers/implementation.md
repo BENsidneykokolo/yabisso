@@ -58,6 +58,14 @@ FloatingNav (bouton flottant gauche) sur certaines pages
 UI Assistant IA implemente avec menu navigation, barre multiline, clavier avoidance, et 6 outils (Camera, Photo, Fichier, Position, Contact, Audio)
 Build dev client Android configuré (`local.properties` pointant sur AppData SDK) et build Gradle validé
 
+## Nouvelles fonctionnalités (2026-03-15)
+- UI Profil avec details inscription (Nom cliquable -> Compte)
+- Ecran AddAddress avec geolocalisation + categories (Maison/Travail/etc) sans necessite de nom
+- Ecran Notifications marketplace avec navigation fonctionnelle
+- Menu Boutique avec "Profil" au lieu de "Accueil"
+- Checkout "Moi" affiche details profil inscription
+- **Universal Offline-First DB**: Marketplace, Wallet, Loba, Assistant intégrés avec stockage local (WatermelonDB).
+
 ## Modules marketplace implementes (code)
 - UI: `app/src/features/marketplace/screens/MarketplaceHomeScreen.js`
 - UI: `app/src/features/marketplace/screens/ProductListScreen.js`
@@ -121,6 +129,20 @@ Ne jamais bloquer l'utilisateur avec une erreur reseau
 - UI: `app/src/features/profile/screens/LanguageSettingsScreen.js`
 - UI: `app/src/features/profile/screens/SupportScreen.js`
 - UI: `app/src/features/profile/screens/LogoutScreen.js`
+- UI Loba: `app/src/features/loba/screens/`
+  - `LobaHomeScreen.js`
+  - `LobaFeedScreen.js`
+  - `LobaRecordScreen.js`
+  - `LobaProfileScreen.js`
+  - `LobaStoriesScreen.js`
+- UI Restaurant: `app/src/features/restaurant/screens/`
+  - `RestaurantHomeScreen.js`
+  - `RestaurantDetailsScreen.js`
+  - `FoodItemDetailsScreen.js`
+  - `FoodCheckoutScreen.js`
+- UI Hotels: `app/src/features/hotel/screens/HotelHomeScreen.js`
+- UI Services: `app/src/features/services/screens/ServicesHomeScreen.js`
+- UI Immobilier: `app/src/features/real_estate/screens/RealEstateHomeScreen.js`
 - UI Wallet (Recharge, Send, Receive): `app/src/features/wallet/screens/`
   - `WalletScreen.js`
   - `RechargeScreen.js`
@@ -158,7 +180,7 @@ SEND_SMS, READ_SMS, RECEIVE_SMS
 ### Offline Chat
 - **Méthode** : Messages stockés localement WatermelonDB → Sync Supabase au retour réseau ; P2P via BLE ou WiFi Direct si connecté
 - **Librairie** : WatermelonDB (stockage) + react-native-ble-plx (transport P2P)
-- **Statut** : Not Started (Sprint 3)
+- **Statut** : Done (Sprint 5)
 
 ### Offline QR Signup
 - **Méthode** : App génère QR (payload Ed25519 signé) → Vendeur kiosque scanne → ACK + verification_token → status: active localement
@@ -168,7 +190,7 @@ SEND_SMS, READ_SMS, RECEIVE_SMS
 ### Offline Payment / Wallet UI
 - **Méthode** : Saisie en FCFA, conversion automatique en Points (1:1). Double mode Wallet.
 - **Librairie** : WatermelonDB + tweetnacl + Flutterwave (online) / SMS fallback (offline)
-- **Statut** : In Progress (UI/Flow logic completed)
+- **Statut** : Done (UI/Flow & DB logic completed)
 
 ## Modules produit (constraints)
 - Buy & Sell: max 2 images par article (1 principale + mosaique <= 6), suppression annonces obsoletes.

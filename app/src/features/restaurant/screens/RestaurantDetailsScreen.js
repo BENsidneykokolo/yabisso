@@ -9,57 +9,106 @@ import {
   Image,
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useRestaurantCart } from '../context/RestaurantCartContext';
 
 const menuItems = [
   {
     id: 1,
-    name: 'Jollof Rice with Chicken',
-    description: 'Spicy jollof rice served with grilled chicken and plantain',
+    name: 'Riz Jollof au Poulet',
+    description: 'Riz jollof épicé servi avec poulet grillé et plantain',
     price: 2500,
     image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBCMuFdHBFHKEQCZ_ATpmykF0FFHAsz5YpP7dGRRAUO067AlV39Kd5qULKKcqYxYSMvPE9cXjc_W60-NMQ1DKNgqPsDdaZnT4S4PTF9eUDt3n6gISdNHIQNJxnCPweghBGkJ3Sj-RvXM8d-rC-DTufcQYG-QIS6LBv0ywXyeZ-bUpLkuGLCxhlaLpEY3W0t6e80s8kEHUo4pevA_b9VKfR72Th2fy6fDkR66-DgkCK5jm18uvXerSNjKJXNsccyDEal4RpEsIKx',
     popular: true,
+    category: 'Popular',
   },
   {
     id: 2,
-    name: 'Fried Rice Special',
-    description: 'Delicious fried rice with shrimp and vegetables',
+    name: 'Riz Frit Spécial',
+    description: 'Délicieux riz frit aux crevettes et légumes',
     price: 2200,
     image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDzXRpMKOFUCAfvY_dv5O5uxpdhGNzPJUpA7IONJ285B_cmnb8V9V3tTJg7W7BLmEvvr4-hsl79LA8rTSqfxFE2ckdlHSSnFliXsDJI4gFu8l5GA57SkEcY6E0tEy3XJ3g-5aaxp3fWFMhMGOjjFkRJdsoZS3LxsNwgoSmAspd8RMGcP2_roY5-dO4lvGsCuRDRQ9rHILqY_15qkG9X3E99Qnt-KNcbUrGDrKlH4I0W9aENUdtfCKcYov1v9N7z1xWoL94ERzOg',
     popular: false,
+    category: 'Rice',
   },
   {
     id: 3,
-    name: 'Suya Platter',
-    description: 'Grilled beef suya with onions and tomatoes',
+    name: 'Plateau Suya',
+    description: 'Suya de bœuf grillé aux oignons et tomates',
     price: 1800,
     image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBqEgf-sY4N75ZEHTMwMsFspiT4sjQfFkmiHNgUQCk7yqLwYK4J_pdIJoT_guja2BS0uZ23kV3hmGVh_-eN5TmHbIumjpJfSiBMnRhHCgDxLCrYmVDphxqgwNQyfbpJHDhVGQhXXRmA2q2P7TUNN8aq0nPTnlDtK-MonCaLFkv2IvKqSVF7XhQ63DE2TnZ3lfBjjPiISv16CJoLXubWGAjcQ9Rrlq0gwBjBAYAcvLD-GAAQv7hh4zUScCDsPF8GOFkDqG42Y4Yb',
     popular: true,
+    category: 'Proteins',
   },
   {
     id: 4,
-    name: 'Egusi Soup with Pounded Yam',
-    description: 'Traditional egusi soup served with fluffy pounded yam',
+    name: 'Egusi au Piled Yam',
+    description: 'Soupe egusi traditionnelle servie avec pilé yam',
     price: 2000,
     image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCKGwnSpkZ-l7kAusVGHXkMFgJ1vmQ4K_Hi1ZboXexx1MA7_oBQ4g83TCpVsqSO6k0QMndlsI1hW_eQjms2AJu7q_FGv4mujRSjFFnv_ytmq2u7vK51YwH1Pwun-2cvoUC3tB7XKCkhyun4HrpYbtPO4E9P9cKJ6Sn3IwcTtxzGRuXn4qDReQR76JqRnGctHbhlBDkltMfMv3DfxhlaAv684HE8yiPcIjg7Vi4Zxd1Q8NkPcRz6URPMiPLungLzTN8BxxThIQv2',
     popular: false,
+    category: 'Soups',
+  },
+  {
+    id: 5,
+    name: 'Fufu et Nkoyo',
+    description: 'Fufu traditionnelle avec sauce épinard',
+    price: 1800,
+    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBCMuFdHBFHKEQCZ_ATpmykF0FFHAsz5YpP7dGRRAUO067AlV39Kd5qULKKcqYxYSMvPE9cXjc_W60-NMQ1DKNgqPsDdaZnT4S4PTF9eUDt3n6gISdNHIQNJxnCPweghBGkJ3Sj-RvXM8d-rC-DTufcQYG-QIS6LBv0ywXyeZ-bUpLkuGLCxhlaLpEY3W0t6e80s8kEHUo4pevA_b9VKfR72Th2fy6fDkR66-DgkCK5jm18uvXerSNjKJXNsccyDEal4RpEsIKx',
+    popular: false,
+    category: 'Swallows',
+  },
+  {
+    id: 6,
+    name: 'Poulet Braisé',
+    description: 'Poulet grillé aux épices africaines',
+    price: 3000,
+    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCKGwnSpkZ-l7kAusVGHXkMFgJ1vmQ4K_Hi1ZboXexx1MA7_oBQ4g83TCpVsqSO6k0QMndlsI1hW_eQjms2AJu7q_FGv4mujRSjFFnv_ytmq2u7vK51YwH1Pwun-2cvoUC3tB7XKCkhyun4HrpYbtPO4E9P9cKJ6Sn3IwcTtxzGRuXn4qDReQR76JqRnGctHbhlBDkltMfMv3DfxhlaAv684HE8yiPcIjg7Vi4Zxd1Q8NkPcRz6URPMiPLungLzTN8BxxThIQv2',
+    popular: true,
+    category: 'Proteins',
   },
 ];
 
-const categories = ['All', 'Popular', 'Rice', 'Soups', 'Swallows', 'Proteins'];
+const categories = ['Tout', 'Popular', 'Rice', 'Soups', 'Swallows', 'Proteins'];
 
 export default function RestaurantDetailsScreen({ route, onBack, onNavigate }) {
   const restaurant = route?.params?.restaurant || {
+    id: 1,
     name: 'Chicken Republic',
     image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCKGwnSpkZ-l7kAusVGHXkMFgJ1vmQ4K_Hi1ZboXexx1MA7_oBQ4g83TCpVsqSO6k0QMndlsI1hW_eQjms2AJu7q_FGv4mujRSjFFnv_ytmq2u7vK51YwH1Pwun-2cvoUC3tB7XKCkhyun4HrpYbtPO4E9P9cKJ6Sn3IwcTtxzGRuXn4qDReQR76JqRnGctHbhlBDkltMfMv3DfxhlaAv684HE8yiPcIjg7Vi4Zxd1Q8NkPcRz6URPMiPLungLzTN8BxxThIQv2',
     rating: 4.8,
     delivery: '30-40 min',
   };
   
-  const [activeCategory, setActiveCategory] = useState('All');
-  const [cartItems, setCartItems] = useState([]);
+  const [activeCategory, setActiveCategory] = useState('Tout');
+  const { addToCart, getCartCount, getCartTotal } = useRestaurantCart();
 
-  const addToCart = (item) => {
-    setCartItems([...cartItems, item]);
+  const handleAddToCart = (item) => {
+    addToCart({
+      ...item,
+      restaurantId: restaurant.id,
+      restaurantName: restaurant.name,
+    });
+  };
+
+  const cartCount = getCartCount();
+  const cartTotal = getCartTotal();
+
+  // Filter menu items based on active category
+  const filteredMenuItems = activeCategory === 'Tout' 
+    ? menuItems 
+    : menuItems.filter(item => item.category === activeCategory);
+
+  // Get category display name in French
+  const getCategoryTitle = () => {
+    const titles = {
+      'Tout': 'Tous les articles',
+      'Popular': 'Populaires',
+      'Rice': 'Riz',
+      'Soups': 'Soupes',
+      'Swallows': 'Pilés',
+      'Proteins': 'Protéines',
+    };
+    return titles[activeCategory] || activeCategory;
   };
 
   return (
@@ -116,8 +165,8 @@ export default function RestaurantDetailsScreen({ route, onBack, onNavigate }) {
 
         {/* Menu Items */}
         <View style={styles.menuSection}>
-          <Text style={styles.sectionTitle}>Popular Items</Text>
-          {menuItems.map((item) => (
+          <Text style={styles.sectionTitle}>{getCategoryTitle()}</Text>
+          {filteredMenuItems.map((item) => (
             <Pressable 
               key={item.id} 
               style={styles.menuItem}
@@ -134,13 +183,21 @@ export default function RestaurantDetailsScreen({ route, onBack, onNavigate }) {
                 </View>
                 <Text style={styles.menuItemDesc} numberOfLines={2}>{item.description}</Text>
                 <View style={styles.menuItemFooter}>
-                  <Text style={styles.menuItemPrice}>₦{item.price.toLocaleString()}</Text>
-                  <Pressable 
-                    style={styles.addBtn}
-                    onPress={() => addToCart(item)}
-                  >
-                    <MaterialCommunityIcons name="plus" size={20} color="#fff" />
-                  </Pressable>
+                  <Text style={styles.menuItemPrice}>FCFA {item.price.toLocaleString()}</Text>
+                  <View style={styles.menuItemActions}>
+                    <Pressable 
+                      style={styles.detailsBtn}
+                      onPress={() => onNavigate?.('food_details', { item, restaurant })}
+                    >
+                      <MaterialCommunityIcons name="eye" size={16} color="#2BEE79" />
+                    </Pressable>
+                    <Pressable 
+                      style={styles.addBtn}
+                      onPress={() => handleAddToCart(item)}
+                    >
+                      <MaterialCommunityIcons name="plus" size={20} color="#fff" />
+                    </Pressable>
+                  </View>
                 </View>
               </View>
               <Image source={{ uri: item.image }} style={styles.menuItemImage} />
@@ -152,12 +209,12 @@ export default function RestaurantDetailsScreen({ route, onBack, onNavigate }) {
       </ScrollView>
 
       {/* Cart Floating Button */}
-      {cartItems.length > 0 && (
+      {cartCount > 0 && (
         <View style={styles.cartFloat}>
           <View style={styles.cartFloatContent}>
             <View style={styles.cartFloatLeft}>
-              <Text style={styles.cartCount}>{cartItems.length} items</Text>
-              <Text style={styles.cartTotal}>₦{cartItems.reduce((sum, i) => sum + i.price, 0).toLocaleString()}</Text>
+              <Text style={styles.cartCount}>{cartCount} items</Text>
+              <Text style={styles.cartTotal}>FCFA {cartTotal.toLocaleString()}</Text>
             </View>
             <Pressable 
               style={styles.viewCartBtn}
@@ -324,10 +381,25 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 12,
   },
+  menuItemActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
   menuItemPrice: {
     fontSize: 16,
     fontWeight: 'bold',
     color: '#137fec',
+  },
+  detailsBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: 'rgba(43, 238, 121, 0.2)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: '#2BEE79',
   },
   addBtn: {
     width: 32,

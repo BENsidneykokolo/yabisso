@@ -7,8 +7,10 @@ import {
   StyleSheet,
   SafeAreaView,
   Image,
+  Alert,
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useRestaurantCart } from '../context/RestaurantCartContext';
 
 export default function FoodItemDetailsScreen({ route, onBack, onNavigate }) {
   const item = route?.params?.item || {
@@ -17,6 +19,9 @@ export default function FoodItemDetailsScreen({ route, onBack, onNavigate }) {
     price: 2500,
     image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBCMuFdHBFHKEQCZ_ATpmykF0FFHAsz5YpP7dGRRAUO067AlV39Kd5qULKKcqYxYSMvPE9cXjc_W60-NMQ1DKNgqPsDdaZnT4S4PTF9eUDt3n6gISdNHIQNJxnCPweghBGkJ3Sj-RvXM8d-rC-DTufcQYG-QIS6LBv0ywXyeZ-bUpLkuGLCxhlaLpEY3W0t6e80s8kEHUo4pevA_b9VKfR72Th2fy6fDkR66-DgkCK5jm18uvXerSNjKJXNsccyDEal4RpEsIKx',
   };
+  
+  const restaurant = route?.params?.restaurant || { id: 1, name: 'Chicken Republic' };
+  const { addToCart } = useRestaurantCart();
 
   const [quantity, setQuantity] = useState(1);
   const [addOns, setAddOns] = useState([]);
@@ -33,6 +38,23 @@ export default function FoodItemDetailsScreen({ route, onBack, onNavigate }) {
     } else {
       setAddOns([...addOns, addon]);
     }
+  };
+
+  const handleAddToCart = () => {
+    addToCart({
+      ...item,
+      restaurantId: restaurant.id,
+      restaurantName: restaurant.name,
+    }, quantity, addOns);
+    
+    Alert.alert(
+      'Ajouté au panier',
+      `${item.name} a été ajouté à votre panier.`,
+      [
+        { text: 'Continuer', onPress: () => onBack?.() },
+        { text: 'Voir le panier', onPress: () => onNavigate?.('food_checkout') },
+      ]
+    );
   };
 
   const totalPrice = (item.price + addOns.reduce((sum, a) => sum + a.price, 0)) * quantity;
@@ -69,7 +91,7 @@ export default function FoodItemDetailsScreen({ route, onBack, onNavigate }) {
           <Text style={styles.itemDescription}>{item.description}</Text>
           
           <View style={styles.priceRow}>
-            <Text style={styles.price}>₦{item.price.toLocaleString()}</Text>
+            <Text style={styles.price}>FCFA {item.price.toLocaleString()}</Text>
             <View style={styles.ratingContainer}>
               <MaterialCommunityIcons name="star" size={16} color="#FBBF24" />
               <Text style={styles.ratingText}>4.8</Text>
@@ -116,7 +138,7 @@ export default function FoodItemDetailsScreen({ route, onBack, onNavigate }) {
                   </View>
                   <Text style={styles.addonName}>{addon.name}</Text>
                 </View>
-                <Text style={styles.addonPrice}>+₦{addon.price}</Text>
+                <Text style={styles.addonPrice}>+FCFA {addon.price}</Text>
               </Pressable>
             ))}
           </View>
@@ -140,13 +162,13 @@ export default function FoodItemDetailsScreen({ route, onBack, onNavigate }) {
         <View style={styles.bottomBarContent}>
           <View>
             <Text style={styles.totalLabel}>Total Price</Text>
-            <Text style={styles.totalPrice}>₦{totalPrice.toLocaleString()}</Text>
+            <Text style={styles.totalPrice}>FCFA {totalPrice.toLocaleString()}</Text>
           </View>
           <Pressable 
             style={styles.addToCartBtn}
-            onPress={() => onNavigate?.('food_checkout')}
+            onPress={handleAddToCart}
           >
-            <Text style={styles.addToCartText}>Add to Cart</Text>
+            <Text style={styles.addToCartText}>Ajouter au panier</Text>
             <MaterialCommunityIcons name="cart-plus" size={20} color="#fff" />
           </Pressable>
         </View>

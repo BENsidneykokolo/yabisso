@@ -9,8 +9,11 @@ import {
   Switch,
 } from 'react-native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { withObservables } from '@nozbe/watermelondb/react';
+import { database } from '../../../lib/db';
+import { Q } from '@nozbe/watermelondb';
 
-export default function WalletScreen({ onBack, onOpenHome, onOpenRecharge, onOpenSend, onOpenReceive, onOpenHistory, walletMode: propWalletMode, setWalletMode: propSetWalletMode, activeTab: propActiveTab }) {
+function WalletScreen({ onBack, onOpenHome, onOpenRecharge, onOpenSend, onOpenReceive, onOpenHistory, walletMode: propWalletMode, setWalletMode: propSetWalletMode, activeTab: propActiveTab, transactions = [] }) {
   const [activeTabState, setActiveTabState] = useState(propActiveTab || 'home');
   const activeTab = propActiveTab || activeTabState;
   const [walletModeState, setWalletModeState] = useState(propWalletMode || 'fcfa');
@@ -23,8 +26,14 @@ export default function WalletScreen({ onBack, onOpenHome, onOpenRecharge, onOpe
     }
   };
 
-  const fcfaBalance = '215 450';
-  const pointsBalance = '1 240';
+  const filteredTransactions = transactions.filter(tx => tx.walletMode === walletModeState);
+
+  const balance = filteredTransactions.reduce((acc, tx) => {
+    const amount = parseInt(tx.amount.replace(/[^0-9]/g, '')) || 0;
+    return tx.isPositive ? acc + amount : acc - amount;
+  }, 0);
+
+  const formattedBalance = new Intl.NumberFormat('fr-FR').format(balance);
 
   const navItems = [
     { label: 'Accueil', icon: 'home-variant', key: 'home' },
@@ -33,20 +42,6 @@ export default function WalletScreen({ onBack, onOpenHome, onOpenRecharge, onOpe
     { label: 'Recevoir', icon: 'qrcode-scan', key: 'receive' },
     { label: 'Historique', icon: 'history', key: 'history' },
   ];
-
-  const fcfaTransactions = [
-    { id: 1, title: 'Recharge', meta: "Aujourd'hui · Mobile Money", amount: '+15 000', positive: true },
-    { id: 2, title: 'Paiement livraison', meta: 'Hier · Yabisso Delivery', amount: '-3 200', positive: false },
-    { id: 3, title: 'Cashback', meta: 'Hier · Bonus', amount: '+450', positive: true },
-  ];
-
-  const pointsTransactions = [
-    { id: 1, title: 'Recharge Points', meta: "Aujourd'hui · Achat Pack", amount: '+500', positive: true },
-    { id: 2, title: 'Utilisation Service', meta: 'Hier · Reservation', amount: '-200', positive: false },
-    { id: 3, title: 'Bonus Fidelite', meta: 'Hier · Programme', amount: '+50', positive: true },
-  ];
-
-  const transactions = isFcfa ? fcfaTransactions : pointsTransactions;
 
   return (
     <SafeAreaView style={styles.root}>
@@ -85,7 +80,7 @@ export default function WalletScreen({ onBack, onOpenHome, onOpenRecharge, onOpe
             </View>
           </View>
           <Text style={styles.balanceValue}>
-            {isFcfa ? fcfaBalance : pointsBalance} {isFcfa ? 'FCFA' : 'Points'}
+            {formattedBalance} {isFcfa ? 'FCFA' : 'Points'}
           </Text>
         </View>
 
@@ -112,20 +107,20 @@ export default function WalletScreen({ onBack, onOpenHome, onOpenRecharge, onOpe
           <Text style={styles.sectionLink}>Tout voir</Text>
         </View>
 
-        {transactions.map((tx) => (
+        {filteredTransactions.map((tx) => (
           <View key={tx.id} style={styles.transactionCard}>
-            <View style={[styles.transactionIcon, !tx.positive && styles.transactionIconNegative]}>
+            <View style={[styles.transactionIcon, !tx.isPositive && styles.transactionIconNegative]}>
               <MaterialCommunityIcons
-                name={tx.positive ? 'arrow-down-bold' : 'arrow-up-bold'}
+                name={tx.isPositive ? 'arrow-down-bold' : 'arrow-up-bold'}
                 size={18}
-                color={tx.positive ? '#2BEE79' : '#F97316'}
+                color={tx.isPositive ? '#2BEE79' : '#F97316'}
               />
             </View>
             <View style={styles.transactionInfo}>
               <Text style={styles.transactionTitle}>{tx.title}</Text>
               <Text style={styles.transactionMeta}>{tx.meta}</Text>
             </View>
-            <Text style={tx.positive ? styles.transactionAmountPositive : styles.transactionAmountNegative}>
+            <Text style={tx.isPositive ? styles.transactionAmountPositive : styles.transactionAmountNegative}>
               {tx.amount} {isFcfa ? 'FCFA' : 'Points'}
             </Text>
           </View>
@@ -432,3 +427,9 @@ const styles = StyleSheet.create({
     color: '#2BEE79',
   },
 });
+
+const enhance = withObservables([], () => ({
+  transactions: database.get('wallet_transactions').query().observe(),
+}));
+
+export default enhance(WalletScreen);
