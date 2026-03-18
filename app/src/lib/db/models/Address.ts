@@ -5,12 +5,14 @@ export default class Address extends Model {
   static table = 'addresses'
 
   @text('name') name
-  @text('full_address') fullAddress
+  @text('category') category
+  @text('city') city
+  @text('city_code') cityCode
+  @text('full_address') full_address
   @field('latitude') latitude
   @field('longitude') longitude
-  @text('unique_id') uniqueId
-  @text('qr_payload') qrPayload
-  @text('category') category
+  @text('unique_id') unique_id
+  @text('qr_payload') qr_payload
 
   @readonly @date('created_at') createdAt
   @readonly @date('updated_at') updatedAt

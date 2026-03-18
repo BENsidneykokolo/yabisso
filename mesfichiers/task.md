@@ -97,6 +97,15 @@
 | Checkout - Moi affiche details profil inscription | Done | P1 | S4 |
 | Profile - Nom cliquable vers ecran Compte | Done | P1 | S4 |
 | Menu Boutique - Remplace Accueil par Profil | Done | P1 | S4 |
+| Restaurant - Categories filterables (African, Burger, Healthy, Pizza) | Done | P2 | S4 |
+| Restaurant - Barre de recherche fonctionnelle (nom + categorie) | Done | P2 | S4 |
+| Restaurant - Filtres "Mieux notés" et "Plus rapides" | Done | P2 | S4 |
+| Restaurant - Ecran Favoris avec RestaurantFavoritesContext | Done | P2 | S4 |
+| Restaurant - Ecran Commandes avec RestaurantOrdersContext | Done | P2 | S4 |
+| Restaurant - Bottom navigation alignee avec dashboard | Done | P2 | S4 |
+| Restaurant - Header simplifie (menu gauche, favoris droite) | Done | P2 | S4 |
+| Restaurant - Integration adresse checkout vers profil | Done | P2 | S4 |
+| Restaurant - Fix syntax errors RestaurantHomeScreen.js | Done | P2 | S4 |
 
 ---
 

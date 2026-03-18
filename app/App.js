@@ -78,6 +78,8 @@ import MarketplaceSettingsScreen from './src/features/marketplace/screens/Market
 import ProfileAddressesScreen from './src/features/profile/screens/ProfileAddressesScreen';
 import AddAddressScreen from './src/features/profile/screens/AddAddressScreen';
 import AddressDetailScreen from './src/features/profile/screens/AddressDetailScreen';
+import SearchAddressScreen from './src/features/profile/screens/SearchAddressScreen';
+import AddressMapScreen from './src/features/profile/screens/AddressMapScreen';
 import { CartProvider } from './src/features/marketplace/context/CartContext';
 import { OrderProvider } from './src/features/marketplace/context/OrderContext';
 import { RestaurantCartProvider } from './src/features/restaurant/context/RestaurantCartContext';
@@ -362,12 +364,30 @@ export default function App() {
     content = (
       <ProfileAddressesScreen
         onBack={() => goBack()}
-        onAddAddress={() => navigate('add_address')}
+        onAddAddress={() => navigate('profile_add_address')}
         onSelectAddress={(addr) => {
           setSelectedAddress(addr);
           goBack();
         }}
+        onSearchAddress={() => navigate('search_address')}
+        onViewAddress={(addr) => navigate('profile_address_detail', { address: addr })}
         onNavigate={(screenName, params) => navigate(screenName, params)}
+      />
+    );
+  }
+  if (screen === 'search_address') {
+    content = (
+      <SearchAddressScreen
+        onBack={() => goBack()}
+        onAddressFound={(address) => navigate('address_map', { addressData: address })}
+      />
+    );
+  }
+  if (screen === 'address_map') {
+    content = (
+      <AddressMapScreen
+        addressData={screenParams?.addressData}
+        onBack={() => goBack()}
       />
     );
   }
@@ -384,6 +404,7 @@ export default function App() {
       <AddressDetailScreen 
         address={screenParams?.address} 
         onBack={() => goBack()} 
+        onNavigate={(screen, params) => navigate(screen, params)}
       />
     );
   }

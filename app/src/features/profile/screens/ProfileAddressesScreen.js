@@ -12,7 +12,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { database } from '../../../lib/db';
 import { Q } from '@nozbe/watermelondb';
 
-export default function ProfileAddressesScreen({ onBack, onNavigate, onAddAddress, onSelectAddress }) {
+export default function ProfileAddressesScreen({ onBack, onNavigate, onAddAddress, onSelectAddress, onSearchAddress, onViewAddress }) {
   const [addresses, setAddresses] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -39,9 +39,14 @@ export default function ProfileAddressesScreen({ onBack, onNavigate, onAddAddres
           <MaterialCommunityIcons name="arrow-left" size={24} color="#fff" />
         </Pressable>
         <Text style={styles.headerTitle}>Mes Adresses</Text>
-        <Pressable onPress={onAddAddress} style={styles.addBtnHeader}>
-          <MaterialCommunityIcons name="plus" size={24} color="#2BEE79" />
-        </Pressable>
+        <View style={styles.headerActions}>
+          <Pressable onPress={onSearchAddress} style={styles.searchBtnHeader}>
+            <MaterialCommunityIcons name="magnify" size={24} color="#2BEE79" />
+          </Pressable>
+          <Pressable onPress={onAddAddress} style={styles.addBtnHeader}>
+            <MaterialCommunityIcons name="plus" size={24} color="#2BEE79" />
+          </Pressable>
+        </View>
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
@@ -64,7 +69,7 @@ export default function ProfileAddressesScreen({ onBack, onNavigate, onAddAddres
               <Pressable 
                 key={addr.id} 
                 style={styles.addressCard}
-                onPress={() => onSelectAddress?.(addr)}
+                onPress={() => onViewAddress?.(addr)}
               >
                 <View style={[
                   styles.categoryIcon, 
@@ -80,10 +85,11 @@ export default function ProfileAddressesScreen({ onBack, onNavigate, onAddAddres
                   <View style={styles.nameRow}>
                     <Text style={styles.addressName}>{addr.name}</Text>
                     <View style={styles.idBadge}>
-                      <Text style={styles.idBadgeText}>{addr.uniqueId}</Text>
+                      <Text style={styles.idBadgeText}>{addr.unique_id}</Text>
                     </View>
                   </View>
-                  <Text style={styles.fullAddress} numberOfLines={1}>{addr.fullAddress || 'Coordonnées GPS uniquement'}</Text>
+                  <Text style={styles.cityName}>{addr.city || 'Ville non renseignée'}</Text>
+                  <Text style={styles.fullAddress} numberOfLines={1}>{addr.full_address || 'Coordonnées GPS uniquement'}</Text>
                 </View>
                 <MaterialCommunityIcons name="chevron-right" size={24} color="#64748b" />
               </Pressable>
@@ -127,6 +133,18 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     color: '#fff',
+  },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  searchBtnHeader: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   addBtnHeader: {
     width: 40,
@@ -212,6 +230,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     color: '#F8FAFC',
+  },
+  cityName: {
+    fontSize: 12,
+    color: '#2BEE79',
+    marginBottom: 2,
   },
   idBadge: {
     backgroundColor: 'rgba(43, 238, 121, 0.1)',

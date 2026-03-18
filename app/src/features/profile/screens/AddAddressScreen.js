@@ -15,48 +15,138 @@ import {
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import * as Location from 'expo-location';
 import { database } from '../../../lib/db';
+import { Q } from '@nozbe/watermelondb';
+
+const CITIES = [
+  { name: 'Brazzaville', code: 'BZV' },
+  { name: 'Pointe-Noire', code: 'PNR' },
+  { name: 'Dolisie', code: 'DLS' },
+  { name: 'Owando', code: 'OWD' },
+  { name: 'Kinkala', code: 'KNK' },
+  { name: 'Ngouabi', code: 'NGP' },
+  { name: 'Impfondo', code: 'IPF' },
+  { name: 'Lékoumou', code: 'LKM' },
+  { name: 'Madingou', code: 'MDG' },
+  { name: 'Ouenze', code: 'WNZ' },
+];
 
 export default function AddAddressScreen({ onBack, onSave }) {
   const [name, setName] = useState('');
   const [category, setCategory] = useState('Maison');
+  const [city, setCity] = useState(null);
+  const [showCityDropdown, setShowCityDropdown] = useState(false);
   const [location, setLocation] = useState(null);
   const [isLocating, setIsLocating] = useState(false);
   const [errorMsg, setErrorMsg] = useState(null);
+  const [accuracy, setAccuracy] = useState(null);
+  const [locationAttempts, setLocationAttempts] = useState(0);
 
   const categories = ['Maison', 'Travail', 'Salle de gym', 'Autre'];
+
+  useEffect(() => {
+    const fetchLastAddress = async () => {
+      try {
+        const addresses = await database.get('addresses').query().fetch();
+        if (addresses.length > 0) {
+          const lastId = addresses[addresses.length - 1].unique_id;
+          const match = lastId?.match(/([A-Z]{3})(\d+)/);
+          if (match) {
+            setCity(CITIES.find(c => c.code === match[1]) || null);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching last address:', error);
+      }
+    };
+    fetchLastAddress();
+  }, []);
 
   const getLocation = async () => {
     setIsLocating(true);
     setErrorMsg(null);
+    setLocationAttempts(prev => prev + 1);
+    
     try {
-      let { status } = await Location.requestForegroundPermissionsAsync();
+      const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
-        setErrorMsg('Permission de localisation refusée');
+        setErrorMsg('Permission de localisation refusée. Activez la localisation dans les paramètres.');
         return;
       }
 
-      let loc = await Location.getCurrentPositionAsync({
-        accuracy: Location.Accuracy.Highest,
+      await Location.enableNetworkProviderAsync();
+
+      const lastLocation = await Location.getLastKnownPositionAsync({
+        maxAge: 10000,
       });
-      setLocation(loc.coords);
+
+      if (lastLocation && lastLocation.coords.accuracy <= 10) {
+        setLocation(lastLocation.coords);
+        setAccuracy(lastLocation.coords.accuracy);
+        setIsLocating(false);
+        return;
+      }
+
+      const options = {
+        accuracy: Location.Accuracy.BestForNavigation,
+        timeInterval: 100,
+        distanceInterval: 0,
+      };
+
+      const currentLocation = await Location.getCurrentPositionAsync(options);
+      setLocation(currentLocation.coords);
+      setAccuracy(currentLocation.coords.accuracy);
+
+      if (currentLocation.coords.accuracy > 50 && locationAttempts < 3) {
+        setErrorMsg(`Précision: ±${Math.round(currentLocation.coords.accuracy)}m. Recherche d'une meilleure position...`);
+        setTimeout(() => getLocation(), 2000);
+        return;
+      }
+
     } catch (error) {
       console.error(error);
-      setErrorMsg('Impossible de récupérer la position');
+      setErrorMsg('Impossible de récupérer la position. Vérifiez votre GPS.');
     } finally {
       setIsLocating(false);
     }
   };
 
-  const generateUniqueId = () => {
-    const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-    const randomLetters = Array.from({ length: 2 }, () => letters.charAt(Math.floor(Math.random() * letters.length))).join('');
-    const randomNumbers = Math.floor(100 + Math.random() * 899);
-    return `YB-${randomNumbers}-${randomLetters}`;
+  const formatAccuracy = (meters) => {
+    if (meters <= 5) return { text: 'Excellente', color: '#22c55e' };
+    if (meters <= 15) return { text: 'Bonne', color: '#2BEE79' };
+    if (meters <= 50) return { text: 'Moyenne', color: '#f59e0b' };
+    return { text: 'Faible', color: '#ef4444' };
+  };
+
+  const generateUniqueId = async (cityCode) => {
+    try {
+      const addresses = await database.get('addresses').query(
+        Q.where('unique_id', Q.like(`${cityCode}%`))
+      ).fetch();
+      
+      let maxNumber = 0;
+      addresses.forEach(addr => {
+        const match = addr.unique_id?.match(/([A-Z]{3})(\d+)/);
+        if (match && match[1] === cityCode) {
+          const num = parseInt(match[2], 10);
+          if (num > maxNumber) maxNumber = num;
+        }
+      });
+      
+      const nextNumber = maxNumber + 1;
+      return `${cityCode}${String(nextNumber).padStart(6, '0')}`;
+    } catch (error) {
+      console.error('Error generating unique ID:', error);
+      const nextNumber = 1;
+      return `${cityCode}${String(nextNumber).padStart(6, '0')}`;
+    }
   };
 
   const handleSave = async () => {
-    // Use category as name if no custom name entered
     const finalName = name.trim() || category;
+    if (!city) {
+      Alert.alert('Erreur', 'Veuillez sélectionner votre ville.');
+      return;
+    }
     if (!finalName) {
       Alert.alert('Erreur', 'Veuillez sélectionner une catégorie ou donner un nom à cet endroit.');
       return;
@@ -67,10 +157,12 @@ export default function AddAddressScreen({ onBack, onSave }) {
     }
 
     try {
-      const uniqueId = generateUniqueId();
+      const uniqueId = await generateUniqueId(city.code);
       const qrPayload = JSON.stringify({
         id: uniqueId,
         name: finalName,
+        city: city.name,
+        cityCode: city.code,
         lat: location.latitude,
         lng: location.longitude,
         cat: category
@@ -80,29 +172,33 @@ export default function AddAddressScreen({ onBack, onSave }) {
         await database.get('addresses').create((addr) => {
           addr.name = finalName;
           addr.category = category;
+          addr.city = city.name;
+          addr.cityCode = city.code;
           addr.latitude = location.latitude;
           addr.longitude = location.longitude;
           addr.unique_id = uniqueId;
           addr.qr_payload = qrPayload;
-          addr.fullAddress = `Lat: ${location.latitude.toFixed(4)}, Lng: ${location.longitude.toFixed(4)}`;
+          addr.full_address = `${city.name} - ${location.latitude.toFixed(4)}, ${location.longitude.toFixed(4)}`;
         });
       });
 
-      Alert.alert('Succès', 'Adresse enregistrée avec succès !');
-      onSave?.();
+      Alert.alert(
+        'Succès',
+        `Adresse enregistrée !\n\nVotre code unique: ${uniqueId}`,
+        [{ text: 'OK', onPress: () => onSave?.() }]
+      );
     } catch (error) {
       console.error(error);
       Alert.alert('Erreur', 'Une erreur est survenue lors de l\'enregistrement.');
     }
   };
 
-  // Check if save button should be enabled
-  const canSave = location && (name.trim() || category);
+  const canSave = location && city && (name.trim() || category);
 
   return (
     <SafeAreaView style={styles.container}>
       <KeyboardAvoidingView 
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'padding'}
         style={{ flex: 1 }}
       >
         <View style={styles.header}>
@@ -113,7 +209,62 @@ export default function AddAddressScreen({ onBack, onSave }) {
           <View style={{ width: 40 }} />
         </View>
 
-        <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        <ScrollView 
+          contentContainerStyle={styles.scrollContent} 
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
+          <View style={styles.section}>
+            <Text style={styles.label}>Ville</Text>
+            <Pressable 
+              style={styles.citySelector}
+              onPress={() => setShowCityDropdown(!showCityDropdown)}
+            >
+              <View style={styles.citySelectorContent}>
+                <MaterialCommunityIcons name="map-marker" size={22} color={city ? '#2BEE79' : '#64748b'} />
+                <Text style={[styles.citySelectorText, !city && styles.citySelectorPlaceholder]}>
+                  {city ? `${city.name} (${city.code})` : 'Sélectionner votre ville'}
+                </Text>
+              </View>
+              <MaterialCommunityIcons 
+                name={showCityDropdown ? 'chevron-up' : 'chevron-down'} 
+                size={22} 
+                color="#64748b" 
+              />
+            </Pressable>
+            
+            {showCityDropdown && (
+              <View style={styles.dropdown}>
+                {CITIES.map((c) => (
+                  <Pressable
+                    key={c.code}
+                    style={[
+                      styles.dropdownItem,
+                      city?.code === c.code && styles.dropdownItemActive
+                    ]}
+                    onPress={() => {
+                      setCity(c);
+                      setShowCityDropdown(false);
+                    }}
+                  >
+                    <Text style={[
+                      styles.dropdownItemText,
+                      city?.code === c.code && styles.dropdownItemTextActive
+                    ]}>
+                      {c.name}
+                    </Text>
+                    <Text style={[
+                      styles.dropdownItemCode,
+                      city?.code === c.code && styles.dropdownItemCodeActive
+                    ]}>
+                      {c.code}
+                    </Text>
+                  </Pressable>
+                ))}
+              </View>
+            )}
+          </View>
+
           <View style={styles.section}>
             <Text style={styles.label}>Nom de l'endroit</Text>
             <TextInput
@@ -151,34 +302,62 @@ export default function AddAddressScreen({ onBack, onSave }) {
             <View style={styles.locationCard}>
               {isLocating ? (
                 <View style={styles.locatingContainer}>
-                  <ActivityIndicator color="#2BEE79" size="small" />
-                  <Text style={styles.locatingText}>Calcul de la position précise...</Text>
+                  <ActivityIndicator color="#2BEE79" size="large" />
+                  <Text style={styles.locatingText}>Recherche satellite en cours...</Text>
+                  <Text style={styles.locatingSubtext}>
+                    Restez immobile pour une meilleure précision
+                  </Text>
                 </View>
               ) : location ? (
-                <View style={styles.locationInfo}>
-                  <View style={styles.locIconBg}>
-                    <MaterialCommunityIcons name="map-marker-check" size={24} color="#2BEE79" />
+                <View>
+                  <View style={styles.locationInfo}>
+                    <View style={styles.locIconBg}>
+                      <MaterialCommunityIcons name="crosshairs-gps" size={24} color="#2BEE79" />
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.locStatus}>Position capturée</Text>
+                      <Text style={styles.coordinates}>
+                        {location.latitude.toFixed(8)}, {location.longitude.toFixed(8)}
+                      </Text>
+                    </View>
                   </View>
-                  <View>
-                    <Text style={styles.locStatus}>Position capturée</Text>
-                    <Text style={styles.coordinates}>
-                      {location.latitude.toFixed(6)}, {location.longitude.toFixed(6)}
-                    </Text>
-                  </View>
-                  <Pressable style={styles.refreshBtn} onPress={getLocation}>
-                    <MaterialCommunityIcons name="refresh" size={20} color="#64748b" />
+                  {accuracy && (
+                    <View style={styles.accuracyContainer}>
+                      <View style={styles.accuracyRow}>
+                        <MaterialCommunityIcons name="target" size={16} color={formatAccuracy(accuracy).color} />
+                        <Text style={[styles.accuracyLabel, { color: formatAccuracy(accuracy).color }]}>
+                          Précision: {formatAccuracy(accuracy).text}
+                        </Text>
+                        <Text style={styles.accuracyValue}>
+                          ±{Math.round(accuracy)}m
+                        </Text>
+                      </View>
+                      <View style={styles.accuracyBar}>
+                        <View style={[
+                          styles.accuracyProgress,
+                          { 
+                            width: `${Math.max(10, 100 - (accuracy / 2))}%`,
+                            backgroundColor: formatAccuracy(accuracy).color
+                          }
+                        ]} />
+                      </View>
+                    </View>
+                  )}
+                  <Pressable style={styles.refreshBtnLarge} onPress={getLocation}>
+                    <MaterialCommunityIcons name="refresh" size={18} color="#2BEE79" />
+                    <Text style={styles.refreshBtnText}>Améliorer la précision</Text>
                   </Pressable>
                 </View>
               ) : (
                 <Pressable style={styles.getLocationBtn} onPress={getLocation}>
-                  <MaterialCommunityIcons name="crosshairs-gps" size={24} color="#0E151B" />
-                  <Text style={styles.getLocationText}>Lancer la géolocalisation</Text>
+                  <MaterialCommunityIcons name="crosshairs-gps" size={28} color="#0E151B" />
+                  <Text style={styles.getLocationText}>Capturer ma position</Text>
                 </Pressable>
               )}
               {errorMsg && <Text style={styles.errorText}>{errorMsg}</Text>}
             </View>
             <Text style={styles.hint}>
-              Pour plus de précision, assurez-vous d'être à l'extérieur ou près d'une fenêtre.
+              Sortez à l'extérieur ou allez près d'une fenêtre. Attendez la précision "Excellente" ou "Bonne".
             </Text>
           </View>
         </ScrollView>
@@ -234,6 +413,63 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#94A3B8',
     marginBottom: 12,
+  },
+  citySelector: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#151D26',
+    borderRadius: 16,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+  },
+  citySelectorContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  citySelectorText: {
+    color: '#fff',
+    fontSize: 16,
+  },
+  citySelectorPlaceholder: {
+    color: '#64748b',
+  },
+  dropdown: {
+    backgroundColor: '#151D26',
+    borderRadius: 16,
+    marginTop: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+    overflow: 'hidden',
+  },
+  dropdownItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255, 255, 255, 0.05)',
+  },
+  dropdownItemActive: {
+    backgroundColor: 'rgba(43, 238, 121, 0.1)',
+  },
+  dropdownItemText: {
+    color: '#fff',
+    fontSize: 16,
+  },
+  dropdownItemTextActive: {
+    color: '#2BEE79',
+    fontWeight: 'bold',
+  },
+  dropdownItemCode: {
+    color: '#64748b',
+    fontSize: 14,
+    fontWeight: 'bold',
+  },
+  dropdownItemCodeActive: {
+    color: '#2BEE79',
   },
   input: {
     backgroundColor: '#151D26',
@@ -294,23 +530,79 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   locatingContainer: {
-    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 12,
+    paddingVertical: 20,
   },
   locatingText: {
-    color: '#94A3B8',
-    fontSize: 14,
+    color: '#2BEE79',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  locatingSubtext: {
+    color: '#64748b',
+    fontSize: 12,
+    textAlign: 'center',
   },
   locationInfo: {
     flexDirection: 'row',
     alignItems: 'center',
+    marginBottom: 16,
+  },
+  accuracyContainer: {
+    backgroundColor: 'rgba(43, 238, 121, 0.05)',
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(43, 238, 121, 0.1)',
+  },
+  accuracyRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 8,
+  },
+  accuracyLabel: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    flex: 1,
+  },
+  accuracyValue: {
+    color: '#94A3B8',
+    fontSize: 12,
+  },
+  accuracyBar: {
+    height: 4,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: 2,
+    overflow: 'hidden',
+  },
+  accuracyProgress: {
+    height: '100%',
+    borderRadius: 2,
+  },
+  refreshBtnLarge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    paddingVertical: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(43, 238, 121, 0.3)',
+    backgroundColor: 'rgba(43, 238, 121, 0.05)',
+  },
+  refreshBtnText: {
+    color: '#2BEE79',
+    fontSize: 14,
+    fontWeight: '600',
   },
   locIconBg: {
-    width: 44,
-    height: 44,
-    borderRadius: 12,
+    width: 56,
+    height: 56,
+    borderRadius: 16,
     backgroundColor: 'rgba(43, 238, 121, 0.1)',
     alignItems: 'center',
     justifyContent: 'center',

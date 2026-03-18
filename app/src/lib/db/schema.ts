@@ -1,7 +1,7 @@
 import { appSchema, tableSchema } from '@nozbe/watermelondb'
 
 export const schema = appSchema({
-  version: 3,
+  version: 4,
   tables: [
     tableSchema({
       name: 'profiles',
@@ -51,12 +51,14 @@ export const schema = appSchema({
       name: 'addresses',
       columns: [
         { name: 'name', type: 'string' },
+        { name: 'category', type: 'string' },
+        { name: 'city', type: 'string', isOptional: true },
+        { name: 'city_code', type: 'string', isOptional: true },
         { name: 'full_address', type: 'string', isOptional: true },
         { name: 'latitude', type: 'number' },
         { name: 'longitude', type: 'number' },
         { name: 'unique_id', type: 'string', isIndexed: true },
         { name: 'qr_payload', type: 'string' },
-        { name: 'category', type: 'string' },
         { name: 'created_at', type: 'number' },
         { name: 'updated_at', type: 'number' },
       ],

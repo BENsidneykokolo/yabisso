@@ -6,6 +6,18 @@
 - **Date** : 14 mars 2026 à 23:45
 
 ## 2026-03-15 - Sessions recentes
+
+- **Restaurant** :
+  - Categories filterables (African, Burger, Healthy, Pizza)
+  - Barre de recherche fonctionnelle (filtre par nom et categorie)
+  - Filtres "Mieux notés" et "Plus rapides"
+  - Ecran Favoris avec RestaurantFavoritesContext
+  - Ecran Commandes avec RestaurantOrdersContext
+  - Bottom navigation alignee avec dashboard
+  - Header simplifie (menu a gauche, favoris a droite)
+  - Integration adresse checkout vers profil
+  - Fix syntax errors RestaurantHomeScreen.js
+  - Commit: d33d2b1 - Restaurant service functional - search, filters, categories, favorites, orders
 - **Notifications fonctionnelles** : Ajout navigation depuis les notifications
   - Promotion → Liste produits en promotion (filter: promo)
   - Nouveauté → Nouveautés (new_arrivals)
