@@ -10,6 +10,8 @@ import {
   Dimensions,
   Modal,
   FlatList,
+  TextInput,
+  Alert,
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import LobaBottomNav from '../components/LobaBottomNav';
@@ -64,6 +66,19 @@ export default function LobaProfileScreen({ onBack, onNavigate }) {
   const [showFollowersModal, setShowFollowersModal] = useState(false);
   const [showFollowingModal, setShowFollowingModal] = useState(false);
   const [showPostsModal, setShowPostsModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [profile, setProfile] = useState({
+    name: 'Kwame Osei',
+    username: '@kwame_tech',
+    bio: "Building digital bridges in Accra 🇬🇭 \nTech enthusiast | #YabissoBuilder | Coffee lover",
+    avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDQhIYrsn0BgO3o2NSHOl0rqWaVVjO8DaNG_JMTJLCRg8306mCppb5GKTf1dKIMI5DQNoJvE6xmSRw5Bfif5oTg6ENE0ViWBUCXChpCJPORs11wgFaIL3GxZNCxUoANlXiohrIy6Yb9r6k89wP9DhKzkn0KKwAhcFf4c1sd07XrdKgzvSdVle8g9AG5vQRmQ39kA2vZ1v6jspFjVsy7WIy79Jp4Joc363N-kIwK7ugZIUMlmI0mQ9PO6o7HWAMLvEOEh7ii7-zv',
+  });
+  const [editForm, setEditForm] = useState({
+    name: 'Kwame Osei',
+    username: '@kwame_tech',
+    bio: "Building digital bridges in Accra 🇬🇭 \nTech enthusiast | #YabissoBuilder | Coffee lover",
+  });
 
   const formatFollowers = (count) => {
     if (count >= 1000000) {
@@ -108,6 +123,40 @@ export default function LobaProfileScreen({ onBack, onNavigate }) {
   };
 
   const getUserById = (id) => SUGGESTED_USERS.find(u => u.id === id);
+
+  const openEditModal = () => {
+    setEditForm({
+      name: profile.name,
+      username: profile.username,
+      bio: profile.bio,
+    });
+    setShowEditModal(true);
+  };
+
+  const saveProfile = () => {
+    setProfile({
+      ...profile,
+      name: editForm.name,
+      username: editForm.username,
+      bio: editForm.bio,
+    });
+    setShowEditModal(false);
+  };
+
+  const shareProfile = async () => {
+    try {
+      const shareUrl = `https://yabisso.app/${profile.username}`;
+      const shareMessage = `Découvrez le profil de ${profile.name} sur Yabisso!\n${profile.bio}\n\n${shareUrl}`;
+      
+      const { Share } = require('react-native');
+      await Share.share({
+        message: shareMessage,
+        title: `Profil ${profile.name}`,
+      });
+    } catch (error) {
+      Alert.alert('Erreur', 'Impossible de partager le profil');
+    }
+  };
 
   const renderUserItem = ({ item, listType }) => {
     const user = getUserById(item);
@@ -181,21 +230,18 @@ export default function LobaProfileScreen({ onBack, onNavigate }) {
 
           <View style={styles.nameSection}>
             <View style={styles.nameRow}>
-              <Text style={styles.name}>Kwame Osei</Text>
+              <Text style={styles.name}>{profile.name}</Text>
               <MaterialCommunityIcons name="check-decagram" size={20} color="#137fec" />
             </View>
-            <Text style={styles.username}>@kwame_tech</Text>
-            <Text style={styles.bio}>
-              Building digital bridges in Accra 🇬🇭 {'\n'}
-              Tech enthusiast | <Text style={styles.hashtag}>#YabissoBuilder</Text> | Coffee lover
-            </Text>
+            <Text style={styles.username}>{profile.username}</Text>
+            <Text style={styles.bio}>{profile.bio}</Text>
           </View>
 
           <View style={styles.actionButtons}>
-            <Pressable style={styles.editBtn}>
+            <Pressable style={styles.editBtn} onPress={openEditModal}>
               <Text style={styles.editBtnText}>Modifier le profil</Text>
             </Pressable>
-            <Pressable style={styles.shareBtn}>
+            <Pressable style={styles.shareBtn} onPress={() => setShowShareModal(true)}>
               <Text style={styles.shareBtnText}>Partager</Text>
             </Pressable>
           </View>
@@ -348,34 +394,162 @@ export default function LobaProfileScreen({ onBack, onNavigate }) {
       </Modal>
 
       <Modal
-        visible={showFollowingModal}
+        visible={showEditModal}
         transparent
         animationType="slide"
-        onRequestClose={() => setShowFollowingModal(false)}
+        onRequestClose={() => setShowEditModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalContent, { maxHeight: '85%' }]}>
+            <View style={styles.modalHeader}>
+              <View style={styles.modalHandle} />
+              <View style={styles.modalTitleRow}>
+                <Text style={styles.modalTitle}>Modifier le profil</Text>
+                <Pressable onPress={() => setShowEditModal(false)}>
+                  <MaterialCommunityIcons name="close" size={24} color="#fff" />
+                </Pressable>
+              </View>
+            </View>
+            <ScrollView style={styles.editForm}>
+              <View style={styles.editAvatarSection}>
+                <View style={styles.editAvatarRing}>
+                  <Image source={{ uri: profile.avatar }} style={styles.editAvatar} />
+                </View>
+                <Pressable style={styles.changePhotoBtn}>
+                  <MaterialCommunityIcons name="camera" size={18} color="#137fec" />
+                  <Text style={styles.changePhotoText}>Changer photo</Text>
+                </Pressable>
+              </View>
+
+              <View style={styles.formGroup}>
+                <Text style={styles.formLabel}>Nom</Text>
+                <View style={styles.formInputWrapper}>
+                  <MaterialCommunityIcons name="account" size={20} color="#64748b" />
+                  <TextInput
+                    style={styles.formInput}
+                    value={editForm.name}
+                    onChangeText={(text) => setEditForm({ ...editForm, name: text })}
+                    placeholder="Votre nom"
+                    placeholderTextColor="#64748b"
+                  />
+                </View>
+              </View>
+
+              <View style={styles.formGroup}>
+                <Text style={styles.formLabel}>Nom d'utilisateur</Text>
+                <View style={styles.formInputWrapper}>
+                  <MaterialCommunityIcons name="at" size={20} color="#64748b" />
+                  <TextInput
+                    style={styles.formInput}
+                    value={editForm.username}
+                    onChangeText={(text) => setEditForm({ ...editForm, username: text })}
+                    placeholder="@votre_username"
+                    placeholderTextColor="#64748b"
+                    autoCapitalize="none"
+                  />
+                </View>
+              </View>
+
+              <View style={styles.formGroup}>
+                <Text style={styles.formLabel}>Bio</Text>
+                <View style={[styles.formInputWrapper, styles.bioInputWrapper]}>
+                  <MaterialCommunityIcons name="text" size={20} color="#64748b" style={{ alignSelf: 'flex-start', marginTop: 12 }} />
+                  <TextInput
+                    style={[styles.formInput, styles.bioInput]}
+                    value={editForm.bio}
+                    onChangeText={(text) => setEditForm({ ...editForm, bio: text })}
+                    placeholder="Parlez-nous de vous..."
+                    placeholderTextColor="#64748b"
+                    multiline
+                    numberOfLines={4}
+                    textAlignVertical="top"
+                  />
+                </View>
+              </View>
+
+              <Pressable style={styles.saveBtn} onPress={saveProfile}>
+                <Text style={styles.saveBtnText}>Enregistrer</Text>
+              </Pressable>
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
+
+      <Modal
+        visible={showShareModal}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setShowShareModal(false)}
       >
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
               <View style={styles.modalHandle} />
               <View style={styles.modalTitleRow}>
-                <Text style={styles.modalTitle}>Abonnements</Text>
-                <Pressable onPress={() => setShowFollowingModal(false)}>
+                <Text style={styles.modalTitle}>Partager le profil</Text>
+                <Pressable onPress={() => setShowShareModal(false)}>
                   <MaterialCommunityIcons name="close" size={24} color="#fff" />
                 </Pressable>
               </View>
             </View>
-            <FlatList
-              data={following}
-              keyExtractor={item => item}
-              renderItem={({ item }) => renderUserItem({ item, listType: 'following' })}
-              contentContainerStyle={styles.listContent}
-              ListEmptyComponent={
-                <View style={styles.emptyList}>
-                  <MaterialCommunityIcons name="account-plus-outline" size={48} color="#64748b" />
-                  <Text style={styles.emptyListText}>Vous ne suivez personne</Text>
+            <View style={styles.shareContent}>
+              <View style={styles.shareProfileCard}>
+                <View style={styles.shareAvatarRing}>
+                  <Image source={{ uri: profile.avatar }} style={styles.shareAvatar} />
                 </View>
-              }
-            />
+                <Text style={styles.shareName}>{profile.name}</Text>
+                <Text style={styles.shareUsername}>{profile.username}</Text>
+              </View>
+
+              <View style={styles.shareOptions}>
+                <Pressable style={styles.shareOption} onPress={shareProfile}>
+                  <View style={[styles.shareIconCircle, { backgroundColor: '#25D36620' }]}>
+                    <MaterialCommunityIcons name="whatsapp" size={28} color="#25D366" />
+                  </View>
+                  <Text style={styles.shareOptionText}>WhatsApp</Text>
+                </Pressable>
+
+                <Pressable style={styles.shareOption} onPress={shareProfile}>
+                  <View style={[styles.shareIconCircle, { backgroundColor: '#1877F220' }]}>
+                    <MaterialCommunityIcons name="facebook" size={28} color="#1877F2" />
+                  </View>
+                  <Text style={styles.shareOptionText}>Facebook</Text>
+                </Pressable>
+
+                <Pressable style={styles.shareOption} onPress={shareProfile}>
+                  <View style={[styles.shareIconCircle, { backgroundColor: '#E4405F20' }]}>
+                    <MaterialCommunityIcons name="instagram" size={28} color="#E4405F" />
+                  </View>
+                  <Text style={styles.shareOptionText}>Instagram</Text>
+                </Pressable>
+
+                <Pressable style={styles.shareOption} onPress={shareProfile}>
+                  <View style={[styles.shareIconCircle, { backgroundColor: '#1DA1F220' }]}>
+                    <MaterialCommunityIcons name="twitter" size={28} color="#1DA1F2" />
+                  </View>
+                  <Text style={styles.shareOptionText}>Twitter</Text>
+                </Pressable>
+
+                <Pressable style={styles.shareOption} onPress={shareProfile}>
+                  <View style={[styles.shareIconCircle, { backgroundColor: '#0A66C220' }]}>
+                    <MaterialCommunityIcons name="linkedin" size={28} color="#0A66C2" />
+                  </View>
+                  <Text style={styles.shareOptionText}>LinkedIn</Text>
+                </Pressable>
+
+                <Pressable style={styles.shareOption} onPress={shareProfile}>
+                  <View style={[styles.shareIconCircle, { backgroundColor: '#4B556320' }]}>
+                    <MaterialCommunityIcons name="link-variant" size={28} color="#4B5563" />
+                  </View>
+                  <Text style={styles.shareOptionText}>Copier le lien</Text>
+                </Pressable>
+              </View>
+
+              <Pressable style={styles.shareDirectBtn} onPress={shareProfile}>
+                <MaterialCommunityIcons name="share-variant" size={20} color="#fff" />
+                <Text style={styles.shareDirectBtnText}>Partager directement</Text>
+              </Pressable>
+            </View>
           </View>
         </View>
       </Modal>
@@ -823,5 +997,155 @@ const styles = StyleSheet.create({
   postHintText: {
     color: '#64748b',
     fontSize: 13,
+  },
+  editForm: {
+    padding: 20,
+  },
+  editAvatarSection: {
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  editAvatarRing: {
+    padding: 3,
+    borderRadius: 60,
+    backgroundColor: '#eab308',
+  },
+  editAvatar: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    borderWidth: 4,
+    borderColor: '#1c2a38',
+  },
+  changePhotoBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: 12,
+    padding: 8,
+  },
+  changePhotoText: {
+    color: '#137fec',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  formGroup: {
+    marginBottom: 20,
+  },
+  formLabel: {
+    color: '#94a3b8',
+    fontSize: 13,
+    fontWeight: '600',
+    marginBottom: 8,
+  },
+  formInputWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#151D26',
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    gap: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+  },
+  formInput: {
+    flex: 1,
+    color: '#fff',
+    fontSize: 16,
+  },
+  bioInputWrapper: {
+    alignItems: 'flex-start',
+  },
+  bioInput: {
+    minHeight: 100,
+    paddingTop: 0,
+  },
+  saveBtn: {
+    backgroundColor: '#137fec',
+    height: 50,
+    borderRadius: 25,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 10,
+    marginBottom: 20,
+  },
+  saveBtnText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  shareContent: {
+    padding: 20,
+  },
+  shareProfileCard: {
+    alignItems: 'center',
+    padding: 24,
+    backgroundColor: 'rgba(43, 238, 121, 0.1)',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(43, 238, 121, 0.2)',
+    marginBottom: 24,
+  },
+  shareAvatarRing: {
+    padding: 3,
+    borderRadius: 50,
+    backgroundColor: '#eab308',
+    marginBottom: 12,
+  },
+  shareAvatar: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    borderWidth: 3,
+    borderColor: '#1c2a38',
+  },
+  shareName: {
+    color: '#fff',
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 4,
+  },
+  shareUsername: {
+    color: '#94a3b8',
+    fontSize: 14,
+  },
+  shareOptions: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-around',
+    gap: 16,
+    marginBottom: 24,
+  },
+  shareOption: {
+    alignItems: 'center',
+    gap: 8,
+    width: 80,
+  },
+  shareIconCircle: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  shareOptionText: {
+    color: '#cbd5e1',
+    fontSize: 12,
+    fontWeight: '500',
+  },
+  shareDirectBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
+    backgroundColor: '#2BEE79',
+    height: 50,
+    borderRadius: 25,
+  },
+  shareDirectBtnText: {
+    color: '#0E151B',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 });
