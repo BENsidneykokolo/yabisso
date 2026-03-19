@@ -994,6 +994,21 @@ Assistant: J'ai créé deux nouveaux écrans pour le module Loba:
 **Branchements:**
 - LobaHomeScreen → liens vers les deux nouveaux écrans via header chips
 
+---
+
+## 2026-03-20 - Posts counter dynamique sur Profil
+
+User: super maintenant je veux que tu affiche aussi le numbre exacte de posts donc il faut le reset à zero comme ça je pourrai upload de moi meme
+
+Assistant: Mise à jour du profil LobaProfileScreen:
+- Compteur Posts réinitialisé à 0
+- Posts cliquable → ouvre une modale avec:
+  - Affichage du nombre de posts
+  - Bouton + pour incrementer
+  - Bouton - pour decrementer
+- Grille de posts dynamique: affiche uniquement les posts selon le compteur
+- Message "Aucun post" quand compteur à 0
+
 User: super, maintenant je veux que tu cree l'ecran "favoris" "historique" et que tu connecte l'ecran "parametre" dans le menu de l'ecran "boutique"
 
 Assistant: [A cree]

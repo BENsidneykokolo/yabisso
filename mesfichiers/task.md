@@ -52,7 +52,8 @@
 | Creer DeliveryTrackingScreen | Done | P1 | S4 |
 | Creer SellerComparisonScreen | Done | P1 | S4 |
 | Creer LobaForYouScreen (Pour Toi) | Done | P2 | S5 |
-| Creer LobaFollowingScreen (Abonnements) | Done | P2 | S5 |kedUserScreen | Done | P1 | S4 |
+| Creer LobaFollowingScreen (Abonnements) | Done | P2 | S5 |
+| Posts counter dynamique sur profil | Done | P2 | S5 |kedUserScreen | Done | P1 | S4 |
 | Creer CartContext (state management) | Done | P1 | S4 |
 | Ajouter bouton comparer dans ProductDetails | Done | P1 | S4 |
 | Ajouter bouton comparer dans ProductList | Done | P1 | S4 |

@@ -51,6 +51,7 @@ const gridImages = [
 
 export default function LobaProfileScreen({ onBack, onNavigate }) {
   const [activeTab, setActiveTab] = useState('posts');
+  const [posts, setPosts] = useState(0);
   const [followers, setFollowers] = useState([]);
   const [following, setFollowing] = useState([]);
   const [userFollowerCounts, setUserFollowerCounts] = useState(() => {
@@ -62,6 +63,7 @@ export default function LobaProfileScreen({ onBack, onNavigate }) {
   });
   const [showFollowersModal, setShowFollowersModal] = useState(false);
   const [showFollowingModal, setShowFollowingModal] = useState(false);
+  const [showPostsModal, setShowPostsModal] = useState(false);
 
   const formatFollowers = (count) => {
     if (count >= 1000000) {
@@ -201,10 +203,10 @@ export default function LobaProfileScreen({ onBack, onNavigate }) {
 
         <View style={styles.statsContainer}>
           <View style={styles.statsBox}>
-            <View style={styles.statItem}>
-              <Text style={styles.statNumber}>124</Text>
+            <Pressable style={styles.statItem} onPress={() => setShowPostsModal(true)}>
+              <Text style={styles.statNumber}>{posts}</Text>
               <Text style={styles.statLabel}>Posts</Text>
-            </View>
+            </Pressable>
             <View style={styles.statDivider} />
             <Pressable style={styles.statItem} onPress={() => setShowFollowersModal(true)}>
               <Text style={styles.statNumber}>{formatFollowers(followers.length)}</Text>
@@ -235,7 +237,7 @@ export default function LobaProfileScreen({ onBack, onNavigate }) {
         </View>
 
         <View style={styles.grid}>
-          {gridImages.map((image, index) => (
+          {gridImages.slice(0, posts).map((image, index) => (
             <View key={index} style={styles.gridItem}>
               <Image source={{ uri: image }} style={styles.gridImage} />
               {index % 3 === 0 && (
@@ -243,13 +245,20 @@ export default function LobaProfileScreen({ onBack, onNavigate }) {
                   <MaterialCommunityIcons name="play" size={16} color="#fff" />
                 </View>
               )}
-              {index === 1 && (
+              {index === 1 && posts > 1 && (
                 <View style={styles.carouselBadge}>
                   <MaterialCommunityIcons name="image-multiple" size={14} color="#fff" />
                 </View>
               )}
             </View>
           ))}
+          {posts === 0 && (
+            <View style={styles.emptyGrid}>
+              <MaterialCommunityIcons name="image-plus-outline" size={64} color="#1c2a38" />
+              <Text style={styles.emptyGridText}>Aucun post</Text>
+              <Text style={styles.emptyGridSubtext}>Appuyez sur Posts pour en ajouter</Text>
+            </View>
+          )}
         </View>
 
         <View style={styles.loadingIndicator}>
@@ -286,6 +295,54 @@ export default function LobaProfileScreen({ onBack, onNavigate }) {
                 </View>
               }
             />
+          </View>
+        </View>
+      </Modal>
+
+      <Modal
+        visible={showPostsModal}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setShowPostsModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <View style={styles.modalHandle} />
+              <View style={styles.modalTitleRow}>
+                <Text style={styles.modalTitle}>Mes Posts</Text>
+                <Pressable onPress={() => setShowPostsModal(false)}>
+                  <MaterialCommunityIcons name="close" size={24} color="#fff" />
+                </Pressable>
+              </View>
+            </View>
+            <View style={styles.postsModalContent}>
+              <View style={styles.postCountCard}>
+                <MaterialCommunityIcons name="image-multiple" size={48} color="#2BEE79" />
+                <Text style={styles.postCountNumber}>{posts}</Text>
+                <Text style={styles.postCountLabel}>posts publiés</Text>
+              </View>
+              
+              <View style={styles.postActions}>
+                <Pressable style={styles.postActionBtn} onPress={() => setPosts(p => p + 1)}>
+                  <MaterialCommunityIcons name="plus" size={24} color="#2BEE79" />
+                  <Text style={styles.postActionText}>Ajouter un post</Text>
+                </Pressable>
+                
+                <Pressable 
+                  style={[styles.postActionBtn, posts > 0 && styles.postActionBtnDanger]} 
+                  onPress={() => posts > 0 && setPosts(p => p - 1)}
+                >
+                  <MaterialCommunityIcons name="minus" size={24} color={posts > 0 ? '#ef4444' : '#64748b'} />
+                  <Text style={[styles.postActionText, posts > 0 && styles.postActionTextDanger]}>Retirer un post</Text>
+                </Pressable>
+              </View>
+              
+              <View style={styles.postHint}>
+                <MaterialCommunityIcons name="information-outline" size={16} color="#64748b" />
+                <Text style={styles.postHintText}>Appuyez sur + pour incrementer le nombre de posts</Text>
+              </View>
+            </View>
           </View>
         </View>
       </Modal>
@@ -559,6 +616,22 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
   },
+  emptyGrid: {
+    width: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 60,
+    gap: 12,
+  },
+  emptyGridText: {
+    color: '#64748b',
+    fontSize: 18,
+    fontWeight: '600',
+  },
+  emptyGridSubtext: {
+    color: '#475569',
+    fontSize: 14,
+  },
   videoBadge: {
     position: 'absolute',
     top: 8,
@@ -685,5 +758,70 @@ const styles = StyleSheet.create({
   emptyListText: {
     color: '#64748b',
     fontSize: 14,
+  },
+  postsModalContent: {
+    padding: 20,
+  },
+  postCountCard: {
+    alignItems: 'center',
+    padding: 30,
+    backgroundColor: 'rgba(43, 238, 121, 0.1)',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(43, 238, 121, 0.2)',
+    marginBottom: 24,
+  },
+  postCountNumber: {
+    color: '#fff',
+    fontSize: 48,
+    fontWeight: 'bold',
+    marginTop: 12,
+  },
+  postCountLabel: {
+    color: '#94a3b8',
+    fontSize: 14,
+    marginTop: 4,
+  },
+  postActions: {
+    flexDirection: 'row',
+    gap: 12,
+    marginBottom: 20,
+  },
+  postActionBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    padding: 16,
+    backgroundColor: 'rgba(43, 238, 121, 0.1)',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(43, 238, 121, 0.3)',
+  },
+  postActionBtnDanger: {
+    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+    borderColor: 'rgba(239, 68, 68, 0.3)',
+  },
+  postActionText: {
+    color: '#2BEE79',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  postActionTextDanger: {
+    color: '#ef4444',
+  },
+  postHint: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    padding: 12,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderRadius: 8,
+  },
+  postHintText: {
+    color: '#64748b',
+    fontSize: 13,
   },
 });
