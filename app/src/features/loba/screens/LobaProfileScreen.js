@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -16,6 +16,7 @@ import {
   Platform,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import LobaBottomNav from '../components/LobaBottomNav';
 
@@ -72,6 +73,7 @@ export default function LobaProfileScreen({ onBack, onNavigate }) {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
   const [showPhotoOptions, setShowPhotoOptions] = useState(false);
+  const [isLoaded, setIsLoaded] = useState(false);
   const [profile, setProfile] = useState({
     name: 'Kwame Osei',
     username: '@kwame_tech',
@@ -84,6 +86,74 @@ export default function LobaProfileScreen({ onBack, onNavigate }) {
     username: '@kwame_tech',
     bio: "Building digital bridges in Accra 🇬🇭 \nTech enthusiast | #YabissoBuilder | Coffee lover",
   });
+
+  const defaultProfile = {
+    name: 'Kwame Osei',
+    username: '@kwame_tech',
+    bio: "Building digital bridges in Accra 🇬🇭 \nTech enthusiast | #YabissoBuilder | Coffee lover",
+    avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDQhIYrsn0BgO3o2NSHOl0rqWaVVjO8DaNG_JMTJLCRg8306mCppb5GKTf1dKIMI5DQNoJvE6xmSRw5Bfif5oTg6ENE0ViWBUCXChpCJPORs11wgFaIL3GxZNCxUoANlXiohrIy6Yb9r6k89wP9DhKzkn0KKwAhcFf4c1sd07XrdKgzvSdVle8g9AG5vQRmQ39kA2vZ1v6jspFjVsy7WIy79Jp4Joc363N-kIwK7ugZIUMlmI0mQ9PO6o7HWAMLvEOEh7ii7-zv',
+    avatarUri: null,
+  };
+
+  const defaultFollowerCounts = () => {
+    const counts = {};
+    SUGGESTED_USERS.forEach(user => {
+      counts[user.id] = 0;
+    });
+    return counts;
+  };
+
+  useEffect(() => {
+    loadUserData();
+  }, []);
+
+  useEffect(() => {
+    if (isLoaded) {
+      saveUserData();
+    }
+  }, [profile, posts, followers, following, userFollowerCounts, isLoaded]);
+
+  const loadUserData = async () => {
+    try {
+      const savedProfile = await AsyncStorage.getItem('loba_profile');
+      const savedPosts = await AsyncStorage.getItem('loba_posts');
+      const savedFollowers = await AsyncStorage.getItem('loba_followers');
+      const savedFollowing = await AsyncStorage.getItem('loba_following');
+      const savedFollowerCounts = await AsyncStorage.getItem('loba_follower_counts');
+
+      if (savedProfile) {
+        const parsedProfile = JSON.parse(savedProfile);
+        setProfile(parsedProfile);
+        setEditForm({
+          name: parsedProfile.name,
+          username: parsedProfile.username,
+          bio: parsedProfile.bio,
+        });
+      }
+
+      if (savedPosts) setPosts(JSON.parse(savedPosts));
+      if (savedFollowers) setFollowers(JSON.parse(savedFollowers));
+      if (savedFollowing) setFollowing(JSON.parse(savedFollowing));
+      if (savedFollowerCounts) setUserFollowerCounts(JSON.parse(savedFollowerCounts));
+      
+      setIsLoaded(true);
+    } catch (error) {
+      console.log('Error loading user data:', error);
+      setIsLoaded(true);
+    }
+  };
+
+  const saveUserData = async () => {
+    try {
+      await AsyncStorage.setItem('loba_profile', JSON.stringify(profile));
+      await AsyncStorage.setItem('loba_posts', JSON.stringify(posts));
+      await AsyncStorage.setItem('loba_followers', JSON.stringify(followers));
+      await AsyncStorage.setItem('loba_following', JSON.stringify(following));
+      await AsyncStorage.setItem('loba_follower_counts', JSON.stringify(userFollowerCounts));
+    } catch (error) {
+      console.log('Error saving user data:', error);
+    }
+  };
 
   const formatFollowers = (count) => {
     if (count >= 1000000) {
@@ -139,12 +209,13 @@ export default function LobaProfileScreen({ onBack, onNavigate }) {
   };
 
   const saveProfile = () => {
-    setProfile({
+    const updatedProfile = {
       ...profile,
       name: editForm.name,
       username: editForm.username,
       bio: editForm.bio,
-    });
+    };
+    setProfile(updatedProfile);
     setShowEditModal(false);
   };
 
