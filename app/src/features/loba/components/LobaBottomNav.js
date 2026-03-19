@@ -1,83 +1,105 @@
 import React from 'react';
-import {
-  View,
-  Text,
-  Pressable,
-  StyleSheet,
-} from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 const navItems = [
-  { id: 'home', icon: 'home', label: 'Home' },
-  { id: 'wallet', icon: 'account-balance-wallet', label: 'Wallet' },
-  { id: 'create', icon: 'plus-circle', label: 'Create', primary: true },
-  { id: 'loba', icon: 'play-circle', label: 'Loba' },
-  { id: 'profile', icon: 'person', label: 'Profile' },
+  { id: 'home', icon: 'home-variant', label: 'Accueil' },
+  { id: 'friends', icon: 'account-group', label: 'Ami' },
+  { id: 'create', icon: 'plus', label: '', primary: true },
+  { id: 'messages', icon: 'message-text', label: 'Message' },
+  { id: 'profile', icon: 'account-circle', label: 'Moi' },
 ];
 
-export default function LobaBottomNav({ activeTab = 'loba', onNavigate }) {
+export default function LobaBottomNav({ activeTab = 'messages', onNavigate }) {
   return (
-    <View style={styles.container}>
-      {navItems.map((item) => {
-        const isActive = activeTab === item.id;
-        
-        return (
-          <Pressable
-            key={item.id}
-            style={styles.navItem}
-            onPress={() => onNavigate && onNavigate(item.id)}
-          >
-            {item.primary ? (
-              <View style={styles.createBtn}>
-                <MaterialCommunityIcons name="plus" size={24} color="#fff" />
+    <View style={styles.bottomNavWrapper}>
+      <View style={styles.bottomNav}>
+        {navItems.map((item) => {
+          const isActive = activeTab === item.id;
+          return (
+            <Pressable
+              key={item.id}
+              style={({ pressed }) => [
+                styles.navItem,
+                pressed && styles.navItemPressed,
+              ]}
+              onPress={() => onNavigate && onNavigate(item.id)}
+            >
+              <View
+                style={[
+                  styles.navIcon,
+                  isActive && styles.navIconActive,
+                  item.primary && styles.navIconCenter,
+                ]}
+              >
+                <MaterialCommunityIcons
+                  name={item.icon}
+                  size={item.primary ? 24 : (isActive ? 22 : 18)}
+                  color={item.primary ? '#fff' : (isActive ? '#0E151B' : '#CBD5F5')}
+                />
               </View>
-            ) : (
-              <MaterialCommunityIcons
-                name={item.icon}
-                size={22}
-                color={isActive ? '#fff' : '#94a3b8'}
-              />
-            )}
-            <Text style={[styles.navLabel, isActive && styles.navLabelActive]}>
-              {item.label}
-            </Text>
-          </Pressable>
-        );
-      })}
+              <Text style={[styles.navLabel, isActive && styles.navLabelActive]}>
+                {item.label}
+              </Text>
+            </Pressable>
+          );
+        })}
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  bottomNavWrapper: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    paddingHorizontal: 16,
+    paddingBottom: 36,
+  },
+  bottomNav: {
+    backgroundColor: 'rgba(22, 29, 37, 0.98)',
+    borderRadius: 24,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
     flexDirection: 'row',
-    justifyContent: 'space-around',
-    alignItems: 'center',
-    paddingVertical: 12,
-    paddingBottom: 24,
-    backgroundColor: 'rgba(0,0,0,0.8)',
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(255,255,255,0.05)',
+    justifyContent: 'space-between',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+    marginBottom: 4,
   },
   navItem: {
     alignItems: 'center',
-    gap: 4,
+    flex: 1,
+  },
+  navItemPressed: {
+    transform: [{ scale: 0.96 }],
+  },
+  navIcon: {
+    width: 22,
+    height: 22,
+    borderRadius: 6,
+    backgroundColor: 'rgba(255, 255, 255, 0.18)',
+    marginBottom: 6,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  navIconActive: {
+    backgroundColor: '#2BEE79',
+  },
+  navIconCenter: {
+    width: 34,
+    height: 34,
+    borderRadius: 12,
+    backgroundColor: '#2BEE79',
+    marginTop: -14,
   },
   navLabel: {
-    color: '#94a3b8',
+    color: '#6B7280',
     fontSize: 10,
   },
   navLabelActive: {
-    color: '#fff',
-    fontWeight: '600',
-  },
-  createBtn: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: '#137fec',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: -20,
+    color: '#2BEE79',
   },
 });

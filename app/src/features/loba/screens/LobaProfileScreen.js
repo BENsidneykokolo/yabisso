@@ -8,8 +8,11 @@ import {
   SafeAreaView,
   Image,
   Dimensions,
+  Modal,
+  FlatList,
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import LobaBottomNav from '../components/LobaBottomNav';
 
 const { width } = Dimensions.get('window');
 
@@ -18,6 +21,17 @@ const tabs = [
   { id: 'media', icon: 'view-agenda' },
   { id: 'saved', icon: 'bookmark-outline' },
   { id: 'tagged', icon: 'account-badge' },
+];
+
+const SUGGESTED_USERS = [
+  { id: '1', name: 'Marie K.', username: '@mariek', followers: 1234 },
+  { id: '2', name: 'Jean P.', username: '@jeanp', followers: 567 },
+  { id: '3', name: 'Sarah L.', username: '@sarahl', followers: 2345 },
+  { id: '4', name: 'Michel B.', username: '@michelb', followers: 890 },
+  { id: '5', name: 'Emma R.', username: '@emmar', followers: 4567 },
+  { id: '6', name: 'Alex T.', username: '@alext', followers: 2345 },
+  { id: '7', name: 'Lisa M.', username: '@lisam', followers: 1234 },
+  { id: '8', name: 'Kevin J.', username: '@kevinj', followers: 6789 },
 ];
 
 const gridImages = [
@@ -37,7 +51,93 @@ const gridImages = [
 
 export default function LobaProfileScreen({ onBack, onNavigate }) {
   const [activeTab, setActiveTab] = useState('posts');
-  const [activeTabNav, setActiveTabNav] = React.useState('Profile');
+  const [followers, setFollowers] = useState([]);
+  const [following, setFollowing] = useState([]);
+  const [userFollowerCounts, setUserFollowerCounts] = useState(() => {
+    const counts = {};
+    SUGGESTED_USERS.forEach(user => {
+      counts[user.id] = 0;
+    });
+    return counts;
+  });
+  const [showFollowersModal, setShowFollowersModal] = useState(false);
+  const [showFollowingModal, setShowFollowingModal] = useState(false);
+
+  const formatFollowers = (count) => {
+    if (count >= 1000000) {
+      return (count / 1000000).toFixed(1) + 'M';
+    }
+    if (count >= 1000) {
+      return (count / 1000).toFixed(1) + 'K';
+    }
+    return count.toString();
+  };
+
+  const toggleFollow = (userId, listType) => {
+    if (listType === 'followers') {
+      if (followers.includes(userId)) {
+        setFollowers(prev => prev.filter(id => id !== userId));
+        setUserFollowerCounts(prev => ({
+          ...prev,
+          [userId]: Math.max(0, (prev[userId] || 0) - 1)
+        }));
+      } else {
+        setFollowers(prev => [...prev, userId]);
+        setUserFollowerCounts(prev => ({
+          ...prev,
+          [userId]: (prev[userId] || 0) + 1
+        }));
+      }
+    } else {
+      if (following.includes(userId)) {
+        setFollowing(prev => prev.filter(id => id !== userId));
+        setUserFollowerCounts(prev => ({
+          ...prev,
+          [userId]: Math.max(0, (prev[userId] || 0) - 1)
+        }));
+      } else {
+        setFollowing(prev => [...prev, userId]);
+        setUserFollowerCounts(prev => ({
+          ...prev,
+          [userId]: (prev[userId] || 0) + 1
+        }));
+      }
+    }
+  };
+
+  const getUserById = (id) => SUGGESTED_USERS.find(u => u.id === id);
+
+  const renderUserItem = ({ item, listType }) => {
+    const user = getUserById(item);
+    if (!user) return null;
+    const isFollowing = listType === 'followers' ? following.includes(item) : followers.includes(item);
+    
+    return (
+      <View style={styles.userListItem}>
+        <View style={styles.userAvatarSmall}>
+          <MaterialCommunityIcons name="account" size={24} color="#64748b" />
+        </View>
+        <View style={styles.userListInfo}>
+          <Text style={styles.userListName}>{user.name}</Text>
+          <Text style={styles.userListUsername}>{user.username}</Text>
+          <View style={styles.followerCountRow}>
+            <MaterialCommunityIcons name="account-multiple" size={12} color="#64748b" />
+            <Text style={styles.followerCountText}>
+              {formatFollowers(userFollowerCounts[item] || 0)} abonné{(userFollowerCounts[item] || 0) !== 1 ? 's' : ''}
+            </Text>
+          </View>
+        </View>
+        <Pressable
+          style={[styles.followBtnSmall, isFollowing && styles.followingBtnSmall]}
+          onPress={() => toggleFollow(item, listType === 'followers' ? 'followers' : 'following')}
+        >
+          <Text style={[styles.followBtnSmallText, isFollowing && styles.followingBtnSmallText]}>
+            {isFollowing ? 'Abonné' : 'Suivre'}
+          </Text>
+        </Pressable>
+      </View>
+    );
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -106,15 +206,15 @@ export default function LobaProfileScreen({ onBack, onNavigate }) {
               <Text style={styles.statLabel}>Posts</Text>
             </View>
             <View style={styles.statDivider} />
-            <View style={styles.statItem}>
-              <Text style={styles.statNumber}>4.5k</Text>
+            <Pressable style={styles.statItem} onPress={() => setShowFollowersModal(true)}>
+              <Text style={styles.statNumber}>{formatFollowers(followers.length)}</Text>
               <Text style={styles.statLabel}>Followers</Text>
-            </View>
+            </Pressable>
             <View style={styles.statDivider} />
-            <View style={styles.statItem}>
-              <Text style={styles.statNumber}>320</Text>
+            <Pressable style={styles.statItem} onPress={() => setShowFollowingModal(true)}>
+              <Text style={styles.statNumber}>{formatFollowers(following.length)}</Text>
               <Text style={styles.statLabel}>Abonnements</Text>
-            </View>
+            </Pressable>
           </View>
         </View>
 
@@ -157,56 +257,81 @@ export default function LobaProfileScreen({ onBack, onNavigate }) {
         </View>
       </ScrollView>
 
-      {/* Floating Bottom Navigation */}
-      <SafeAreaView style={styles.bottomNavWrapper}>
-        <View style={styles.bottomNav}>
-          {navItems.map((item) => {
-            const isActive = activeTabNav === item.label;
-            return (
-              <Pressable
-                key={item.label}
-                style={({ pressed }) => [
-                  styles.navItem,
-                  pressed && styles.navItemPressed,
-                ]}
-                onPress={() => {
-                  if (item.label === 'Home') onBack?.();
-                  else if (item.label === 'Profile') onNavigate?.('profile');
-                  else {
-                    setActiveTabNav(item.label);
-                  }
-                }}
-              >
-                <View style={[
-                  styles.navIcon,
-                  isActive && styles.navIconActive,
-                  item.primary && styles.navIconCenter,
-                ]}>
-                  <MaterialCommunityIcons
-                    name={item.icon}
-                    size={isActive || item.primary ? 22 : 18}
-                    color={isActive ? '#0E151B' : '#E6EDF3'}
-                  />
+      <Modal
+        visible={showFollowersModal}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setShowFollowersModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <View style={styles.modalHandle} />
+              <View style={styles.modalTitleRow}>
+                <Text style={styles.modalTitle}>Followers</Text>
+                <Pressable onPress={() => setShowFollowersModal(false)}>
+                  <MaterialCommunityIcons name="close" size={24} color="#fff" />
+                </Pressable>
+              </View>
+            </View>
+            <FlatList
+              data={followers}
+              keyExtractor={item => item}
+              renderItem={({ item }) => renderUserItem({ item, listType: 'followers' })}
+              contentContainerStyle={styles.listContent}
+              ListEmptyComponent={
+                <View style={styles.emptyList}>
+                  <MaterialCommunityIcons name="account-group-outline" size={48} color="#64748b" />
+                  <Text style={styles.emptyListText}>Aucun follower</Text>
                 </View>
-                <Text style={[styles.navLabel, isActive && styles.navLabelActive]}>
-                  {item.label}
-                </Text>
-              </Pressable>
-            );
-          })}
+              }
+            />
+          </View>
         </View>
-      </SafeAreaView>
+      </Modal>
+
+      <Modal
+        visible={showFollowingModal}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setShowFollowingModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <View style={styles.modalHandle} />
+              <View style={styles.modalTitleRow}>
+                <Text style={styles.modalTitle}>Abonnements</Text>
+                <Pressable onPress={() => setShowFollowingModal(false)}>
+                  <MaterialCommunityIcons name="close" size={24} color="#fff" />
+                </Pressable>
+              </View>
+            </View>
+            <FlatList
+              data={following}
+              keyExtractor={item => item}
+              renderItem={({ item }) => renderUserItem({ item, listType: 'following' })}
+              contentContainerStyle={styles.listContent}
+              ListEmptyComponent={
+                <View style={styles.emptyList}>
+                  <MaterialCommunityIcons name="account-plus-outline" size={48} color="#64748b" />
+                  <Text style={styles.emptyListText}>Vous ne suivez personne</Text>
+                </View>
+              }
+            />
+          </View>
+        </View>
+      </Modal>
+
+      <LobaBottomNav activeTab="profile" onNavigate={(tab) => {
+        if (tab === 'home') onNavigate?.('loba_home');
+        else if (tab === 'create') onNavigate?.('loba_home');
+        else if (tab === 'friends') onNavigate?.('loba_friends');
+        else if (tab === 'messages') onNavigate?.('loba_messages');
+      }} />
     </SafeAreaView>
   );
 }
-
-const navItems = [
-  { label: 'Home', icon: 'home-variant' },
-  { label: 'Wallet', icon: 'wallet' },
-  { label: 'Create', icon: 'plus', primary: true },
-  { label: 'Loba', icon: 'play-circle' },
-  { label: 'Profile', icon: 'account', active: true },
-];
 
 const styles = StyleSheet.create({
   container: {
@@ -384,6 +509,10 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
   },
+  statItemClickable: {
+    flex: 1,
+    alignItems: 'center',
+  },
   statNumber: {
     color: '#fff',
     fontSize: 20,
@@ -452,65 +581,109 @@ const styles = StyleSheet.create({
     borderColor: '#137fec',
     borderTopColor: 'transparent',
   },
-  bottomNavWrapper: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
-    paddingHorizontal: 16,
-    paddingBottom: 36,
-    zIndex: 30,
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    justifyContent: 'flex-end',
   },
-  bottomNav: {
-    backgroundColor: 'rgba(22, 29, 37, 0.98)',
-    borderRadius: 24,
-    paddingVertical: 10,
-    paddingHorizontal: 12,
+  modalContent: {
+    backgroundColor: '#1c2a38',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    maxHeight: '70%',
+    minHeight: 300,
+  },
+  modalHeader: {
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255,255,255,0.1)',
+  },
+  modalHandle: {
+    width: 40,
+    height: 4,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    borderRadius: 2,
+    alignSelf: 'center',
+    marginBottom: 12,
+  },
+  modalTitleRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.08)',
-    marginBottom: 4,
-  },
-  navItem: {
     alignItems: 'center',
-    flex: 1,
   },
-  navItemPressed: {
-    transform: [{ scale: 0.96 }],
+  modalTitle: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: 'bold',
   },
-  navIcon: {
-    width: 22,
-    height: 22,
-    borderRadius: 6,
-    backgroundColor: 'rgba(255, 255, 255, 0.12)',
-    marginBottom: 6,
+  listContent: {
+    padding: 16,
+  },
+  userListItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255,255,255,0.05)',
+  },
+  userAvatarSmall: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#1c2a38',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  navIconActive: {
-    backgroundColor: '#3B82F6',
+  userListInfo: {
+    flex: 1,
+    marginLeft: 12,
   },
-  navIconCenter: {
-    width: 36,
-    height: 36,
-    borderRadius: 12,
-    backgroundColor: '#3B82F6',
-    marginTop: -14,
-    shadowColor: '#3B82F6',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 4,
+  userListName: {
+    color: '#fff',
+    fontSize: 15,
+    fontWeight: '600',
   },
-  navLabel: {
-    color: '#E6EDF3',
-    fontSize: 10,
-    opacity: 0.6,
+  userListUsername: {
+    color: '#64748b',
+    fontSize: 13,
+    marginTop: 2,
   },
-  navLabelActive: {
+  followerCountRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginTop: 4,
+  },
+  followerCountText: {
+    color: '#64748b',
+    fontSize: 12,
+  },
+  followBtnSmall: {
+    backgroundColor: '#2BEE79',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+  },
+  followingBtnSmall: {
+    backgroundColor: 'rgba(43, 238, 121, 0.1)',
+    borderWidth: 1,
+    borderColor: 'rgba(43, 238, 121, 0.3)',
+  },
+  followBtnSmallText: {
+    color: '#0E151B',
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  followingBtnSmallText: {
     color: '#2BEE79',
-    opacity: 1,
-    fontWeight: '700',
+  },
+  emptyList: {
+    alignItems: 'center',
+    paddingTop: 40,
+    gap: 12,
+  },
+  emptyListText: {
+    color: '#64748b',
+    fontSize: 14,
   },
 });

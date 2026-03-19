@@ -59,9 +59,13 @@ import BlockedUserScreen from './src/features/marketplace/screens/BlockedUserScr
 import OrdersScreen from './src/features/marketplace/screens/OrdersScreen';
 import LobaHomeScreen from './src/features/loba/screens/LobaHomeScreen';
 import LobaFeedScreen from './src/features/loba/screens/LobaFeedScreen';
+import LobaForYouScreen from './src/features/loba/screens/LobaForYouScreen';
+import LobaFollowingScreen from './src/features/loba/screens/LobaFollowingScreen';
 import LobaProfileScreen from './src/features/loba/screens/LobaProfileScreen';
 import LobaStoriesScreen from './src/features/loba/screens/LobaStoriesScreen';
 import LobaRecordScreen from './src/features/loba/screens/LobaRecordScreen';
+import LobaFriendsScreen from './src/features/loba/screens/LobaFriendsScreen';
+import LobaMessagesScreen from './src/features/loba/screens/LobaMessagesScreen';
 import RestaurantHomeScreen from './src/features/restaurant/screens/RestaurantHomeScreen';
 import RestaurantDetailsScreen from './src/features/restaurant/screens/RestaurantDetailsScreen';
 import FoodItemDetailsScreen from './src/features/restaurant/screens/FoodItemDetailsScreen';
@@ -655,6 +659,38 @@ export default function App() {
       <LobaRecordScreen
         onBack={() => goBack()}
         onClose={() => navigate('loba_home')}
+      />
+    );
+  }
+  if (screen === 'loba_friends') {
+    content = (
+      <LobaFriendsScreen
+        onBack={() => goBack()}
+        onNavigate={(screenName) => navigate(screenName)}
+      />
+    );
+  }
+  if (screen === 'loba_messages') {
+    content = (
+      <LobaMessagesScreen
+        onBack={() => goBack()}
+        onNavigate={(screenName) => navigate(screenName)}
+      />
+    );
+  }
+  if (screen === 'loba_for_you') {
+    content = (
+      <LobaForYouScreen
+        onBack={() => goBack()}
+        onNavigate={(screenName) => navigate(screenName)}
+      />
+    );
+  }
+  if (screen === 'loba_following') {
+    content = (
+      <LobaFollowingScreen
+        onBack={() => goBack()}
+        onNavigate={(screenName) => navigate(screenName)}
       />
     );
   }

@@ -130,6 +130,8 @@ Ne jamais bloquer l'utilisateur avec une erreur reseau
 - UI: `app/src/features/profile/screens/SupportScreen.js`
 - UI: `app/src/features/profile/screens/LogoutScreen.js`
 - UI Loba: `app/src/features/loba/screens/`
+  - `LobaForYouScreen.js` - Feed "Pour Toi" (intérêts utilisateur)
+  - `LobaFollowingScreen.js` - Feed "Abonnements" (contenu suivi)
   - `LobaHomeScreen.js`
   - `LobaFeedScreen.js`
   - `LobaRecordScreen.js`

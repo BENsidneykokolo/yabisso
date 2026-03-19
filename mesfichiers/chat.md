@@ -967,6 +967,33 @@ Assistant: [A cree]
 - MarketplaceNotificationsScreen
 - Connecte la cloche notification dans MarketplaceHomeScreen vers marketplace_notifications
 
+---
+
+## 2026-03-20 - Loba For You & Following Screens
+
+User: super, maintenant je veux que tu crée l'ecran "for you" et cette page sera dediée aux interets de l'utilisateur, et je veux aussi que tu crée l'ecran following (inspire toi de tik tok)
+
+Assistant: J'ai créé deux nouveaux écrans pour le module Loba:
+- **LobaForYouScreen.js** (Pour Toi): Feed vertical TikTok-style basé sur les intérêts de l'utilisateur, avec:
+  - Vidéos plein écran avec swipe vertical
+  - Actions (like, commentaire, save, share)
+  - Bouton suivre sur chaque créateur
+  - Modal de personnalisation des intérêts
+  - Musique avec disc animé
+  
+- **LobaFollowingScreen.js** (Abonnements): Feed des créateurs suivis avec:
+  - Liste horizontale des créateurs suivis en haut
+  - Vidéos plein écran avec swipe vertical
+  - Badge "Suivi" avec icône check
+  - Affichage du temps depuis publication
+
+**Écrans ajoutés à la navigation:**
+- `loba_for_you` → LobaForYouScreen
+- `loba_following` → LobaFollowingScreen
+
+**Branchements:**
+- LobaHomeScreen → liens vers les deux nouveaux écrans via header chips
+
 User: super, maintenant je veux que tu cree l'ecran "favoris" "historique" et que tu connecte l'ecran "parametre" dans le menu de l'ecran "boutique"
 
 Assistant: [A cree]

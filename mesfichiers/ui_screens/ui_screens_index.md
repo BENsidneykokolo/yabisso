@@ -78,6 +78,8 @@
 - Marketplace - Favoris: `app/src/features/marketplace/screens/MarketplaceFavoritesScreen.js`
 - Marketplace - Historique: `app/src/features/marketplace/screens/MarketplaceHistoryScreen.js`
 - Marketplace - Parametres: `app/src/features/marketplace/screens/MarketplaceSettingsScreen.js`
+- Loba - For You (Pour Toi): `app/src/features/loba/screens/LobaForYouScreen.js`
+- Loba - Following (Abonnements): `app/src/features/loba/screens/LobaFollowingScreen.js`
 - Restaurant - Home: `app/src/features/restaurant/screens/RestaurantHomeScreen.js`
 - Restaurant - Details: `app/src/features/restaurant/screens/RestaurantDetailsScreen.js`
 - Restaurant - Item Details: `app/src/features/restaurant/screens/FoodItemDetailsScreen.js`
