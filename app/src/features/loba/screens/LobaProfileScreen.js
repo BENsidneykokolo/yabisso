@@ -15,6 +15,7 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import LobaBottomNav from '../components/LobaBottomNav';
 
@@ -70,11 +71,13 @@ export default function LobaProfileScreen({ onBack, onNavigate }) {
   const [showPostsModal, setShowPostsModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
+  const [showPhotoOptions, setShowPhotoOptions] = useState(false);
   const [profile, setProfile] = useState({
     name: 'Kwame Osei',
     username: '@kwame_tech',
     bio: "Building digital bridges in Accra 🇬🇭 \nTech enthusiast | #YabissoBuilder | Coffee lover",
     avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDQhIYrsn0BgO3o2NSHOl0rqWaVVjO8DaNG_JMTJLCRg8306mCppb5GKTf1dKIMI5DQNoJvE6xmSRw5Bfif5oTg6ENE0ViWBUCXChpCJPORs11wgFaIL3GxZNCxUoANlXiohrIy6Yb9r6k89wP9DhKzkn0KKwAhcFf4c1sd07XrdKgzvSdVle8g9AG5vQRmQ39kA2vZ1v6jspFjVsy7WIy79Jp4Joc363N-kIwK7ugZIUMlmI0mQ9PO6o7HWAMLvEOEh7ii7-zv',
+    avatarUri: null,
   });
   const [editForm, setEditForm] = useState({
     name: 'Kwame Osei',
@@ -143,6 +146,67 @@ export default function LobaProfileScreen({ onBack, onNavigate }) {
       bio: editForm.bio,
     });
     setShowEditModal(false);
+  };
+
+  const pickImage = async () => {
+    try {
+      const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      
+      if (!permissionResult.granted) {
+        Alert.alert(
+          'Permission requise',
+          'Veuillez autoriser l\'accès à la galerie photo pour changer votre photo de profil.',
+          [{ text: 'OK' }]
+        );
+        return;
+      }
+
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.8,
+      });
+
+      if (!result.canceled && result.assets[0]) {
+        setProfile({
+          ...profile,
+          avatarUri: result.assets[0].uri,
+        });
+      }
+    } catch (error) {
+      Alert.alert('Erreur', 'Impossible de charger l\'image');
+    }
+  };
+
+  const takePhoto = async () => {
+    try {
+      const permissionResult = await ImagePicker.requestCameraPermissionsAsync();
+      
+      if (!permissionResult.granted) {
+        Alert.alert(
+          'Permission requise',
+          'Veuillez autoriser l\'accès à la caméra pour prendre une photo.',
+          [{ text: 'OK' }]
+        );
+        return;
+      }
+
+      const result = await ImagePicker.launchCameraAsync({
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.8,
+      });
+
+      if (!result.canceled && result.assets[0]) {
+        setProfile({
+          ...profile,
+          avatarUri: result.assets[0].uri,
+        });
+      }
+    } catch (error) {
+      Alert.alert('Erreur', 'Impossible de prendre la photo');
+    }
   };
 
   const shareProfile = async () => {
@@ -221,7 +285,7 @@ export default function LobaProfileScreen({ onBack, onNavigate }) {
           <View style={styles.avatarContainer}>
             <View style={styles.avatarRing}>
               <Image
-                source={{ uri: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDQhIYrsn0BgO3o2NSHOl0rqWaVVjO8DaNG_JMTJLCRg8306mCppb5GKTf1dKIMI5DQNoJvE6xmSRw5Bfif5oTg6ENE0ViWBUCXChpCJPORs11wgFaIL3GxZNCxUoANlXiohrIy6Yb9r6k89wP9DhKzkn0KKwAhcFf4c1sd07XrdKgzvSdVle8g9AG5vQRmQ39kA2vZ1v6jspFjVsy7WIy79Jp4Joc363N-kIwK7ugZIUMlmI0mQ9PO6o7HWAMLvEOEh7ii7-zv' }}
+                source={{ uri: profile.avatarUri || profile.avatar }}
                 style={styles.avatar}
               />
             </View>
@@ -422,11 +486,18 @@ export default function LobaProfileScreen({ onBack, onNavigate }) {
                 showsVerticalScrollIndicator={false}
               >
                 <View style={styles.editAvatarSection}>
-                  <View style={styles.editAvatarRing}>
-                    <Image source={{ uri: profile.avatar }} style={styles.editAvatar} />
-                  </View>
-                  <Pressable style={styles.changePhotoBtn}>
-                    <MaterialCommunityIcons name="camera" size={18} color="#137fec" />
+                  <Pressable onPress={() => setShowPhotoOptions(true)}>
+                    <View style={styles.editAvatarRing}>
+                      <Image 
+                        source={{ uri: profile.avatarUri || profile.avatar }} 
+                        style={styles.editAvatar} 
+                      />
+                      <View style={styles.editAvatarOverlay}>
+                        <MaterialCommunityIcons name="camera" size={24} color="#fff" />
+                      </View>
+                    </View>
+                  </Pressable>
+                  <Pressable style={styles.changePhotoBtn} onPress={() => setShowPhotoOptions(true)}>
                     <Text style={styles.changePhotoText}>Changer photo</Text>
                   </Pressable>
                 </View>
@@ -486,6 +557,61 @@ export default function LobaProfileScreen({ onBack, onNavigate }) {
             </View>
           </View>
         </KeyboardAvoidingView>
+      </Modal>
+
+      <Modal
+        visible={showPhotoOptions}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowPhotoOptions(false)}
+      >
+        <Pressable 
+          style={styles.photoOptionsOverlay}
+          onPress={() => setShowPhotoOptions(false)}
+        >
+          <View style={styles.photoOptionsContent}>
+            <Text style={styles.photoOptionsTitle}>Changer la photo</Text>
+            
+            <Pressable style={styles.photoOption} onPress={() => { takePhoto(); setShowPhotoOptions(false); }}>
+              <View style={[styles.photoOptionIcon, { backgroundColor: '#137fec20' }]}>
+                <MaterialCommunityIcons name="camera" size={24} color="#137fec" />
+              </View>
+              <View style={styles.photoOptionText}>
+                <Text style={styles.photoOptionLabel}>Prendre une photo</Text>
+                <Text style={styles.photoOptionDesc}>Utiliser la caméra</Text>
+              </View>
+            </Pressable>
+
+            <Pressable style={styles.photoOption} onPress={() => { pickImage(); setShowPhotoOptions(false); }}>
+              <View style={[styles.photoOptionIcon, { backgroundColor: '#2BEE7920' }]}>
+                <MaterialCommunityIcons name="image" size={24} color="#2BEE79" />
+              </View>
+              <View style={styles.photoOptionText}>
+                <Text style={styles.photoOptionLabel}>Choisir dans la galerie</Text>
+                <Text style={styles.photoOptionDesc}>Sélectionner une photo existante</Text>
+              </View>
+            </Pressable>
+
+            {profile.avatarUri && (
+              <Pressable style={styles.photoOption} onPress={() => { 
+                setProfile({ ...profile, avatarUri: null }); 
+                setShowPhotoOptions(false); 
+              }}>
+                <View style={[styles.photoOptionIcon, { backgroundColor: '#ef444420' }]}>
+                  <MaterialCommunityIcons name="delete" size={24} color="#ef4444" />
+                </View>
+                <View style={styles.photoOptionText}>
+                  <Text style={[styles.photoOptionLabel, { color: '#ef4444' }]}>Supprimer la photo</Text>
+                  <Text style={styles.photoOptionDesc}>Revenir à la photo par défaut</Text>
+                </View>
+              </Pressable>
+            )}
+
+            <Pressable style={styles.photoOptionsCancel} onPress={() => setShowPhotoOptions(false)}>
+              <Text style={styles.photoOptionsCancelText}>Annuler</Text>
+            </Pressable>
+          </View>
+        </Pressable>
       </Modal>
 
       <Modal
@@ -1160,8 +1286,76 @@ const styles = StyleSheet.create({
     borderRadius: 25,
   },
   shareDirectBtnText: {
-    color: '#0E151B',
+    color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  photoOptionsOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.7)',
+    justifyContent: 'flex-end',
+  },
+  photoOptionsContent: {
+    backgroundColor: '#1c2a38',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    padding: 24,
+    paddingBottom: 40,
+  },
+  photoOptionsTitle: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 24,
+  },
+  photoOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255,255,255,0.05)',
+    gap: 16,
+  },
+  photoOptionIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  photoOptionText: {
+    flex: 1,
+  },
+  photoOptionLabel: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 2,
+  },
+  photoOptionDesc: {
+    color: '#64748b',
+    fontSize: 13,
+  },
+  photoOptionsCancel: {
+    marginTop: 16,
+    paddingVertical: 16,
+    alignItems: 'center',
+  },
+  photoOptionsCancelText: {
+    color: '#ef4444',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  editAvatarOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    borderRadius: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });
