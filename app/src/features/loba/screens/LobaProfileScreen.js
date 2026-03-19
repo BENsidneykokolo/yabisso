@@ -12,6 +12,8 @@ import {
   FlatList,
   TextInput,
   Alert,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import LobaBottomNav from '../components/LobaBottomNav';
@@ -399,80 +401,91 @@ export default function LobaProfileScreen({ onBack, onNavigate }) {
         animationType="slide"
         onRequestClose={() => setShowEditModal(false)}
       >
-        <View style={styles.modalOverlay}>
-          <View style={[styles.modalContent, { maxHeight: '85%' }]}>
-            <View style={styles.modalHeader}>
-              <View style={styles.modalHandle} />
-              <View style={styles.modalTitleRow}>
-                <Text style={styles.modalTitle}>Modifier le profil</Text>
-                <Pressable onPress={() => setShowEditModal(false)}>
-                  <MaterialCommunityIcons name="close" size={24} color="#fff" />
-                </Pressable>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={styles.keyboardAvoid}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={[styles.modalContent, { maxHeight: '90%' }]}>
+              <View style={styles.modalHeader}>
+                <View style={styles.modalHandle} />
+                <View style={styles.modalTitleRow}>
+                  <Text style={styles.modalTitle}>Modifier le profil</Text>
+                  <Pressable onPress={() => setShowEditModal(false)}>
+                    <MaterialCommunityIcons name="close" size={24} color="#fff" />
+                  </Pressable>
+                </View>
               </View>
+              <ScrollView 
+                style={styles.editForm}
+                keyboardShouldPersistTaps="handled"
+                showsVerticalScrollIndicator={false}
+              >
+                <View style={styles.editAvatarSection}>
+                  <View style={styles.editAvatarRing}>
+                    <Image source={{ uri: profile.avatar }} style={styles.editAvatar} />
+                  </View>
+                  <Pressable style={styles.changePhotoBtn}>
+                    <MaterialCommunityIcons name="camera" size={18} color="#137fec" />
+                    <Text style={styles.changePhotoText}>Changer photo</Text>
+                  </Pressable>
+                </View>
+
+                <View style={styles.formGroup}>
+                  <Text style={styles.formLabel}>Nom</Text>
+                  <View style={styles.formInputWrapper}>
+                    <MaterialCommunityIcons name="account" size={20} color="#64748b" />
+                    <TextInput
+                      style={styles.formInput}
+                      value={editForm.name}
+                      onChangeText={(text) => setEditForm({ ...editForm, name: text })}
+                      placeholder="Votre nom"
+                      placeholderTextColor="#64748b"
+                    />
+                  </View>
+                </View>
+
+                <View style={styles.formGroup}>
+                  <Text style={styles.formLabel}>Nom d'utilisateur</Text>
+                  <View style={styles.formInputWrapper}>
+                    <MaterialCommunityIcons name="at" size={20} color="#64748b" />
+                    <TextInput
+                      style={styles.formInput}
+                      value={editForm.username}
+                      onChangeText={(text) => setEditForm({ ...editForm, username: text })}
+                      placeholder="@votre_username"
+                      placeholderTextColor="#64748b"
+                      autoCapitalize="none"
+                    />
+                  </View>
+                </View>
+
+                <View style={styles.formGroup}>
+                  <Text style={styles.formLabel}>Bio</Text>
+                  <View style={[styles.formInputWrapper, styles.bioInputWrapper]}>
+                    <MaterialCommunityIcons name="text" size={20} color="#64748b" style={{ alignSelf: 'flex-start', marginTop: 12 }} />
+                    <TextInput
+                      style={[styles.formInput, styles.bioInput]}
+                      value={editForm.bio}
+                      onChangeText={(text) => setEditForm({ ...editForm, bio: text })}
+                      placeholder="Parlez-nous de vous..."
+                      placeholderTextColor="#64748b"
+                      multiline
+                      numberOfLines={4}
+                      textAlignVertical="top"
+                    />
+                  </View>
+                </View>
+
+                <Pressable style={styles.saveBtn} onPress={saveProfile}>
+                  <Text style={styles.saveBtnText}>Enregistrer</Text>
+                </Pressable>
+                
+                <View style={{ height: 40 }} />
+              </ScrollView>
             </View>
-            <ScrollView style={styles.editForm}>
-              <View style={styles.editAvatarSection}>
-                <View style={styles.editAvatarRing}>
-                  <Image source={{ uri: profile.avatar }} style={styles.editAvatar} />
-                </View>
-                <Pressable style={styles.changePhotoBtn}>
-                  <MaterialCommunityIcons name="camera" size={18} color="#137fec" />
-                  <Text style={styles.changePhotoText}>Changer photo</Text>
-                </Pressable>
-              </View>
-
-              <View style={styles.formGroup}>
-                <Text style={styles.formLabel}>Nom</Text>
-                <View style={styles.formInputWrapper}>
-                  <MaterialCommunityIcons name="account" size={20} color="#64748b" />
-                  <TextInput
-                    style={styles.formInput}
-                    value={editForm.name}
-                    onChangeText={(text) => setEditForm({ ...editForm, name: text })}
-                    placeholder="Votre nom"
-                    placeholderTextColor="#64748b"
-                  />
-                </View>
-              </View>
-
-              <View style={styles.formGroup}>
-                <Text style={styles.formLabel}>Nom d'utilisateur</Text>
-                <View style={styles.formInputWrapper}>
-                  <MaterialCommunityIcons name="at" size={20} color="#64748b" />
-                  <TextInput
-                    style={styles.formInput}
-                    value={editForm.username}
-                    onChangeText={(text) => setEditForm({ ...editForm, username: text })}
-                    placeholder="@votre_username"
-                    placeholderTextColor="#64748b"
-                    autoCapitalize="none"
-                  />
-                </View>
-              </View>
-
-              <View style={styles.formGroup}>
-                <Text style={styles.formLabel}>Bio</Text>
-                <View style={[styles.formInputWrapper, styles.bioInputWrapper]}>
-                  <MaterialCommunityIcons name="text" size={20} color="#64748b" style={{ alignSelf: 'flex-start', marginTop: 12 }} />
-                  <TextInput
-                    style={[styles.formInput, styles.bioInput]}
-                    value={editForm.bio}
-                    onChangeText={(text) => setEditForm({ ...editForm, bio: text })}
-                    placeholder="Parlez-nous de vous..."
-                    placeholderTextColor="#64748b"
-                    multiline
-                    numberOfLines={4}
-                    textAlignVertical="top"
-                  />
-                </View>
-              </View>
-
-              <Pressable style={styles.saveBtn} onPress={saveProfile}>
-                <Text style={styles.saveBtnText}>Enregistrer</Text>
-              </Pressable>
-            </ScrollView>
           </View>
-        </View>
+        </KeyboardAvoidingView>
       </Modal>
 
       <Modal
@@ -832,6 +845,9 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.6)',
     justifyContent: 'flex-end',
+  },
+  keyboardAvoid: {
+    flex: 1,
   },
   modalContent: {
     backgroundColor: '#1c2a38',
