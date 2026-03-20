@@ -9,7 +9,7 @@ import {
   Switch,
 } from 'react-native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
-import { withObservables } from '@nozbe/watermelondb/react';
+import withObservables from '@nozbe/with-observables';
 import { database } from '../../../lib/db';
 import { Q } from '@nozbe/watermelondb';
 

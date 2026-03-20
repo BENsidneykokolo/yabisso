@@ -16,7 +16,7 @@ import {
   Platform,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as SecureStore from 'expo-secure-store';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import LobaBottomNav from '../components/LobaBottomNav';
 
@@ -25,7 +25,7 @@ const { width } = Dimensions.get('window');
 const tabs = [
   { id: 'posts', icon: 'view-grid' },
   { id: 'media', icon: 'view-agenda' },
-  { id: 'saved', icon: 'bookmark-outline' },
+  { id: 'saved', icon: 'bookmark-outline', activeIcon: 'bookmark' },
   { id: 'tagged', icon: 'account-badge' },
 ];
 
@@ -58,6 +58,7 @@ const gridImages = [
 export default function LobaProfileScreen({ onBack, onNavigate }) {
   const [activeTab, setActiveTab] = useState('posts');
   const [posts, setPosts] = useState(0);
+  const [savedVideos, setSavedVideos] = useState([]);
   const [followers, setFollowers] = useState([]);
   const [following, setFollowing] = useState([]);
   const [userFollowerCounts, setUserFollowerCounts] = useState(() => {
@@ -105,7 +106,28 @@ export default function LobaProfileScreen({ onBack, onNavigate }) {
 
   useEffect(() => {
     loadUserData();
+    loadSavedVideos();
   }, []);
+
+  useEffect(() => {
+    loadSavedVideos();
+  }, [activeTab]);
+
+  const loadSavedVideos = async () => {
+    try {
+      const savedVideosData = await SecureStore.getItemAsync('loba_saved_videos');
+      if (savedVideosData) {
+        const savedIds = JSON.parse(savedVideosData);
+        const saved = savedIds.map(id => ({
+          id,
+          thumbnail: `https://lh3.googleusercontent.com/aida-public/AB6AXuDQhIYrsn0BgO3o2NSHOl0rqWaVVjO8DaNG_JMTJLCRg8306mCppb5GKTf1dKIMI5DQNoJvE6xmSRw5Bfif5oTg6ENE0ViWBUCXChpCJPORs11wgFaIL3GxZNCxUoANlXiohrIy6Yb9r6k89wP9DhKzkn0KKwAhcFf4c1sd07XrdKgzvSdVle8g9AG5vQRmQ39kA2vZ1v6jspFjVsy7WIy79Jp4Joc363N-kIwK7ugZIUMlmI0mQ9PO6o7HWAMLvEOEh7ii7-zv`,
+        }));
+        setSavedVideos(saved);
+      }
+    } catch (error) {
+      console.log('Error loading saved videos:', error);
+    }
+  };
 
   useEffect(() => {
     if (isLoaded) {
@@ -115,11 +137,11 @@ export default function LobaProfileScreen({ onBack, onNavigate }) {
 
   const loadUserData = async () => {
     try {
-      const savedProfile = await AsyncStorage.getItem('loba_profile');
-      const savedPosts = await AsyncStorage.getItem('loba_posts');
-      const savedFollowers = await AsyncStorage.getItem('loba_followers');
-      const savedFollowing = await AsyncStorage.getItem('loba_following');
-      const savedFollowerCounts = await AsyncStorage.getItem('loba_follower_counts');
+      const savedProfile = await SecureStore.getItemAsync('loba_profile');
+      const savedPosts = await SecureStore.getItemAsync('loba_posts');
+      const savedFollowers = await SecureStore.getItemAsync('loba_followers');
+      const savedFollowing = await SecureStore.getItemAsync('loba_following');
+      const savedFollowerCounts = await SecureStore.getItemAsync('loba_follower_counts');
 
       if (savedProfile) {
         const parsedProfile = JSON.parse(savedProfile);
@@ -145,11 +167,11 @@ export default function LobaProfileScreen({ onBack, onNavigate }) {
 
   const saveUserData = async () => {
     try {
-      await AsyncStorage.setItem('loba_profile', JSON.stringify(profile));
-      await AsyncStorage.setItem('loba_posts', JSON.stringify(posts));
-      await AsyncStorage.setItem('loba_followers', JSON.stringify(followers));
-      await AsyncStorage.setItem('loba_following', JSON.stringify(following));
-      await AsyncStorage.setItem('loba_follower_counts', JSON.stringify(userFollowerCounts));
+      await SecureStore.setItemAsync('loba_profile', JSON.stringify(profile));
+      await SecureStore.setItemAsync('loba_posts', JSON.stringify(posts));
+      await SecureStore.setItemAsync('loba_followers', JSON.stringify(followers));
+      await SecureStore.setItemAsync('loba_following', JSON.stringify(following));
+      await SecureStore.setItemAsync('loba_follower_counts', JSON.stringify(userFollowerCounts));
     } catch (error) {
       console.log('Error saving user data:', error);
     }
@@ -339,10 +361,10 @@ export default function LobaProfileScreen({ onBack, onNavigate }) {
               <MaterialCommunityIcons name="cloud-check-outline" size={14} color="#22c55e" />
               <Text style={styles.offlineText}>En cache</Text>
             </View>
-            <Pressable style={styles.iconBtn}>
+            <Pressable style={styles.iconBtn} onPress={() => setShowShareModal(true)}>
               <MaterialCommunityIcons name="share-variant" size={22} color="#fff" />
             </Pressable>
-            <Pressable style={styles.iconBtn}>
+            <Pressable style={styles.iconBtn} onPress={() => onNavigate?.('loba_settings')}>
               <MaterialCommunityIcons name="cog" size={22} color="#fff" />
             </Pressable>
           </View>
@@ -411,7 +433,7 @@ export default function LobaProfileScreen({ onBack, onNavigate }) {
               onPress={() => setActiveTab(tab.id)}
             >
               <MaterialCommunityIcons
-                name={tab.icon}
+                name={activeTab === tab.id && tab.activeIcon ? tab.activeIcon : tab.icon}
                 size={24}
                 color={activeTab === tab.id ? '#137fec' : '#64748b'}
               />
@@ -420,8 +442,8 @@ export default function LobaProfileScreen({ onBack, onNavigate }) {
         </View>
 
         <View style={styles.grid}>
-          {gridImages.slice(0, posts).map((image, index) => (
-            <View key={index} style={styles.gridItem}>
+          {activeTab === 'posts' && gridImages.slice(0, posts).map((image, index) => (
+            <View key={`post-${index}`} style={styles.gridItem}>
               <Image source={{ uri: image }} style={styles.gridImage} />
               {index % 3 === 0 && (
                 <View style={styles.videoBadge}>
@@ -435,11 +457,38 @@ export default function LobaProfileScreen({ onBack, onNavigate }) {
               )}
             </View>
           ))}
-          {posts === 0 && (
+          {activeTab === 'posts' && posts === 0 && (
             <View style={styles.emptyGrid}>
               <MaterialCommunityIcons name="image-plus-outline" size={64} color="#1c2a38" />
               <Text style={styles.emptyGridText}>Aucun post</Text>
               <Text style={styles.emptyGridSubtext}>Appuyez sur Posts pour en ajouter</Text>
+            </View>
+          )}
+          {activeTab === 'saved' && savedVideos.length > 0 && savedVideos.map((video, index) => (
+            <View key={`saved-${video.id}`} style={styles.gridItem}>
+              <Image source={{ uri: video.thumbnail }} style={styles.gridImage} />
+              <View style={styles.savedBadge}>
+                <MaterialCommunityIcons name="bookmark" size={16} color="#fbbf24" />
+              </View>
+            </View>
+          ))}
+          {activeTab === 'saved' && savedVideos.length === 0 && (
+            <View style={styles.emptyGrid}>
+              <MaterialCommunityIcons name="bookmark-outline" size={64} color="#1c2a38" />
+              <Text style={styles.emptyGridText}>Aucun enregistrement</Text>
+              <Text style={styles.emptyGridSubtext}>Les vidéos que vous enregistrez apparaîtront ici</Text>
+            </View>
+          )}
+          {activeTab === 'media' && gridImages.slice(0, posts).map((image, index) => (
+            <View key={`media-${index}`} style={styles.gridItem}>
+              <Image source={{ uri: image }} style={styles.gridImage} />
+            </View>
+          ))}
+          {activeTab === 'tagged' && (
+            <View style={styles.emptyGrid}>
+              <MaterialCommunityIcons name="account-badge-outline" size={64} color="#1c2a38" />
+              <Text style={styles.emptyGridText}>Aucune publication taguée</Text>
+              <Text style={styles.emptyGridSubtext}>Les posts où vous êtes tagué apparaîtront ici</Text>
             </View>
           )}
         </View>
@@ -1020,6 +1069,14 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 8,
     right: 8,
+  },
+  savedBadge: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    borderRadius: 12,
+    padding: 4,
   },
   carouselBadge: {
     position: 'absolute',

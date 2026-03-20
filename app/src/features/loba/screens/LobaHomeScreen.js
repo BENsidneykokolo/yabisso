@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -14,9 +14,10 @@ import {
   Share,
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { withObservables } from '@nozbe/watermelondb/react';
-import { database } from '../../../lib/db';
+import * as SecureStore from 'expo-secure-store';
 import LobaBottomNav from '../components/LobaBottomNav';
+import withObservables from '@nozbe/with-observables';
+import { database } from '../../../lib/db';
 
 const { width, height } = Dimensions.get('window');
 
@@ -90,6 +91,25 @@ function LobaHomeScreen({ onBack, onNavigate }) {
   const [isCommentsModalVisible, setIsCommentsModalVisible] = useState(false);
   const [selectedVideo, setSelectedVideo] = useState(null);
 
+  useEffect(() => {
+    loadSavedVideos();
+  }, []);
+
+  const loadSavedVideos = async () => {
+    try {
+      const savedIdsJson = await SecureStore.getItemAsync('loba_saved_videos');
+      if (savedIdsJson) {
+        const savedIds = JSON.parse(savedIdsJson);
+        setFeedVideos(prev => prev.map(video => ({
+          ...video,
+          saved: savedIds.includes(video.id)
+        })));
+      }
+    } catch (error) {
+      console.log('Error loading saved videos:', error);
+    }
+  };
+
   const handleLike = (id) => {
     setFeedVideos(prev => prev.map(video => {
       if (video.id === id) {
@@ -113,13 +133,33 @@ function LobaHomeScreen({ onBack, onNavigate }) {
     }));
   };
 
-  const handleSave = (id) => {
-    setFeedVideos(prev => prev.map(video => {
-      if (video.id === id) {
-        return { ...video, saved: !video.saved };
-      }
-      return video;
-    }));
+  const handleSave = async (id) => {
+    let savedVideos = [];
+    setFeedVideos(prev => {
+      const updated = prev.map(video => {
+        if (video.id === id) {
+          const newSaved = !video.saved;
+          if (newSaved) {
+            savedVideos = [...prev.filter(v => v.saved), video];
+          }
+          return { ...video, saved: newSaved };
+        } else if (video.saved) {
+          savedVideos = [...savedVideos, video];
+        }
+        return video;
+      });
+      return updated;
+    });
+
+    const currentSaved = await SecureStore.getItemAsync('loba_saved_videos');
+    const savedIds = currentSaved ? JSON.parse(currentSaved) : [];
+    let newSavedIds;
+    if (savedIds.includes(id)) {
+      newSavedIds = savedIds.filter(savedId => savedId !== id);
+    } else {
+      newSavedIds = [...savedIds, id];
+    }
+    await SecureStore.setItemAsync('loba_saved_videos', JSON.stringify(newSavedIds));
   };
 
   const openShare = (video) => {

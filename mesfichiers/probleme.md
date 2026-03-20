@@ -72,6 +72,12 @@
 - **Cause** : Erreur de référence à `params` au lieu de `screenParams` dans `App.js` + définition `bottomNavItems` manquante dans `ProductListScreen.js`
 - **Solution** : Correction des références dans `App.js`, ajout de la constante manquante et implémentation du deep-linking fonctionnel (filtres promo/orders)
 - **Statut** : ✅ Résolu
+### BUG-009 — ReferenceError: withObservables doesn't exist
+- **Date** : 2026-03-20
+- **Problème** : Crash au chargement des écrans utilisant WatermelonDB ("Property 'withObservables' doesn't exist")
+- **Cause** : Import depuis `@nozbe/watermelondb/react` (obsolète) ou import manquant
+- **Solution** : Installation de `@nozbe/with-observables` + `rxjs` et mise à jour des imports vers le nouveau package
+- **Statut** : ✅ Résolu
 
 ---
 

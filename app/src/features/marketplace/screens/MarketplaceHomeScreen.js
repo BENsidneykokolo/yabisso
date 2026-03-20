@@ -14,7 +14,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useCart } from '../context/CartContext';
 import { useVoiceSearch } from '../../../hooks/useVoiceSearch';
 import { usePhotoSearch } from '../../../hooks/usePhotoSearch';
-import { withObservables } from '@nozbe/watermelondb/react';
+import withObservables from '@nozbe/with-observables';
 import { database } from '../../../lib/db';
 
 const bottomNavItems = [

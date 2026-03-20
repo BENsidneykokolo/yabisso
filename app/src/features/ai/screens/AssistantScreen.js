@@ -26,7 +26,7 @@ import { CameraView, useCameraPermissions } from 'expo-camera';
  * AssistantScreen - A robust rewrite of the AI Assistant screen.
  * Handles keyboard positioning, multiline text entry, and modular menus.
  */
-import { withObservables } from '@nozbe/watermelondb/react';
+import withObservables from '@nozbe/with-observables';
 import { database } from '../../../lib/db';
 
 function AssistantScreen({

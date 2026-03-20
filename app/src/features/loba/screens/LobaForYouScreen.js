@@ -13,7 +13,7 @@ import {
   Share,
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { withObservables } from '@nozbe/watermelondb/react';
+import withObservables from '@nozbe/with-observables';
 import { database } from '../../../lib/db';
 import LobaBottomNav from '../components/LobaBottomNav';
 

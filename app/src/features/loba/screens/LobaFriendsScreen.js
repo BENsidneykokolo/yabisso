@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -8,6 +8,7 @@ import {
   SafeAreaView,
   TextInput,
 } from 'react-native';
+import * as SecureStore from 'expo-secure-store';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import LobaBottomNav from '../components/LobaBottomNav';
 
@@ -30,18 +31,60 @@ const FOLLOWERS = [
   { id: '10', name: 'Paul D.', username: '@pauld', avatar: null, isOnline: true, followers: 2345 },
 ];
 
+const ALL_USERS = [...SUGGESTED_USERS, ...FOLLOWING, ...FOLLOWERS];
+
+const defaultFollowerCounts = () => {
+  const counts = {};
+  ALL_USERS.forEach(user => {
+    counts[user.id] = 0;
+  });
+  return counts;
+};
+
 export default function LobaFriendsScreen({ onBack, onNavigate }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState('suggestions');
   const [following, setFollowing] = useState([]);
   const [followers, setFollowers] = useState([]);
-  const [userFollowerCounts, setUserFollowerCounts] = useState(() => {
-    const counts = {};
-    [...SUGGESTED_USERS, ...FOLLOWING, ...FOLLOWERS].forEach(user => {
-      counts[user.id] = 0;
-    });
-    return counts;
-  });
+  const [userFollowerCounts, setUserFollowerCounts] = useState(defaultFollowerCounts);
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  useEffect(() => {
+    loadFriendsData();
+  }, []);
+
+  useEffect(() => {
+    if (isLoaded) {
+      saveFriendsData();
+    }
+  }, [following, followers, userFollowerCounts, isLoaded]);
+
+  const loadFriendsData = async () => {
+    try {
+      const savedFollowing = await SecureStore.getItemAsync('loba_friends_following');
+      const savedFollowers = await SecureStore.getItemAsync('loba_friends_followers');
+      const savedCounts = await SecureStore.getItemAsync('loba_friends_counts');
+
+      if (savedFollowing) setFollowing(JSON.parse(savedFollowing));
+      if (savedFollowers) setFollowers(JSON.parse(savedFollowers));
+      if (savedCounts) setUserFollowerCounts(JSON.parse(savedCounts));
+      
+      setIsLoaded(true);
+    } catch (error) {
+      console.log('Error loading friends data:', error);
+      setIsLoaded(true);
+    }
+  };
+
+  const saveFriendsData = async () => {
+    try {
+      await SecureStore.setItemAsync('loba_friends_following', JSON.stringify(following));
+      await SecureStore.setItemAsync('loba_friends_followers', JSON.stringify(followers));
+      await SecureStore.setItemAsync('loba_friends_counts', JSON.stringify(userFollowerCounts));
+    } catch (error) {
+      console.log('Error saving friends data:', error);
+    }
+  };
 
   const formatFollowers = (count) => {
     if (count >= 1000000) {
