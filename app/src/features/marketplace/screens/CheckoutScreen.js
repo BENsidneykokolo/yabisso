@@ -80,12 +80,18 @@ export default function CheckoutScreen({ onBack, onNavigate, route }) {
     setIsRecipientModalVisible(false);
   };
 
+  const parsePrice = (price) => {
+    if (typeof price === 'number') return price;
+    if (!price) return 0;
+    return parseInt(price.toString().replace(/[^0-9]/g, '')) || 0;
+  };
+
   const formatPrice = (price) => {
-    return price.toLocaleString('fr-FR') + ' XAF';
+    return parsePrice(price).toLocaleString('fr-FR') + ' XAF';
   };
 
   const subtotal = orderItems.reduce((sum, item) => {
-    const price = parseInt(item.negotiatedPrice || item.discountPrice || item.price) || 0;
+    const price = parsePrice(item.negotiatedPrice || item.discountPrice || item.price);
     return sum + (price * (item.quantity || 1));
   }, 0);
   
@@ -103,15 +109,19 @@ export default function CheckoutScreen({ onBack, onNavigate, route }) {
       products: orderItems.map(item => ({
         id: item.id,
         name: item.name,
+        brand: item.brand || 'Ma Boutique',
         quantity: item.quantity,
-        price: parseInt(item.negotiatedPrice || item.discountPrice || item.price) || 0,
-        image: item.image,
-        selectedColor: item.selectedColor,
+        price: parsePrice(item.negotiatedPrice || item.discountPrice || item.price),
+        image: item.image || item.photos?.[0] || null,
+        selectedColor: item.selectedColor || 'Default',
         selectedModel: item.selectedModel,
-        negotiatedPrice: item.negotiatedPrice
+        negotiatedPrice: item.negotiatedPrice,
+        description: item.description,
+        sellerAvatar: item.seller?.avatar,
+        sellerRating: item.seller?.rating,
       })),
       total: total,
-      seller: orderItems[0]?.seller?.name || 'Vendeur Yabisso',
+      seller: orderItems[0]?.brand || 'Ma Boutique',
       deliveryMethod: delivery === 'express' ? 'Express' : 'Standard',
     };
     addOrder(newOrder);
@@ -495,11 +505,23 @@ export default function CheckoutScreen({ onBack, onNavigate, route }) {
               return (
                 <View key={`${item.id}-${index}`} style={styles.orderItem}>
                   <Image 
-                    source={{ uri: item.image || 'https://via.placeholder.com/60' }} 
+                    source={{ uri: item.image || item.photos?.[0] || 'https://via.placeholder.com/60' }} 
                     style={styles.orderItemImage} 
                   />
                   <View style={styles.orderItemDetails}>
+                    <View style={styles.sellerCompact}>
+                      <Image 
+                        source={{ uri: item.seller?.avatar || 'https://via.placeholder.com/16' }} 
+                        style={styles.sellerMiniAvatar} 
+                      />
+                      <Text style={styles.orderItemBrand}>{item.seller?.name || item.brand || 'Ma Boutique'}</Text>
+                    </View>
                     <Text style={styles.orderItemName} numberOfLines={1}>{item.name}</Text>
+                    {item.description && (
+                      <Text style={styles.orderItemDescription} numberOfLines={1}>
+                        {item.description}
+                      </Text>
+                    )}
                     <Text style={styles.orderItemVariant}>
                       {variantText ? `${variantText} • ` : ''}Qty {item.quantity}
                     </Text>
@@ -874,13 +896,36 @@ const styles = StyleSheet.create({
     flex: 1,
     marginLeft: 12,
   },
+  sellerCompact: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginBottom: 2,
+  },
+  sellerMiniAvatar: {
+    width: 14,
+    height: 14,
+    borderRadius: 7,
+    backgroundColor: '#324d67',
+  },
+  orderItemBrand: {
+    fontSize: 10,
+    color: '#2BEE79',
+    fontWeight: '600',
+  },
   orderItemName: {
     fontSize: 13,
-    fontWeight: '500',
+    fontWeight: 'bold',
     color: '#fff',
   },
+  orderItemDescription: {
+    fontSize: 10,
+    color: '#94a3b8',
+    marginTop: 1,
+    fontStyle: 'italic',
+  },
   orderItemVariant: {
-    fontSize: 12,
+    fontSize: 11,
     color: '#64748b',
     marginTop: 2,
   },

@@ -77,6 +77,10 @@ export default function ProductDetailsScreen({ onBack, onNavigate, product }) {
   };
 
   const productData = product ? { ...defaultProduct, ...product } : defaultProduct;
+  
+  const displayImages = productData.photos && productData.photos.length > 0 
+    ? productData.photos 
+    : productImages;
 
   const formatPrice = (price) => {
     const numPrice = typeof price === 'string' ? parseInt(price) : price;
@@ -84,7 +88,11 @@ export default function ProductDetailsScreen({ onBack, onNavigate, product }) {
   };
 
   const handleAddToCart = () => {
-    addToCart(productData, quantity, selectedColor.name, selectedModel, negotiatedPrice);
+    const productToAdd = {
+      ...productData,
+      image: productData.photos?.[0] || null,
+    };
+    addToCart(productToAdd, quantity, selectedColor.name, selectedModel, negotiatedPrice);
 
     Alert.alert(
       'Ajouté au panier',
@@ -130,7 +138,9 @@ export default function ProductDetailsScreen({ onBack, onNavigate, product }) {
     }
   };
 
-  const currentDisplayPrice = negotiatedPrice || productData.discountPrice || productData.price;
+  const currentDisplayPrice = negotiatedPrice || productData.price;
+  
+  const displayPrice = typeof productData.price === 'string' ? parseInt(productData.price) : productData.price;
 
   return (
     <SafeAreaView style={styles.container}>
@@ -168,7 +178,7 @@ export default function ProductDetailsScreen({ onBack, onNavigate, product }) {
               setCurrentImageIndex(index);
             }}
           >
-            {productImages.map((image, index) => (
+            {displayImages.map((image, index) => (
               <Image
                 key={index}
                 source={{ uri: image }}
@@ -197,6 +207,7 @@ export default function ProductDetailsScreen({ onBack, onNavigate, product }) {
 
         {/* Product Info */}
         <View style={styles.productInfo}>
+          <Text style={styles.productBrand}>{productData.brand || 'Ma Boutique'}</Text>
           <View style={styles.titleRow}>
             <Text style={styles.productName}>{productData.name}</Text>
             <View style={styles.priceContainer}>
@@ -204,19 +215,10 @@ export default function ProductDetailsScreen({ onBack, onNavigate, product }) {
                 <View style={styles.negotiatedBadge}>
                   <Text style={styles.negotiatedText}>Prix négocié</Text>
                 </View>
-              ) : (
-                productData.discount > 0 && (
-                  <Text style={styles.discountBadge}>-{productData.discount}%</Text>
-                )
-              )}
+              ) : null}
               <Text style={[styles.price, negotiatedPrice && styles.negotiatedPriceText]}>
-                {formatPrice(currentDisplayPrice)}
+                {formatPrice(displayPrice)}
               </Text>
-              {(productData.discount > 0 || negotiatedPrice) && (
-                <Text style={styles.originalPrice}>
-                  {formatPrice(productData.price)}
-                </Text>
-              )}
             </View>
           </View>
 
@@ -525,6 +527,12 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'flex-start',
     gap: 12,
+  },
+  productBrand: {
+    fontSize: 14,
+    color: '#2BEE79',
+    fontWeight: '600',
+    marginBottom: 4,
   },
   productName: {
     flex: 1,

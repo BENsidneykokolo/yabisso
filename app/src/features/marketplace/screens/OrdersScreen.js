@@ -132,10 +132,13 @@ export default function OrdersScreen({ onBack, onNavigate, filter }) {
           <View key={index} style={styles.productRow}>
             <Image source={{ uri: product.image || 'https://via.placeholder.com/50' }} style={styles.productImage} />
             <View style={styles.productInfo}>
+              <Text style={styles.productBrand} numberOfLines={1}>{product.brand || 'Ma Boutique'}</Text>
               <Text style={styles.productName} numberOfLines={1}>{product.name}</Text>
               <Text style={styles.productQty}>Qty: {product.quantity}</Text>
             </View>
-            <Text style={styles.productPrice}>{product.price.toLocaleString()} XAF</Text>
+            <Text style={styles.productPrice}>
+              {typeof product.price === 'number' ? product.price.toLocaleString() : product.price} XAF
+            </Text>
           </View>
         ))}
       </View>
@@ -458,6 +461,12 @@ const styles = StyleSheet.create({
   productInfo: {
     flex: 1,
     marginLeft: 12,
+  },
+  productBrand: {
+    fontSize: 10,
+    color: '#2BEE79',
+    fontWeight: '600',
+    marginBottom: 2,
   },
   productName: {
     fontSize: 14,

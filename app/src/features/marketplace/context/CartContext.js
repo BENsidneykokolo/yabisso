@@ -13,12 +13,15 @@ export const CartProvider = ({ children }) => {
         (item) => 
           item.id === product.id && 
           item.selectedColor === selectedColor && 
-          item.selectedModel === selectedModel &&
-          item.negotiatedPrice === negotiatedPrice
+          item.selectedModel === selectedModel
       );
 
       if (existingIndex >= 0) {
         const updated = [...prev];
+        // Always prefer the negotiated price if provided
+        if (negotiatedPrice !== null) {
+          updated[existingIndex].negotiatedPrice = negotiatedPrice;
+        }
         updated[existingIndex].quantity += quantity;
         return updated;
       }

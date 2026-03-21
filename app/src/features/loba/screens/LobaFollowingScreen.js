@@ -14,6 +14,7 @@ import {
   ScrollView,
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { Video, ResizeMode } from 'expo-av';
 import withObservables from '@nozbe/with-observables';
 import { database } from '../../../lib/db';
 import LobaBottomNav from '../components/LobaBottomNav';
@@ -111,9 +112,35 @@ const followedCreators = [
   { id: 5, name: 'Marathon Mike', avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuEjemploRunnerAvatar123', following: false },
 ];
 
-function LobaFollowingScreen({ onBack, onNavigate }) {
+function LobaFollowingScreen({ onBack, onNavigate, videos = [] }) {
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
-  const [feedVideos, setFeedVideos] = useState(followingVideos);
+  
+  const displayPosts = [
+    ...videos.map(p => ({
+      id: p.id,
+      username: p.username,
+      avatar: p.avatar,
+      video: p.videoUrl || p.imageUrl,
+      type: p.videoUrl ? 'video' : 'photo',
+      caption: p.content,
+      song: 'Original Sound - ' + p.username,
+      likes: p.likes,
+      comments: p.comments,
+      progress: 0,
+      liked: p.isLiked,
+      followed: true,
+      saved: false,
+      filterColor: p.filterColor,
+      time: 'Maintenant',
+    })).reverse(),
+    ...followingVideos.map(v => ({ ...v, type: 'video', filterColor: 'transparent' }))
+  ];
+
+  const [feedVideos, setFeedVideos] = useState(displayPosts);
+
+  React.useEffect(() => {
+    setFeedVideos(displayPosts);
+  }, [videos]);
   const [isShareModalVisible, setIsShareModalVisible] = useState(false);
   const [isCommentsModalVisible, setIsCommentsModalVisible] = useState(false);
   const [selectedVideo, setSelectedVideo] = useState(null);
@@ -174,7 +201,19 @@ function LobaFollowingScreen({ onBack, onNavigate }) {
 
   const renderVideo = ({ item, index }) => (
     <View style={styles.videoContainer}>
-      <Image source={{ uri: item.video }} style={styles.videoBackground} />
+      {item.type === 'video' ? (
+        <Video
+          source={{ uri: item.video }}
+          style={styles.videoBackground}
+          resizeMode={ResizeMode.COVER}
+          shouldPlay={index === currentVideoIndex}
+          isLooping
+          isMuted={false}
+        />
+      ) : (
+        <Image source={{ uri: item.video }} style={styles.videoBackground} />
+      )}
+      <View style={[styles.filterOverlay, { backgroundColor: item.filterColor || 'transparent' }]} />
       <View style={styles.videoGradient} />
 
       <View style={styles.rightActions}>
@@ -352,7 +391,7 @@ function LobaFollowingScreen({ onBack, onNavigate }) {
       <LobaBottomNav activeTab="home" onNavigate={(tab) => {
         if (tab === 'home') onNavigate?.('loba_home');
         else if (tab === 'friends') onNavigate?.('loba_friends');
-        else if (tab === 'create') onNavigate?.('loba_create');
+        else if (tab === 'create') onNavigate?.('loba_record');
         else if (tab === 'messages') onNavigate?.('loba_messages');
         else if (tab === 'profile') onNavigate?.('loba_profile');
       }} />
@@ -458,9 +497,15 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
   },
+  filterOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    pointerEvents: 'none',
+    zIndex: 5,
+  },
   videoGradient: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: 'rgba(0,0,0,0.2)',
+    zIndex: 6,
   },
   rightActions: {
     position: 'absolute',

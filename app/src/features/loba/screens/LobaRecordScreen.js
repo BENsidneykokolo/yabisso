@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
   Text,
@@ -8,8 +8,11 @@ import {
   Image,
   Dimensions,
   ScrollView,
+  Alert,
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { CameraView, useCameraPermissions, useMicrophonePermissions } from 'expo-camera';
+import * as ImagePicker from 'expo-image-picker';
 
 const { width, height } = Dimensions.get('window');
 
@@ -22,30 +25,160 @@ const tools = [
   { id: 'timer', icon: 'timer-outline', label: 'Timer' },
 ];
 
-export default function LobaRecordScreen({ onBack, onClose }) {
+const filters = [
+  { id: 'none', label: 'Normal', color: 'transparent' },
+  { id: 'warm', label: 'Chaud', color: 'rgba(255, 100, 0, 0.15)' },
+  { id: 'cool', label: 'Frais', color: 'rgba(0, 100, 255, 0.15)' },
+  { id: 'sepia', label: 'Sépia', color: 'rgba(112, 66, 20, 0.3)' },
+  { id: 'mono', label: 'B&W', color: 'rgba(0, 0, 0, 0.4)' },
+  { id: 'vintage', label: 'Vintage', color: 'rgba(100, 50, 0, 0.2)' },
+  { id: 'cyan', label: 'Cyan', color: 'rgba(0, 255, 255, 0.1)' },
+];
+
+export default function LobaRecordScreen({ onBack, onClose, onCapture }) {
   const [activeMode, setActiveMode] = useState('15s Video');
   const [isRecording, setIsRecording] = useState(false);
+  const [facing, setFacing] = useState('back');
+  const [flash, setFlash] = useState('off');
+  const [activeFilter, setActiveFilter] = useState(filters[0]);
+  const [showFilterPicker, setShowFilterPicker] = useState(false);
+  const [recordingProgress, setRecordingProgress] = useState(0);
+
+  const cameraRef = useRef(null);
+  const [cameraPermission, requestCameraPermission] = useCameraPermissions();
+  const [micPermission, requestMicPermission] = useMicrophonePermissions();
+
+  useEffect(() => {
+    (async () => {
+      if (!cameraPermission?.granted) await requestCameraPermission();
+      if (!micPermission?.granted) await requestMicPermission();
+    })();
+  }, []);
+
+  useEffect(() => {
+    let interval;
+    if (isRecording) {
+      setRecordingProgress(0);
+      interval = setInterval(() => {
+        setRecordingProgress((prev) => {
+          const max = activeMode === '15s Video' ? 15000 : 60000;
+          const next = prev + 100;
+          if (next >= max) {
+            stopRecording();
+            return max;
+          }
+          return next;
+        });
+      }, 100);
+    } else {
+      clearInterval(interval);
+    }
+    return () => clearInterval(interval);
+  }, [isRecording, activeMode]);
+
+  const toggleFacing = () => {
+    setFacing(current => (current === 'back' ? 'front' : 'back'));
+  };
+
+  const toggleFlash = () => {
+    setFlash(current => (current === 'off' ? 'on' : 'off'));
+  };
+
+  const startRecording = async () => {
+    if (cameraRef.current && !isRecording) {
+      try {
+        setIsRecording(true);
+        const video = await cameraRef.current.recordAsync({
+          maxDuration: activeMode === '15s Video' ? 15 : 60,
+          quality: '720p',
+        });
+        console.log('Video recorded:', video.uri);
+        onCapture?.({ uri: video.uri, type: 'video', filter: activeFilter });
+      } catch (error) {
+        console.error('Failed to record video', error);
+        setIsRecording(false);
+      }
+    }
+  };
+
+  const stopRecording = async () => {
+    if (cameraRef.current && isRecording) {
+      cameraRef.current.stopRecording();
+      setIsRecording(false);
+    }
+  };
+
+  const takePicture = async () => {
+    if (cameraRef.current) {
+      const photo = await cameraRef.current.takePictureAsync({
+        quality: 0.8,
+      });
+      console.log('Photo taken:', photo.uri);
+      onCapture?.({ uri: photo.uri, type: 'image', filter: activeFilter });
+    }
+  };
+
+  const pickFromGallery = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images', 'videos'],
+      allowsEditing: true,
+      quality: 1,
+    });
+    if (!result.canceled) {
+      const asset = result.assets[0];
+      onCapture?.({ 
+        uri: asset.uri, 
+        type: asset.type === 'video' ? 'video' : 'image',
+        filter: filters[0],
+      });
+    }
+  };
+
+  if (!cameraPermission || !micPermission) {
+    return <View style={styles.container} />;
+  }
+
+  if (!cameraPermission.granted || !micPermission.granted) {
+    return (
+      <View style={styles.permissionContainer}>
+        <Text style={styles.permissionText}>Nous avons besoin des permissions Caméra et Micro</Text>
+        <Pressable style={styles.permissionBtn} onPress={() => {
+          requestCameraPermission();
+          requestMicPermission();
+        }}>
+          <Text style={styles.permissionBtnText}>Autoriser</Text>
+        </Pressable>
+      </View>
+    );
+  }
+
+  const progressPercent = activeMode === '15s Video' 
+    ? (recordingProgress / 15000) * 100 
+    : (recordingProgress / 60000) * 100;
 
   return (
     <View style={styles.container}>
-      <Image
-        source={{ uri: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCJ1jPjQc0navX4Agb9HCplTY31-_AIi58tsPW2oAvdu7zaqY7OlfG1IKzQM0cuVXCvkbXwPyuEbGyBAc5iGiekoDsaD6dcf5uIXFTgmfWR8qoTqT4J8g1JF8DXE9vqIAsxjF7V90z3vIz047VnofIO7UgtauG5p-Ay6NpWWQm9zRygm4porl0tBbilKiAWlHgykzqLsRlZZ188w613xXHrSre9sAgvwqu8YV5MQBDmQmZww5WizZRQaAKCDiPlXNvdg_s965g6' }}
+      <CameraView 
+        ref={cameraRef}
         style={styles.cameraBackground}
-      />
+        facing={facing}
+        enableTorch={flash === 'on'}
+        mode={activeMode === 'Photo' ? 'picture' : 'video'}
+      >
+        <View style={[styles.filterOverlay, { backgroundColor: activeFilter.color }]} />
+      </CameraView>
       <View style={styles.gradientOverlay} />
 
       <SafeAreaView style={styles.content}>
         <View style={styles.topSection}>
           <View style={styles.progressBar}>
             <View style={styles.progressSegment}>
-              <View style={[styles.progressFill, { width: '66%' }]} />
+              <View style={[styles.progressFill, { width: `${progressPercent}%` }]} />
             </View>
-            <View style={styles.progressSegment} />
-            <View style={styles.progressSegment} />
           </View>
 
           <View style={styles.header}>
-            <Pressable style={styles.closeBtn} onPress={onClose}>
+            <Pressable style={styles.closeBtn} onPress={onClose || onBack}>
               <MaterialCommunityIcons name="close" size={28} color="#fff" />
             </Pressable>
 
@@ -63,18 +196,57 @@ export default function LobaRecordScreen({ onBack, onClose }) {
 
         <View style={styles.middleSection}>
           <View style={styles.toolsSidebar}>
-            {tools.map((tool) => (
-              <View key={tool.id} style={styles.toolItem}>
-                <Pressable style={styles.toolBtn}>
-                  <MaterialCommunityIcons name={tool.icon} size={24} color="#fff" />
-                </Pressable>
-                <Text style={styles.toolLabel}>{tool.label}</Text>
-              </View>
-            ))}
+            <View style={styles.toolItem}>
+              <Pressable style={styles.toolBtn} onPress={toggleFacing}>
+                <MaterialCommunityIcons name="camera-flip-outline" size={24} color="#fff" />
+              </Pressable>
+              <Text style={styles.toolLabel}>Flip</Text>
+            </View>
+            <View style={styles.toolItem}>
+              <Pressable style={styles.toolBtn} onPress={toggleFlash}>
+                <MaterialCommunityIcons name={flash === 'on' ? "flash" : "flash-off"} size={24} color={flash === 'on' ? "#fbbf24" : "#fff"} />
+              </Pressable>
+              <Text style={styles.toolLabel}>Flash</Text>
+            </View>
+            <View style={styles.toolItem}>
+              <Pressable style={styles.toolBtn}>
+                <MaterialCommunityIcons name="speedometer" size={24} color="#fff" />
+              </Pressable>
+              <Text style={styles.toolLabel}>Speed</Text>
+            </View>
+            <View style={styles.toolItem}>
+              <Pressable style={[styles.toolBtn, showFilterPicker && { backgroundColor: '#2BEE79' }]} onPress={() => setShowFilterPicker(!showFilterPicker)}>
+                <MaterialCommunityIcons name="palette-outline" size={24} color={showFilterPicker ? "#000" : "#fff"} />
+              </Pressable>
+              <Text style={styles.toolLabel}>Filtres</Text>
+            </View>
+            <View style={styles.toolItem}>
+              <Pressable style={styles.toolBtn}>
+                <MaterialCommunityIcons name="timer-outline" size={24} color="#fff" />
+              </Pressable>
+              <Text style={styles.toolLabel}>Timer</Text>
+            </View>
           </View>
         </View>
 
         <View style={styles.bottomSection}>
+          {showFilterPicker && (
+            <View style={styles.filterPickerContainer}>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterScroll}>
+                {filters.map(filter => (
+                  <Pressable 
+                    key={filter.id} 
+                    style={[styles.filterBtn, activeFilter.id === filter.id && styles.filterBtnActive]} 
+                    onPress={() => setActiveFilter(filter)}
+                  >
+                    <View style={[styles.filterThumb, { backgroundColor: filter.color }]} />
+                    <Text style={[styles.filterText, activeFilter.id === filter.id && styles.filterTextActive]}>{filter.label}</Text>
+                  </Pressable>
+                ))}
+              </ScrollView>
+            </View>
+          )}
+
           <View style={styles.modeSelector}>
             <ScrollView
               horizontal
@@ -116,13 +288,33 @@ export default function LobaRecordScreen({ onBack, onClose }) {
             <View style={styles.centerControl}>
               <Pressable
                 style={styles.shutterBtn}
-                onPress={() => setIsRecording(!isRecording)}
+                onPress={() => {
+                  if (activeMode === 'Photo') {
+                    takePicture();
+                  } else if (!isRecording) {
+                    // Simple tap on video mode does nothing or starts toggle recording
+                    startRecording();
+                  } else {
+                    stopRecording();
+                  }
+                }}
+                onLongPress={() => {
+                  if (activeMode !== 'Photo') {
+                    startRecording();
+                  }
+                }}
+                onPressOut={() => {
+                  if (isRecording) {
+                    stopRecording();
+                  }
+                }}
               >
                 <View style={styles.shutterOuter}>
                   <View
                     style={[
                       styles.shutterInner,
                       isRecording && styles.shutterRecording,
+                      activeMode === 'Photo' && { backgroundColor: '#fff', borderRadius: 32 }
                     ]}
                   >
                     {isRecording && <View style={styles.recordDot} />}
@@ -132,7 +324,7 @@ export default function LobaRecordScreen({ onBack, onClose }) {
             </View>
 
             <View style={styles.sideControl}>
-              <Pressable style={styles.uploadBtn}>
+              <Pressable style={styles.uploadBtn} onPress={pickFromGallery}>
                 <Image
                   source={{ uri: 'https://lh3.googleusercontent.com/aida-public/AB6AXuC3r_WVYWr1iKoNlMkBBpTiVh8pWWzloUGPxc_mZVsyLftkV_s-AAl_nxaFngzDL-A07dM3BuahcFgwnfLhWBoazRSf1fMVIAxXTWXdavS8VkdV2V8HbNB0VBVWxXIkaWCoajgkhvoP-tiH0Zo_vZx3wHCcAZEeJBrDt_wyWj23p6Lm05LSuUyj7MUNRa04iuhkEtjCLgX5dt3-mA3A1vT6CnI3DhN4OfzOlw8pM-hWIy1INwk8KJsWf1HbKO3GcNr3TLz7YxoL' }}
                   style={styles.uploadThumb}
@@ -260,8 +452,71 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   bottomSection: {
-    paddingTop: 40,
+    paddingTop: 20,
+    backgroundColor: 'transparent',
+  },
+  filterOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    zIndex: 1,
+  },
+  filterPickerContainer: {
+    paddingVertical: 12,
     backgroundColor: 'rgba(0,0,0,0.6)',
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
+  },
+  filterScroll: {
+    paddingHorizontal: 16,
+    gap: 12,
+  },
+  filterBtn: {
+    alignItems: 'center',
+    gap: 6,
+    width: 60,
+  },
+  filterThumb: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    borderWidth: 2,
+    borderColor: 'rgba(255,255,255,0.3)',
+    backgroundColor: '#333',
+  },
+  filterBtnActive: {
+    transform: [{ scale: 1.1 }],
+  },
+  filterText: {
+    color: 'rgba(255,255,255,0.6)',
+    fontSize: 10,
+    fontWeight: '600',
+  },
+  filterTextActive: {
+    color: '#2BEE79',
+  },
+  permissionContainer: {
+    flex: 1,
+    backgroundColor: '#101922',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 24,
+    gap: 20,
+  },
+  permissionText: {
+    color: '#fff',
+    fontSize: 16,
+    textAlign: 'center',
+    lineHeight: 24,
+  },
+  permissionBtn: {
+    backgroundColor: '#2BEE79',
+    paddingHorizontal: 32,
+    paddingVertical: 12,
+    borderRadius: 24,
+  },
+  permissionBtnText: {
+    color: '#000',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
   modeSelector: {
     paddingVertical: 12,

@@ -7,6 +7,7 @@ import Product from './Product'
 import WalletTransaction from './WalletTransaction'
 import LobaPost from './LobaPost'
 import AssistantMessage from './AssistantMessage'
+import { LobaFriend } from './LobaFriend'
 
 export const modelClasses = [
   Address,
@@ -18,4 +19,5 @@ export const modelClasses = [
   WalletTransaction,
   LobaPost,
   AssistantMessage,
+  LobaFriend,
 ]

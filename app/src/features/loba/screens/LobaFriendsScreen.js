@@ -11,6 +11,9 @@ import {
 import * as SecureStore from 'expo-secure-store';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import LobaBottomNav from '../components/LobaBottomNav';
+import { database } from '../../../lib/db';
+import { Q } from '@nozbe/watermelondb';
+import { Modal, Alert } from 'react-native';
 
 const SUGGESTED_USERS = [
   { id: '1', name: 'Marie K.', username: '@mariek', avatar: null, mutualFriends: 12, followers: 1234 },
@@ -45,8 +48,9 @@ export default function LobaFriendsScreen({ onBack, onNavigate }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState('suggestions');
   const [following, setFollowing] = useState([]);
-  const [followers, setFollowers] = useState([]);
-  const [userFollowerCounts, setUserFollowerCounts] = useState(defaultFollowerCounts);
+  const [realFriends, setRealFriends] = useState([]);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [newFriendData, setNewFriendData] = useState({ name: '', phone: '', username: '' });
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
@@ -61,13 +65,11 @@ export default function LobaFriendsScreen({ onBack, onNavigate }) {
 
   const loadFriendsData = async () => {
     try {
+      const friends = await database.get('loba_friends').query().fetch();
+      setRealFriends(friends);
+      
       const savedFollowing = await SecureStore.getItemAsync('loba_friends_following');
-      const savedFollowers = await SecureStore.getItemAsync('loba_friends_followers');
-      const savedCounts = await SecureStore.getItemAsync('loba_friends_counts');
-
       if (savedFollowing) setFollowing(JSON.parse(savedFollowing));
-      if (savedFollowers) setFollowers(JSON.parse(savedFollowers));
-      if (savedCounts) setUserFollowerCounts(JSON.parse(savedCounts));
       
       setIsLoaded(true);
     } catch (error) {
@@ -76,13 +78,32 @@ export default function LobaFriendsScreen({ onBack, onNavigate }) {
     }
   };
 
-  const saveFriendsData = async () => {
+  const handleAddFriend = async () => {
+    const { name, phone, username } = newFriendData;
+    if (!name || !phone || !username) {
+      Alert.alert('Champs requis', 'Veuillez remplir tous les champs');
+      return;
+    }
+
     try {
-      await SecureStore.setItemAsync('loba_friends_following', JSON.stringify(following));
-      await SecureStore.setItemAsync('loba_friends_followers', JSON.stringify(followers));
-      await SecureStore.setItemAsync('loba_friends_counts', JSON.stringify(userFollowerCounts));
+      await database.write(async () => {
+        await database.get('loba_friends').create(friend => {
+          friend.friendId = `user_${Date.now()}`;
+          friend.name = name;
+          friend.phone = phone;
+          friend.username = username.startsWith('@') ? username : `@${username}`;
+          friend.status = 'offline';
+          friend.lastSeen = Date.now();
+        });
+      });
+      
+      setShowAddModal(false);
+      setNewFriendData({ name: '', phone: '', username: '' });
+      loadFriendsData();
+      Alert.alert('Succès', 'Ami ajouté avec succès !');
     } catch (error) {
-      console.log('Error saving friends data:', error);
+      console.log('Error adding friend:', error);
+      Alert.alert('Erreur', "Impossible de l'ajouter pour le moment");
     }
   };
 
@@ -137,6 +158,50 @@ export default function LobaFriendsScreen({ onBack, onNavigate }) {
     <View style={[styles.avatarPlaceholder, { width: size, height: size, borderRadius: size / 2 }]}>
       <MaterialCommunityIcons name="account" size={size * 0.6} color="#64748b" />
     </View>
+  );
+
+  const AddFriendModal = () => (
+    <Modal visible={showAddModal} transparent animationType="slide">
+      <View style={styles.modalOverlay}>
+        <View style={styles.modalContent}>
+          <Text style={styles.modalTitle}>Ajouter un ami</Text>
+          <Text style={styles.modalSubtitle}>Entrez les informations de votre ami pour le trouver.</Text>
+          
+          <TextInput
+            style={styles.modalInput}
+            placeholder="Nom complet"
+            placeholderTextColor="#64748b"
+            value={newFriendData.name}
+            onChangeText={(text) => setNewFriendData({...newFriendData, name: text})}
+          />
+          <TextInput
+            style={styles.modalInput}
+            placeholder="Numéro de téléphone"
+            placeholderTextColor="#64748b"
+            value={newFriendData.phone}
+            onChangeText={(text) => setNewFriendData({...newFriendData, phone: text})}
+            keyboardType="phone-pad"
+          />
+          <TextInput
+            style={styles.modalInput}
+            placeholder="Nom d'utilisateur"
+            placeholderTextColor="#64748b"
+            value={newFriendData.username}
+            onChangeText={(text) => setNewFriendData({...newFriendData, username: text})}
+            autoCapitalize="none"
+          />
+
+          <View style={styles.modalActions}>
+            <Pressable style={styles.cancelBtn} onPress={() => setShowAddModal(false)}>
+              <Text style={styles.cancelBtnText}>Annuler</Text>
+            </Pressable>
+            <Pressable style={styles.confirmBtn} onPress={handleAddFriend}>
+              <Text style={styles.confirmBtnText}>Ajouter</Text>
+            </Pressable>
+          </View>
+        </View>
+      </View>
+    </Modal>
   );
 
   const renderUserCard = (user, showFollowers = false) => (
@@ -282,6 +347,13 @@ export default function LobaFriendsScreen({ onBack, onNavigate }) {
         {activeTab === 'followers' && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Abonnés ({followers.length})</Text>
+            {isLoaded && activeTab === 'followers' && FOLLOWERS.length === 0 && (
+              <View style={styles.emptyState}>
+                <MaterialCommunityIcons name="account-group-outline" size={64} color="#1e293b" />
+                <Text style={styles.emptyText}>Aucun abonné pour le moment</Text>
+                <Text style={styles.emptySubtext}>Partagez votre profil pour gagner des abonnés !</Text>
+              </View>
+            )}
             {followers.length === 0 ? (
               <View style={styles.emptyState}>
                 <MaterialCommunityIcons name="account-group-outline" size={64} color="#1c2a38" />
@@ -325,7 +397,7 @@ export default function LobaFriendsScreen({ onBack, onNavigate }) {
 
       <LobaBottomNav activeTab="friends" onNavigate={(tab) => {
         if (tab === 'home') onNavigate?.('loba_home');
-        else if (tab === 'create') onNavigate?.('loba_home');
+        else if (tab === 'create') onNavigate?.('loba_record');
         else if (tab === 'messages') onNavigate?.('loba_messages');
         else if (tab === 'profile') onNavigate?.('loba_profile');
       }} />

@@ -64,6 +64,7 @@ import LobaFollowingScreen from './src/features/loba/screens/LobaFollowingScreen
 import LobaProfileScreen from './src/features/loba/screens/LobaProfileScreen';
 import LobaStoriesScreen from './src/features/loba/screens/LobaStoriesScreen';
 import LobaRecordScreen from './src/features/loba/screens/LobaRecordScreen';
+import LobaPreviewScreen from './src/features/loba/screens/LobaPreviewScreen';
 import LobaFriendsScreen from './src/features/loba/screens/LobaFriendsScreen';
 import LobaMessagesScreen from './src/features/loba/screens/LobaMessagesScreen';
 import LobaSettingsScreen from './src/features/loba/screens/LobaSettingsScreen';
@@ -465,6 +466,7 @@ export default function App() {
       <SellerProfileScreen
         onBack={() => goBack()}
         onOpenAddProduct={() => navigate('market_add_product')}
+        onEditProduct={(product) => navigate('market_add_product', { product })}
       />
     );
   }
@@ -473,6 +475,7 @@ export default function App() {
       <AddProductScreen
         onBack={() => goBack()}
         onOpenSellerProfile={() => navigate('market_seller')}
+        productToEdit={screenParams?.product}
       />
     );
   }
@@ -660,6 +663,39 @@ export default function App() {
       <LobaRecordScreen
         onBack={() => goBack()}
         onClose={() => navigate('loba_home')}
+        onCapture={(media) => navigate('loba_preview', { media })}
+      />
+    );
+  }
+  if (screen === 'loba_preview') {
+    content = (
+      <LobaPreviewScreen
+        media={screenParams?.media}
+        onBack={() => goBack()}
+        onUpload={async (data) => {
+          try {
+            await database.write(async () => {
+              await database.get('loba_posts').create(post => {
+                post.username = '@Moi';
+                post.avatar = 'https://lh3.googleusercontent.com/a/ACg8ocL-K84-0Q0Q0Q0Q0Q=s96-c';
+                post.content = data.caption || '';
+                if (data.type === 'video') {
+                  post.videoUrl = data.uri;
+                } else {
+                  post.imageUrl = data.uri;
+                }
+                post.likes = 0;
+                post.comments = 0;
+                post.isLiked = false;
+                post.filterColor = data.filter?.color || 'transparent';
+              });
+            });
+            resetTo('loba_home');
+          } catch (error) {
+            console.error('Upload failed:', error);
+            Alert.alert('Erreur', 'Impossible de publier votre contenu.');
+          }
+        }}
       />
     );
   }

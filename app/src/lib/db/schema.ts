@@ -1,7 +1,7 @@
 import { appSchema, tableSchema } from '@nozbe/watermelondb'
 
 export const schema = appSchema({
-  version: 4,
+  version: 6,
   tables: [
     tableSchema({
       name: 'profiles',
@@ -99,6 +99,7 @@ export const schema = appSchema({
         { name: 'likes', type: 'number' },
         { name: 'comments', type: 'number' },
         { name: 'is_liked', type: 'boolean' },
+        { name: 'filter_color', type: 'string', isOptional: true },
         { name: 'created_at', type: 'number' },
         { name: 'updated_at', type: 'number' },
       ],
@@ -109,6 +110,20 @@ export const schema = appSchema({
         { name: 'role', type: 'string' },
         { name: 'content', type: 'string' },
         { name: 'created_at', type: 'number' },
+      ],
+    }),
+    tableSchema({
+      name: 'loba_friends',
+      columns: [
+        { name: 'friend_id', type: 'string', isIndexed: true },
+        { name: 'name', type: 'string' },
+        { name: 'username', type: 'string', isIndexed: true },
+        { name: 'phone', type: 'string', isIndexed: true },
+        { name: 'avatar', type: 'string', isOptional: true },
+        { name: 'status', type: 'string' }, // online, mesh, direct, offline
+        { name: 'last_seen', type: 'number' },
+        { name: 'created_at', type: 'number' },
+        { name: 'updated_at', type: 'number' },
       ],
     }),
   ],

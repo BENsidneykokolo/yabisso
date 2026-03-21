@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -9,11 +9,24 @@ import {
   SafeAreaView,
   Modal,
   TouchableOpacity,
+  Image,
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useCart } from '../context/CartContext';
 import { useVoiceSearch } from '../../../hooks/useVoiceSearch';
 import { usePhotoSearch } from '../../../hooks/usePhotoSearch';
+import * as SecureStore from 'expo-secure-store';
+
+const CATEGORIES_MAP = {
+  'fruits': 'Fruits & Légumes',
+  'electronics': 'Électronique',
+  'fashion': 'Mode',
+  'home': 'Maison',
+  'beauty': 'Beauté',
+  'sports': 'Sports',
+  'services': 'Services',
+  'other': 'Autres',
+};
 
 const categories = [
   { name: 'Tout', icon: 'apps' },
@@ -43,7 +56,7 @@ const brands = [
   { name: 'Nintendo', icon: 'gamepad-variant' },
 ];
 
-const products = [
+const MOCK_PRODUCTS = [
   { id: 1, name: 'iPhone 15 Pro Max', brand: 'Apple', price: '950000', isNew: true, category: 'Téléphones' },
   { id: 2, name: 'Samsung Galaxy S24 Ultra', brand: 'Samsung', price: '780000', isNew: true, category: 'Téléphones' },
   { id: 3, name: 'MacBook Pro M3', brand: 'Apple', price: '1200000', isNew: true, category: 'Ordinateurs' },
@@ -81,6 +94,38 @@ export default function CategoryPageScreen({ onBack, onNavigate, favorites = [],
   const [showVoiceModal, setShowVoiceModal] = useState(false);
   const [showCameraModal, setShowCameraModal] = useState(false);
   const [searchText, setSearchText] = useState('');
+  const [allProducts, setAllProducts] = useState([]);
+
+  useEffect(() => {
+    loadSellerProducts();
+  }, []);
+
+  const loadSellerProducts = async () => {
+    try {
+      const saved = await SecureStore.getItemAsync('seller_products');
+      if (saved) {
+        const sellerProducts = JSON.parse(saved);
+        const formattedProducts = sellerProducts
+          .filter(p => p.isVisible !== false)
+          .map(p => ({
+            id: p.id,
+            name: p.name,
+            brand: 'Ma Boutique',
+            price: p.price.toString(),
+            isNew: p.tags?.includes('Nouveau'),
+            category: CATEGORIES_MAP[p.category] || p.categoryName || 'Autres',
+            description: p.description,
+            photos: p.photos,
+            stock: p.stock,
+            delivery: p.delivery,
+            tags: p.tags,
+          }));
+        setAllProducts(formattedProducts);
+      }
+    } catch (e) {
+      console.log('Error loading seller products:', e);
+    }
+  };
   const [showCartPopup, setShowCartPopup] = useState(false);
   const [addedProduct, setAddedProduct] = useState(null);
 
@@ -117,11 +162,11 @@ export default function CategoryPageScreen({ onBack, onNavigate, favorites = [],
   };
 
   const filteredProducts = searchText.trim()
-    ? products.filter(p =>
+    ? allProducts.filter(p =>
       p.name.toLowerCase().includes(searchText.toLowerCase()) ||
       p.brand.toLowerCase().includes(searchText.toLowerCase())
     )
-    : products.filter(p => {
+    : allProducts.filter(p => {
         const categoryMatch = selectedCategory === 'Tout' || p.category === selectedCategory;
         const brandMatch = selectedBrand === 'Tout' || p.brand === selectedBrand;
         return categoryMatch && brandMatch;
@@ -244,6 +289,11 @@ export default function CategoryPageScreen({ onBack, onNavigate, favorites = [],
                       onPress={() => onNavigate?.('product_details', { product })}
                     >
                       <View style={styles.productImage}>
+                        {product.photos && product.photos[0] ? (
+                          <Image source={{ uri: product.photos[0] }} style={styles.productImg} />
+                        ) : (
+                          <MaterialCommunityIcons name="image" size={32} color="#4B5563" />
+                        )}
                         {product.isNew && (
                           <View style={styles.newBadge}>
                             <MaterialCommunityIcons name="lightning-bolt" size={12} color="#fff" />
@@ -273,7 +323,11 @@ export default function CategoryPageScreen({ onBack, onNavigate, favorites = [],
                             style={styles.addBtn}
                             onPress={(e) => {
                               e.stopPropagation();
-                              const productToAdd = { ...product, price: parseInt(product.price) || 0 };
+                              const productToAdd = { 
+                                ...product, 
+                                price: parseInt(product.price) || 0,
+                                image: product.photos?.[0] || null
+                              };
                               addToCart(productToAdd, 1);
                               setAddedProduct(product);
                               setShowCartPopup(true);
@@ -309,6 +363,11 @@ export default function CategoryPageScreen({ onBack, onNavigate, favorites = [],
                       onPress={() => onNavigate?.('product_details', { product })}
                     >
                       <View style={styles.productImage}>
+                        {product.photos && product.photos[0] ? (
+                          <Image source={{ uri: product.photos[0] }} style={styles.productImg} />
+                        ) : (
+                          <MaterialCommunityIcons name="image" size={32} color="#4B5563" />
+                        )}
                         {product.isNew && (
                           <View style={styles.newBadge}>
                             <MaterialCommunityIcons name="lightning-bolt" size={12} color="#fff" />
@@ -338,7 +397,11 @@ export default function CategoryPageScreen({ onBack, onNavigate, favorites = [],
                             style={styles.addBtn}
                             onPress={(e) => {
                               e.stopPropagation();
-                              const productToAdd = { ...product, price: parseInt(product.price) || 0 };
+                              const productToAdd = { 
+                                ...product, 
+                                price: parseInt(product.price) || 0,
+                                image: product.photos?.[0] || null
+                              };
                               addToCart(productToAdd, 1);
                               setAddedProduct(product);
                               setShowCartPopup(true);
@@ -764,6 +827,13 @@ const styles = StyleSheet.create({
     aspectRatio: 1,
     backgroundColor: '#324d67',
     position: 'relative',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  productImg: {
+    width: '100%',
+    height: '100%',
+    resizeMode: 'cover',
   },
   discountBadge: {
     position: 'absolute',

@@ -1,24 +1,225 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
+  Alert,
+  Image,
+  Modal,
   Pressable,
   SafeAreaView,
   ScrollView,
   StyleSheet,
   Text,
   TextInput,
+  TouchableOpacity,
   View,
 } from 'react-native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import * as SecureStore from 'expo-secure-store';
+import * as ImagePicker from 'expo-image-picker';
 
-const photoSlots = ['Couverture', 'Detail 1', 'Detail 2'];
-const tags = ['Bio', 'Frais', 'Local', 'Promo'];
-const deliveryOptions = [
+const CATEGORIES = [
+  { id: 'fruits', name: 'Fruits & Légumes', icon: 'food-apple' },
+  { id: 'electronics', name: 'Électronique', icon: 'cellphone' },
+  { id: 'fashion', name: 'Mode & Vêtements', icon: 'tshirt-crew' },
+  { id: 'home', name: 'Maison & Décoration', icon: 'home' },
+  { id: 'beauty', name: 'Beauté & Santé', icon: 'spa' },
+  { id: 'sports', name: 'Sports & Loisirs', icon: 'basketball' },
+  { id: 'services', name: 'Services', icon: 'account-wrench' },
+  { id: 'other', name: 'Autres', icon: 'dots-horizontal' },
+];
+
+const TAGS = ['Bio', 'Frais', 'Local', 'Promo', 'Nouveau', 'Top Vente'];
+
+const DELIVERY_OPTIONS = [
   { key: 'pickup', label: 'Retrait', icon: 'storefront-outline' },
   { key: 'delivery', label: 'Livraison', icon: 'truck-outline' },
   { key: 'instant', label: 'Express', icon: 'flash-outline' },
 ];
 
-export default function AddProductScreen({ onBack, onOpenSellerProfile }) {
+export default function AddProductScreen({ onBack, onOpenSellerProfile, productToEdit }) {
+  const [productName, setProductName] = useState('');
+  const [category, setCategory] = useState(null);
+  const [price, setPrice] = useState('');
+  const [stock, setStock] = useState('');
+  const [description, setDescription] = useState('');
+  const [selectedTags, setSelectedTags] = useState([]);
+  const [deliveryOptions, setDeliveryOptions] = useState(['pickup']);
+  const [isVisible, setIsVisible] = useState(true);
+  const [photos, setPhotos] = useState([]);
+  const [showCategoryPicker, setShowCategoryPicker] = useState(false);
+  const [shopInfo, setShopInfo] = useState({ name: 'Ma Boutique', location: 'Centre-ville' });
+  const [products, setProducts] = useState([]);
+
+  useEffect(() => {
+    loadShopInfo();
+    loadProducts();
+    if (productToEdit) {
+      populateForm(productToEdit);
+    }
+  }, [productToEdit]);
+
+  const loadShopInfo = async () => {
+    try {
+      const saved = await SecureStore.getItemAsync('seller_shop_info');
+      if (saved) {
+        setShopInfo(JSON.parse(saved));
+      }
+    } catch (e) {
+      console.log('Error loading shop info:', e);
+    }
+  };
+
+  const loadProducts = async () => {
+    try {
+      const saved = await SecureStore.getItemAsync('seller_products');
+      if (saved) {
+        setProducts(JSON.parse(saved));
+      }
+    } catch (e) {
+      console.log('Error loading products:', e);
+    }
+  };
+
+  const populateForm = (product) => {
+    setProductName(product.name || '');
+    setCategory(product.category ? CATEGORIES.find(c => c.id === product.category) : null);
+    setPrice(product.price?.toString() || '');
+    setStock(product.stock?.toString() || '');
+    setDescription(product.description || '');
+    setSelectedTags(product.tags || []);
+    setDeliveryOptions(product.delivery || ['pickup']);
+    setIsVisible(product.isVisible ?? true);
+    setPhotos(product.photos || []);
+  };
+
+  const pickImage = async (index) => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Permission requise', 'Autorisez l\'accès à la galerie pour ajouter des photos.');
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 0.8,
+    });
+
+    if (!result.canceled) {
+      const newPhotos = [...photos];
+      newPhotos[index] = result.assets[0].uri;
+      setPhotos(newPhotos);
+    }
+  };
+
+  const takePhoto = async (index) => {
+    const { status } = await ImagePicker.requestCameraPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Permission requise', 'Autorisez l\'accès à la caméra pour prendre des photos.');
+      return;
+    }
+
+    const result = await ImagePicker.launchCameraAsync({
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 0.8,
+    });
+
+    if (!result.canceled) {
+      const newPhotos = [...photos];
+      newPhotos[index] = result.assets[0].uri;
+      setPhotos(newPhotos);
+    }
+  };
+
+  const showPhotoOptions = (index) => {
+    Alert.alert(
+      'Ajouter une photo',
+      'Choisissez comment ajouter une photo',
+      [
+        { text: 'Prendre une photo', onPress: () => takePhoto(index) },
+        { text: 'Choisir dans la galerie', onPress: () => pickImage(index) },
+        { text: 'Annuler', style: 'cancel' },
+      ]
+    );
+  };
+
+  const toggleTag = (tag) => {
+    if (selectedTags.includes(tag)) {
+      setSelectedTags(selectedTags.filter(t => t !== tag));
+    } else if (selectedTags.length < 3) {
+      setSelectedTags([...selectedTags, tag]);
+    }
+  };
+
+  const toggleDelivery = (option) => {
+    if (deliveryOptions.includes(option)) {
+      setDeliveryOptions(deliveryOptions.filter(o => o !== option));
+    } else {
+      setDeliveryOptions([...deliveryOptions, option]);
+    }
+  };
+
+  const validateForm = () => {
+    if (!productName.trim()) {
+      Alert.alert('Erreur', 'Veuillez entrer le nom du produit');
+      return false;
+    }
+    if (!category) {
+      Alert.alert('Erreur', 'Veuillez sélectionner une catégorie');
+      return false;
+    }
+    if (!price || parseFloat(price) <= 0) {
+      Alert.alert('Erreur', 'Veuillez entrer un prix valide');
+      return false;
+    }
+    if (!stock || parseInt(stock) < 0) {
+      Alert.alert('Erreur', 'Veuillez entrer une quantité en stock');
+      return false;
+    }
+    return true;
+  };
+
+  const saveProduct = async (publish = true) => {
+    if (!validateForm()) return;
+
+    const newProduct = {
+      id: productToEdit?.id || `prod_${Date.now()}`,
+      name: productName.trim(),
+      category: category.id,
+      categoryName: category.name,
+      price: parseFloat(price),
+      stock: parseInt(stock),
+      description: description.trim(),
+      tags: selectedTags,
+      delivery: deliveryOptions,
+      isVisible: publish ? isVisible : false,
+      photos: photos,
+      createdAt: productToEdit?.createdAt || new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    let updatedProducts;
+    if (productToEdit) {
+      updatedProducts = products.map(p => p.id === productToEdit.id ? newProduct : p);
+    } else {
+      updatedProducts = [newProduct, ...products];
+    }
+
+    try {
+      await SecureStore.setItemAsync('seller_products', JSON.stringify(updatedProducts));
+      setProducts(updatedProducts);
+      
+      Alert.alert(
+        'Succès',
+        publish ? 'Produit publié avec succès!' : 'Produit enregistré en brouillon',
+        [{ text: 'OK', onPress: onBack }]
+      );
+    } catch (e) {
+      Alert.alert('Erreur', 'Impossible de sauvegarder le produit');
+    }
+  };
+
   return (
     <SafeAreaView style={styles.root}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
@@ -26,7 +227,9 @@ export default function AddProductScreen({ onBack, onOpenSellerProfile }) {
           <Pressable style={styles.backButton} onPress={onBack}>
             <Ionicons name="chevron-back" size={22} color="#E6EDF3" />
           </Pressable>
-          <Text style={styles.headerTitle}>Nouveau produit</Text>
+          <Text style={styles.headerTitle}>
+            {productToEdit ? 'Modifier le produit' : 'Nouveau produit'}
+          </Text>
           <Pressable style={styles.headerChip} onPress={onOpenSellerProfile}>
             <Text style={styles.headerChipText}>Profil</Text>
           </Pressable>
@@ -37,8 +240,8 @@ export default function AddProductScreen({ onBack, onOpenSellerProfile }) {
             <MaterialCommunityIcons name="storefront" size={18} color="#0E151B" />
           </View>
           <View style={styles.shopInfo}>
-            <Text style={styles.shopTitle}>Marche Yabisso</Text>
-            <Text style={styles.shopMeta}>Boutique active · Centre-ville</Text>
+            <Text style={styles.shopTitle}>{shopInfo.name}</Text>
+            <Text style={styles.shopMeta}>Boutique active · {shopInfo.location}</Text>
           </View>
           <View style={styles.statusChip}>
             <Text style={styles.statusText}>OUVERT</Text>
@@ -47,121 +250,211 @@ export default function AddProductScreen({ onBack, onOpenSellerProfile }) {
 
         <View style={styles.sectionRow}>
           <Text style={styles.sectionTitle}>Photos du produit</Text>
-          <Text style={styles.sectionLink}>3/5</Text>
+          <Text style={styles.sectionLink}>{photos.filter(p => p).length}/5</Text>
         </View>
         <View style={styles.photoRow}>
-          {photoSlots.map((slot) => (
-            <View key={slot} style={styles.photoCard}>
-              <View style={styles.photoIcon}>
-                <Ionicons name="image" size={18} color="#2BEE79" />
-              </View>
-              <Text style={styles.photoLabel}>{slot}</Text>
-              <Pressable style={styles.photoButton}>
-                <Text style={styles.photoButtonText}>Ajouter</Text>
-              </Pressable>
-            </View>
+          {[0, 1, 2].map((index) => (
+            <TouchableOpacity 
+              key={index} 
+              style={styles.photoCard}
+              onPress={() => showPhotoOptions(index)}
+            >
+              {photos[index] ? (
+                <Image source={{ uri: photos[index] }} style={styles.photoImage} />
+              ) : (
+                <>
+                  <View style={styles.photoIcon}>
+                    <Ionicons name="image" size={18} color="#2BEE79" />
+                  </View>
+                  <Text style={styles.photoLabel}>
+                    {index === 0 ? 'Couverture' : `Photo ${index + 1}`}
+                  </Text>
+                  <Pressable style={styles.photoButton}>
+                    <Text style={styles.photoButtonText}>Ajouter</Text>
+                  </Pressable>
+                </>
+              )}
+            </TouchableOpacity>
           ))}
         </View>
 
         <Text style={styles.sectionTitle}>Infos produit</Text>
         <View style={styles.inputCard}>
-          <Text style={styles.inputLabel}>Nom du produit</Text>
+          <Text style={styles.inputLabel}>Nom du produit *</Text>
           <TextInput
             placeholder="Ex: Mangues bio"
             placeholderTextColor="#6B7A8B"
             style={styles.textInput}
+            value={productName}
+            onChangeText={setProductName}
           />
           <View style={styles.inputDivider} />
-          <Text style={styles.inputLabel}>Categorie</Text>
-          <Pressable style={styles.selectInput}>
-            <Text style={styles.selectValue}>Fruits & Legumes</Text>
+          <Text style={styles.inputLabel}>Categorie *</Text>
+          <TouchableOpacity 
+            style={styles.selectInput}
+            onPress={() => setShowCategoryPicker(true)}
+          >
+            <Text style={[styles.selectValue, !category && styles.selectPlaceholder]}>
+              {category ? category.name : 'Sélectionner une catégorie'}
+            </Text>
             <Ionicons name="chevron-down" size={16} color="#94A3B8" />
-          </Pressable>
+          </TouchableOpacity>
           <View style={styles.inputDivider} />
           <View style={styles.inlineRow}>
             <View style={styles.inlineField}>
-              <Text style={styles.inputLabel}>Prix</Text>
+              <Text style={styles.inputLabel}>Prix (FCFA) *</Text>
               <TextInput
                 placeholder="1500"
                 placeholderTextColor="#6B7A8B"
                 style={styles.textInput}
                 keyboardType="numeric"
+                value={price}
+                onChangeText={setPrice}
               />
             </View>
             <View style={styles.inlineField}>
-              <Text style={styles.inputLabel}>Stock</Text>
+              <Text style={styles.inputLabel}>Stock *</Text>
               <TextInput
                 placeholder="50"
                 placeholderTextColor="#6B7A8B"
                 style={styles.textInput}
                 keyboardType="numeric"
+                value={stock}
+                onChangeText={setStock}
               />
             </View>
           </View>
           <View style={styles.inputDivider} />
           <Text style={styles.inputLabel}>Description</Text>
           <TextInput
-            placeholder="Decrivez votre produit..."
+            placeholder="Décrivez votre produit..."
             placeholderTextColor="#6B7A8B"
             style={[styles.textInput, styles.textArea]}
             multiline
+            value={description}
+            onChangeText={setDescription}
           />
         </View>
 
-        <Text style={styles.sectionTitle}>Tags</Text>
+        <Text style={styles.sectionTitle}>Tags (max 3)</Text>
         <View style={styles.tagsRow}>
-          {tags.map((tag, index) => (
-            <View key={tag} style={[styles.tagChip, index === 0 && styles.tagChipActive]}>
-              <Text style={[styles.tagText, index === 0 && styles.tagTextActive]}>
+          {TAGS.map((tag) => (
+            <TouchableOpacity
+              key={tag}
+              style={[
+                styles.tagChip,
+                selectedTags.includes(tag) && styles.tagChipActive
+              ]}
+              onPress={() => toggleTag(tag)}
+            >
+              <Text style={[
+                styles.tagText,
+                selectedTags.includes(tag) && styles.tagTextActive
+              ]}>
                 {tag}
               </Text>
-            </View>
+            </TouchableOpacity>
           ))}
         </View>
 
-        <Text style={styles.sectionTitle}>Logistique</Text>
+        <Text style={styles.sectionTitle}>Options de livraison</Text>
         <View style={styles.optionsRow}>
-          {deliveryOptions.map((option, index) => (
-            <View
+          {DELIVERY_OPTIONS.map((option) => (
+            <TouchableOpacity
               key={option.key}
-              style={[styles.optionCard, index === 1 && styles.optionCardActive]}
+              style={[
+                styles.optionCard,
+                deliveryOptions.includes(option.key) && styles.optionCardActive
+              ]}
+              onPress={() => toggleDelivery(option.key)}
             >
               <Ionicons
                 name={option.icon}
                 size={18}
-                color={index === 1 ? '#0E151B' : '#94A3B8'}
+                color={deliveryOptions.includes(option.key) ? '#0E151B' : '#94A3B8'}
               />
-              <Text
-                style={[
-                  styles.optionLabel,
-                  index === 1 && styles.optionLabelActive,
-                ]}
-              >
+              <Text style={[
+                styles.optionLabel,
+                deliveryOptions.includes(option.key) && styles.optionLabelActive
+              ]}>
                 {option.label}
               </Text>
-            </View>
+            </TouchableOpacity>
           ))}
         </View>
 
         <View style={styles.switchRow}>
           <View>
-            <Text style={styles.sectionTitle}>Visibilite</Text>
-            <Text style={styles.switchHint}>Produit visible immediatement</Text>
+            <Text style={styles.sectionTitle}>Visibilité</Text>
+            <Text style={styles.switchHint}>
+              {isVisible ? 'Produit visible immédiatement' : 'Produit masqué'}
+            </Text>
           </View>
-          <View style={styles.switchTrack}>
-            <View style={styles.switchThumb} />
-          </View>
+          <TouchableOpacity
+            style={[styles.switchTrack, isVisible && styles.switchTrackActive]}
+            onPress={() => setIsVisible(!isVisible)}
+          >
+            <View style={[styles.switchThumb, isVisible && styles.switchThumbActive]} />
+          </TouchableOpacity>
         </View>
 
         <View style={styles.footerButtons}>
-          <Pressable style={styles.primaryButton}>
-            <Text style={styles.primaryButtonText}>Publier le produit</Text>
-          </Pressable>
-          <Pressable style={styles.secondaryButton}>
+          <TouchableOpacity 
+            style={styles.primaryButton}
+            onPress={() => saveProduct(true)}
+          >
+            <Text style={styles.primaryButtonText}>
+              {productToEdit ? 'Mettre à jour' : 'Publier le produit'}
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity 
+            style={styles.secondaryButton}
+            onPress={() => saveProduct(false)}
+          >
             <Text style={styles.secondaryButtonText}>Enregistrer brouillon</Text>
-          </Pressable>
+          </TouchableOpacity>
         </View>
       </ScrollView>
+
+      <Modal visible={showCategoryPicker} transparent animationType="slide">
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Choisir une catégorie</Text>
+              <TouchableOpacity onPress={() => setShowCategoryPicker(false)}>
+                <Ionicons name="close" size={24} color="#fff" />
+              </TouchableOpacity>
+            </View>
+            <ScrollView>
+              {CATEGORIES.map((cat) => (
+                <TouchableOpacity
+                  key={cat.id}
+                  style={[
+                    styles.categoryItem,
+                    category?.id === cat.id && styles.categoryItemActive
+                  ]}
+                  onPress={() => {
+                    setCategory(cat);
+                    setShowCategoryPicker(false);
+                  }}
+                >
+                  <MaterialCommunityIcons 
+                    name={cat.icon} 
+                    size={22} 
+                    color={category?.id === cat.id ? '#2BEE79' : '#94A3B8'} 
+                  />
+                  <Text style={[
+                    styles.categoryText,
+                    category?.id === cat.id && styles.categoryTextActive
+                  ]}>
+                    {cat.name}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -432,8 +725,67 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     backgroundColor: '#0E151B',
   },
+  switchTrackActive: {
+    backgroundColor: '#2BEE79',
+    alignItems: 'flex-end',
+  },
+  switchThumbActive: {
+    backgroundColor: '#fff',
+  },
   footerButtons: {
     marginTop: 28,
+  },
+  selectPlaceholder: {
+    color: '#6B7A8B',
+  },
+  photoImage: {
+    width: '100%',
+    height: 60,
+    borderRadius: 12,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    justifyContent: 'flex-end',
+  },
+  modalContent: {
+    backgroundColor: '#1a2633',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    paddingBottom: 40,
+    maxHeight: '70%',
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255, 255, 255, 0.08)',
+  },
+  modalTitle: {
+    color: '#F8FAFC',
+    fontSize: 18,
+    fontWeight: '700',
+  },
+  categoryItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255, 255, 255, 0.05)',
+  },
+  categoryItemActive: {
+    backgroundColor: 'rgba(43, 238, 121, 0.1)',
+  },
+  categoryText: {
+    color: '#94A3B8',
+    fontSize: 15,
+    marginLeft: 12,
+  },
+  categoryTextActive: {
+    color: '#2BEE79',
+    fontWeight: '600',
   },
   primaryButton: {
     backgroundColor: '#2BEE79',

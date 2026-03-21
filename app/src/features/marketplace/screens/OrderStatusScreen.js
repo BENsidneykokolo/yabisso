@@ -9,34 +9,30 @@ import {
   Image,
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useOrders } from '../context/OrderContext';
 
-const orderData = {
-  id: '2409',
-  product: {
-    name: 'Sony WH-1000XM4 Noise Canceling Headphones',
-    price: 185000,
-    quantity: 1,
-    color: 'Noir',
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBVHnI2E7BbxMti1WOy2PDAUOY8BT7djOwU9Zf3p5v4c4ITZFV90LcsdAUDAIhIn-qEG-RMqNl2ksAiFpg_AWFpOaVqN1GCwGaoZKRal_afEncyqR5kogDP5PMoIv-l4yJ3Rp8SL-agO5a9rFVILMqbXAUZjVYngfpDlPv0RoQAq2b43GP70KWv87yITyZSIUznKS8Y0rkFuuZHps6LmNB5NA7aUHDKzzAoKKyoJVdiT9f_hCujIybrFacoJWo2J24Ie22o7n7s',
-  },
-  status: 'in_transit',
-  timeline: [
-    { step: 'placed', title: 'Commande passée', date: '20 oct, 10:30', completed: true },
-    { step: 'payment', title: 'Paiement confirmé', date: '20 oct, 10:35', completed: true },
-    { step: 'transit', title: 'En cours', date: '21 oct, 08:00 - En route vers le hub', completed: true, active: true },
-    { step: 'delivered', title: 'Livré', date: 'Estimé 24 oct', completed: false },
-  ],
-  delivery: {
-    arrivingBy: 'Mardi, 24 oct',
-    addressType: 'Maison',
-    address: '12 Avenue des Ambassades,\nGombe, Kinshasa',
-  },
-};
-
-export default function OrderStatusScreen({ onBack, onNavigate }) {
-  const formatPrice = (price) => {
-    return price.toLocaleString('fr-FR') + ' XAF';
+export default function OrderStatusScreen({ onBack, onNavigate, route }) {
+  const { orders } = useOrders();
+  const orderId = route?.params?.orderId;
+  const order = orders.find(o => o.id === orderId) || {
+    id: '####',
+    products: [],
+    status: 'pending',
+    timeline: [],
+    delivery: { arrivingBy: 'Calcul en cours...', addressType: 'Chargement...', address: '...' }
   };
+
+  const formatPrice = (price) => {
+    return (price || 0).toLocaleString('fr-FR') + ' XAF';
+  };
+
+  // Timeline Mock data if not present
+  const timeline = order.timeline?.length > 0 ? order.timeline : [
+    { step: 'placed', title: 'Commande passée', date: order.date || 'Aujourd\'hui', completed: true },
+    { step: 'payment', title: 'Paiement confirmé', date: 'Confirmation en cours', completed: true },
+    { step: 'transit', title: 'En cours', date: 'Préparation du colis', completed: true, active: true },
+    { step: 'delivered', title: 'Livré', date: 'Bientôt disponible', completed: false },
+  ];
 
   return (
     <SafeAreaView style={styles.container}>
@@ -45,7 +41,7 @@ export default function OrderStatusScreen({ onBack, onNavigate }) {
         <Pressable onPress={onBack} style={styles.backBtn}>
           <MaterialCommunityIcons name="arrow-left" size={24} color="#fff" />
         </Pressable>
-        <Text style={styles.headerTitle}>Commande #{orderData.id}</Text>
+        <Text style={styles.headerTitle}>Commande #{order.id}</Text>
         <Pressable style={styles.helpBtn}>
           <MaterialCommunityIcons name="help-circle-outline" size={24} color="#92adc9" />
         </Pressable>
@@ -55,24 +51,44 @@ export default function OrderStatusScreen({ onBack, onNavigate }) {
         {/* Offline Context */}
         <View style={styles.offlineContext}>
           <MaterialCommunityIcons name="wifi-off" size={16} color="#92adc9" />
-          <Text style={styles.offlineText}>Dernière mise à jour: il y a 10 min</Text>
+          <Text style={styles.offlineText}>Dernière mise à jour: à l'instant</Text>
         </View>
 
-        {/* Product Card */}
-        <View style={styles.productCard}>
-          <Image source={{ uri: orderData.product.image }} style={styles.productImage} />
-          <View style={styles.productInfo}>
-            <Text style={styles.productName} numberOfLines={2}>
-              {orderData.product.name}
-            </Text>
-            <Text style={styles.productVariant}>
-              Qté: {orderData.product.quantity} • Couleur: {orderData.product.color}
-            </Text>
-            <Text style={styles.productPrice}>
-              {formatPrice(orderData.product.price)}
-            </Text>
+        {/* Products Section */}
+        {order.products.map((product, index) => (
+          <View key={index} style={styles.productCard}>
+            <Image source={{ uri: product.image || 'https://via.placeholder.com/90' }} style={styles.productImage} />
+            <View style={styles.productInfo}>
+              <View style={styles.sellerCompact}>
+                <Image 
+                  source={{ uri: product.sellerAvatar || 'https://via.placeholder.com/16' }} 
+                  style={styles.sellerMiniAvatar} 
+                />
+                <Text style={styles.productBrand}>{product.brand || 'Ma Boutique'}</Text>
+                {product.sellerRating && (
+                  <View style={styles.sellerRating}>
+                    <MaterialCommunityIcons name="star" size={10} color="#eab308" />
+                    <Text style={styles.sellerRatingText}>{product.sellerRating}</Text>
+                  </View>
+                )}
+              </View>
+              <Text style={styles.productName} numberOfLines={2}>
+                {product.name}
+              </Text>
+              {product.description && (
+                <Text style={styles.productDescription} numberOfLines={1}>
+                  {product.description}
+                </Text>
+              )}
+              <Text style={styles.productVariant}>
+                Qté: {product.quantity} • {product.selectedColor || 'N/A'}{product.selectedModel ? ` • ${product.selectedModel}` : ''}
+              </Text>
+              <Text style={styles.productPrice}>
+                {formatPrice(product.negotiatedPrice || product.price)}
+              </Text>
+            </View>
           </View>
-        </View>
+        ))}
 
         {/* Map Preview */}
         <View style={styles.mapPreview}>
@@ -85,7 +101,7 @@ export default function OrderStatusScreen({ onBack, onNavigate }) {
             </View>
             <View style={styles.mapInfo}>
               <Text style={styles.mapLabel}>Position actuelle</Text>
-              <Text style={styles.mapLocation}>Boulevard du 30 Juin, Kinshasa</Text>
+              <Text style={styles.mapLocation}>Douala, Akwa</Text>
             </View>
           </View>
         </View>
@@ -94,7 +110,7 @@ export default function OrderStatusScreen({ onBack, onNavigate }) {
         <View style={styles.timelineCard}>
           <Text style={styles.timelineTitle}>Chronologie</Text>
 
-          {orderData.timeline.map((item, index) => (
+          {timeline.map((item, index) => (
             <View key={item.step} style={styles.timelineItem}>
               <View style={styles.timelineLeft}>
                 <View style={[
@@ -112,7 +128,7 @@ export default function OrderStatusScreen({ onBack, onNavigate }) {
                     <MaterialCommunityIcons name="package" size={16} color="#64748b" />
                   )}
                 </View>
-                {index < orderData.timeline.length - 1 && (
+                {index < timeline.length - 1 && (
                   <View style={[
                     styles.timelineLine,
                     item.completed && styles.timelineLineCompleted,
@@ -141,15 +157,15 @@ export default function OrderStatusScreen({ onBack, onNavigate }) {
         {/* Delivery Details */}
         <View style={styles.deliveryCard}>
           <View style={styles.deliveryRow}>
-            <Text style={styles.deliveryLabel}>Arrive le</Text>
-            <Text style={styles.deliveryValue}>{orderData.delivery.arrivingBy}</Text>
+            <Text style={styles.deliveryLabel}>Mode</Text>
+            <Text style={styles.deliveryValue}>{order.deliveryMethod || 'Express'}</Text>
           </View>
           <View style={styles.deliveryDivider} />
           <View style={styles.deliveryRow}>
             <Text style={styles.deliveryLabel}>Livrer à</Text>
             <View style={styles.deliveryAddress}>
-              <Text style={styles.deliveryAddressType}>{orderData.delivery.addressType}</Text>
-              <Text style={styles.deliveryAddressText}>{orderData.delivery.address}</Text>
+              <Text style={styles.deliveryAddressType}>Mon Adresse</Text>
+              <Text style={styles.deliveryAddressText}>{order.seller || 'Yabisso Hub'}</Text>
             </View>
           </View>
         </View>
@@ -248,18 +264,55 @@ const styles = StyleSheet.create({
     flex: 1,
     marginLeft: 12,
     justifyContent: 'space-between',
-    paddingVertical: 4,
+    paddingVertical: 2,
+  },
+  sellerCompact: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 4,
+  },
+  sellerMiniAvatar: {
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    backgroundColor: '#324d67',
+  },
+  productBrand: {
+    fontSize: 11,
+    color: '#2BEE79',
+    fontWeight: '600',
+  },
+  sellerRating: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 2,
+    backgroundColor: 'rgba(0,0,0,0.3)',
+    paddingHorizontal: 4,
+    paddingVertical: 1,
+    borderRadius: 4,
+  },
+  sellerRatingText: {
+    fontSize: 9,
+    color: '#eab308',
+    fontWeight: 'bold',
   },
   productName: {
     fontSize: 14,
     fontWeight: 'bold',
     color: '#fff',
-    lineHeight: 20,
+    lineHeight: 18,
+  },
+  productDescription: {
+    fontSize: 11,
+    color: '#94a3b8',
+    marginTop: 2,
+    fontStyle: 'italic',
   },
   productVariant: {
-    fontSize: 13,
-    color: '#92adc9',
-    marginTop: 4,
+    fontSize: 12,
+    color: '#64748b',
+    marginTop: 2,
   },
   productPrice: {
     fontSize: 18,

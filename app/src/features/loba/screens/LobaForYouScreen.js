@@ -13,6 +13,7 @@ import {
   Share,
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { Video, ResizeMode } from 'expo-av';
 import withObservables from '@nozbe/with-observables';
 import { database } from '../../../lib/db';
 import LobaBottomNav from '../components/LobaBottomNav';
@@ -99,9 +100,36 @@ const forYouVideos = [
 
 const userInterests = ['Food', 'Tech', 'Music', 'Fashion', 'Sports', 'Travel', 'Comedy', 'Education'];
 
-function LobaForYouScreen({ onBack, onNavigate }) {
+function LobaForYouScreen({ onBack, onNavigate, videos = [] }) {
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
-  const [feedVideos, setFeedVideos] = useState(forYouVideos);
+  
+  const displayPosts = [
+    ...videos.map(p => ({
+      id: p.id,
+      username: p.username,
+      avatar: p.avatar,
+      video: p.videoUrl || p.imageUrl,
+      type: p.videoUrl ? 'video' : 'photo',
+      caption: p.content,
+      song: 'Original Sound - ' + p.username,
+      likes: p.likes,
+      comments: p.comments,
+      progress: 0,
+      liked: p.isLiked,
+      followed: false,
+      saved: false,
+      filterColor: p.filterColor,
+      tags: [],
+    })).reverse(),
+    ...forYouVideos.map(v => ({ ...v, type: 'video', filterColor: 'transparent' }))
+  ];
+
+  const [feedVideos, setFeedVideos] = useState(displayPosts);
+  
+  // Update local state when prop changes
+  React.useEffect(() => {
+    setFeedVideos(displayPosts);
+  }, [videos]);
   const [isShareModalVisible, setIsShareModalVisible] = useState(false);
   const [isCommentsModalVisible, setIsCommentsModalVisible] = useState(false);
   const [selectedVideo, setSelectedVideo] = useState(null);
@@ -167,7 +195,19 @@ function LobaForYouScreen({ onBack, onNavigate }) {
 
   const renderVideo = ({ item, index }) => (
     <View style={styles.videoContainer}>
-      <Image source={{ uri: item.video }} style={styles.videoBackground} />
+      {item.type === 'video' ? (
+        <Video
+          source={{ uri: item.video }}
+          style={styles.videoBackground}
+          resizeMode={ResizeMode.COVER}
+          shouldPlay={index === currentVideoIndex}
+          isLooping
+          isMuted={false}
+        />
+      ) : (
+        <Image source={{ uri: item.video }} style={styles.videoBackground} />
+      )}
+      <View style={[styles.filterOverlay, { backgroundColor: item.filterColor || 'transparent' }]} />
       <View style={styles.videoGradient} />
 
       <View style={styles.rightActions}>
@@ -354,7 +394,7 @@ function LobaForYouScreen({ onBack, onNavigate }) {
       <LobaBottomNav activeTab="home" onNavigate={(tab) => {
         if (tab === 'home') onNavigate?.('loba_home');
         else if (tab === 'friends') onNavigate?.('loba_friends');
-        else if (tab === 'create') onNavigate?.('loba_create');
+        else if (tab === 'create') onNavigate?.('loba_record');
         else if (tab === 'messages') onNavigate?.('loba_messages');
         else if (tab === 'profile') onNavigate?.('loba_profile');
       }} />
@@ -424,9 +464,15 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
   },
+  filterOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    pointerEvents: 'none',
+    zIndex: 5,
+  },
   videoGradient: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: 'rgba(0,0,0,0.2)',
+    zIndex: 6,
   },
   rightActions: {
     position: 'absolute',

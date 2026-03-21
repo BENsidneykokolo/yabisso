@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -9,6 +9,7 @@ import {
   SafeAreaView,
   Modal,
   TouchableOpacity,
+  Image,
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useCart } from '../context/CartContext';
@@ -16,6 +17,18 @@ import { useVoiceSearch } from '../../../hooks/useVoiceSearch';
 import { usePhotoSearch } from '../../../hooks/usePhotoSearch';
 import withObservables from '@nozbe/with-observables';
 import { database } from '../../../lib/db';
+import * as SecureStore from 'expo-secure-store';
+
+const CATEGORIES_MAP = {
+  'fruits': 'Fruits & Légumes',
+  'electronics': 'Électronique',
+  'fashion': 'Mode',
+  'home': 'Maison',
+  'beauty': 'Beauté',
+  'sports': 'Sports',
+  'services': 'Services',
+  'other': 'Autres',
+};
 
 const bottomNavItems = [
   { label: 'Marketplace', icon: 'store' },
@@ -48,7 +61,35 @@ function MarketplaceHomeScreen({ onBack, onNavigate, favorites = [], onToggleFav
   const [searchText, setSearchText] = useState('');
   const [showCartPopup, setShowCartPopup] = useState(false);
   const [addedProduct, setAddedProduct] = useState(null);
+  const [sellerProducts, setSellerProducts] = useState([]);
   
+  useEffect(() => {
+    loadSellerProducts();
+  }, []);
+
+  const loadSellerProducts = async () => {
+    try {
+      const saved = await SecureStore.getItemAsync('seller_products');
+      if (saved) {
+        const productsData = JSON.parse(saved);
+        const formatted = productsData
+          .filter(p => p.isVisible !== false)
+          .map(p => ({
+            id: p.id,
+            name: p.name,
+            brand: 'Ma Boutique',
+            price: p.price.toString(),
+            category: CATEGORIES_MAP[p.category] || p.categoryName || 'Autres',
+            isNew: p.tags?.includes('Nouveau'),
+            isPromo: p.tags?.includes('Promo'),
+            photos: p.photos,
+          }));
+        setSellerProducts(formatted);
+      }
+    } catch (e) {
+      console.log('Error loading seller products:', e);
+    }
+  };
   const { addToCart } = useCart();
 
   const { isListening, transcript, error: voiceError, start: startVoice, stop: stopVoice } = useVoiceSearch({
@@ -73,17 +114,18 @@ function MarketplaceHomeScreen({ onBack, onNavigate, favorites = [], onToggleFav
   };
 
   const filteredProducts = searchText.trim() 
-    ? products.filter(p => 
+    ? sellerProducts.filter(p => 
         p.name.toLowerCase().includes(searchText.toLowerCase()) ||
         p.brand.toLowerCase().includes(searchText.toLowerCase())
       )
-    : products;
+    : sellerProducts;
 
   const showSearchResults = searchText.trim().length > 0;
 
   const menuItems = [
     { label: 'Profil', icon: 'account-circle', screen: 'profile' },
     { label: 'Boutique', icon: 'store', screen: 'marketplace_home' },
+    { label: 'Vendre', icon: 'tag-plus', screen: 'market_seller' },
     { label: 'Catégories', icon: 'view-grid', screen: 'category_page' },
     { label: 'Nouveautés', icon: 'sparkles', screen: 'new_arrivals' },
     { label: 'Mes commandes', icon: 'shopping', screen: 'orders' },
@@ -243,7 +285,11 @@ function MarketplaceHomeScreen({ onBack, onNavigate, favorites = [], onToggleFav
                               style={styles.addBtn}
                               onPress={(e) => {
                                 e.stopPropagation();
-                                const productToAdd = { ...product, price: parseInt(product.price) || 0 };
+                                const productToAdd = { 
+                                  ...product, 
+                                  price: parseInt(product.price) || 0,
+                                  image: product.photos?.[0] || null
+                                };
                                 addToCart(productToAdd, 1);
                                 setAddedProduct(product);
                                 setShowCartPopup(true);
@@ -273,13 +319,18 @@ function MarketplaceHomeScreen({ onBack, onNavigate, favorites = [], onToggleFav
                   </Pressable>
                 </View>
                 <View style={styles.productsGrid}>
-                  {products.map((product) => (
+                  {sellerProducts.slice(0, 6).map((product) => (
                     <Pressable 
                       key={product.id} 
                       style={styles.productCard}
                       onPress={() => onNavigate?.('product_details', { product })}
                     >
                       <View style={styles.productImage}>
+                        {product.photos && product.photos[0] ? (
+                          <Image source={{ uri: product.photos[0] }} style={styles.productImg} />
+                        ) : (
+                          <MaterialCommunityIcons name="image" size={32} color="#4B5563" />
+                        )}
                         {product.isNew && (
                           <View style={styles.newBadge}>
                             <MaterialCommunityIcons name="lightning-bolt" size={12} color="#fff" />
@@ -309,7 +360,11 @@ function MarketplaceHomeScreen({ onBack, onNavigate, favorites = [], onToggleFav
                               style={styles.addBtn}
                               onPress={(e) => {
                                 e.stopPropagation();
-                                const productToAdd = { ...product, price: parseInt(product.price) || 0 };
+                                const productToAdd = { 
+                                  ...product, 
+                                  price: parseInt(product.price) || 0,
+                                  image: product.photos?.[0] || null
+                                };
                                 addToCart(productToAdd, 1);
                                 setAddedProduct(product);
                                 setShowCartPopup(true);
@@ -791,6 +846,13 @@ const styles = StyleSheet.create({
     aspectRatio: 1,
     backgroundColor: '#324d67',
     position: 'relative',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  productImg: {
+    width: '100%',
+    height: '100%',
+    resizeMode: 'cover',
   },
   newBadge: {
     position: 'absolute',

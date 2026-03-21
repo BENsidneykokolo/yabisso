@@ -12,6 +12,7 @@ export default class LobaPost extends Model {
   @field('likes') likes!: number
   @field('comments') comments!: number
   @field('is_liked') isLiked!: boolean
+  @text('filter_color') filterColor!: string
 
   @readonly @date('created_at') createdAt!: number
   @readonly @date('updated_at') updatedAt!: number

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -14,19 +14,36 @@ import { useCart } from '../context/CartContext';
 
 export default function CartScreen({ onBack, onNavigate }) {
   const { cartItems, removeFromCart, updateQuantity, getCartTotal } = useCart();
-  const [selectedItems, setSelectedItems] = useState(cartItems.map(item => `${item.id}-${item.selectedColor}-${item.selectedModel}-${item.negotiatedPrice}`));
+  
+  const getItemKey = (item) => `${item.id}-${item.selectedColor}-${item.selectedModel}-${item.negotiatedPrice || 'null'}`;
+  
+  const [selectedItems, setSelectedItems] = useState([]);
   const [activeTab, setActiveTab] = useState('Panier');
 
-  const formatPrice = (price) => {
-    return price.toLocaleString('fr-FR') + ' XAF';
+  useEffect(() => {
+    // Initialize or sync selection
+    const currentKeys = cartItems.map(getItemKey);
+    const newKeys = currentKeys.filter(key => !selectedItems.includes(key));
+    if (newKeys.length > 0) {
+      setSelectedItems(prev => [...prev, ...newKeys]);
+    }
+  }, [cartItems]);
+
+  const parsePrice = (price) => {
+    if (typeof price === 'number') return price;
+    if (!price) return 0;
+    // Remove non-numeric characters (like dots, spaces, commas)
+    return parseInt(price.toString().replace(/[^0-9]/g, '')) || 0;
   };
 
-  const getItemKey = (item) => `${item.id}-${item.selectedColor}-${item.selectedModel}-${item.negotiatedPrice}`;
+  const formatPrice = (price) => {
+    return parsePrice(price).toLocaleString('fr-FR') + ' XAF';
+  };
 
   const selectedCartItems = cartItems.filter(item => selectedItems.includes(getItemKey(item)));
 
   const subtotal = selectedCartItems.reduce((sum, item) => {
-    const price = item.negotiatedPrice || item.discountPrice || item.price;
+    const price = parsePrice(item.negotiatedPrice || item.discountPrice || item.price);
     return sum + (price * item.quantity);
   }, 0);
 
@@ -96,7 +113,11 @@ export default function CartScreen({ onBack, onNavigate }) {
               const displayPrice = item.negotiatedPrice || item.discountPrice || item.price;
 
               return (
-                <View key={itemKey} style={styles.cartItem}>
+                <Pressable 
+                  key={itemKey} 
+                  style={styles.cartItem}
+                  onPress={() => onNavigate?.('product_details', { product: item })}
+                >
                   {/* Checkbox */}
                   <Pressable
                     onPress={() => toggleItemSelection(itemKey)}
@@ -113,13 +134,36 @@ export default function CartScreen({ onBack, onNavigate }) {
                   </Pressable>
 
                   {/* Product Image */}
-                  <Image source={{ uri: item.image || 'https://via.placeholder.com/80' }} style={styles.itemImage} />
+                  <Image 
+                    source={{ uri: item.image || item.photos?.[0] || 'https://via.placeholder.com/80' }} 
+                    style={styles.itemImage} 
+                  />
 
                   {/* Item Details */}
                   <View style={styles.itemDetails}>
-                    <Text style={styles.itemName} numberOfLines={2}>{item.name}</Text>
+                    <View style={styles.itemNameContainer}>
+                      <Text style={styles.itemName} numberOfLines={2}>{item.name}</Text>
+                      {item.description && (
+                        <Text style={styles.itemDescription} numberOfLines={1}>
+                          {item.description}
+                        </Text>
+                      )}
+                    </View>
+                    <View style={styles.sellerCompact}>
+                      <Image 
+                        source={{ uri: item.seller?.avatar || 'https://via.placeholder.com/20' }} 
+                        style={styles.sellerMiniAvatar} 
+                      />
+                      <Text style={styles.itemBrand}>{item.seller?.name || item.brand || 'Ma Boutique'}</Text>
+                      {item.seller?.rating && (
+                        <View style={styles.sellerRatingMini}>
+                          <MaterialCommunityIcons name="star" size={10} color="#eab308" />
+                          <Text style={styles.sellerRatingTextMini}>{item.seller.rating}</Text>
+                        </View>
+                      )}
+                    </View>
                     <Text style={styles.itemVariant}>
-                      {item.selectedColor}{item.selectedModel ? ` • ${item.selectedModel}` : ''}
+                      {item.selectedColor || 'Default'}{item.selectedModel ? ` • ${item.selectedModel}` : ''} • Qté {item.quantity}
                     </Text>
                     <View style={styles.itemBottom}>
                       <View>
@@ -155,7 +199,7 @@ export default function CartScreen({ onBack, onNavigate }) {
                   >
                     <MaterialCommunityIcons name="delete-outline" size={22} color="#ef4444" />
                   </Pressable>
-                </View>
+                </Pressable>
               );
             })
           ) : (
@@ -375,16 +419,55 @@ const styles = StyleSheet.create({
     marginLeft: 12,
     justifyContent: 'space-between',
   },
+  itemNameContainer: {
+    marginBottom: 4,
+  },
   itemName: {
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: 'bold',
     color: '#fff',
-    lineHeight: 20,
+    lineHeight: 18,
+  },
+  itemDescription: {
+    fontSize: 11,
+    color: '#94a3b8',
+    marginTop: 2,
+    fontStyle: 'italic',
+  },
+  sellerCompact: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 4,
+  },
+  sellerMiniAvatar: {
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    backgroundColor: '#324d67',
+  },
+  itemBrand: {
+    fontSize: 11,
+    color: '#2BEE79',
+    fontWeight: '600',
+  },
+  sellerRatingMini: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 2,
+    backgroundColor: 'rgba(0,0,0,0.3)',
+    paddingHorizontal: 4,
+    paddingVertical: 1,
+    borderRadius: 4,
+  },
+  sellerRatingTextMini: {
+    fontSize: 9,
+    color: '#eab308',
+    fontWeight: 'bold',
   },
   itemVariant: {
-    fontSize: 12,
+    fontSize: 11,
     color: '#64748b',
-    marginTop: 2,
   },
   itemBottom: {
     flexDirection: 'row',

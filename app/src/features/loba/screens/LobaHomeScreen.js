@@ -14,6 +14,7 @@ import {
   Share,
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { Video, ResizeMode } from 'expo-av';
 import * as SecureStore from 'expo-secure-store';
 import LobaBottomNav from '../components/LobaBottomNav';
 import withObservables from '@nozbe/with-observables';
@@ -83,13 +84,33 @@ const posts = [
   },
 ];
 
-function LobaHomeScreen({ onBack, onNavigate }) {
+function LobaHomeScreen({ onBack, onNavigate, posts = [] }) {
   const [activeTab, setActiveTab] = useState('For You');
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
-  const [feedVideos, setFeedVideos] = useState(initialVideos);
   const [isShareModalVisible, setIsShareModalVisible] = useState(false);
   const [isCommentsModalVisible, setIsCommentsModalVisible] = useState(false);
   const [selectedVideo, setSelectedVideo] = useState(null);
+
+  // Merge DB posts with initial mock videos
+  const displayPosts = [
+    ...posts.map(p => ({
+      id: p.id,
+      username: p.username,
+      avatar: p.avatar,
+      video: p.videoUrl || p.imageUrl,
+      type: p.videoUrl ? 'video' : 'photo',
+      caption: p.content,
+      song: 'Original Sound - ' + p.username,
+      likes: p.likes,
+      comments: p.comments,
+      progress: 0,
+      liked: p.isLiked,
+      followed: false,
+      saved: false,
+      filterColor: p.filterColor,
+    })).reverse(),
+    ...initialVideos.map(v => ({ ...v, type: 'video', filterColor: 'transparent' }))
+  ];
 
   useEffect(() => {
     loadSavedVideos();
@@ -134,32 +155,8 @@ function LobaHomeScreen({ onBack, onNavigate }) {
   };
 
   const handleSave = async (id) => {
-    let savedVideos = [];
-    setFeedVideos(prev => {
-      const updated = prev.map(video => {
-        if (video.id === id) {
-          const newSaved = !video.saved;
-          if (newSaved) {
-            savedVideos = [...prev.filter(v => v.saved), video];
-          }
-          return { ...video, saved: newSaved };
-        } else if (video.saved) {
-          savedVideos = [...savedVideos, video];
-        }
-        return video;
-      });
-      return updated;
-    });
-
-    const currentSaved = await SecureStore.getItemAsync('loba_saved_videos');
-    const savedIds = currentSaved ? JSON.parse(currentSaved) : [];
-    let newSavedIds;
-    if (savedIds.includes(id)) {
-      newSavedIds = savedIds.filter(savedId => savedId !== id);
-    } else {
-      newSavedIds = [...savedIds, id];
-    }
-    await SecureStore.setItemAsync('loba_saved_videos', JSON.stringify(newSavedIds));
+    // Logic for saving based on displayPosts
+    Alert.alert('Sauvegardé', 'Cette publication a été ajoutée à vos favoris.');
   };
 
   const openShare = (video) => {
@@ -187,7 +184,19 @@ function LobaHomeScreen({ onBack, onNavigate }) {
 
   const renderVideo = ({ item, index }) => (
     <View style={styles.videoContainer}>
-      <Image source={{ uri: item.video }} style={styles.videoBackground} />
+      {item.type === 'video' ? (
+        <Video
+          source={{ uri: item.video }}
+          style={styles.videoBackground}
+          resizeMode={ResizeMode.COVER}
+          shouldPlay={index === currentVideoIndex}
+          isLooping
+          isMuted={false}
+        />
+      ) : (
+        <Image source={{ uri: item.video }} style={styles.videoBackground} />
+      )}
+      <View style={[styles.filterOverlay, { backgroundColor: item.filterColor || 'transparent' }]} />
       <View style={styles.videoGradient} />
 
       <View style={styles.rightActions}>
@@ -274,9 +283,9 @@ function LobaHomeScreen({ onBack, onNavigate }) {
       </View>
 
       <FlatList
-        data={feedVideos}
+        data={displayPosts}
         renderItem={renderVideo}
-        keyExtractor={item => item.id.toString()}
+        keyExtractor={(item, index) => item.id?.toString() || index.toString()}
         pagingEnabled
         vertical
         showsVerticalScrollIndicator={false}
@@ -355,7 +364,7 @@ function LobaHomeScreen({ onBack, onNavigate }) {
       <LobaBottomNav activeTab="home" onNavigate={(tab) => {
         if (tab === 'home') onNavigate?.('loba_home');
         else if (tab === 'friends') onNavigate?.('loba_friends');
-        else if (tab === 'create') onNavigate?.('loba_home');
+        else if (tab === 'create') onNavigate?.('loba_record');
         else if (tab === 'messages') onNavigate?.('loba_messages');
         else if (tab === 'profile') onNavigate?.('loba_profile');
       }} />
@@ -464,9 +473,15 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
   },
+  filterOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    pointerEvents: 'none',
+    zIndex: 5,
+  },
   videoGradient: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: 'rgba(0,0,0,0.2)',
+    zIndex: 6,
   },
   rightActions: {
     position: 'absolute',

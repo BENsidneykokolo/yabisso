@@ -3,6 +3,36 @@ import { schemaMigrations, createTable, addColumns } from '@nozbe/watermelondb/S
 export default schemaMigrations({
   migrations: [
     {
+      toVersion: 6,
+      steps: [
+        addColumns({
+          table: 'loba_posts',
+          columns: [
+            { name: 'filter_color', type: 'string', isOptional: true },
+          ],
+        }),
+      ],
+    },
+    {
+      toVersion: 5,
+      steps: [
+        createTable({
+          name: 'loba_friends',
+          columns: [
+            { name: 'friend_id', type: 'string', isIndexed: true },
+            { name: 'name', type: 'string' },
+            { name: 'username', type: 'string', isIndexed: true },
+            { name: 'phone', type: 'string', isIndexed: true },
+            { name: 'avatar', type: 'string', isOptional: true },
+            { name: 'status', type: 'string' },
+            { name: 'last_seen', type: 'number' },
+            { name: 'created_at', type: 'number' },
+            { name: 'updated_at', type: 'number' },
+          ],
+        }),
+      ],
+    },
+    {
       toVersion: 4,
       steps: [
         addColumns({

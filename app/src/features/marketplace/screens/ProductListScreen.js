@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -7,9 +7,22 @@ import {
   StyleSheet,
   SafeAreaView,
   TextInput,
+  Image,
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useCart } from '../context/CartContext';
+import * as SecureStore from 'expo-secure-store';
+
+const CATEGORIES_MAP = {
+  'fruits': 'Fruits & Légumes',
+  'electronics': 'Électronique',
+  'fashion': 'Mode',
+  'home': 'Maison',
+  'beauty': 'Beauté',
+  'sports': 'Sports',
+  'services': 'Services',
+  'other': 'Autres',
+};
 
 const categories = [
   { name: 'Téléphones', icon: 'smartphone', color: '#137fec' },
@@ -20,7 +33,7 @@ const categories = [
   { name: 'Services', icon: 'toolbox', color: '#8b5cf6' },
 ];
 
-const products = [
+const MOCK_PRODUCTS = [
   { id: 1, name: 'iPhone 15 Pro Max', brand: 'Apple', price: '950000', originalPrice: '1200000', category: 'Téléphones', isNew: true, isPromo: true, discount: '-50%' },
   { id: 2, name: 'Samsung Galaxy S24 Ultra', brand: 'Samsung', price: '780000', originalPrice: '950000', category: 'Téléphones', isNew: true, isPromo: true, discount: '-30%' },
   { id: 3, name: 'MacBook Pro M3', brand: 'Apple', price: '1200000', category: 'Électronique', isNew: true },
@@ -42,6 +55,41 @@ export default function ProductListScreen({ onBack, onNavigate, favorites = [], 
   const [selectedCategory, setSelectedCategory] = useState(filter === 'promo' ? 'Promotions' : 'Téléphones');
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [searchText, setSearchText] = useState('');
+  const [allProducts, setAllProducts] = useState([]);
+
+  useEffect(() => {
+    loadSellerProducts();
+  }, []);
+
+  const loadSellerProducts = async () => {
+    try {
+      const saved = await SecureStore.getItemAsync('seller_products');
+      if (saved) {
+        const sellerProducts = JSON.parse(saved);
+        const formattedProducts = sellerProducts
+          .filter(p => p.isVisible !== false)
+          .map(p => ({
+            id: p.id,
+            name: p.name,
+            brand: 'Ma Boutique',
+            price: p.price.toString(),
+            originalPrice: p.originalPrice || null,
+            category: CATEGORIES_MAP[p.category] || p.categoryName || 'Autres',
+            isNew: p.tags?.includes('Nouveau'),
+            isPromo: p.tags?.includes('Promo'),
+            discount: p.tags?.includes('Promo') ? '-10%' : null,
+            description: p.description,
+            photos: p.photos,
+            stock: p.stock,
+            delivery: p.delivery,
+            tags: p.tags,
+          }));
+        setAllProducts(formattedProducts);
+      }
+    } catch (e) {
+      console.log('Error loading seller products:', e);
+    }
+  };
 
   const isFavorite = (productId) => favorites.some(f => f.id === productId);
 
@@ -53,11 +101,11 @@ export default function ProductListScreen({ onBack, onNavigate, favorites = [], 
 
   // Filter by promo if filter='promo', otherwise by category
   const filteredProducts = (() => {
-    let baseProducts = products;
+    let baseProducts = allProducts;
     
     // If filter is promo, show only promo products
     if (filter === 'promo') {
-      baseProducts = products.filter(p => p.isPromo);
+      baseProducts = allProducts.filter(p => p.isPromo);
     }
     
     if (searchText.trim()) {
@@ -168,6 +216,11 @@ export default function ProductListScreen({ onBack, onNavigate, favorites = [], 
                     onPress={() => handleProductPress(product)}
                   >
                     <View style={styles.productImage}>
+                      {product.photos && product.photos[0] ? (
+                        <Image source={{ uri: product.photos[0] }} style={styles.productImg} />
+                      ) : (
+                        <MaterialCommunityIcons name="image" size={32} color="#4B5563" />
+                      )}
                       {product.isNew && (
                         <View style={styles.newBadge}>
                           <MaterialCommunityIcons name="lightning-bolt" size={12} color="#fff" />
@@ -193,13 +246,17 @@ export default function ProductListScreen({ onBack, onNavigate, favorites = [], 
                       <Text style={styles.productName} numberOfLines={1}>{product.name}</Text>
                       <View style={styles.productBottom}>
                         <Text style={styles.productPrice}>{product.price} FCA</Text>
-                        <Pressable
-                          style={styles.addBtn}
-                          onPress={(e) => {
-                            e.stopPropagation();
-                            const productToAdd = { ...product, price: parseInt(product.price) || 0 };
-                            addToCart(productToAdd, 1);
-                          }}
+                          <Pressable
+                            style={styles.addBtn}
+                            onPress={(e) => {
+                              e.stopPropagation();
+                              const productToAdd = { 
+                                ...product, 
+                                price: parseInt(product.price) || 0,
+                                image: product.photos?.[0] || null
+                              };
+                              addToCart(productToAdd, 1);
+                            }}
                         >
                           <MaterialCommunityIcons name="plus" size={18} color="#fff" />
                         </Pressable>
@@ -411,6 +468,13 @@ const styles = StyleSheet.create({
   productImage: {
     aspectRatio: 1,
     backgroundColor: '#324d67',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  productImg: {
+    width: '100%',
+    height: '100%',
+    resizeMode: 'cover',
   },
   newBadge: {
     position: 'absolute',

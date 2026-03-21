@@ -815,7 +815,7 @@ export default function LobaProfileScreen({ onBack, onNavigate }) {
 
       <LobaBottomNav activeTab="profile" onNavigate={(tab) => {
         if (tab === 'home') onNavigate?.('loba_home');
-        else if (tab === 'create') onNavigate?.('loba_home');
+        else if (tab === 'create') onNavigate?.('loba_record');
         else if (tab === 'friends') onNavigate?.('loba_friends');
         else if (tab === 'messages') onNavigate?.('loba_messages');
       }} />
