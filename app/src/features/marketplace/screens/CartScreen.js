@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useCart } from '../context/CartContext';
+import * as SecureStore from 'expo-secure-store';
 
 export default function CartScreen({ onBack, onNavigate }) {
   const { cartItems, removeFromCart, updateQuantity, getCartTotal } = useCart();
@@ -19,6 +20,7 @@ export default function CartScreen({ onBack, onNavigate }) {
   
   const [selectedItems, setSelectedItems] = useState([]);
   const [activeTab, setActiveTab] = useState('Panier');
+  const [shopName, setShopName] = useState('Ma Boutique');
 
   useEffect(() => {
     // Initialize or sync selection
@@ -27,7 +29,22 @@ export default function CartScreen({ onBack, onNavigate }) {
     if (newKeys.length > 0) {
       setSelectedItems(prev => [...prev, ...newKeys]);
     }
+    loadShopName();
   }, [cartItems]);
+
+  const loadShopName = async () => {
+    try {
+      const saved = await SecureStore.getItemAsync('seller_shop_info');
+      if (saved) {
+        const data = JSON.parse(saved);
+        if (data.name) {
+          setShopName(data.name);
+        }
+      }
+    } catch (e) {
+      console.log('Error loading shop name:', e);
+    }
+  };
 
   const parsePrice = (price) => {
     if (typeof price === 'number') return price;
@@ -154,7 +171,7 @@ export default function CartScreen({ onBack, onNavigate }) {
                         source={{ uri: item.seller?.avatar || 'https://via.placeholder.com/20' }} 
                         style={styles.sellerMiniAvatar} 
                       />
-                      <Text style={styles.itemBrand}>{item.seller?.name || item.brand || 'Ma Boutique'}</Text>
+                      <Text style={styles.itemBrand}>{item.seller?.name || item.brand || shopName}</Text>
                       {item.seller?.rating && (
                         <View style={styles.sellerRatingMini}>
                           <MaterialCommunityIcons name="star" size={10} color="#eab308" />
@@ -269,67 +286,6 @@ export default function CartScreen({ onBack, onNavigate }) {
         </View>
       )}
 
-      {/* Bottom Navigation */}
-      <SafeAreaView style={styles.bottomNavWrapper}>
-        <View style={styles.bottomNav}>
-          {bottomNavItems.map((item) => {
-            const isActive = activeTab === item.label;
-            return (
-              <Pressable
-                key={item.label}
-                style={({ pressed }) => [
-                  styles.navItem,
-                  pressed && styles.navItemPressed,
-                ]}
-                onPress={() => {
-                  if (item.label === 'Boutique') {
-                    onNavigate?.('marketplace_home');
-                  } else if (item.label === 'Catégories') {
-                    onNavigate?.('category_page');
-                  } else if (item.label === 'Panier') {
-                    // Already on cart
-                  } else if (item.label === 'Nouveauté') {
-                    onNavigate?.('new_arrivals');
-                  } else {
-                    setActiveTab(item.label);
-                  }
-                }}
-              >
-                <View style={[
-                  styles.navIcon,
-                  isActive && styles.navIconActive,
-                  isActive && styles.navIconCenter,
-                ]}>
-                  <MaterialCommunityIcons
-                    name={item.icon}
-                    size={isActive ? 20 : 16}
-                    color={isActive ? '#0E151B' : '#CBD5F5'}
-                  />
-                </View>
-                <Text style={[styles.navLabel, isActive && styles.navLabelActive]}>
-                  {item.label}
-                </Text>
-              </Pressable>
-            );
-          })}
-          <Pressable
-            style={({ pressed }) => [
-              styles.navItem,
-              pressed && styles.navItemPressed,
-            ]}
-            onPress={() => onBack?.()}
-          >
-            <View style={styles.navIcon}>
-              <MaterialCommunityIcons
-                name="arrow-left"
-                size={20}
-                color="#CBD5F5"
-              />
-            </View>
-            <Text style={styles.navLabel}>Retour</Text>
-          </Pressable>
-        </View>
-      </SafeAreaView>
     </SafeAreaView>
   );
 }
@@ -582,7 +538,7 @@ const styles = StyleSheet.create({
     color: '#fff',
   },
   bottomSpacer: {
-    height: 150,
+    height: 100,
   },
   bottomBar: {
     position: 'absolute',
@@ -593,15 +549,18 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: '#324d67',
     padding: 16,
-    paddingBottom: 110,
+    paddingBottom: 45,
   },
   bottomBarContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: 'column',
+    gap: 12,
   },
   totalContainer: {
-    flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    width: '100%',
+    paddingHorizontal: 4,
   },
   totalLabelSmall: {
     fontSize: 13,
@@ -616,12 +575,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 6,
+    gap: 12,
     backgroundColor: '#fff',
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    borderRadius: 12,
-    flex: 1,
+    paddingVertical: 16,
+    borderRadius: 16,
+    width: '100%',
   },
   buyBtnDisabled: {
     backgroundColor: '#475569',

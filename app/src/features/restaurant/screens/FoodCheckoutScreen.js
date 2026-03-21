@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -6,9 +6,14 @@ import {
   Pressable,
   StyleSheet,
   SafeAreaView,
+  Modal,
+  TextInput,
+  KeyboardAvoidingView,
+  Platform,
   Alert,
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { database } from '../../../lib/db';
 import { useRestaurantCart } from '../context/RestaurantCartContext';
 import { useRestaurantOrders } from '../context/RestaurantOrdersContext';
 
@@ -16,7 +21,28 @@ export default function FoodCheckoutScreen({ onBack, onNavigate }) {
   const { cartItems, currentRestaurant, getCartTotal, clearCart } = useRestaurantCart();
   const { addOrder } = useRestaurantOrders();
   const [selectedDelivery, setSelectedDelivery] = useState('standard');
-  const [selectedPayment, setSelectedPayment] = useState('card');
+  const [selectedPayment, setSelectedPayment] = useState('wallet');
+  const [savedAddresses, setSavedAddresses] = useState([]);
+  const [selectedAddressId, setSelectedAddressId] = useState(null);
+  const [isAddressModalVisible, setIsAddressModalVisible] = useState(false);
+  const selectedAddress = savedAddresses.find(addr => addr.id === selectedAddressId);
+
+  useEffect(() => {
+    loadAddresses();
+  }, []);
+
+  const loadAddresses = async () => {
+    try {
+      const addressCollection = database.get('addresses');
+      const list = await addressCollection.query().fetch();
+      setSavedAddresses(list);
+      if (list.length > 0) {
+        setSelectedAddressId(list[0].id);
+      }
+    } catch (error) {
+      console.error('Error loading addresses for food checkout:', error);
+    }
+  };
 
   const subtotal = getCartTotal();
   const deliveryFee = selectedDelivery === 'express' ? 500 : 200;
@@ -76,7 +102,7 @@ export default function FoodCheckoutScreen({ onBack, onNavigate }) {
           <Pressable style={styles.backBtn} onPress={onBack}>
             <MaterialCommunityIcons name="arrow-left" size={24} color="#fff" />
           </Pressable>
-          <Text style={styles.headerTitle}>Checkout</Text>
+          <Text style={styles.headerTitle}>Paiement</Text>
           <View style={styles.placeholder} />
         </View>
 
@@ -88,24 +114,65 @@ export default function FoodCheckoutScreen({ onBack, onNavigate }) {
           </View>
         )}
 
-        {/* Delivery Address */}
+        {/* Delivery Address Section */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Adresse de livraison</Text>
-          <Pressable 
-            style={styles.addressCard}
-            onPress={() => onNavigate?.('profile_addresses')}
-          >
-            <View style={styles.addressIcon}>
-              <MaterialCommunityIcons name="map-marker" size={24} color="#137fec" />
+          <Text style={styles.sectionTitle}>Adresse de Livraison</Text>
+
+          {savedAddresses.length === 0 ? (
+            <View style={styles.noAddressContainer}>
+              <Text style={styles.noAddressText}>Aucune adresse enregistrée.</Text>
+              <Pressable 
+                style={styles.addAddressInlineBtn}
+                onPress={() => onNavigate?.('profile_add_address')}
+              >
+                <Text style={styles.addAddressInlineText}>Ajouter une adresse</Text>
+              </Pressable>
             </View>
-            <View style={styles.addressInfo}>
-              <Text style={styles.addressLabel}>Maison</Text>
-              <Text style={styles.addressText}>
-                Choisir une adresse de livraison
-              </Text>
+          ) : (
+            <View>
+              {selectedAddress ? (
+                <Pressable
+                  onPress={() => setIsAddressModalVisible(true)}
+                  style={[styles.optionCardAddress, styles.optionCardActive]}
+                >
+                  <View style={styles.addressContent}>
+                    <View style={[styles.addressIconContainer, styles.addressIconSelected]}>
+                      <MaterialCommunityIcons 
+                        name={selectedAddress.category === 'Maison' ? 'home' : (selectedAddress.category === 'Travail' ? 'briefcase' : 'map-marker')} 
+                        size={22} 
+                        color="#fff"
+                      />
+                    </View>
+                    <View style={styles.addressTextContainer}>
+                      <View style={styles.titleRow}>
+                        <Text style={styles.addressTitle}>{selectedAddress.name}</Text>
+                        <View style={styles.tagBadge}>
+                          <Text style={styles.tagBadgeText}>{selectedAddress.uniqueId}</Text>
+                        </View>
+                      </View>
+                      <Text style={styles.addressSubtitle}>{selectedAddress.fullAddress || 'Coordonnées GPS'}</Text>
+                    </View>
+                  </View>
+                  <MaterialCommunityIcons name="chevron-right" size={24} color="#64748b" />
+                </Pressable>
+              ) : (
+                <Pressable
+                  onPress={() => setIsAddressModalVisible(true)}
+                  style={styles.optionCardAddress}
+                >
+                  <Text style={{ color: '#94a3b8' }}>Sélectionner une adresse</Text>
+                  <MaterialCommunityIcons name="chevron-right" size={24} color="#64748b" />
+                </Pressable>
+              )}
+              
+              <Pressable 
+                style={styles.viewAllBtn} 
+                onPress={() => setIsAddressModalVisible(true)}
+              >
+                <Text style={styles.viewAllText}>Voir toutes les adresses</Text>
+              </Pressable>
             </View>
-            <MaterialCommunityIcons name="chevron-right" size={24} color="#64748b" />
-          </Pressable>
+          )}
         </View>
 
         {/* Delivery Time */}
@@ -164,31 +231,125 @@ export default function FoodCheckoutScreen({ onBack, onNavigate }) {
           ))}
         </View>
 
-        {/* Payment Method */}
+        {/* Payment Method Section */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Mode de paiement</Text>
-          <Pressable style={styles.paymentCard}>
-            <View style={styles.paymentLeft}>
-              <MaterialCommunityIcons name="credit-card" size={24} color="#137fec" />
-              <View style={styles.paymentInfo}>
-                <Text style={styles.paymentTitle}>Visa •••• 4242</Text>
-                <Text style={styles.paymentSubtitle}>Expire 12/25</Text>
+          <Text style={styles.sectionTitle}>Mode de Paiement</Text>
+
+          {/* Wallet */}
+          <Pressable
+            onPress={() => setSelectedPayment('wallet')}
+            style={[
+              styles.optionCardPayment,
+              selectedPayment === 'wallet' && styles.optionCardActive
+            ]}
+          >
+            <View style={styles.paymentContent}>
+              <View style={[
+                styles.paymentIconContainer,
+                selectedPayment === 'wallet' && styles.paymentIconSelected
+              ]}>
+                <MaterialCommunityIcons name="wallet" size={22} color={selectedPayment === 'wallet' ? '#fff' : '#10b981'} />
+              </View>
+              <View style={styles.paymentTextContainer}>
+                <Text style={styles.paymentTitle}>Portefeuille Yabisso</Text>
+                <Text style={styles.paymentSubtitle}>Solde : <Text style={styles.balanceText}>450 000 XAF</Text></Text>
               </View>
             </View>
-            <MaterialCommunityIcons name="check-circle" size={24} color="#22c55e" />
+            <View style={styles.radioOuter}>
+              <View style={[
+                styles.radioInner,
+                selectedPayment === 'wallet' && styles.radioInnerSelected
+              ]} />
+            </View>
           </Pressable>
-          <Pressable style={styles.addPaymentBtn}>
-            <MaterialCommunityIcons name="plus" size={20} color="#137fec" />
-            <Text style={styles.addPaymentText}>Ajouter un paiement</Text>
+
+          {/* Mobile Money */}
+          <Pressable
+            onPress={() => setSelectedPayment('mobile')}
+            style={[
+              styles.optionCardPayment,
+              selectedPayment === 'mobile' && styles.optionCardActive
+            ]}
+          >
+            <View style={styles.paymentContent}>
+              <View style={[styles.paymentIconContainer, styles.optionIconGreen]}>
+                <MaterialCommunityIcons name="cellphone-wireless" size={22} color="#10b981" />
+              </View>
+              <View style={styles.paymentTextContainer}>
+                <View style={styles.titleRow}>
+                  <Text style={styles.paymentTitle}>Paiement Mobile</Text>
+                  <View style={styles.offlineBadge}>
+                    <Text style={styles.offlineBadgeText}>Hors-ligne</Text>
+                  </View>
+                </View>
+                <Text style={styles.paymentSubtitle}>M-Pesa, Airtel Money</Text>
+              </View>
+            </View>
+            <View style={styles.radioOuter}>
+              <View style={[
+                styles.radioInner,
+                selectedPayment === 'mobile' && styles.radioInnerSelected
+              ]} />
+            </View>
+          </Pressable>
+
+          {/* Card */}
+          <Pressable
+            onPress={() => setSelectedPayment('card')}
+            style={[
+              styles.optionCardPayment,
+              selectedPayment === 'card' && styles.optionCardActive
+            ]}
+          >
+            <View style={styles.paymentContent}>
+              <View style={[styles.paymentIconContainer, styles.optionIconYellow]}>
+                <MaterialCommunityIcons name="credit-card" size={22} color="#f59e0b" />
+              </View>
+              <View style={styles.paymentTextContainer}>
+                <Text style={styles.paymentTitle}>Carte de Crédit</Text>
+                <Text style={styles.paymentSubtitle}>Visa •••• 4242</Text>
+              </View>
+            </View>
+            <View style={styles.radioOuter}>
+              <View style={[
+                styles.radioInner,
+                selectedPayment === 'card' && styles.radioInnerSelected
+              ]} />
+            </View>
+          </Pressable>
+
+          {/* Cash on Delivery */}
+          <Pressable
+            onPress={() => setSelectedPayment('cod')}
+            style={[
+              styles.optionCardPayment,
+              selectedPayment === 'cod' && styles.optionCardActive
+            ]}
+          >
+            <View style={styles.paymentContent}>
+              <View style={styles.paymentIconContainer}>
+                <MaterialCommunityIcons name="cash-multiple" size={22} color="#137fec" />
+              </View>
+              <View style={styles.paymentTextContainer}>
+                <Text style={styles.paymentTitle}>Payer à la livraison</Text>
+                <Text style={styles.paymentSubtitle}>Espèces ou Mobile Money à l'arrivée</Text>
+              </View>
+            </View>
+            <View style={styles.radioOuter}>
+              <View style={[
+                styles.radioInner,
+                selectedPayment === 'cod' && styles.radioInnerSelected
+              ]} />
+            </View>
           </Pressable>
         </View>
 
         {/* Price Summary */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Bill Summary</Text>
+          <Text style={styles.sectionTitle}>Résumé de la facture</Text>
           <View style={styles.summaryCard}>
             <View style={styles.summaryRow}>
-              <Text style={styles.summaryLabel}>Subtotal</Text>
+              <Text style={styles.summaryLabel}>Sous-total</Text>
               <Text style={styles.summaryValue}>FCFA {subtotal.toLocaleString()}</Text>
             </View>
             <View style={styles.summaryRow}>
@@ -196,7 +357,7 @@ export default function FoodCheckoutScreen({ onBack, onNavigate }) {
               <Text style={styles.summaryValue}>FCFA {deliveryFee}</Text>
             </View>
             <View style={styles.summaryRow}>
-              <Text style={styles.summaryLabel}>Service Fee</Text>
+              <Text style={styles.summaryLabel}>Frais de service</Text>
               <Text style={styles.summaryValue}>FCFA {serviceFee}</Text>
             </View>
             <View style={styles.divider} />
@@ -213,7 +374,7 @@ export default function FoodCheckoutScreen({ onBack, onNavigate }) {
       {/* Place Order Button */}
       <View style={styles.bottomBar}>
         <View style={styles.bottomBarContent}>
-          <View>
+          <View style={styles.bottomTotalContainer}>
             <Text style={styles.bottomTotalLabel}>Total</Text>
             <Text style={styles.bottomTotalValue}>FCFA {total.toLocaleString()}</Text>
           </View>
@@ -226,6 +387,81 @@ export default function FoodCheckoutScreen({ onBack, onNavigate }) {
           </Pressable>
         </View>
       </View>
+      {/* Address Selection Modal */}
+      <Modal
+        visible={isAddressModalVisible}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setIsAddressModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Sélectionner une adresse</Text>
+              <Pressable onPress={() => setIsAddressModalVisible(false)}>
+                <MaterialCommunityIcons name="close" size={24} color="#fff" />
+              </Pressable>
+            </View>
+
+            <ScrollView style={styles.modalBody} showsVerticalScrollIndicator={false}>
+              {savedAddresses.map((addr) => (
+                <Pressable
+                  key={addr.id}
+                  onPress={() => {
+                    setSelectedAddressId(addr.id);
+                    setIsAddressModalVisible(false);
+                  }}
+                  style={[
+                    styles.optionCardAddress,
+                    selectedAddressId === addr.id && styles.optionCardActive
+                  ]}
+                >
+                  <View style={styles.addressContent}>
+                    <View style={[
+                      styles.addressIconContainer,
+                      selectedAddressId === addr.id && styles.addressIconSelected
+                    ]}>
+                      <MaterialCommunityIcons 
+                        name={addr.category === 'Maison' ? 'home' : (addr.category === 'Travail' ? 'briefcase' : 'map-marker')} 
+                        size={22} 
+                        color={selectedAddressId === addr.id ? '#fff' : '#64748b'} 
+                      />
+                    </View>
+                    <View style={styles.addressTextContainer}>
+                      <View style={styles.titleRow}>
+                        <Text style={styles.addressTitle}>{addr.name}</Text>
+                        <View style={styles.tagBadge}>
+                          <Text style={styles.tagBadgeText}>{addr.uniqueId}</Text>
+                        </View>
+                      </View>
+                      <Text style={styles.addressSubtitle}>{addr.fullAddress || 'Coordonnées GPS'}</Text>
+                    </View>
+                  </View>
+                  <View style={styles.radioOuter}>
+                    <View style={[
+                      styles.radioInner,
+                      selectedAddressId === addr.id && styles.radioInnerSelected
+                    ]} />
+                  </View>
+                </Pressable>
+              ))}
+
+              <Pressable 
+                style={styles.addAddressBtn} 
+                onPress={() => {
+                  setIsAddressModalVisible(false);
+                  onNavigate?.('profile_add_address');
+                }}
+              >
+                <MaterialCommunityIcons name="plus" size={20} color="#137fec" />
+                <Text style={styles.addAddressText}>Ajouter une nouvelle adresse</Text>
+              </Pressable>
+
+              <View style={{ height: 40 }} />
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -284,40 +520,134 @@ const styles = StyleSheet.create({
     color: '#fff',
     marginBottom: 12,
   },
-  addressCard: {
+  optionCardAddress: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
     backgroundColor: '#1c2630',
     borderRadius: 12,
-    padding: 12,
+    padding: 14,
+    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: 'transparent',
   },
-  addressIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 12,
+  addressContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  addressIconContainer: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     backgroundColor: 'rgba(19, 127, 236, 0.1)',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  addressInfo: {
+  addressIconSelected: {
+    backgroundColor: '#137fec',
+  },
+  addressTextContainer: {
     flex: 1,
     marginLeft: 12,
   },
-  addressLabel: {
+  addressTitle: {
     fontSize: 14,
-    fontWeight: 'bold',
+    fontWeight: '600',
     color: '#fff',
   },
-  addressText: {
-    fontSize: 13,
+  addressSubtitle: {
+    fontSize: 12,
     color: '#64748b',
     marginTop: 2,
   },
-  changeBtn: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+  manageAddressBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    gap: 4,
+    marginTop: 4,
   },
-  changeText: {
+  manageAddressText: {
+    fontSize: 13,
+    color: '#137fec',
+    fontWeight: '600',
+  },
+  tagBadge: {
+    backgroundColor: 'rgba(19, 127, 236, 0.2)',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: 'rgba(19, 127, 236, 0.3)',
+  },
+  tagBadgeText: {
+    fontSize: 10,
+    fontWeight: 'bold',
+    color: '#137fec',
+  },
+  noAddressContainer: {
+    backgroundColor: '#1c2a38',
+    borderRadius: 12,
+    padding: 20,
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  noAddressText: {
+    color: '#94a3b8',
+    marginBottom: 12,
+  },
+  viewAllBtn: {
+    marginTop: 4,
+    paddingVertical: 8,
+  },
+  viewAllText: {
+    fontSize: 13,
+    color: '#137fec',
+    fontWeight: '600',
+    textDecorationLine: 'underline',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.7)',
+    justifyContent: 'flex-end',
+  },
+  modalContent: {
+    backgroundColor: '#1a2632',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    paddingBottom: Platform.OS === 'ios' ? 40 : 24,
+    maxHeight: '80%',
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255,255,255,0.05)',
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#fff',
+  },
+  modalBody: {
+    padding: 20,
+  },
+  addAddressBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 16,
+    marginTop: 12,
+    gap: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(19, 127, 236, 0.3)',
+    borderRadius: 12,
+    borderStyle: 'dashed',
+  },
+  addAddressText: {
     color: '#137fec',
     fontWeight: '600',
   },
@@ -392,24 +722,40 @@ const styles = StyleSheet.create({
     color: '#fff',
     marginTop: 4,
   },
-  paymentCard: {
+  optionCardPayment: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     backgroundColor: '#1c2630',
     borderRadius: 12,
-    padding: 16,
+    padding: 14,
+    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: 'transparent',
   },
-  paymentLeft: {
+  paymentContent: {
     flexDirection: 'row',
     alignItems: 'center',
+    flex: 1,
   },
-  paymentInfo: {
+  paymentIconContainer: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: 'rgba(19, 127, 236, 0.1)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  paymentIconSelected: {
+    backgroundColor: '#137fec',
+  },
+  paymentTextContainer: {
+    flex: 1,
     marginLeft: 12,
   },
   paymentTitle: {
-    fontSize: 15,
-    fontWeight: 'bold',
+    fontSize: 14,
+    fontWeight: '600',
     color: '#fff',
   },
   paymentSubtitle: {
@@ -417,17 +763,52 @@ const styles = StyleSheet.create({
     color: '#64748b',
     marginTop: 2,
   },
-  addPaymentBtn: {
-    flexDirection: 'row',
+  balanceText: {
+    color: '#137fec',
+    fontWeight: 'bold',
+  },
+  radioOuter: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: '#64748b',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 12,
-    marginTop: 8,
+  },
+  radioInner: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: 'transparent',
+  },
+  radioInnerSelected: {
+    backgroundColor: '#137fec',
+  },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: 8,
   },
-  addPaymentText: {
-    color: '#137fec',
-    fontWeight: '600',
+  offlineBadge: {
+    backgroundColor: 'rgba(34, 197, 94, 0.15)',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: 'rgba(34, 197, 94, 0.3)',
+  },
+  offlineBadgeText: {
+    fontSize: 9,
+    fontWeight: 'bold',
+    color: '#22c55e',
+    textTransform: 'uppercase',
+  },
+  optionIconGreen: {
+    backgroundColor: 'rgba(34, 197, 94, 0.1)',
+  },
+  optionIconYellow: {
+    backgroundColor: 'rgba(245, 158, 11, 0.1)',
   },
   summaryCard: {
     backgroundColor: '#1c2630',
@@ -463,7 +844,7 @@ const styles = StyleSheet.create({
     color: '#fff',
   },
   bottomSpacer: {
-    height: 120,
+    height: 180,
   },
   bottomBar: {
     position: 'absolute',
@@ -474,12 +855,17 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: '#324d67',
     padding: 16,
-    paddingBottom: 32,
+    paddingBottom: 45,
   },
   bottomBarContent: {
+    flexDirection: 'column',
+    gap: 12,
+  },
+  bottomTotalContainer: {
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'space-between',
+    alignItems: 'center',
+    width: '100%',
   },
   bottomTotalLabel: {
     fontSize: 12,
@@ -493,11 +879,12 @@ const styles = StyleSheet.create({
   placeOrderBtn: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
     backgroundColor: '#22c55e',
-    paddingHorizontal: 32,
-    paddingVertical: 14,
-    borderRadius: 12,
-    gap: 8,
+    paddingVertical: 16,
+    borderRadius: 16,
+    width: '100%',
+    gap: 12,
   },
   placeOrderText: {
     fontSize: 16,

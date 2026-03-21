@@ -112,7 +112,7 @@ export default function RestaurantOrdersScreen({ onBack, onNavigate }) {
               <View style={styles.orderFooter}>
                 <Text style={styles.orderTotal}>Total: {order.total.toLocaleString()} FCA</Text>
                 {order.status === 'en_cours' && (
-                  <Pressable style={styles.trackBtn}>
+                  <Pressable style={styles.trackBtn} onPress={() => onNavigate?.('restaurant_tracking', { order })}>
                     <Text style={styles.trackBtnText}>Suivre</Text>
                   </Pressable>
                 )}

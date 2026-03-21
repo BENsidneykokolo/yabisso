@@ -37,6 +37,10 @@ S13-S16: reservations, services, admin console, Play Store launch
 - Profil: Nom cliquable vers ecran Compte avec details inscription
 - Menu Boutique: "Accueil" remplacé par "Profil"
 - **Universal Offline-First integration completed** for Marketplace, Wallet, Loba, and AI Assistant.
+- **SellerContactScreen**: Ecran de contact vendeur (appeler, WhatsApp, email, adresse)
+- **RestaurantSellerScreen**: Creation restaurant virtuel (nom, catégorie, livraison, plats)
+- **Restaurant Menu**: Menu popup style Marketplace (gauche)
+- **Nom boutique dynamique**: Charge depuis SecureStore sur tous les ecrans parcours achat
 
 ## Marketplace - Sprint 4 & 5 (COMPLETED)
 - Marketplace: Home, Product List, Category Page, Product Details

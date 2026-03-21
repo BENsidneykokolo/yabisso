@@ -182,10 +182,17 @@ export default function DeliveryTrackingScreen({ onBack, onNavigate }) {
             ))}
           </View>
 
+          {/* Help Text */}
+          <View style={styles.helpSection}>
+            <Text style={styles.helpText}>
+              Besoin d'aide? <Text style={styles.helpLink}>Signaler un problème</Text>
+            </Text>
+          </View>
+
           {/* Order Summary Toggle */}
           <Pressable 
             style={styles.summaryToggle}
-            onPress={() => setShowSummary(!showSummary)}
+            onPress={() => onNavigate?.('orders', { filter: 'en_cours' })}
           >
             <View>
               <Text style={styles.summaryTitle}>Résumé de la commande</Text>
@@ -200,12 +207,6 @@ export default function DeliveryTrackingScreen({ onBack, onNavigate }) {
             />
           </Pressable>
 
-          {/* Help Text */}
-          <View style={styles.helpSection}>
-            <Text style={styles.helpText}>
-              Besoin d'aide? <Text style={styles.helpLink}>Signaler un problème</Text>
-            </Text>
-          </View>
         </ScrollView>
       </View>
     </SafeAreaView>

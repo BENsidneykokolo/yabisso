@@ -56,10 +56,26 @@ export default function ProductListScreen({ onBack, onNavigate, favorites = [], 
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [searchText, setSearchText] = useState('');
   const [allProducts, setAllProducts] = useState([]);
+  const [shopName, setShopName] = useState('Ma Boutique');
 
   useEffect(() => {
     loadSellerProducts();
+    loadShopName();
   }, []);
+
+  const loadShopName = async () => {
+    try {
+      const saved = await SecureStore.getItemAsync('seller_shop_info');
+      if (saved) {
+        const data = JSON.parse(saved);
+        if (data.name) {
+          setShopName(data.name);
+        }
+      }
+    } catch (e) {
+      console.log('Error loading shop name:', e);
+    }
+  };
 
   const loadSellerProducts = async () => {
     try {
@@ -71,7 +87,7 @@ export default function ProductListScreen({ onBack, onNavigate, favorites = [], 
           .map(p => ({
             id: p.id,
             name: p.name,
-            brand: 'Ma Boutique',
+            brand: shopName,
             price: p.price.toString(),
             originalPrice: p.originalPrice || null,
             category: CATEGORIES_MAP[p.category] || p.categoryName || 'Autres',
@@ -83,6 +99,11 @@ export default function ProductListScreen({ onBack, onNavigate, favorites = [], 
             stock: p.stock,
             delivery: p.delivery,
             tags: p.tags,
+            seller: {
+              name: shopName,
+              rating: 4.5,
+              avatar: null,
+            },
           }));
         setAllProducts(formattedProducts);
       }

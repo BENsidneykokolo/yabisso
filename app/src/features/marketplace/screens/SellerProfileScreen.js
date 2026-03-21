@@ -16,7 +16,7 @@ import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import * as SecureStore from 'expo-secure-store';
 import * as ImagePicker from 'expo-image-picker';
 
-export default function SellerProfileScreen({ onBack, onOpenAddProduct, onEditProduct }) {
+export default function SellerProfileScreen({ onBack, onOpenAddProduct, onEditProduct, onContact }) {
   const [shopInfo, setShopInfo] = useState({
     name: 'Ma Boutique',
     location: 'Centre-ville',
@@ -315,7 +315,7 @@ export default function SellerProfileScreen({ onBack, onOpenAddProduct, onEditPr
           <TouchableOpacity style={styles.primaryButton}>
             <Text style={styles.primaryButtonText}>Suivre</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.secondaryButton}>
+          <TouchableOpacity style={styles.secondaryButton} onPress={() => onContact?.(shopInfo)}>
             <Text style={styles.secondaryButtonText}>Contacter</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.iconButtonSmall} onPress={onOpenAddProduct}>
@@ -968,19 +968,21 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.7)',
     justifyContent: 'flex-end',
+    paddingBottom: 0,
   },
   modalContent: {
     backgroundColor: '#1a2633',
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
-    paddingBottom: 40,
+    paddingBottom: 54,
+    paddingTop: 12,
     maxHeight: '80%',
   },
   modalHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 20,
+    padding: 16,
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(255, 255, 255, 0.08)',
   },
@@ -990,15 +992,15 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   modalBody: {
-    padding: 20,
+    padding: 10,
   },
   inputGroup: {
-    marginBottom: 16,
+    marginBottom: 6,
   },
   inputLabel: {
     color: '#94A3B8',
     fontSize: 12,
-    marginBottom: 8,
+    marginBottom: 6,
     textTransform: 'uppercase',
     letterSpacing: 1,
   },
@@ -1020,7 +1022,8 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     borderRadius: 16,
     alignItems: 'center',
-    marginTop: 20,
+    marginTop: 2,
+    marginBottom: 20,
   },
   saveButtonText: {
     color: '#0E151B',
@@ -1031,12 +1034,12 @@ const styles = StyleSheet.create({
     color: '#F8FAFC',
     fontSize: 16,
     fontWeight: '700',
-    marginBottom: 16,
+    marginBottom: 12,
   },
   imageUploadRow: {
     flexDirection: 'row',
     gap: 12,
-    marginBottom: 24,
+    marginBottom: 16,
   },
   imageUploadGroup: {
     flex: 1,

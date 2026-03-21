@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -15,6 +15,7 @@ import {
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { database } from '../../../lib/db';
+import * as SecureStore from 'expo-secure-store';
 
 import { useOrders } from '../context/OrderContext';
 import { useCart } from '../context/CartContext';
@@ -26,6 +27,25 @@ export default function CheckoutScreen({ onBack, onNavigate, route }) {
   const [address, setAddress] = useState('home');
   const [delivery, setDelivery] = useState('express');
   const [payment, setPayment] = useState('wallet');
+  const [shopName, setShopName] = useState('Ma Boutique');
+  
+  useEffect(() => {
+    loadShopName();
+  }, []);
+
+  const loadShopName = async () => {
+    try {
+      const saved = await SecureStore.getItemAsync('seller_shop_info');
+      if (saved) {
+        const data = JSON.parse(saved);
+        if (data.name) {
+          setShopName(data.name);
+        }
+      }
+    } catch (e) {
+      console.log('Error loading shop name:', e);
+    }
+  };
   
   // Recipient Modal State
   const [isRecipientModalVisible, setIsRecipientModalVisible] = useState(false);
@@ -41,6 +61,9 @@ export default function CheckoutScreen({ onBack, onNavigate, route }) {
 
   const [savedAddresses, setSavedAddresses] = useState([]);
   const [selectedAddressId, setSelectedAddressId] = useState(null);
+  const [isAddressModalVisible, setIsAddressModalVisible] = useState(false);
+
+  const selectedAddress = savedAddresses.find(addr => addr.id === selectedAddressId);
 
   React.useEffect(() => {
     const loadAddresses = async () => {
@@ -271,53 +294,50 @@ export default function CheckoutScreen({ onBack, onNavigate, route }) {
               </Pressable>
             </View>
           ) : (
-            savedAddresses.map((addr) => (
-              <Pressable
-                key={addr.id}
-                onPress={() => {
-                  setSelectedAddressId(addr.id);
-                  setAddress(addr.uniqueId);
-                }}
-                style={[
-                  styles.optionCard,
-                  selectedAddressId === addr.id && styles.optionCardSelected
-                ]}
-              >
-                <View style={styles.optionContent}>
-                  <View style={[
-                    styles.optionIcon,
-                    selectedAddressId === addr.id && styles.optionIconSelected
-                  ]}>
-                    <MaterialCommunityIcons 
-                      name={addr.category === 'Maison' ? 'home' : (addr.category === 'Travail' ? 'briefcase' : 'map-marker')} 
-                      size={22} 
-                      color={selectedAddressId === addr.id ? '#fff' : '#64748b'} 
-                    />
-                  </View>
-                  <View style={styles.optionTextContainer}>
-                    <View style={styles.titleRow}>
-                      <Text style={styles.optionTitle}>{addr.name}</Text>
-                      <View style={styles.tagBadge}>
-                        <Text style={styles.tagBadgeText}>{addr.uniqueId}</Text>
-                      </View>
+            <View>
+              {selectedAddress ? (
+                <Pressable
+                  onPress={() => setIsAddressModalVisible(true)}
+                  style={[styles.optionCard, styles.optionCardSelected]}
+                >
+                  <View style={styles.optionContent}>
+                    <View style={[styles.optionIcon, styles.optionIconSelected]}>
+                      <MaterialCommunityIcons 
+                        name={selectedAddress.category === 'Maison' ? 'home' : (selectedAddress.category === 'Travail' ? 'briefcase' : 'map-marker')} 
+                        size={22} 
+                        color="#fff"
+                      />
                     </View>
-                    <Text style={styles.optionSubtitle}>{addr.fullAddress || 'Coordonnées GPS'}</Text>
+                    <View style={styles.optionTextContainer}>
+                      <View style={styles.titleRow}>
+                        <Text style={styles.optionTitle}>{selectedAddress.name}</Text>
+                        <View style={styles.tagBadge}>
+                          <Text style={styles.tagBadgeText}>{selectedAddress.uniqueId}</Text>
+                        </View>
+                      </View>
+                      <Text style={styles.optionSubtitle}>{selectedAddress.fullAddress || 'Coordonnées GPS'}</Text>
+                    </View>
                   </View>
-                </View>
-                <View style={styles.radioOuter}>
-                  <View style={[
-                    styles.radioInner,
-                    selectedAddressId === addr.id && styles.radioInnerSelected
-                  ]} />
-                </View>
+                  <MaterialCommunityIcons name="chevron-right" size={24} color="#64748b" />
+                </Pressable>
+              ) : (
+                <Pressable
+                  onPress={() => setIsAddressModalVisible(true)}
+                  style={styles.optionCard}
+                >
+                  <Text style={{ color: '#94a3b8' }}>Sélectionner une adresse</Text>
+                  <MaterialCommunityIcons name="chevron-right" size={24} color="#64748b" />
+                </Pressable>
+              )}
+              
+              <Pressable 
+                style={styles.viewAllBtn} 
+                onPress={() => setIsAddressModalVisible(true)}
+              >
+                <Text style={styles.viewAllText}>Voir toutes les adresses</Text>
               </Pressable>
-            ))
+            </View>
           )}
-
-          <Pressable style={styles.manageAddressBtn} onPress={() => onNavigate?.('profile_addresses')}>
-            <MaterialCommunityIcons name="cog" size={16} color="#137fec" />
-            <Text style={styles.manageAddressText}>Gérer les adresses</Text>
-          </Pressable>
         </View>
 
         {/* Delivery Method Section */}
@@ -514,7 +534,7 @@ export default function CheckoutScreen({ onBack, onNavigate, route }) {
                         source={{ uri: item.seller?.avatar || 'https://via.placeholder.com/16' }} 
                         style={styles.sellerMiniAvatar} 
                       />
-                      <Text style={styles.orderItemBrand}>{item.seller?.name || item.brand || 'Ma Boutique'}</Text>
+                      <Text style={styles.orderItemBrand}>{item.seller?.name || item.brand || shopName}</Text>
                     </View>
                     <Text style={styles.orderItemName} numberOfLines={1}>{item.name}</Text>
                     {item.description && (
@@ -970,18 +990,19 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: '#1c2a38',
-    borderTopWidth: 1,
-    borderTopColor: '#324d67',
-    paddingBottom: 60,
+    padding: 16,
+    paddingBottom: 45,
   },
   bottomBarContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: 'column',
+    gap: 12,
   },
   totalContainer: {
-    flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    width: '100%',
+    paddingHorizontal: 4,
   },
   totalLabelSmall: {
     fontSize: 13,
@@ -1019,11 +1040,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
+    gap: 12,
     backgroundColor: '#fff',
-    paddingHorizontal: 20,
-    paddingVertical: 14,
-    borderRadius: 12,
+    paddingVertical: 16,
+    borderRadius: 16,
+    width: '100%',
   },
   confirmBtnText: {
     fontSize: 15,
@@ -1122,5 +1143,31 @@ const styles = StyleSheet.create({
   addAddressInlineText: {
     color: '#137fec',
     fontWeight: 'bold',
+  },
+  viewAllBtn: {
+    marginTop: 4,
+    paddingVertical: 8,
+  },
+  viewAllText: {
+    fontSize: 13,
+    color: '#137fec',
+    fontWeight: '600',
+    textDecorationLine: 'underline',
+  },
+  addAddressModalBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 16,
+    marginTop: 12,
+    gap: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(19, 127, 236, 0.3)',
+    borderRadius: 12,
+    borderStyle: 'dashed',
+  },
+  addAddressModalText: {
+    color: '#137fec',
+    fontWeight: '600',
   },
 });

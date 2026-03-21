@@ -139,3 +139,10 @@ Pour chaque service (Restaurant, Marketplace, etc.), créer les écrans nécessa
 - **Suivi** : tracking de livraison en temps réel
 - **Historique** : historique des commandes passées
 - Chaque service a son propre panier et ses propres commandes (pas partagé)
+
+---
+
+### RÈGLE 7 — NOM DE BOUTIQUE DYNAMIQUE
+- Le nom de la boutique doit être récupéré depuis SecureStore (`seller_shop_info`)
+- Tous les écrans du parcours achat (produit, panier, paiement) doivent afficher le vrai nom de la boutique
+- Fallback: "Ma Boutique" si non défini

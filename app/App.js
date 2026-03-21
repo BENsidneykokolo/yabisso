@@ -45,6 +45,7 @@ import LogoutScreen from './src/features/profile/screens/LogoutScreen';
 import EditProfileScreen from './src/features/profile/screens/EditProfileScreen';
 import AddProductScreen from './src/features/marketplace/screens/AddProductScreen';
 import SellerProfileScreen from './src/features/marketplace/screens/SellerProfileScreen';
+import SellerContactScreen from './src/features/marketplace/screens/SellerContactScreen';
 import MarketplaceHomeScreen from './src/features/marketplace/screens/MarketplaceHomeScreen';
 import ProductListScreen from './src/features/marketplace/screens/ProductListScreen';
 import CategoryPageScreen from './src/features/marketplace/screens/CategoryPageScreen';
@@ -69,6 +70,7 @@ import LobaFriendsScreen from './src/features/loba/screens/LobaFriendsScreen';
 import LobaMessagesScreen from './src/features/loba/screens/LobaMessagesScreen';
 import LobaSettingsScreen from './src/features/loba/screens/LobaSettingsScreen';
 import RestaurantHomeScreen from './src/features/restaurant/screens/RestaurantHomeScreen';
+import RestaurantSellerScreen from './src/features/restaurant/screens/RestaurantSellerScreen';
 import RestaurantDetailsScreen from './src/features/restaurant/screens/RestaurantDetailsScreen';
 import FoodItemDetailsScreen from './src/features/restaurant/screens/FoodItemDetailsScreen';
 import FoodCheckoutScreen from './src/features/restaurant/screens/FoodCheckoutScreen';
@@ -467,6 +469,15 @@ export default function App() {
         onBack={() => goBack()}
         onOpenAddProduct={() => navigate('market_add_product')}
         onEditProduct={(product) => navigate('market_add_product', { product })}
+        onContact={(seller) => navigate('market_seller_contact', { seller })}
+      />
+    );
+  }
+  if (screen === 'market_seller_contact') {
+    content = (
+      <SellerContactScreen
+        onBack={() => goBack()}
+        seller={screenParams?.seller}
       />
     );
   }
@@ -744,6 +755,14 @@ export default function App() {
   if (screen === 'restaurant_home') {
     content = (
       <RestaurantHomeScreen
+        onBack={() => goBack()}
+        onNavigate={(screenName, params) => navigate(screenName, params)}
+      />
+    );
+  }
+  if (screen === 'restaurant_seller') {
+    content = (
+      <RestaurantSellerScreen
         onBack={() => goBack()}
         onNavigate={(screenName, params) => navigate(screenName, params)}
       />

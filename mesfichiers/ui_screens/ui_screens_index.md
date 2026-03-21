@@ -90,6 +90,10 @@
 - Restaurant - Details: `app/src/features/restaurant/screens/RestaurantDetailsScreen.js`
 - Restaurant - Item Details: `app/src/features/restaurant/screens/FoodItemDetailsScreen.js`
 - Restaurant - Checkout: `app/src/features/restaurant/screens/FoodCheckoutScreen.js`
+- Restaurant - Orders: `app/src/features/restaurant/screens/RestaurantOrdersScreen.js`
+- Restaurant - Tracking: `app/src/features/restaurant/screens/RestaurantTrackingScreen.js`
+- Restaurant - Seller (Vendre): `app/src/features/restaurant/screens/RestaurantSellerScreen.js`
+- Marketplace - Seller Contact: `app/src/features/marketplace/screens/SellerContactScreen.js`
 - Hotels - Home: `app/src/features/hotel/screens/HotelHomeScreen.js`
 - Services - Home: `app/src/features/services/screens/ServicesHomeScreen.js`
 - Immobilier - Home: `app/src/features/real_estate/screens/RealEstateHomeScreen.js`

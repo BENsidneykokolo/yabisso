@@ -44,6 +44,7 @@ export default function AddProductScreen({ onBack, onOpenSellerProfile, productT
   const [selectedTags, setSelectedTags] = useState([]);
   const [deliveryOptions, setDeliveryOptions] = useState(['pickup']);
   const [isVisible, setIsVisible] = useState(true);
+  const [minPrice, setMinPrice] = useState('');
   const [photos, setPhotos] = useState([]);
   const [showCategoryPicker, setShowCategoryPicker] = useState(false);
   const [shopInfo, setShopInfo] = useState({ name: 'Ma Boutique', location: 'Centre-ville' });
@@ -88,6 +89,7 @@ export default function AddProductScreen({ onBack, onOpenSellerProfile, productT
     setSelectedTags(product.tags || []);
     setDeliveryOptions(product.delivery || ['pickup']);
     setIsVisible(product.isVisible ?? true);
+    setMinPrice(product.minPrice?.toString() || '');
     setPhotos(product.photos || []);
   };
 
@@ -173,6 +175,10 @@ export default function AddProductScreen({ onBack, onOpenSellerProfile, productT
       Alert.alert('Erreur', 'Veuillez entrer un prix valide');
       return false;
     }
+    if (minPrice && parseFloat(minPrice) > parseFloat(price)) {
+      Alert.alert('Erreur', 'Le prix minimal ne peut pas être supérieur au prix affiché');
+      return false;
+    }
     if (!stock || parseInt(stock) < 0) {
       Alert.alert('Erreur', 'Veuillez entrer une quantité en stock');
       return false;
@@ -189,6 +195,7 @@ export default function AddProductScreen({ onBack, onOpenSellerProfile, productT
       category: category.id,
       categoryName: category.name,
       price: parseFloat(price),
+      minPrice: minPrice ? parseFloat(minPrice) : parseFloat(price),
       stock: parseInt(stock),
       description: description.trim(),
       tags: selectedTags,
@@ -310,6 +317,17 @@ export default function AddProductScreen({ onBack, onOpenSellerProfile, productT
                 keyboardType="numeric"
                 value={price}
                 onChangeText={setPrice}
+              />
+            </View>
+            <View style={styles.inlineField}>
+              <Text style={styles.inputLabel}>Prix Min (FCFA)</Text>
+              <TextInput
+                placeholder="750"
+                placeholderTextColor="#6B7A8B"
+                style={styles.textInput}
+                keyboardType="numeric"
+                value={minPrice}
+                onChangeText={setMinPrice}
               />
             </View>
             <View style={styles.inlineField}>

@@ -62,10 +62,26 @@ function MarketplaceHomeScreen({ onBack, onNavigate, favorites = [], onToggleFav
   const [showCartPopup, setShowCartPopup] = useState(false);
   const [addedProduct, setAddedProduct] = useState(null);
   const [sellerProducts, setSellerProducts] = useState([]);
+  const [shopName, setShopName] = useState('Ma Boutique');
   
   useEffect(() => {
     loadSellerProducts();
+    loadShopName();
   }, []);
+
+  const loadShopName = async () => {
+    try {
+      const saved = await SecureStore.getItemAsync('seller_shop_info');
+      if (saved) {
+        const data = JSON.parse(saved);
+        if (data.name) {
+          setShopName(data.name);
+        }
+      }
+    } catch (e) {
+      console.log('Error loading shop name:', e);
+    }
+  };
 
   const loadSellerProducts = async () => {
     try {
@@ -77,12 +93,17 @@ function MarketplaceHomeScreen({ onBack, onNavigate, favorites = [], onToggleFav
           .map(p => ({
             id: p.id,
             name: p.name,
-            brand: 'Ma Boutique',
+            brand: shopName,
             price: p.price.toString(),
             category: CATEGORIES_MAP[p.category] || p.categoryName || 'Autres',
             isNew: p.tags?.includes('Nouveau'),
             isPromo: p.tags?.includes('Promo'),
             photos: p.photos,
+            seller: {
+              name: shopName,
+              rating: 4.5,
+              avatar: null,
+            },
           }));
         setSellerProducts(formatted);
       }

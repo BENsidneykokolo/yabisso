@@ -43,12 +43,12 @@
 - UI Wallet complet: WalletScreen, RechargeScreen, SendScreen, ReceiveScreen, HistoryScreen (Conversion FCFA/Points dynamique intégrée)
 - Bottom navigation wallet avec navigation et etat actif
 - Pages: Assistant IA (Entièrement réécrit: clavier, layout stable, menu, 6 outils), Profil + sous-pages
-- **Loba (Vidéo)** : LobaHomeScreen, LobaFeedScreen, LobaRecordScreen, LobaProfileScreen, LobaStoriesScreen (Implémenté)
-- **Restaurant** : RestaurantHomeScreen, RestaurantDetailsScreen, FoodItemDetailsScreen, FoodCheckoutScreen (Implémenté)
+- **Loba (Vidéo)** : LobaHomeScreen, LobaFeedScreen, LobaRecordScreen, LobaProfileScreen, LobaStoriesScreen, LobaForYouScreen, LobaFollowingScreen (Implémenté)
+- **Restaurant** : RestaurantHomeScreen, RestaurantDetailsScreen, FoodItemDetailsScreen, FoodCheckoutScreen, RestaurantOrdersScreen, RestaurantTrackingScreen, RestaurantSellerScreen (Implémenté)
 - **Hotels** : HotelHomeScreen (UI Base Implémenté)
 - **Services** : ServicesHomeScreen (UI Base Implémenté)
 - **Immobilier** : RealEstateHomeScreen (UI Base Implémenté)
-- Marketplace (COMPLET S5) : MarketplaceHomeScreen, ProductListScreen, CategoryPageScreen, CartScreen, CheckoutScreen, OrdersScreen, OrderStatusScreen, DeliveryTrackingScreen, AddProductScreen, SellerProfileScreen, SellerComparisonScreen, BlockedUserScreen, MarketplaceFavoritesScreen, MarketplaceHistoryScreen, MarketplaceNotificationsScreen, MarketplaceSettingsScreen
+- **Marketplace** (COMPLET S5) : MarketplaceHomeScreen, ProductListScreen, CategoryPageScreen, CartScreen, CheckoutScreen, OrdersScreen, OrderStatusScreen, DeliveryTrackingScreen, AddProductScreen, SellerProfileScreen, SellerContactScreen, SellerComparisonScreen, BlockedUserScreen, MarketplaceFavoritesScreen, MarketplaceHistoryScreen, MarketplaceNotificationsScreen, MarketplaceSettingsScreen
 - FloatingNav: bouton flottant (bottom: 120)
 - Contextes : CartProvider, OrderProvider (états partagés)
 - Offline choix SMS/QR: modal active quand offline (NetInfo)

@@ -46,7 +46,9 @@ export default function RestaurantTrackingScreen({ route, onBack, onNavigate }) 
           <MaterialCommunityIcons name="arrow-left" size={24} color="#fff" />
         </Pressable>
         <Text style={styles.headerTitle}>Suivi de commande</Text>
-        <View style={styles.placeholder} />
+        <Pressable style={styles.homeBtn} onPress={() => onNavigate?.('home')}>
+          <MaterialCommunityIcons name="home" size={22} color="#fff" />
+        </Pressable>
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false}>
@@ -167,6 +169,22 @@ const styles = StyleSheet.create({
     height: 40,
     borderRadius: 20,
     backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  headerTitle: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  placeholder: {
+    width: 40,
+  },
+  homeBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(43, 238, 121, 0.2)',
     alignItems: 'center',
     justifyContent: 'center',
   },

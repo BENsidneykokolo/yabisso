@@ -15,6 +15,7 @@ import {
   Platform,
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import * as SecureStore from 'expo-secure-store';
 import { useCart } from '../context/CartContext';
 
 const { width, height } = Dimensions.get('window');
@@ -53,6 +54,37 @@ export default function ProductDetailsScreen({ onBack, onNavigate, product }) {
   const [isOfferModalVisible, setIsOfferModalVisible] = useState(false);
   const [offerAmount, setOfferAmount] = useState('');
   const [negotiatedPrice, setNegotiatedPrice] = useState(null);
+  const [lastOffer, setLastOffer] = useState(null); // { amount, timestamp }
+
+  React.useEffect(() => {
+    loadOfferHistory();
+  }, [product?.id]);
+
+  const loadOfferHistory = async () => {
+    try {
+      const productId = product?.id || 1;
+      const saved = await SecureStore.getItemAsync(`user_offer_${productId}`);
+      if (saved) {
+        const data = JSON.parse(saved);
+        setLastOffer(data);
+        setNegotiatedPrice(data.amount);
+      }
+    } catch (e) {
+      console.log('Error loading offer history:', e);
+    }
+  };
+
+  const saveOfferHistory = async (amount) => {
+    try {
+      const productId = product?.id || 1;
+      const data = { amount, timestamp: new Date().toISOString() };
+      await SecureStore.setItemAsync(`user_offer_${productId}`, JSON.stringify(data));
+      setLastOffer(data);
+      setNegotiatedPrice(amount);
+    } catch (e) {
+      console.log('Error saving offer history:', e);
+    }
+  };
 
   const defaultProduct = {
     id: 1,
@@ -72,11 +104,15 @@ export default function ProductDetailsScreen({ onBack, onNavigate, product }) {
     },
     // Négociation Mock Data
     canNegotiate: true,
-    minPrice: 100000,
-    maxPrice: 150000,
+    minPrice: 0, // Sera calculé dynamiquement si non présent
   };
 
-  const productData = product ? { ...defaultProduct, ...product } : defaultProduct;
+  const productData = { 
+    ...defaultProduct, 
+    ...product,
+    price: product?.price ?? defaultProduct.price,
+    minPrice: product?.minPrice ?? (product?.price ? parseFloat(product.price) * 0.75 : 100000),
+  };
   
   const displayImages = productData.photos && productData.photos.length > 0 
     ? productData.photos 
@@ -115,25 +151,48 @@ export default function ProductDetailsScreen({ onBack, onNavigate, product }) {
       return;
     }
 
-    if (amount >= productData.minPrice && amount <= productData.maxPrice) {
-      setNegotiatedPrice(amount);
+    const price = parseFloat(productData.price);
+    const minPrice = parseFloat(productData.minPrice);
+
+    // Si l'offre est supérieure au prix affiché
+    if (amount > price) {
+      Alert.alert(
+        'Offre Elevée',
+        `Votre offre est largement supérieure au prix de l'article (${formatPrice(price)}). Vous pouvez proposer un prix plus bas si vous le souhaitez.`,
+        [{ text: 'D\'accord' }]
+      );
+      return;
+    }
+
+    // Logic: If user already had an offer accepted, they can't offer LOWER unless 10h passed
+    if (lastOffer) {
+      const lastAmount = lastOffer.amount;
+      const lastTime = new Date(lastOffer.timestamp).getTime();
+      const now = new Date().getTime();
+      const hoursPassed = (now - lastTime) / (1000 * 60 * 60);
+
+      if (amount < lastAmount && hoursPassed < 10) {
+        Alert.alert(
+          'Offre Refusée',
+          `Offre refusée, vous avez déjà une offre acceptée à ${formatPrice(lastAmount)}.`
+        );
+        return;
+      }
+    }
+
+    if (amount >= minPrice) {
+      saveOfferHistory(amount);
       setIsOfferModalVisible(false);
       Alert.alert(
         'Offre Acceptée !',
         `Le vendeur a accepté votre offre de ${formatPrice(amount)}. Vous pouvez maintenant ajouter l'article au panier à ce prix.`,
         [{ text: 'Super !' }]
       );
-    } else if (amount < productData.minPrice) {
-      Alert.alert(
-        'Offre Refusée',
-        'Votre offre est trop basse. Le vendeur ne peut pas accepter ce prix.',
-        [{ text: 'Réessayer' }]
-      );
     } else {
       Alert.alert(
-        'Offre Inutile',
-        'Votre offre est supérieure au prix actuel. Vous devriez plutôt acheter au prix affiché !',
-        [{ text: 'D\'accord' }]
+        'Offre Refusée',
+        `Votre offre est trop basse. Le vendeur ne peut pas accepter de prix inférieur à ${formatPrice(minPrice)}.`,
+        [{ text: 'Réessayer' }]
       );
     }
   };
@@ -212,13 +271,22 @@ export default function ProductDetailsScreen({ onBack, onNavigate, product }) {
             <Text style={styles.productName}>{productData.name}</Text>
             <View style={styles.priceContainer}>
               {negotiatedPrice ? (
-                <View style={styles.negotiatedBadge}>
-                  <Text style={styles.negotiatedText}>Prix négocié</Text>
-                </View>
-              ) : null}
-              <Text style={[styles.price, negotiatedPrice && styles.negotiatedPriceText]}>
-                {formatPrice(displayPrice)}
-              </Text>
+                <>
+                  <View style={styles.negotiatedBadge}>
+                    <Text style={styles.negotiatedText}>Prix négocié</Text>
+                  </View>
+                  <Text style={styles.originalPrice}>
+                    {formatPrice(productData.price)}
+                  </Text>
+                  <Text style={[styles.price, styles.negotiatedPriceText]}>
+                    {formatPrice(negotiatedPrice)}
+                  </Text>
+                </>
+              ) : (
+                <Text style={styles.price}>
+                  {formatPrice(productData.price)}
+                </Text>
+              )}
             </View>
           </View>
 

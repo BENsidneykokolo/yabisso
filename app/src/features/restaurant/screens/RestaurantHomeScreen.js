@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, TextInput, Pressable, StyleSheet, SafeAreaView, Image } from 'react-native';
+import { View, Text, ScrollView, TextInput, Pressable, StyleSheet, SafeAreaView, Image, Modal } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRestaurantFavorites } from '../context/RestaurantFavoritesContext';
 
@@ -35,6 +35,8 @@ export default function RestaurantHomeScreen({ onBack, onNavigate }) {
     { label: 'Accueil', icon: 'home', screen: 'restaurant_home' },
     { label: 'Favoris', icon: 'heart', screen: 'restaurant_favorites' },
     { label: 'Commandes', icon: 'receipt', screen: 'restaurant_orders' },
+    { label: 'Suivi de commande', icon: 'map-marker-path', screen: 'restaurant_tracking' },
+    { label: 'Vendre', icon: 'store', screen: 'restaurant_seller' },
     { label: 'Panier', icon: 'shopping-bag', screen: 'food_checkout' },
   ];
 
@@ -90,14 +92,34 @@ export default function RestaurantHomeScreen({ onBack, onNavigate }) {
           <View style={styles.menuOverlay}>
             <Pressable style={styles.menuBackdrop} onPress={() => setShowMenu(false)} />
             <View style={styles.menuContainer}>
-              <Text style={styles.menuTitle}>Menu</Text>
-              {menuItems.map((item) => (
-                <Pressable key={item.label} style={styles.menuItem} onPress={() => handleMenuPress(item)}>
-                  <MaterialCommunityIcons name={item.icon} size={22} color="#137fec" />
-                  <Text style={styles.menuItemText}>{item.label}</Text>
-                  <MaterialCommunityIcons name="chevron-right" size={20} color="#64748b" />
+              <View style={styles.menuHeader}>
+                <View style={styles.menuUserInfo}>
+                  <View style={styles.menuAvatar}>
+                    <MaterialCommunityIcons name="account" size={28} color="#fff" />
+                  </View>
+                  <View>
+                    <Text style={styles.menuUserName}>Alex</Text>
+                    <Text style={styles.menuUserEmail}>alex@yabisso.com</Text>
+                  </View>
+                </View>
+                <Pressable onPress={() => setShowMenu(false)}>
+                  <MaterialCommunityIcons name="close" size={24} color="#fff" />
                 </Pressable>
-              ))}
+              </View>
+              
+              <View style={styles.menuItems}>
+                {menuItems.map((item) => (
+                  <Pressable key={item.label} style={styles.menuItem} onPress={() => handleMenuPress(item)}>
+                    <MaterialCommunityIcons name={item.icon} size={22} color="#94a3b8" />
+                    <Text style={styles.menuItemText}>{item.label}</Text>
+                    <MaterialCommunityIcons name="chevron-right" size={20} color="#64748b" />
+                  </Pressable>
+                ))}
+              </View>
+
+              <View style={styles.menuFooter}>
+                <Text style={styles.menuFooterText}>Yabisso Restaurant v1.0</Text>
+              </View>
             </View>
           </View>
         )}
@@ -248,10 +270,86 @@ const styles = StyleSheet.create({
   navIconActive: { backgroundColor: '#2BEE79' },
   navLabel: { color: '#6B7280', fontSize: 10 },
   navLabelActive: { color: '#2BEE79' },
-  menuOverlay: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 1000 },
-  menuBackdrop: { flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.5)' },
-  menuContainer: { position: 'absolute', top: 100, right: 16, backgroundColor: '#1c2630', borderRadius: 16, padding: 16, width: 220 },
+  menuOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 1000,
+    flexDirection: 'row',
+  },
+  menuBackdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  menuContainer: {
+    width: '80%',
+    maxWidth: 320,
+    backgroundColor: '#1a2632',
+    height: '100%',
+    paddingTop: 50,
+    position: 'absolute',
+    left: 0,
+  },
+  menuHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingBottom: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#324d67',
+  },
+  menuUserInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  menuAvatar: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#137fec',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  menuUserName: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#fff',
+  },
+  menuUserEmail: {
+    fontSize: 13,
+    color: '#64748b',
+    marginTop: 2,
+  },
+  menuItems: {
+    paddingTop: 20,
+    paddingHorizontal: 0,
+  },
+  menuItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+  },
+  menuItemText: {
+    flex: 1,
+    fontSize: 15,
+    color: '#e2e8f0',
+    marginLeft: 16,
+  },
+  menuFooter: {
+    position: 'absolute',
+    bottom: 30,
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+  },
+  menuFooterText: {
+    fontSize: 12,
+    color: '#64748b',
+  },
   menuTitle: { color: '#fff', fontSize: 16, fontWeight: 'bold', marginBottom: 16, paddingBottom: 8, borderBottomWidth: 1, borderBottomColor: 'rgba(255, 255, 255, 0.1)' },
-  menuItem: { flexDirection: 'row', alignItems: 'center', paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: 'rgba(255, 255, 255, 0.05)' },
-  menuItemText: { flex: 1, color: '#fff', fontSize: 14, marginLeft: 12 },
 });
