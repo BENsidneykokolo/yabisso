@@ -109,6 +109,15 @@
 | Restaurant - Header simplifie (menu gauche, favoris droite) | Done | P2 | S4 |
 | Restaurant - Integration adresse checkout vers profil | Done | P2 | S4 |
 | Restaurant - Fix syntax errors RestaurantHomeScreen.js | Done | P2 | S4 |
+| Marketplace - SellerProfileScreen (gestion produits, edit, delete) | Done | P1 | S4 |
+| Marketplace - AddProductScreen (photos, categories, validation, publish/draft) | Done | P1 | S4 |
+| Marketplace - Upload photo profil et banniere boutique | Done | P1 | S4 |
+| Marketplace - Menu "Vendre" vers profil vendeur | Done | P1 | S4 |
+| Marketplace - Affichage produits cree (boutique, categories, recherche) | Done | P1 | S4 |
+| Marketplace - Workflow achat complet (panier -> checkout -> commande) | Done | P1 | S4 |
+| Marketplace - Navigation produit details -> panier -> checkout | Done | P1 | S4 |
+| Marketplace - Affichage details produit (image, prix, marque, description) | Done | P1 | S4 |
+| Loba - Appel telephonique depuis Messages | Done | P2 | S5 |
 
 ---
 
@@ -125,7 +134,7 @@
 
 | Tâche | Status | Priorité | Sprint |
 |-------|--------|----------|--------|
-| Loba feed v1 (vertical + cache) | Not Started | P2 | S3 |
+| Loba feed v1 (vertical + cache + filters) | Done | P2 | S3 |
 | Media pipeline (compression + mosaïque) | Not Started | P2 | S4 |
 
 ---
@@ -140,6 +149,7 @@
 | Order Re-entry & Modification (cancelled orders) | Done | P2 | S5 |
 | Recipient Info Popup (Not Me option) | Done | P2 | S5 |
 | Order lifecycle (En cours, Livré, Annulé) | Done | P2 | S5 |
+| Marketplace Pricing & Seller Details | Done | P1 | S5 |
 | Swap QR/Scan | Not Started | P2 | S6 |
 | Courier signup & KYC | Not Started | P2 | S8 |
 | Dispatch engine v1 | Not Started | P2 | S8 |

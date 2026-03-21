@@ -80,6 +80,12 @@
 - Marketplace - Parametres: `app/src/features/marketplace/screens/MarketplaceSettingsScreen.js`
 - Loba - For You (Pour Toi): `app/src/features/loba/screens/LobaForYouScreen.js`
 - Loba - Following (Abonnements): `app/src/features/loba/screens/LobaFollowingScreen.js`
+- Loba - Messages: `app/src/features/loba/screens/LobaMessagesScreen.js` (+ appel téléphonique)
+- Loba - Friends: `app/src/features/loba/screens/LobaFriendsScreen.js`
+- Loba - Create: `app/src/features/loba/screens/LobaCreateScreen.js`
+- Loba - Record: `app/src/features/loba/screens/LobaRecordScreen.js`
+- Loba - Settings: `app/src/features/loba/screens/LobaSettingsScreen.js`
+- Loba - Preview: `app/src/features/loba/screens/LobaPreviewScreen.js`
 - Restaurant - Home: `app/src/features/restaurant/screens/RestaurantHomeScreen.js`
 - Restaurant - Details: `app/src/features/restaurant/screens/RestaurantDetailsScreen.js`
 - Restaurant - Item Details: `app/src/features/restaurant/screens/FoodItemDetailsScreen.js`

@@ -58,13 +58,12 @@ FloatingNav (bouton flottant gauche) sur certaines pages
 UI Assistant IA implemente avec menu navigation, barre multiline, clavier avoidance, et 6 outils (Camera, Photo, Fichier, Position, Contact, Audio)
 Build dev client Android configuré (`local.properties` pointant sur AppData SDK) et build Gradle validé
 
-## Nouvelles fonctionnalités (2026-03-15)
-- UI Profil avec details inscription (Nom cliquable -> Compte)
-- Ecran AddAddress avec geolocalisation + categories (Maison/Travail/etc) sans necessite de nom
-- Ecran Notifications marketplace avec navigation fonctionnelle
-- Menu Boutique avec "Profil" au lieu de "Accueil"
-- Checkout "Moi" affiche details profil inscription
-- **Universal Offline-First DB**: Marketplace, Wallet, Loba, Assistant intégrés avec stockage local (WatermelonDB).
+## Nouvelles fonctionnalités (2026-03-21)
+- **Loba Video Feed**: Migration vers `expo-av` pour la lecture native. Persistence des filtres (Sépia, etc.) via schéma DB v6.
+- **Marketplace Pro**: Affichage complet des descriptions et infos vendeurs (avatar/note) dans le tunnel d'achat.
+- **Pricing Engine**: Parsing robuste des prix (gestion des "150.000") et fusion intelligente des articles négociés dans le panier.
+- **Order Tracking**: Suivi de commande dynamique basé sur les données réelles de la transaction.
+- **Seller Workflow**: Profil vendeur avec création de produits (photos, catégories, tags, livraison), ajout au panier, checkout et commande.
 
 ## Modules marketplace implementes (code)
 - UI: `app/src/features/marketplace/screens/MarketplaceHomeScreen.js`
@@ -78,9 +77,10 @@ Build dev client Android configuré (`local.properties` pointant sur AppData SDK
 - UI: `app/src/features/marketplace/screens/DeliveryTrackingScreen.js`
 - UI: `app/src/features/marketplace/screens/SellerComparisonScreen.js`
 - UI: `app/src/features/marketplace/screens/BlockedUserScreen.js`
+- UI: `app/src/features/marketplace/screens/SellerProfileScreen.js` (profil vendeur + gestion produits)
+- UI: `app/src/features/marketplace/screens/AddProductScreen.js` (création produits)
 - Context: `app/src/features/marketplace/context/CartContext.js`
 - Context: `app/src/features/marketplace/context/OrderContext.js`
-- Screens supplementaires: AddProductScreen, SellerProfileScreen
 
 ## Parcours marketplace (flow complet)
 1. MarketplaceHome -> ProductList -> ProductDetails
@@ -90,6 +90,8 @@ Build dev client Android configuré (`local.properties` pointant sur AppData SDK
 5. OrderStatus -> DeliveryTracking
 6. ProductDetails (si plusieurs vendeurs) -> SellerComparison
 7. Profile -> BlockedUser (Statut Marketplace)
+8. Menu "Vendre" -> SellerProfile -> AddProduct -> Products list
+9. Achat: Product -> Add to Cart -> Cart -> Checkout -> Order
 
 ## Auth et securite
 PIN hashe SHA-256, jamais stocke en clair

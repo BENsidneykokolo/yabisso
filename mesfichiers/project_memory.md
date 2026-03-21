@@ -133,6 +133,8 @@
 - Sprint 4: Menu Boutique - "Accueil" remplace par "Profil" avec icon account-circle
 - Sprint 5: Universal Offline-First Integration (Marketplace, Wallet, Loba, AI Assistant)
 - Sprint 5: Notifications - Navigation Promotion, Nouveauté, Commande, Paiement fonctionnelle (Deep-linking)
+- Sprint 5: Marketplace Seller Workflow - SellerProfileScreen, AddProductScreen, upload photos (profil/bannière), menu "Vendre", produits visibles dans boutique/catégories/recherche, workflow achat complet (panier -> checkout -> commande)
+- Sprint 5: Loba - Appel téléphonique depuis Messages
 
 ## Decisions techniques additionnelles
 - Navigation: React Navigation (a installer)
