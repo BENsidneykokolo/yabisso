@@ -92,7 +92,7 @@ function LobaHomeScreen({ onBack, onNavigate, posts = [] }) {
   const [selectedVideo, setSelectedVideo] = useState(null);
 
   // Merge DB posts with initial mock videos
-  const displayPosts = [
+  const getDisplayPosts = () => [
     ...posts.map(p => ({
       id: p.id,
       username: p.username,
@@ -112,9 +112,12 @@ function LobaHomeScreen({ onBack, onNavigate, posts = [] }) {
     ...initialVideos.map(v => ({ ...v, type: 'video', filterColor: 'transparent' }))
   ];
 
+  const [feedVideos, setFeedVideos] = useState(getDisplayPosts());
+
   useEffect(() => {
+    setFeedVideos(getDisplayPosts());
     loadSavedVideos();
-  }, []);
+  }, [posts]);
 
   const loadSavedVideos = async () => {
     try {
@@ -155,8 +158,29 @@ function LobaHomeScreen({ onBack, onNavigate, posts = [] }) {
   };
 
   const handleSave = async (id) => {
-    // Logic for saving based on displayPosts
-    Alert.alert('Sauvegardé', 'Cette publication a été ajoutée à vos favoris.');
+    setFeedVideos(prev => prev.map(video => {
+      if (video.id === id) {
+        return { ...video, saved: !video.saved };
+      }
+      return video;
+    }));
+    try {
+      const savedIdsJson = await SecureStore.getItemAsync('loba_saved_videos');
+      let savedIds = savedIdsJson ? JSON.parse(savedIdsJson) : [];
+      
+      const video = feedVideos.find(v => v.id === id);
+      if (video?.saved) {
+        savedIds = savedIds.filter(savedId => savedId !== id);
+      } else {
+        if (!savedIds.includes(id)) {
+           savedIds.push(id);
+           Alert.alert('Sauvegardé', 'Cette publication a été ajoutée à vos favoris.');
+        }
+      }
+      await SecureStore.setItemAsync('loba_saved_videos', JSON.stringify(savedIds));
+    } catch (e) {
+      console.log('Error saving video:', e);
+    }
   };
 
   const openShare = (video) => {
@@ -182,17 +206,23 @@ function LobaHomeScreen({ onBack, onNavigate, posts = [] }) {
     }
   };
 
-  const renderVideo = ({ item, index }) => (
-    <View style={styles.videoContainer}>
+  const renderVideo = ({ item, index }) => {
+    const isCloseToVisible = Math.abs(index - currentVideoIndex) <= 1;
+    return (
+    <View style={[styles.videoContainer, { height: height }]}>
       {item.type === 'video' ? (
-        <Video
-          source={{ uri: item.video }}
-          style={styles.videoBackground}
-          resizeMode={ResizeMode.COVER}
-          shouldPlay={index === currentVideoIndex}
-          isLooping
-          isMuted={false}
-        />
+        isCloseToVisible ? (
+          <Video
+            source={{ uri: item.video }}
+            style={styles.videoBackground}
+            resizeMode={ResizeMode.COVER}
+            shouldPlay={index === currentVideoIndex}
+            isLooping
+            isMuted={false}
+          />
+        ) : (
+          <View style={[styles.videoBackground, { backgroundColor: '#000' }]} />
+        )
       ) : (
         <Image source={{ uri: item.video }} style={styles.videoBackground} />
       )}
@@ -260,10 +290,12 @@ function LobaHomeScreen({ onBack, onNavigate, posts = [] }) {
         <View style={[styles.progressFill, { width: `${item.progress}%` }]} />
       </View>
     </View>
-  );
+    );
+  };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
+      <View style={{ position: 'absolute', width: width, height: height, top: 0, left: 0 }}>
       {/* Header Tabs */}
       <View style={styles.header}>
         <Pressable style={styles.headerChip} onPress={() => onNavigate?.('loba_following')}>
@@ -283,7 +315,7 @@ function LobaHomeScreen({ onBack, onNavigate, posts = [] }) {
       </View>
 
       <FlatList
-        data={displayPosts}
+        data={feedVideos}
         renderItem={renderVideo}
         keyExtractor={(item, index) => item.id?.toString() || index.toString()}
         pagingEnabled
@@ -294,6 +326,7 @@ function LobaHomeScreen({ onBack, onNavigate, posts = [] }) {
           setCurrentVideoIndex(index);
         }}
       />
+      </View>
 
       {/* Share Modal */}
       <Modal
@@ -368,7 +401,7 @@ function LobaHomeScreen({ onBack, onNavigate, posts = [] }) {
         else if (tab === 'messages') onNavigate?.('loba_messages');
         else if (tab === 'profile') onNavigate?.('loba_profile');
       }} />
-    </SafeAreaView>
+    </View>
   );
 }
 

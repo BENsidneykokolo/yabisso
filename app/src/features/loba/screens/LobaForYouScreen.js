@@ -129,7 +129,23 @@ function LobaForYouScreen({ onBack, onNavigate, videos = [] }) {
   // Update local state when prop changes
   React.useEffect(() => {
     setFeedVideos(displayPosts);
+    loadSavedVideos();
   }, [videos]);
+
+  const loadSavedVideos = async () => {
+    try {
+      const savedIdsJson = await SecureStore.getItemAsync('loba_saved_videos');
+      if (savedIdsJson) {
+        const savedIds = JSON.parse(savedIdsJson);
+        setFeedVideos(prev => prev.map(video => ({
+          ...video,
+          saved: savedIds.includes(video.id)
+        })));
+      }
+    } catch (error) {
+      console.log('Error loading saved videos:', error);
+    }
+  };
   const [isShareModalVisible, setIsShareModalVisible] = useState(false);
   const [isCommentsModalVisible, setIsCommentsModalVisible] = useState(false);
   const [selectedVideo, setSelectedVideo] = useState(null);
@@ -158,13 +174,30 @@ function LobaForYouScreen({ onBack, onNavigate, videos = [] }) {
     }));
   };
 
-  const handleSave = (id) => {
+  const handleSave = async (id) => {
     setFeedVideos(prev => prev.map(video => {
       if (video.id === id) {
         return { ...video, saved: !video.saved };
       }
       return video;
     }));
+    try {
+      const savedIdsJson = await SecureStore.getItemAsync('loba_saved_videos');
+      let savedIds = savedIdsJson ? JSON.parse(savedIdsJson) : [];
+      
+      const video = feedVideos.find(v => v.id === id);
+      if (video?.saved) {
+        savedIds = savedIds.filter(savedId => savedId !== id);
+      } else {
+        if (!savedIds.includes(id)) {
+           savedIds.push(id);
+           Alert.alert('Sauvegardé', 'Cette publication a été ajoutée à vos favoris.');
+        }
+      }
+      await SecureStore.setItemAsync('loba_saved_videos', JSON.stringify(savedIds));
+    } catch (e) {
+      console.log('Error saving video:', e);
+    }
   };
 
   const openShare = (video) => {
@@ -193,17 +226,23 @@ function LobaForYouScreen({ onBack, onNavigate, videos = [] }) {
     Alert.alert('Intérêt', `${interest} ajouté à vos préférences!`);
   };
 
-  const renderVideo = ({ item, index }) => (
-    <View style={styles.videoContainer}>
+  const renderVideo = ({ item, index }) => {
+    const isCloseToVisible = Math.abs(index - currentVideoIndex) <= 1;
+    return (
+    <View style={[styles.videoContainer, { height: height }]}>
       {item.type === 'video' ? (
-        <Video
-          source={{ uri: item.video }}
-          style={styles.videoBackground}
-          resizeMode={ResizeMode.COVER}
-          shouldPlay={index === currentVideoIndex}
-          isLooping
-          isMuted={false}
-        />
+        isCloseToVisible ? (
+          <Video
+            source={{ uri: item.video }}
+            style={styles.videoBackground}
+            resizeMode={ResizeMode.COVER}
+            shouldPlay={index === currentVideoIndex}
+            isLooping
+            isMuted={false}
+          />
+        ) : (
+          <View style={[styles.videoBackground, { backgroundColor: '#000' }]} />
+        )
       ) : (
         <Image source={{ uri: item.video }} style={styles.videoBackground} />
       )}
@@ -275,10 +314,12 @@ function LobaForYouScreen({ onBack, onNavigate, videos = [] }) {
         <View style={[styles.progressFill, { width: `${item.progress}%` }]} />
       </View>
     </View>
-  );
+    );
+  };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
+      <View style={{ position: 'absolute', width: width, height: height, top: 0, left: 0 }}>
       <View style={styles.header}>
         <View style={styles.statusChip}>
           <MaterialCommunityIcons name="wifi-off" size={14} color="#fbbf24" />
@@ -305,6 +346,7 @@ function LobaForYouScreen({ onBack, onNavigate, videos = [] }) {
           setCurrentVideoIndex(index);
         }}
       />
+      </View>
 
       <Modal
         visible={showInterests}
@@ -398,7 +440,7 @@ function LobaForYouScreen({ onBack, onNavigate, videos = [] }) {
         else if (tab === 'messages') onNavigate?.('loba_messages');
         else if (tab === 'profile') onNavigate?.('loba_profile');
       }} />
-    </SafeAreaView>
+    </View>
   );
 }
 

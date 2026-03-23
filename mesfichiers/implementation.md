@@ -64,22 +64,26 @@ Build dev client Android configuré (`local.properties` pointant sur AppData SDK
 - **Pricing Engine**: Parsing robuste des prix (gestion des "150.000") et fusion intelligente des articles négociés dans le panier.
 - **Order Tracking**: Suivi de commande dynamique basé sur les données réelles de la transaction.
 - **Seller Workflow**: Profil vendeur avec création de produits (photos, catégories, tags, livraison), ajout au panier, checkout et commande.
+- **Favoris**: Système de favoris avec stockage SecureStore. Le cœur s'active sur ProductDetailsScreen et les produits s'affichent dans MarketplaceFavoritesScreen.
+- **Comparaison de prix**: SellerComparisonScreen affiche le même produit avec plusieurs vendeurs (prix, état, livraison, localisation). Navigation vers ProductDetails avec le prix du vendeur sélectionné.
+- **Confirmation réception**: Modal dans OrderStatusScreen avec possibilité d'ajouter un commentaire texte et jusqu'à 3 photos (caméra ou galerie) pour confirmer que la commande est conforme ou signaler un problème.
 
 ## Modules marketplace implementes (code)
 - UI: `app/src/features/marketplace/screens/MarketplaceHomeScreen.js`
 - UI: `app/src/features/marketplace/screens/ProductListScreen.js`
 - UI: `app/src/features/marketplace/screens/CategoryPageScreen.js`
-- UI: `app/src/features/marketplace/screens/ProductDetailsScreen.js` (+ négociation & compare)
+- UI: `app/src/features/marketplace/screens/ProductDetailsScreen.js` (+ négociation & compare & favoris)
 - UI: `app/src/features/marketplace/screens/CartScreen.js`
 - UI: `app/src/features/marketplace/screens/CheckoutScreen.js` (+ recipient popup)
 - UI: `app/src/features/marketplace/screens/OrdersScreen.js` (+ reorder & status update)
-- UI: `app/src/features/marketplace/screens/OrderStatusScreen.js`
+- UI: `app/src/features/marketplace/screens/OrderStatusScreen.js` (+ confirmation reception avec photo/commentaire)
 - UI: `app/src/features/marketplace/screens/DeliveryTrackingScreen.js`
-- UI: `app/src/features/marketplace/screens/SellerComparisonScreen.js`
+- UI: `app/src/features/marketplace/screens/SellerComparisonScreen.js` (+ tri par prix/notation/livraison)
 - UI: `app/src/features/marketplace/screens/BlockedUserScreen.js`
-- UI: `app/src/features/marketplace/screens/SellerProfileScreen.js` (profil vendeur + gestion produits)
+- UI: `app/src/features/marketplace/screens/SellerProfileScreen.js` (profil vendeur + gestion produits, sans onglet avis)
 - UI: `app/src/features/marketplace/screens/AddProductScreen.js` (création produits)
-- Context: `app/src/features/marketplace/context/CartContext.js`
+- UI: `app/src/features/marketplace/screens/MarketplaceFavoritesScreen.js` (liste favoris)
+- Context: `app/src/features/marketplace/context/CartContext.js` (panier + favoris avec SecureStore)
 - Context: `app/src/features/marketplace/context/OrderContext.js`
 
 ## Parcours marketplace (flow complet)
@@ -88,10 +92,12 @@ Build dev client Android configuré (`local.properties` pointant sur AppData SDK
 3. Checkout (Option Moi / Pas Moi avec Popup) -> Confirmation -> OrderStatus / Orders
 4. Orders (En cours -> Livré) ou (Annulé -> Reprendre/Modifier -> Cart)
 5. OrderStatus -> DeliveryTracking
-6. ProductDetails (si plusieurs vendeurs) -> SellerComparison
+6. ProductDetails (si plusieurs vendeurs) -> SellerComparison -> ProductDetails avec prix vendeur
 7. Profile -> BlockedUser (Statut Marketplace)
 8. Menu "Vendre" -> SellerProfile -> AddProduct -> Products list
 9. Achat: Product -> Add to Cart -> Cart -> Checkout -> Order
+10. Favoris: ProductDetails (cœur) -> MarketplaceFavoritesScreen
+11. Confirmation réception: OrderStatus (livré) -> Modal confirmation avec photos/commentaire
 
 ## Auth et securite
 PIN hashe SHA-256, jamais stocke en clair

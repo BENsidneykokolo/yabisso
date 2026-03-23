@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Yabisso — Architecture Globale</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #0D0F14;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    color: #e0e0e0;
+    padding: 28px 20px 48px;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  /* ── Header ── */
+  .header { text-align: center; margin-bottom: 36px; }
+  .header h1 { font-size: 26px; font-weight: 700; color: #2BEE79; letter-spacing: 3px; text-transform: uppercase; }
+  .header p  { font-size: 12px; color: #4b5563; margin-top: 6px; letter-spacing: 1px; }
+
+  /* ── Section ── */
+  .section-label {
+    font-size: 10px; font-weight: 700; letter-spacing: 2px;
+    text-transform: uppercase; color: #374151;
+    text-align: center; margin: 28px 0 12px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .section-label::before, .section-label::after {
+    content: ''; flex: 1; height: 1px; background: #1f2937;
+  }
+
+  /* ── Rails bar ── */
+  .rails { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 4px; }
+  .rail {
+    border-radius: 8px; padding: 12px 14px; border: 1px solid;
+    text-align: center;
+  }
+  .rail-title { font-size: 11px; font-weight: 700; margin-bottom: 4px; }
+  .rail-body  { font-size: 10px; color: #6b7280; line-height: 1.5; }
+  .r-green  { border-color: #1D9E75; background: rgba(29,158,117,0.07); }
+  .r-green  .rail-title { color: #2BEE79; }
+  .r-blue   { border-color: #185FA5; background: rgba(24,95,165,0.07); }
+  .r-blue   .rail-title { color: #60a5fa; }
+  .r-amber  { border-color: #BA7517; background: rgba(186,117,23,0.07); }
+  .r-amber  .rail-title { color: #f59e0b; }
+  .r-gray   { border-color: #374151; background: rgba(255,255,255,0.02); }
+  .r-gray   .rail-title { color: #9ca3af; }
+
+  /* ── Two families ── */
+  .families { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .family {
+    border-radius: 10px; border: 1px solid; padding: 16px;
+  }
+  .fam-shared  { border-color: #1D9E75; background: rgba(29,158,117,0.04); }
+  .fam-private { border-color: #7F77DD; background: rgba(127,119,221,0.04); }
+  .fam-title   { font-size: 12px; font-weight: 700; margin-bottom: 10px; }
+  .fam-shared  .fam-title  { color: #2BEE79; }
+  .fam-private .fam-title  { color: #a89fff; }
+  .fam-body    { font-size: 11px; color: #6b7280; line-height: 1.6; }
+
+  /* ── Manifest box ── */
+  .manifest-box {
+    border: 1px solid #374151; border-radius: 8px;
+    padding: 12px 16px; background: rgba(255,255,255,0.02);
+    margin-bottom: 4px;
+  }
+  .manifest-title { font-size: 11px; font-weight: 700; color: #9ca3af; margin-bottom: 8px; }
+  .manifest-grid  { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .mitem { background: rgba(255,255,255,0.03); border-radius: 6px; padding: 8px 10px; }
+  .mitem-label { font-size: 9px; color: #4b5563; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 3px; }
+  .mitem-val   { font-size: 10px; color: #d1d5db; }
+
+  .algo-95 {
+    display: flex; gap: 10px; margin-top: 8px;
+  }
+  .algo-block {
+    flex: 1; border-radius: 6px; padding: 8px 10px; text-align: center;
+  }
+  .algo-95-main { background: rgba(43,238,121,0.1); border: 1px solid #1D9E75; }
+  .algo-95-exp  { background: rgba(186,117,23,0.1); border: 1px solid #BA7517; }
+  .algo-block .pct { font-size: 20px; font-weight: 700; }
+  .algo-95-main .pct { color: #2BEE79; }
+  .algo-95-exp  .pct { color: #f59e0b; }
+  .algo-block .desc { font-size: 10px; color: #6b7280; margin-top: 2px; }
+
+  /* ── Services grid ── */
+  .services-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+  }
+  .svc {
+    border-radius: 8px; border: 1px solid #1f2937;
+    background: rgba(255,255,255,0.02);
+    padding: 12px 14px;
+    transition: border-color .2s, background .2s;
+    cursor: default;
+  }
+  .svc:hover { border-color: #2BEE79; background: rgba(43,238,121,0.04); }
+  .svc-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+  .svc-icon { font-size: 16px; }
+  .svc-name { font-size: 12px; font-weight: 700; color: #e0e0e0; }
+  .svc-tag  { font-size: 9px; border-radius: 3px; padding: 1px 6px; margin-left: auto; }
+  .tag-p2p  { background: rgba(29,158,117,0.2); color: #2BEE79; }
+  .tag-priv { background: rgba(127,119,221,0.2); color: #a89fff; }
+  .tag-ro   { background: rgba(107,114,128,0.2); color: #9ca3af; }
+
+  .svc-row { display: flex; justify-content: space-between; font-size: 10px; padding: 3px 0; border-bottom: 1px solid #111827; }
+  .svc-row:last-child { border-bottom: none; }
+  .svc-key { color: #4b5563; }
+  .svc-val { color: #9ca3af; text-align: right; max-width: 60%; }
+  .chip { display: inline-block; font-size: 9px; border-radius: 3px; padding: 1px 5px; margin: 1px; }
+  .c-g { background: rgba(29,158,117,0.15); color: #2BEE79; }
+  .c-b { background: rgba(24,95,165,0.15);  color: #60a5fa; }
+  .c-a { background: rgba(186,117,23,0.15); color: #f59e0b; }
+  .c-r { background: rgba(153,60,29,0.15);  color: #f87171; }
+  .c-p { background: rgba(127,119,221,0.15);color: #a89fff; }
+
+  /* ── Wallet cascade ── */
+  .cascade {
+    display: flex; flex-direction: column; gap: 0;
+  }
+  .cstep {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 14px;
+    border-left: 2px solid;
+  }
+  .cstep-1 { border-color: #60a5fa; background: rgba(24,95,165,0.05); }
+  .cstep-2 { border-color: #f59e0b; background: rgba(186,117,23,0.05); }
+  .cstep-3 { border-color: #9ca3af; background: rgba(107,114,128,0.05); }
+  .cstep-4 { border-color: #2BEE79; background: rgba(43,238,121,0.05); }
+  .cnum { font-size: 11px; font-weight: 700; min-width: 18px; }
+  .cstep-1 .cnum { color: #60a5fa; }
+  .cstep-2 .cnum { color: #f59e0b; }
+  .cstep-3 .cnum { color: #9ca3af; }
+  .cstep-4 .cnum { color: #2BEE79; }
+  .ctext { font-size: 11px; color: #d1d5db; }
+  .csub  { font-size: 10px; color: #4b5563; }
+  .cfall { font-size: 9px; color: #374151; margin-left: auto; }
+
+  /* ── LRU / Storage ── */
+  .storage-row {
+    display: grid; grid-template-columns: repeat(4,1fr); gap: 8px;
+  }
+  .sbox { border-radius: 6px; padding: 10px 12px; text-align: center; border: 1px solid #1f2937; background: rgba(255,255,255,0.02); }
+  .sbox-icon { font-size: 18px; margin-bottom: 4px; }
+  .sbox-name { font-size: 10px; font-weight: 700; color: #9ca3af; }
+  .sbox-tech { font-size: 9px; color: #4b5563; margin-top: 2px; }
+
+  /* ── Roadmap ── */
+  .roadmap { display: flex; flex-direction: column; gap: 6px; }
+  .rm-row { display: flex; align-items: center; gap: 12px; padding: 8px 14px; border-radius: 6px; background: rgba(255,255,255,0.02); border: 1px solid #1f2937; }
+  .rm-phase { font-size: 10px; font-weight: 700; color: #2BEE79; min-width: 60px; }
+  .rm-name  { font-size: 10px; color: #d1d5db; flex: 1; }
+  .rm-tag   { font-size: 9px; border-radius: 3px; padding: 2px 6px; }
+  .rm-foundation { background: rgba(127,119,221,0.2); color: #a89fff; }
+  .rm-engagement { background: rgba(43,238,121,0.2);  color: #2BEE79; }
+  .rm-economy    { background: rgba(186,117,23,0.2);  color: #f59e0b; }
+  .rm-services   { background: rgba(24,95,165,0.2);   color: #60a5fa; }
+  .rm-content    { background: rgba(29,158,117,0.2);  color: #2BEE79; }
+  .rm-fun        { background: rgba(153,60,29,0.2);   color: #f87171; }
+  .rm-ai         { background: rgba(107,114,128,0.2); color: #9ca3af; }
+
+  .arrow-down { text-align:center; color:#2BEE79; font-size:18px; margin:6px 0; }
+  hr.div { border:none; border-top:1px solid #111827; margin:6px 0; }
+</style>
+</head>
+<body>
+
+<!-- ── HEADER ── -->
+<div class="header">
+  <h1>Yabisso</h1>
+  <p>Super App Offline-First · Marché Africain · Bluetooth Mesh + WiFi Direct + Internet</p>
+</div>
+
+<!-- ── RAILS ── -->
+<div class="section-label">Rails de connectivité communs</div>
+<div class="rails">
+  <div class="rail r-green">
+    <div class="rail-title">🌐 Internet</div>
+    <div class="rail-body">Browse direct · sync Supabase · pas de limite de taille · prefetch arrière-plan</div>
+  </div>
+  <div class="rail r-blue">
+    <div class="rail-title">📡 WiFi Direct</div>
+    <div class="rail-body">P2P local auto · transfert taille ↑ · thumbnails → images → vidéos</div>
+  </div>
+  <div class="rail r-amber">
+    <div class="rail-title">🔵 Bluetooth Mesh</div>
+    <div class="rail-body">P2P local auto · limite ≤ 5 MB · chunked Base64 BLE · store-and-forward</div>
+  </div>
+  <div class="rail r-gray">
+    <div class="rail-title">💬 SMS Fallback</div>
+    <div class="rail-body">Données critiques uniquement · OTP · paiements · ACK transactions</div>
+  </div>
+</div>
+
+<!-- ── DEUX FAMILLES ── -->
+<div class="section-label">Deux familles de services</div>
+<div class="families">
+  <div class="family fam-shared">
+    <div class="fam-title">Data partagée — Sync P2P automatique</div>
+    <div class="fam-body">
+      Les données circulent entre utilisateurs proches sans internet.<br>
+      Manifest → Déduplication → Filtre 95/5 → Transfer Queue → Local Storage.<br><br>
+      <strong style="color:#e0e0e0">Services :</strong> LOBA · Marketplace · MeshChat · Bookings · Real Estate · Transport · Hôtels · Vols · Musique · Streaming · Livraison · Formation · Réservation · Paris/Bet · Bloc-notes
+    </div>
+  </div>
+  <div class="family fam-private">
+    <div class="fam-title">Data personnelle — 100% Local</div>
+    <div class="fam-body">
+      Les données ne quittent jamais le téléphone sauf transaction explicite.<br>
+      Clés Ed25519 dans le Secure Enclave. Paiements via BT / WiFi / SMS.<br><br>
+      <strong style="color:#e0e0e0">Services :</strong> Wallet / Paiements · AI Chatbot offline
+    </div>
+  </div>
+</div>
+
+<!-- ── MANIFEST P2P ── -->
+<div class="section-label">Manifest P2P — commun aux services data partagée</div>
+<div class="manifest-box">
+  <div class="manifest-title">Échange avant tout transfert · Déduplication par hash · Filtre 95 / 5</div>
+  <div class="manifest-grid">
+    <div class="mitem">
+      <div class="mitem-label">Contenu</div>
+      <div class="mitem-val">hash · taille · catégorie · type</div>
+    </div>
+    <div class="mitem">
+      <div class="mitem-label">Profil</div>
+      <div class="mitem-val">intérêts % par catégorie</div>
+    </div>
+    <div class="mitem">
+      <div class="mitem-label">Delta Δ</div>
+      <div class="mitem-val">A ∩ B exclus · seul Δ transféré</div>
+    </div>
+  </div>
+  <div class="algo-95">
+    <div class="algo-block algo-95-main">
+      <div class="pct">95%</div>
+      <div class="desc">Contenu correspondant aux intérêts de l'utilisateur</div>
+    </div>
+    <div class="algo-block algo-95-exp">
+      <div class="pct">5%</div>
+      <div class="desc">Exploration · like ×3 → intègre le profil principal</div>
+    </div>
+  </div>
+</div>
+
+<!-- ── SERVICES DATA PARTAGÉE ── -->
+<div class="section-label">Services — Data partagée (sync P2P automatique)</div>
+<div class="services-grid">
+
+  <!-- LOBA -->
+  <div class="svc">
+    <div class="svc-header">
+      <span class="svc-icon">🎬</span>
+      <span class="svc-name">LOBA</span>
+      <span class="svc-tag tag-p2p">P2P auto</span>
+    </div>
+    <div class="svc-row"><span class="svc-key">Type</span><span class="svc-val">Feed vidéo / photo (TikTok-like)</span></div>
+    <div class="svc-row"><span class="svc-key">BT Mesh</span><span class="svc-val">50% img → 50% vid → 100% img → 100% vid</span></div>
+    <div class="svc-row"><span class="svc-key">WiFi Direct</span><span class="svc-val">thumb → img → vidéos taille ↑</span></div>
+    <div class="svc-row"><span class="svc-key">Internet</span><span class="svc-val">Browse direct · prefetch 10 posts</span></div>
+    <div class="svc-row"><span class="svc-key">Lecture</span><span class="svc-val">Local storage uniquement</span></div>
+  </div>
+
+  <!-- Marketplace -->
+  <div class="svc">
+    <div class="svc-header">
+      <span class="svc-icon">🛒</span>
+      <span class="svc-name">Marketplace</span>
+      <span class="svc-tag tag-p2p">P2P auto</span>
+    </div>
+    <div class="svc-row"><span class="svc-key">Type</span><span class="svc-val">Annonces achats / ventes</span></div>
+    <div class="svc-row"><span class="svc-key">Conflit</span><span class="svc-val">updated_at gagne</span></div>
+    <div class="svc-row"><span class="svc-key">Commande</span><span class="svc-val">ACK signé Ed25519</span></div>
+    <div class="svc-row"><span class="svc-key">Fallback</span><span class="svc-val">SMS confirmation vendeur</span></div>
+    <div class="svc-row"><span class="svc-key">Photos</span><span class="svc-val">Après metadata (taille ↑)</span></div>
+  </div>
+
+  <!-- MeshChat -->
+  <div class="svc">
+    <div class="svc-header">
+      <span class="svc-icon">💬</span>
+      <span class="svc-name">MeshChat</span>
+      <span class="svc-tag tag-p2p">P2P auto</span>
+    </div>
+    <div class="svc-row"><span class="svc-key">Type</span><span class="svc-val">Messagerie P2P chiffrée</span></div>
+    <div class="svc-row"><span class="svc-key">Chiffrement</span><span class="svc-val">Ed25519 end-to-end</span></div>
+    <div class="svc-row"><span class="svc-key">Texte</span><span class="svc-val">BT Mesh (toujours)</span></div>
+    <div class="svc-row"><span class="svc-key">Médias</span><span class="svc-val">WiFi Direct si dispo · BT si ≤5MB</span></div>
+    <div class="svc-row"><span class="svc-key">Offline</span><span class="svc-val">Store-and-forward via peers</span></div>
+  </div>
+
+  <!-- Bookings -->
+  <div class="svc">
+    <div class="svc-header">
+      <span class="svc-icon">📅</span>
+      <span class="svc-name">Bookings</span>
+      <span class="svc-tag tag-p2p">P2P auto</span>
+    </div>
+    <div class="svc-row"><span class="svc-key">Type</span><span class="svc-val">Réservation services locaux</span></div>
+    <div class="svc-row"><span class="svc-key">Diffusion</span><span class="svc-val">BLE advertising (créneaux)</span></div>
+    <div class="svc-row"><span class="svc-key">Expiry</span><span class="svc-val">expires_at 24h si non confirmé</span></div>
+    <div class="svc-row"><span class="svc-key">Conflit</span><span class="svc-val">timestamp + signature</span></div>
+    <div class="svc-row"><span class="svc-key">Confirm</span><span class="svc-val">ACK Ed25519 + SMS fallback</span></div>
+  </div>
+
+  <!-- Real Estate -->
+  <div class="svc">
+    <div class="svc-header">
+      <span class="svc-icon">🏠</span>
+      <span class="svc-name">Real Estate</span>
+      <span class="svc-tag tag-p2p">P2P auto</span>
+    </div>
+    <div class="svc-row"><span class="svc-key">Type</span><span class="svc-val">Annonces immobilières</span></div>
+    <div class="svc-row"><span class="svc-key">BT Mesh</span><span class="svc-val">Fiche texte + thumb 50 KB</span></div>
+    <div class="svc-row"><span class="svc-key">WiFi / Net</span><span class="svc-val">Galerie photos complète</span></div>
+    <div class="svc-row"><span class="svc-key">Expiry</span><span class="svc-val">30 jours sans mise à jour</span></div>
+    <div class="svc-row"><span class="svc-key">Contact</span><span class="svc-val">Via MeshChat</span></div>
+  </div>
+
+  <!-- Transport -->
+  <div class="svc">
+    <div class="svc-header">
+      <span class="svc-icon">🚗</span>
+      <span class="svc-name">Transport</span>
+      <span class="svc-tag tag-p2p">P2P auto</span>
+    </div>
+    <div class="svc-row"><span class="svc-key">Type</span><span class="svc-val">Taxis · covoiturage local</span></div>
+    <div class="svc-row"><span class="svc-key">Diffusion</span><span class="svc-val">BLE advertising (position delta)</span></div>
+    <div class="svc-row"><span class="svc-key">Négo</span><span class="svc-val">Via MeshChat</span></div>
+    <div class="svc-row"><span class="svc-key">Confirm</span><span class="svc-val">ACK signé Ed25519</span></div>
+    <div class="svc-row"><span class="svc-key">Paiement</span><span class="svc-val">Via Wallet (BT / WiFi / SMS)</span></div>
+  </div>
+
+  <!-- Hôtels -->
+  <div class="svc">
+    <div class="svc-header">
+      <span class="svc-icon">🏨</span>
+      <span class="svc-name">Hôtels</span>
+      <span class="svc-tag tag-p2p">P2P auto</span>
+    </div>
+    <div class="svc-row"><span class="svc-key">Type</span><span class="svc-val">Listings chambres disponibles</span></div>
+    <div class="svc-row"><span class="svc-key">Photos</span><span class="svc-val">Comme LOBA (thumb BT · full WiFi)</span></div>
+    <div class="svc-row"><span class="svc-key">Expiry</span><span class="svc-val">expires_at 6h</span></div>
+    <div class="svc-row"><span class="svc-key">Confirm</span><span class="svc-val">ACK Ed25519 + SMS fallback</span></div>
+    <div class="svc-row"><span class="svc-key">Paiement</span><span class="svc-val">Via Wallet</span></div>
+  </div>
+
+  <!-- Vols -->
+  <div class="svc">
+    <div class="svc-header">
+      <span class="svc-icon">✈️</span>
+      <span class="svc-name">Vols</span>
+      <span class="svc-tag tag-ro">Cache lecture seule</span>
+    </div>
+    <div class="svc-row"><span class="svc-key">Type</span><span class="svc-val">Horaires · prix · dispo</span></div>
+    <div class="svc-row"><span class="svc-key">Cache</span><span class="svc-val">Téléchargé en bloc (7 jours)</span></div>
+    <div class="svc-row"><span class="svc-key">P2P</span><span class="svc-val">Lecture seule partagée</span></div>
+    <div class="svc-row"><span class="svc-key">Réservation</span><span class="svc-val">Internet obligatoire</span></div>
+    <div class="svc-row"><span class="svc-key">Offline</span><span class="svc-val">Consultation cache uniquement</span></div>
+  </div>
+
+  <!-- Musique -->
+  <div class="svc">
+    <div class="svc-header">
+      <span class="svc-icon">🎵</span>
+      <span class="svc-name">Musique</span>
+      <span class="svc-tag tag-p2p">P2P auto</span>
+    </div>
+    <div class="svc-row"><span class="svc-key">Type</span><span class="svc-val">Bibliothèque audio partagée</span></div>
+    <div class="svc-row"><span class="svc-key">BT Mesh</span><span class="svc-val">mp3 128kbps · ≤5MB</span></div>
+    <div class="svc-row"><span class="svc-key">WiFi Direct</span><span class="svc-val">128kbps → 320kbps → FLAC</span></div>
+    <div class="svc-row"><span class="svc-key">Internet</span><span class="svc-val">Stream direct + DL arrière-plan</span></div>
+    <div class="svc-row"><span class="svc-key">Lecture</span><span class="svc-val">Local storage uniquement</span></div>
+  </div>
+
+  <!-- Streaming -->
+  <div class="svc">
+    <div class="svc-header">
+      <span class="svc-icon">📺</span>
+      <span class="svc-name">Streaming</span>
+      <span class="svc-tag tag-p2p">P2P auto</span>
+    </div>
+    <div class="svc-row"><span class="svc-key">Type</span><span class="svc-val">Films · séries · docs</span></div>
+    <div class="svc-row"><span class="svc-key">BT Mesh</span><span class="svc-val">Bandes-annonces ≤5MB seulement</span></div>
+    <div class="svc-row"><span class="svc-key">WiFi Direct</span><span class="svc-val">Films jusqu'à 2GB (arrière-plan)</span></div>
+    <div class="svc-row"><span class="svc-key">Internet</span><span class="svc-val">Fichiers >100MB (DL uniquement)</span></div>
+    <div class="svc-row"><span class="svc-key">Lecture</span><span class="svc-val">Local storage uniquement</span></div>
+  </div>
+
+  <!-- Livraison -->
+  <div class="svc">
+    <div class="svc-header">
+      <span class="svc-icon">📦</span>
+      <span class="svc-name">Livraison</span>
+      <span class="svc-tag tag-p2p">P2P auto</span>
+    </div>
+    <div class="svc-row"><span class="svc-key">Type</span><span class="svc-val">Commandes livraison locale</span></div>
+    <div class="svc-row"><span class="svc-key">Diffusion</span><span class="svc-val">BLE advertising (livreur dispo)</span></div>
+    <div class="svc-row"><span class="svc-key">Suivi</span><span class="svc-val">Via MeshChat</span></div>
+    <div class="svc-row"><span class="svc-key">Preuve</span><span class="svc-val">Photo signée Ed25519</span></div>
+    <div class="svc-row"><span class="svc-key">Paiement</span><span class="svc-val">Wallet à la livraison</span></div>
+  </div>
+
+  <!-- Formation -->
+  <div class="svc">
+    <div class="svc-header">
+      <span class="svc-icon">🎓</span>
+      <span class="svc-name">Formation</span>
+      <span class="svc-tag tag-p2p">P2P auto</span>
+    </div>
+    <div class="svc-row"><span class="svc-key">Type</span><span class="svc-val">Cours · quiz · certificats</span></div>
+    <div class="svc-row"><span class="svc-key">Bundle</span><span class="svc-val">texte + images + vidéo courte</span></div>
+    <div class="svc-row"><span class="svc-key">BT Mesh</span><span class="svc-val">Texte + images légères</span></div>
+    <div class="svc-row"><span class="svc-key">Seed node</span><span class="svc-val">Un device diffuse à toute la classe</span></div>
+    <div class="svc-row"><span class="svc-key">Certificat</span><span class="svc-val">Signé Ed25519 en local</span></div>
+  </div>
+
+  <!-- Réservation -->
+  <div class="svc">
+    <div class="svc-header">
+      <span class="svc-icon">🗓️</span>
+      <span class="svc-name">Réservation</span>
+      <span class="svc-tag tag-p2p">P2P auto</span>
+    </div>
+    <div class="svc-row"><span class="svc-key">Type</span><span class="svc-val">Restos · salles · événements</span></div>
+    <div class="svc-row"><span class="svc-key">Base</span><span class="svc-val">Même architecture que Bookings</span></div>
+    <div class="svc-row"><span class="svc-key">Expiry</span><span class="svc-val">expires_at configurable</span></div>
+    <div class="svc-row"><span class="svc-key">Confirm</span><span class="svc-val">ACK Ed25519 + SMS fallback</span></div>
+    <div class="svc-row"><span class="svc-key">Paiement</span><span class="svc-val">Via Wallet</span></div>
+  </div>
+
+  <!-- Paris/Bet -->
+  <div class="svc">
+    <div class="svc-header">
+      <span class="svc-icon">🎲</span>
+      <span class="svc-name">Paris / Bet</span>
+      <span class="svc-tag tag-ro">Cache lecture seule</span>
+    </div>
+    <div class="svc-row"><span class="svc-key">Type</span><span class="svc-val">Paris sportifs · jeux locaux</span></div>
+    <div class="svc-row"><span class="svc-key">Cotes</span><span class="svc-val">Cache P2P lecture seule</span></div>
+    <div class="svc-row"><span class="svc-key">Mise</span><span class="svc-val">Hash + timestamp · immuable</span></div>
+    <div class="svc-row"><span class="svc-key">Résultat</span><span class="svc-val">Internet ou SMS officiel</span></div>
+    <div class="svc-row"><span class="svc-key">Gains</span><span class="svc-val">Via Wallet</span></div>
+  </div>
+
+  <!-- Bloc-notes -->
+  <div class="svc">
+    <div class="svc-header">
+      <span class="svc-icon">📝</span>
+      <span class="svc-name">Bloc-notes</span>
+      <span class="svc-tag tag-p2p">Partage sélectif</span>
+    </div>
+    <div class="svc-row"><span class="svc-key">Type</span><span class="svc-val">Notes personnelles</span></div>
+    <div class="svc-row"><span class="svc-key">Privé</span><span class="svc-val">Chiffré localement</span></div>
+    <div class="svc-row"><span class="svc-key">Partage</span><span class="svc-val">Explicite uniquement (pas auto)</span></div>
+    <div class="svc-row"><span class="svc-key">Format</span><span class="svc-val">Léger · passe en BT Mesh</span></div>
+    <div class="svc-row"><span class="svc-key">Backup</span><span class="svc-val">Supabase optionnel si online</span></div>
+  </div>
+
+</div>
+
+<!-- ── SERVICES PERSO ── -->
+<div class="section-label">Services — Data personnelle (100% local)</div>
+<div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
+
+  <!-- Wallet -->
+  <div style="border:1px solid #7F77DD; border-radius:10px; padding:16px; background:rgba(127,119,221,0.04);">
+    <div style="font-size:13px; font-weight:700; color:#a89fff; margin-bottom:12px;">💳 Wallet / Paiements</div>
+    <div style="font-size:10px; color:#6b7280; margin-bottom:10px;">Les données financières ne quittent jamais le téléphone. Clés Ed25519 dans le Secure Enclave Android.</div>
+    <div class="cascade">
+      <div class="cstep cstep-1">
+        <span class="cnum">①</span>
+        <div><div class="ctext">WiFi Direct</div><div class="csub">Si les deux devices sont proches</div></div>
+        <span class="cfall">rapide</span>
+      </div>
+      <div class="cstep cstep-2">
+        <span class="cnum">②</span>
+        <div><div class="ctext">Bluetooth Mesh</div><div class="csub">Transaction chiffrée, chunked BLE</div></div>
+        <span class="cfall">moyen</span>
+      </div>
+      <div class="cstep cstep-3">
+        <span class="cnum">③</span>
+        <div><div class="ctext">SMS Fallback</div><div class="csub">Montant + hash + signature Ed25519</div></div>
+        <span class="cfall">lent</span>
+      </div>
+      <div class="cstep cstep-4">
+        <span class="cnum">④</span>
+        <div><div class="ctext">ACK double côté</div><div class="csub">Nonce unique · anti-double-dépense</div></div>
+        <span class="cfall">final</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- AI Chatbot -->
+  <div style="border:1px solid #7F77DD; border-radius:10px; padding:16px; background:rgba(127,119,221,0.04);">
+    <div style="font-size:13px; font-weight:700; color:#a89fff; margin-bottom:12px;">🤖 AI Chatbot</div>
+    <div style="font-size:10px; color:#6b7280; margin-bottom:12px;">100% on-device. Aucune donnée ne sort du téléphone. Fonctionne sans aucune connectivité.</div>
+    <table style="width:100%; font-size:10px; border-collapse:collapse;">
+      <tr><td style="padding:5px 0; color:#4b5563; border-bottom:1px solid #111827;">Modèle LLM</td><td style="color:#d1d5db; text-align:right; border-bottom:1px solid #111827;">Gemma 2B Q4 GGUF</td></tr>
+      <tr><td style="padding:5px 0; color:#4b5563; border-bottom:1px solid #111827;">Inférence</td><td style="color:#d1d5db; text-align:right; border-bottom:1px solid #111827;">llama-node (embedded)</td></tr>
+      <tr><td style="padding:5px 0; color:#4b5563; border-bottom:1px solid #111827;">STT</td><td style="color:#d1d5db; text-align:right; border-bottom:1px solid #111827;">Vosk (FR + langues locales)</td></tr>
+      <tr><td style="padding:5px 0; color:#4b5563; border-bottom:1px solid #111827;">TTS</td><td style="color:#d1d5db; text-align:right; border-bottom:1px solid #111827;">Coqui TTS custom</td></tr>
+      <tr><td style="padding:5px 0; color:#4b5563; border-bottom:1px solid #111827;">Conversations</td><td style="color:#d1d5db; text-align:right; border-bottom:1px solid #111827;">WatermelonDB chiffré</td></tr>
+      <tr><td style="padding:5px 0; color:#4b5563;">Modèle DL</td><td style="color:#d1d5db; text-align:right;">Runtime (APK léger)</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- ── STOCKAGE ── -->
+<div class="section-label">Stockage local commun</div>
+<div class="storage-row">
+  <div class="sbox">
+    <div class="sbox-icon">🗃️</div>
+    <div class="sbox-name">WatermelonDB</div>
+    <div class="sbox-tech">Metadata · posts · transactions · conversations</div>
+  </div>
+  <div class="sbox">
+    <div class="sbox-icon">📁</div>
+    <div class="sbox-name">FileSystem</div>
+    <div class="sbox-tech">expo-file-system · RNFS · médias locaux</div>
+  </div>
+  <div class="sbox">
+    <div class="sbox-icon">⚡</div>
+    <div class="sbox-name">MMKV</div>
+    <div class="sbox-tech">Index hashes · profil intérêts · cache rapide</div>
+  </div>
+  <div class="sbox">
+    <div class="sbox-icon">☁️</div>
+    <div class="sbox-name">Supabase</div>
+    <div class="sbox-tech">Sync cloud (Internet uniquement · données non-perso)</div>
+  </div>
+</div>
+<div style="margin-top:8px; font-size:10px; color:#374151; text-align:center;">
+  LRU : rétention 7 jours · limite 2 GB · favoris jamais supprimés
+</div>
+
+<!-- ── ROADMAP ── -->
+<div class="section-label">Roadmap des phases</div>
+<div class="roadmap">
+  <div class="rm-row"><span class="rm-phase">Phase 1</span><span class="rm-name">MeshChat + Offline Signup / Auth</span><span class="rm-tag rm-foundation">Foundation</span></div>
+  <div class="rm-row"><span class="rm-phase">Phase 2</span><span class="rm-name">LOBA + Musique</span><span class="rm-tag rm-engagement">Engagement</span></div>
+  <div class="rm-row"><span class="rm-phase">Phase 3</span><span class="rm-name">Marketplace + Livraison</span><span class="rm-tag rm-economy">Économie locale</span></div>
+  <div class="rm-row"><span class="rm-phase">Phase 4</span><span class="rm-name">Wallet + Paiements P2P</span><span class="rm-tag rm-economy">Monétisation</span></div>
+  <div class="rm-row"><span class="rm-phase">Phase 5</span><span class="rm-name">Transport + Hôtels + Vols + Réservation + Bookings</span><span class="rm-tag rm-services">Services</span></div>
+  <div class="rm-row"><span class="rm-phase">Phase 6</span><span class="rm-name">Real Estate + Paris/Bet + Bloc-notes</span><span class="rm-tag rm-services">Services</span></div>
+  <div class="rm-row"><span class="rm-phase">Phase 7</span><span class="rm-name">Streaming + Formation</span><span class="rm-tag rm-content">Contenu long</span></div>
+  <div class="rm-row"><span class="rm-phase">Phase 8</span><span class="rm-name">AI Chatbot offline</span><span class="rm-tag rm-ai">Intelligence locale</span></div>
+</div>
+
+</body>
+</html>

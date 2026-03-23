@@ -46,6 +46,10 @@ export default function AddProductScreen({ onBack, onOpenSellerProfile, productT
   const [isVisible, setIsVisible] = useState(true);
   const [minPrice, setMinPrice] = useState('');
   const [photos, setPhotos] = useState([]);
+  const [brand, setBrand] = useState('');
+  const [condition, setCondition] = useState('Neuf');
+  const [colorsText, setColorsText] = useState('');
+  const [sizesText, setSizesText] = useState('');
   const [showCategoryPicker, setShowCategoryPicker] = useState(false);
   const [shopInfo, setShopInfo] = useState({ name: 'Ma Boutique', location: 'Centre-ville' });
   const [products, setProducts] = useState([]);
@@ -90,7 +94,13 @@ export default function AddProductScreen({ onBack, onOpenSellerProfile, productT
     setDeliveryOptions(product.delivery || ['pickup']);
     setIsVisible(product.isVisible ?? true);
     setMinPrice(product.minPrice?.toString() || '');
+    setMinPrice(product.minPrice?.toString() || '');
     setPhotos(product.photos || []);
+    setBrand(product.brand || '');
+    setCondition(product.condition || 'Neuf');
+    setColorsText(product.colors ? product.colors.join(', ') : '');
+    setSizesText(product.sizes ? product.sizes.join(', ') : '');
+    setStock(product.stock?.toString() || '1');
   };
 
   const pickImage = async (index) => {
@@ -200,6 +210,11 @@ export default function AddProductScreen({ onBack, onOpenSellerProfile, productT
       description: description.trim(),
       tags: selectedTags,
       delivery: deliveryOptions,
+      brand: brand.trim(),
+      condition: condition,
+      colors: colorsText.split(',').map(c => c.trim()).filter(c => c),
+      sizes: sizesText.split(',').map(s => s.trim()).filter(s => s),
+      stock: parseInt(stock) || 0,
       isVisible: publish ? isVisible : false,
       photos: photos,
       createdAt: productToEdit?.createdAt || new Date().toISOString(),
@@ -351,6 +366,62 @@ export default function AddProductScreen({ onBack, onOpenSellerProfile, productT
             multiline
             value={description}
             onChangeText={setDescription}
+          />
+        </View>
+
+        <Text style={styles.sectionTitle}>Spécifications & Variantes</Text>
+        <View style={styles.inputCard}>
+          <Text style={styles.inputLabel}>Stock disponible</Text>
+          <TextInput
+            placeholder="Ex: 5"
+            placeholderTextColor="#6B7A8B"
+            style={styles.textInput}
+            keyboardType="numeric"
+            value={stock}
+            onChangeText={setStock}
+          />
+          <View style={styles.inputDivider} />
+          <Text style={styles.inputLabel}>Marque</Text>
+          <TextInput
+            placeholder="Ex: Nike, Samsung, Sans Marque..."
+            placeholderTextColor="#6B7A8B"
+            style={styles.textInput}
+            value={brand}
+            onChangeText={setBrand}
+          />
+          <View style={styles.inputDivider} />
+          <Text style={styles.inputLabel}>État du produit</Text>
+          <View style={styles.conditionRow}>
+            <TouchableOpacity 
+              style={[styles.conditionBtn, condition === 'Neuf' && styles.conditionBtnActive]}
+              onPress={() => setCondition('Neuf')}
+            >
+              <Text style={[styles.conditionText, condition === 'Neuf' && styles.conditionTextActive]}>Neuf</Text>
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={[styles.conditionBtn, condition === 'Occasion' && styles.conditionBtnActive]}
+              onPress={() => setCondition('Occasion')}
+            >
+              <Text style={[styles.conditionText, condition === 'Occasion' && styles.conditionTextActive]}>Occasion</Text>
+            </TouchableOpacity>
+          </View>
+          <View style={styles.inputDivider} />
+          <Text style={styles.inputLabel}>Couleurs (séparées par des virgules)</Text>
+          <TextInput
+            placeholder="Ex: Noir, Blanc, Rouge"
+            placeholderTextColor="#6B7A8B"
+            style={styles.textInput}
+            value={colorsText}
+            onChangeText={setColorsText}
+          />
+          <View style={styles.inputDivider} />
+          <Text style={styles.inputLabel}>Tailles / Modèles (séparés par des virgules)</Text>
+          <TextInput
+            placeholder="Ex: S, M, L, XL ou 40, 41, 42"
+            placeholderTextColor="#6B7A8B"
+            style={styles.textInput}
+            value={sizesText}
+            onChangeText={setSizesText}
           />
         </View>
 
@@ -663,6 +734,31 @@ const styles = StyleSheet.create({
   },
   inlineField: {
     flex: 1,
+  },
+  conditionRow: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  conditionBtn: {
+    flex: 1,
+    paddingVertical: 10,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: 'rgba(30, 40, 50, 0.8)',
+    alignItems: 'center',
+  },
+  conditionBtnActive: {
+    backgroundColor: 'rgba(43, 238, 121, 0.15)',
+    borderColor: '#2BEE79',
+  },
+  conditionText: {
+    color: '#CBD5F5',
+    fontSize: 13,
+  },
+  conditionTextActive: {
+    color: '#2BEE79',
+    fontWeight: '700',
   },
   tagsRow: {
     flexDirection: 'row',

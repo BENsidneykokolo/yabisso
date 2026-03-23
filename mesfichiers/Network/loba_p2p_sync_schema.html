@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LOBA — Schéma P2P Sync Intelligent</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #0D0F14;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    color: #e0e0e0;
+    padding: 32px 24px;
+  }
+  h1 {
+    color: #2BEE79;
+    font-size: 18px;
+    font-weight: 600;
+    text-align: center;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .subtitle {
+    text-align: center;
+    font-size: 12px;
+    color: #6b7280;
+    margin-bottom: 32px;
+  }
+
+  /* ── Section labels ── */
+  .section-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: #4b5563;
+    text-align: center;
+    margin: 24px 0 10px;
+  }
+
+  /* ── Cards grid ── */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+
+  .card {
+    border-radius: 10px;
+    padding: 14px 16px;
+    border: 1px solid;
+  }
+  .card-teal  { border-color: #1D9E75; background: rgba(29,158,117,0.08); }
+  .card-purple{ border-color: #7F77DD; background: rgba(127,119,221,0.08); }
+  .card-gray  { border-color: #374151; background: rgba(255,255,255,0.03); }
+  .card-amber { border-color: #BA7517; background: rgba(186,117,23,0.08); }
+  .card-blue  { border-color: #185FA5; background: rgba(24,95,165,0.08); }
+  .card-coral { border-color: #993C1D; background: rgba(153,60,29,0.08); }
+  .card-green { border-color: #2BEE79; background: rgba(43,238,121,0.05); }
+
+  .card-title {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+  }
+  .teal-title   { color: #2BEE79; }
+  .purple-title { color: #a89fff; }
+  .gray-title   { color: #9ca3af; }
+  .amber-title  { color: #f59e0b; }
+  .blue-title   { color: #60a5fa; }
+  .coral-title  { color: #f87171; }
+  .green-title  { color: #2BEE79; }
+
+  .pill {
+    display: inline-block;
+    font-size: 10px;
+    border-radius: 4px;
+    padding: 2px 8px;
+    margin: 2px 2px 2px 0;
+  }
+  .pill-teal   { background: rgba(29,158,117,0.2);  color: #2BEE79; }
+  .pill-purple { background: rgba(127,119,221,0.2); color: #a89fff; }
+  .pill-amber  { background: rgba(186,117,23,0.2);  color: #f59e0b; }
+  .pill-blue   { background: rgba(24,95,165,0.2);   color: #60a5fa; }
+  .pill-gray   { background: rgba(107,114,128,0.2); color: #9ca3af; }
+  .pill-coral  { background: rgba(153,60,29,0.2);   color: #f87171; }
+
+  .body-text { font-size: 11px; color: #9ca3af; line-height: 1.6; }
+  .body-text b { color: #e0e0e0; font-weight: 600; }
+
+  /* ── Arrow ── */
+  .arrow-down {
+    text-align: center;
+    font-size: 20px;
+    color: #2BEE79;
+    margin: 6px 0;
+    line-height: 1;
+  }
+
+  /* ── Table ── */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11px;
+    margin-top: 6px;
+  }
+  th {
+    text-align: left;
+    color: #6b7280;
+    font-weight: 600;
+    padding: 4px 8px;
+    border-bottom: 1px solid #1f2937;
+    font-size: 10px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+  td {
+    padding: 5px 8px;
+    color: #d1d5db;
+    border-bottom: 1px solid #111827;
+  }
+  tr:last-child td { border-bottom: none; }
+
+  /* ── Flow cycle ── */
+  .flow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 8px;
+  }
+  .flow-step {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid #1f2937;
+    border-radius: 6px;
+    padding: 6px 10px;
+    font-size: 10px;
+    text-align: center;
+    color: #9ca3af;
+  }
+  .flow-arrow { color: #2BEE79; font-size: 14px; }
+
+  /* ── Code block ── */
+  pre {
+    background: #111827;
+    border-radius: 6px;
+    padding: 10px 14px;
+    font-size: 10px;
+    color: #a5f3fc;
+    overflow-x: auto;
+    margin-top: 8px;
+    font-family: 'Courier New', monospace;
+    line-height: 1.6;
+  }
+
+  hr.divider {
+    border: none;
+    border-top: 1px solid #1f2937;
+    margin: 6px 0;
+  }
+</style>
+</head>
+<body>
+
+<h1>🎬 LOBA — Sync P2P Intelligent</h1>
+<p class="subtitle">Architecture Download-First · Déduplication · Recommandation · Transfert adaptatif</p>
+
+<!-- ════ PHASE 1 ════ -->
+<div class="section-label">Phase 1 — Échange de manifestes</div>
+<div class="grid-2">
+  <div class="card card-teal">
+    <div class="card-title teal-title">Utilisateur A</div>
+    <span class="pill pill-teal">200 vidéos</span>
+    <span class="pill pill-teal">300 images</span>
+    <div class="body-text" style="margin-top:6px">Intérêts : <b>sport 60%</b> · musique 30% · autre 10%</div>
+  </div>
+  <div class="card card-purple">
+    <div class="card-title purple-title">Utilisateur B</div>
+    <span class="pill pill-purple">50 vidéos</span>
+    <span class="pill pill-purple">1000 images</span>
+    <div class="body-text" style="margin-top:6px">Intérêts : <b>cuisine 50%</b> · mode 35% · autre 15%</div>
+  </div>
+</div>
+<div class="arrow-down">↕</div>
+<div class="card card-gray">
+  <div class="card-title gray-title">Manifest JSON échangé (les deux sens)</div>
+  <pre>{
+  "user_id": "user_A",
+  "media": [
+    { "hash": "abc123", "size": 2400000, "category": "sport", "type": "video" },
+    { "hash": "def456", "size": 850000,  "category": "musique", "type": "image" }
+  ],
+  "interests": { "sport": 0.60, "musique": 0.30, "autre": 0.10 }
+}</pre>
+</div>
+
+<!-- ════ PHASE 2 ════ -->
+<div class="section-label">Phase 2 — Déduplication</div>
+<div class="arrow-down">↓</div>
+<div class="card card-gray">
+  <div class="card-title gray-title">Moteur de déduplication (hash comparison)</div>
+  <table>
+    <tr><th>Calcul</th><th>Résultat</th></tr>
+    <tr><td>A ∩ B = vidéos en commun</td><td><b style="color:#f87171">20 vidéos exclues</b></td></tr>
+    <tr><td>Δ = vidéos que A n'a pas</td><td><b style="color:#2BEE79">30 vidéos candidates</b></td></tr>
+  </table>
+</div>
+
+<!-- ════ PHASE 3 ════ -->
+<div class="section-label">Phase 3 — Sélection par intérêts</div>
+<div class="arrow-down">↓</div>
+<div class="card card-amber">
+  <div class="card-title amber-title">Filtre de recommandation 95% / 5%</div>
+  <table>
+    <tr><th>Part</th><th>Logique</th></tr>
+    <tr><td><b style="color:#2BEE79">95%</b></td><td>Contenu correspondant aux catégories aimées par A</td></tr>
+    <tr><td><b style="color:#f59e0b">5%</b></td><td>Exploration — catégories nouvelles pour A</td></tr>
+  </table>
+</div>
+<div class="arrow-down">↓</div>
+<div class="card card-coral">
+  <div class="card-title coral-title">Boucle d'évolution du profil (5% exploration)</div>
+  <table>
+    <tr><th>Action</th><th>Effet</th></tr>
+    <tr><td>Like ×1 sur contenu exploration</td><td>Légère hausse de la catégorie</td></tr>
+    <tr><td>Like ×3 sur contenu exploration</td><td>Catégorie intègre le profil principal</td></tr>
+    <tr><td>Ignore répété</td><td>Pourcentage stagne ou baisse</td></tr>
+  </table>
+</div>
+
+<!-- ════ PHASE 4 ════ -->
+<div class="section-label">Phase 4 — File de transfert (taille croissante ↑)</div>
+<div class="arrow-down">↓</div>
+<div class="card card-gray">
+  <div class="card-title gray-title">Transfer Queue — ordre de priorité</div>
+  <div style="margin-top:8px">
+    <span class="pill pill-teal">① thumbnails</span>
+    <span class="pill pill-teal">② images &lt;500 KB</span>
+    <span class="pill pill-blue">③ images &lt;2 MB</span>
+    <span class="pill pill-blue">④ images &lt;5 MB</span>
+    <span class="pill pill-amber">⑤ vidéos courtes</span>
+    <span class="pill pill-amber">⑥ vidéos longues</span>
+  </div>
+  <div class="body-text" style="margin-top:8px">Si le transfert est interrompu, les contenus les plus légers ont déjà été reçus.</div>
+</div>
+
+<!-- ════ PHASE 5 ════ -->
+<div class="section-label">Phase 5 — Rails de transfert</div>
+<div class="arrow-down">↓</div>
+<div class="grid-3">
+
+  <div class="card card-amber">
+    <div class="card-title amber-title">🔵 Bluetooth Mesh</div>
+    <div class="body-text"><b>Limite stricte ≤ 5 MB</b></div>
+    <hr class="divider">
+    <table>
+      <tr><td>① 50% images</td></tr>
+      <tr><td>② 50% vidéos ≤5MB</td></tr>
+      <tr><td>③ 100% images</td></tr>
+      <tr><td>④ 100% vidéos ≤5MB</td></tr>
+    </table>
+    <div class="body-text" style="margin-top:6px">Déclenché automatiquement dès qu'un peer est détecté</div>
+  </div>
+
+  <div class="card card-blue">
+    <div class="card-title blue-title">📡 WiFi Direct</div>
+    <div class="body-text"><b>Auto + taille croissante</b></div>
+    <hr class="divider">
+    <table>
+      <tr><td>① thumbnails + metadata</td></tr>
+      <tr><td>② images &lt;1 MB</td></tr>
+      <tr><td>③ images &lt;5 MB</td></tr>
+      <tr><td>④ vidéos par taille ↑</td></tr>
+    </table>
+    <div class="body-text" style="margin-top:6px">Via <code>expo-nearby-connections</code>, sans intervention utilisateur</div>
+  </div>
+
+  <div class="card card-teal">
+    <div class="card-title teal-title">🌐 Internet</div>
+    <div class="body-text"><b>Browse direct possible</b></div>
+    <hr class="divider">
+    <table>
+      <tr><td>Pas de limite de taille</td></tr>
+      <tr><td>Prefetch 10 posts suivants</td></tr>
+      <tr><td>Téléchargement arrière-plan</td></tr>
+      <tr><td>pendant lecture locale</td></tr>
+    </table>
+    <div class="body-text" style="margin-top:6px">Seul mode permettant le browse temps réel</div>
+  </div>
+
+</div>
+
+<!-- ════ LOCAL STORAGE ════ -->
+<div class="arrow-down">↓</div>
+<div class="section-label">Stockage local — résultat final</div>
+<div class="card card-green">
+  <div class="card-title green-title">Local Storage — WatermelonDB + FileSystem + MMKV</div>
+  <table>
+    <tr><th>Couche</th><th>Technologie</th><th>Rôle</th></tr>
+    <tr><td>Métadonnées</td><td>WatermelonDB</td><td>Posts, hashes, localMediaPath, statut DL</td></tr>
+    <tr><td>Fichiers médias</td><td>expo-file-system / RNFS</td><td>Vidéos et images en local</td></tr>
+    <tr><td>Index rapide</td><td>MMKV</td><td>Profil d'intérêts, index des hashes</td></tr>
+  </table>
+  <div class="body-text" style="margin-top:8px">
+    Le player <b>refuse de jouer</b> si <code>localMediaPath === null</code> — affiche un placeholder à la place.<br>
+    Politique LRU : garder 7 derniers jours · limite 2 GB · jamais supprimer un favori.
+  </div>
+</div>
+
+<!-- ════ COMPOSANTS ════ -->
+<div class="section-label">Composants à implémenter</div>
+<div class="card card-gray">
+  <table>
+    <tr><th>Service</th><th>Responsabilité</th></tr>
+    <tr><td><code>ManifestService</code></td><td>Générer le manifest local, parser le manifest reçu, calculer le diff (Δ)</td></tr>
+    <tr><td><code>RecommendationEngine</code></td><td>Filtrer les candidats selon les intérêts, gérer la boucle 95/5</td></tr>
+    <tr><td><code>TransferQueueManager</code></td><td>Trier la queue par taille, prioriser selon le rail actif</td></tr>
+    <tr><td><code>NetworkRailDetector</code></td><td>Détecter internet / WiFi Direct / BT Mesh / offline</td></tr>
+    <tr><td><code>P2PAutoSync</code></td><td>Orchestrer la découverte de peers et déclencher le sync automatique</td></tr>
+    <tr><td><code>LocalStorageManager</code></td><td>Écrire les fichiers, mettre à jour WatermelonDB, appliquer le LRU</td></tr>
+  </table>
+</div>
+
+<!-- ════ CYCLE DE VIE ════ -->
+<div class="section-label">Cycle de vie d'un post</div>
+<div class="flow">
+  <div class="flow-step">📥 Post découvert<br><span style="color:#4b5563">réseau / peer</span></div>
+  <span class="flow-arrow">→</span>
+  <div class="flow-step">🔍 Déduplication<br><span style="color:#4b5563">déjà présent ? skip</span></div>
+  <span class="flow-arrow">→</span>
+  <div class="flow-step">🎯 Recommandation<br><span style="color:#4b5563">95% intérêts + 5% exploration</span></div>
+  <span class="flow-arrow">→</span>
+  <div class="flow-step">📋 Transfer Queue<br><span style="color:#4b5563">trié par taille ↑</span></div>
+  <span class="flow-arrow">→</span>
+  <div class="flow-step">📡 Rail actif<br><span style="color:#4b5563">BT / WiFi / Internet</span></div>
+  <span class="flow-arrow">→</span>
+  <div class="flow-step">💾 Stockage local<br><span style="color:#4b5563">FS + WatermelonDB</span></div>
+  <span class="flow-arrow">→</span>
+  <div class="flow-step">▶️ Lecture<br><span style="color:#4b5563">depuis localMediaPath</span></div>
+  <span class="flow-arrow">→</span>
+  <div class="flow-step">❤️ Feedback<br><span style="color:#4b5563">profil mis à jour</span></div>
+  <span class="flow-arrow">→</span>
+  <div class="flow-step">🧹 LRU<br><span style="color:#4b5563">nettoyage auto</span></div>
+</div>
+
+</body>
+</html>

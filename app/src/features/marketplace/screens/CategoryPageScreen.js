@@ -56,28 +56,7 @@ const brands = [
   { name: 'Nintendo', icon: 'gamepad-variant' },
 ];
 
-const MOCK_PRODUCTS = [
-  { id: 1, name: 'iPhone 15 Pro Max', brand: 'Apple', price: '950000', isNew: true, category: 'Téléphones' },
-  { id: 2, name: 'Samsung Galaxy S24 Ultra', brand: 'Samsung', price: '780000', isNew: true, category: 'Téléphones' },
-  { id: 3, name: 'MacBook Pro M3', brand: 'Apple', price: '1200000', isNew: true, category: 'Ordinateurs' },
-  { id: 4, name: 'Tecno Camon 20', brand: 'Tecno', price: '145000', isNew: false, category: 'Téléphones' },
-  { id: 5, name: 'Samsung TV 55"', brand: 'Samsung', price: '350000', isNew: false, category: 'Maison' },
-  { id: 6, name: 'AirPods Pro', brand: 'Apple', price: '95000', isNew: true, category: 'Audio' },
-  { id: 7, name: 'Infinix Note 30', brand: 'Infinix', price: '125000', isNew: false, category: 'Téléphones' },
-  { id: 8, name: 'Xiaomi Redmi 12', brand: 'Xiaomi', price: '110000', isNew: false, category: 'Téléphones' },
-  { id: 9, name: 'iPad Pro M4', brand: 'Apple', price: '950000', isNew: true, category: 'Ordinateurs' },
-  { id: 10, name: 'Sony WH-1000XM5', brand: 'Sony', price: '180000', isNew: true, category: 'Audio' },
-  { id: 11, name: 'Dell XPS 15', brand: 'Dell', price: '850000', isNew: false, category: 'Ordinateurs' },
-  { id: 12, name: 'Apple Watch Ultra 2', brand: 'Apple', price: '450000', isNew: true, category: 'Accessoire' },
-  { id: 13, name: 'PlayStation 5', brand: 'Sony', price: '450000', isNew: true, category: 'Gaming' },
-  { id: 14, name: 'Canon EOS R5', brand: 'Canon', price: '1200000', isNew: false, category: 'Photo' },
-  { id: 15, name: 'Samsung Galaxy Watch 5', brand: 'Samsung', price: '150000', isNew: false, category: 'Accessoire' },
-  { id: 16, name: 'Nintendo Switch', brand: 'Nintendo', price: '250000', isNew: true, category: 'Gaming' },
-  { id: 17, name: 'Air Zoom Pegasus', brand: 'Nike', price: '65000', isNew: false, category: 'Mode' },
-  { id: 18, name: 'Nike Air Max 2024', brand: 'Nike', price: '85000', isNew: true, category: 'Mode' },
-  { id: 19, name: 'Xiaomi 14 Ultra', brand: 'Xiaomi', price: '650000', isNew: false, category: 'Téléphones' },
-  { id: 20, name: 'Galaxy Watch 5', brand: 'Samsung', price: '120000', isNew: true, category: 'Accessoire' },
-];
+const MOCK_PRODUCTS = [];
 
 const bottomNavItems = [
   { label: 'Boutique', icon: 'store' },
@@ -126,8 +105,14 @@ export default function CategoryPageScreen({ onBack, onNavigate, favorites = [],
           .map(p => ({
             id: p.id,
             name: p.name,
-            brand: shopName,
+            brand: p.brand || shopName,
+            description: p.description,
+            condition: p.condition,
+            colors: p.colors || [],
+            sizes: p.sizes || [],
+            stock: p.stock,
             price: p.price.toString(),
+            minPrice: p.minPrice,
             originalPrice: p.originalPrice || null,
             category: CATEGORIES_MAP[p.category] || p.categoryName || 'Autres',
             isNew: p.tags?.includes('Nouveau'),

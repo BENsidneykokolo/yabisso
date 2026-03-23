@@ -340,14 +340,6 @@ export default function SellerProfileScreen({ onBack, onOpenAddProduct, onEditPr
               Commandes
             </Text>
           </TouchableOpacity>
-          <TouchableOpacity 
-            style={[styles.tab, activeTab === 'reviews' && styles.tabActive]}
-            onPress={() => setActiveTab('reviews')}
-          >
-            <Text style={[styles.tabText, activeTab === 'reviews' && styles.tabTextActive]}>
-              Avis
-            </Text>
-          </TouchableOpacity>
         </View>
 
         {activeTab === 'products' && (
@@ -414,31 +406,6 @@ export default function SellerProfileScreen({ onBack, onOpenAddProduct, onEditPr
             <MaterialCommunityIcons name="clipboard-list" size={48} color="#4B5563" />
             <Text style={styles.emptyText}>Aucune commande</Text>
             <Text style={styles.emptySubtext}>Vos commandes apparaîtront ici</Text>
-          </View>
-        )}
-
-        {activeTab === 'reviews' && (
-          <View style={styles.reviewsSection}>
-            {[
-              { id: '1', name: 'Ama', comment: 'Produits frais, livraison rapide. Je recommande.', rating: 5, date: 'Il y a 2j' },
-              { id: '2', name: 'Kofi', comment: 'Belle presentation, un peu de retard sur la livraison.', rating: 4, date: 'Il y a 5j' },
-            ].map((review) => (
-              <View key={review.id} style={styles.reviewCard}>
-                <View style={styles.reviewHeader}>
-                  <View style={styles.reviewAvatar}>
-                    <Text style={styles.reviewInitial}>{review.name.charAt(0)}</Text>
-                  </View>
-                  <View style={styles.reviewInfo}>
-                    <Text style={styles.reviewName}>{review.name}</Text>
-                    <View style={styles.ratingRowSmall}>
-                      {renderStars(review.rating)}
-                    </View>
-                  </View>
-                  <Text style={styles.reviewDate}>{review.date}</Text>
-                </View>
-                <Text style={styles.reviewText}>{review.comment}</Text>
-              </View>
-            ))}
           </View>
         )}
       </ScrollView>

@@ -33,14 +33,7 @@ const categories = [
   { name: 'Services', icon: 'toolbox', color: '#8b5cf6' },
 ];
 
-const MOCK_PRODUCTS = [
-  { id: 1, name: 'iPhone 15 Pro Max', brand: 'Apple', price: '950000', originalPrice: '1200000', category: 'Téléphones', isNew: true, isPromo: true, discount: '-50%' },
-  { id: 2, name: 'Samsung Galaxy S24 Ultra', brand: 'Samsung', price: '780000', originalPrice: '950000', category: 'Téléphones', isNew: true, isPromo: true, discount: '-30%' },
-  { id: 3, name: 'MacBook Pro M3', brand: 'Apple', price: '1200000', category: 'Électronique', isNew: true },
-  { id: 4, name: 'Air Zoom Pegasus', brand: 'Nike', price: '65000', originalPrice: '85000', category: 'Sports', isNew: false, isPromo: true, discount: '-25%' },
-  { id: 5, name: 'Galaxy Watch 5', brand: 'Samsung', price: '120000', originalPrice: '150000', category: 'Téléphones', isNew: false, isPromo: true, discount: '-20%' },
-  { id: 6, name: 'iPad Air', brand: 'Apple', price: '420000', category: 'Électronique', isNew: true },
-];
+const MOCK_PRODUCTS = [];
 
 const bottomNavItems = [
   { label: 'Marketplace', icon: 'store' },
@@ -87,8 +80,14 @@ export default function ProductListScreen({ onBack, onNavigate, favorites = [], 
           .map(p => ({
             id: p.id,
             name: p.name,
-            brand: shopName,
+            brand: p.brand || shopName,
+            description: p.description,
+            condition: p.condition,
+            colors: p.colors || [],
+            sizes: p.sizes || [],
+            stock: p.stock,
             price: p.price.toString(),
+            minPrice: p.minPrice,
             originalPrice: p.originalPrice || null,
             category: CATEGORIES_MAP[p.category] || p.categoryName || 'Autres',
             isNew: p.tags?.includes('Nouveau'),

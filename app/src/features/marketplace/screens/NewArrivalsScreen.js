@@ -14,6 +14,19 @@ import { useCart } from '../context/CartContext';
 import { useVoiceSearch } from '../../../hooks/useVoiceSearch';
 import { usePhotoSearch } from '../../../hooks/usePhotoSearch';
 
+import * as SecureStore from 'expo-secure-store';
+
+const CATEGORIES_MAP = {
+  'fruits': 'Fruits & Légumes',
+  'electronics': 'Électronique',
+  'fashion': 'Mode',
+  'home': 'Maison',
+  'beauty': 'Beauté',
+  'sports': 'Sports',
+  'services': 'Services',
+  'other': 'Autres',
+};
+
 const categories = [
   { name: 'Tous', icon: 'apps', color: '#137fec' },
   { name: 'Téléphones', icon: 'smartphone', color: '#137fec' },
@@ -23,16 +36,7 @@ const categories = [
   { name: 'Sports', icon: 'basketball', color: '#f97316' },
 ];
 
-const newProducts = [
-  { id: 1, name: 'iPhone 15 Pro Max', brand: 'Apple', price: '950000', category: 'Téléphones', isNew: true },
-  { id: 2, name: 'Samsung Galaxy S24 Ultra', brand: 'Samsung', price: '780000', category: 'Téléphones', isNew: true },
-  { id: 3, name: 'MacBook Pro M3', brand: 'Apple', price: '1200000', category: 'Électronique', isNew: true },
-  { id: 4, name: 'Nike Air Max 2024', brand: 'Nike', price: '85000', category: 'Sports', isNew: true },
-  { id: 5, name: 'Xiaomi 14 Ultra', brand: 'Xiaomi', price: '650000', category: 'Téléphones', isNew: true },
-  { id: 6, name: 'Sony WH-1000XM5', brand: 'Sony', price: '180000', category: 'Électronique', isNew: true },
-  { id: 7, name: 'Apple Watch Ultra 2', brand: 'Apple', price: '450000', category: 'Téléphones', isNew: true },
-  { id: 8, name: 'Adidas Ultraboost 24', brand: 'Adidas', price: '95000', category: 'Sports', isNew: true },
-];
+const newProducts = [];
 
 const bottomNavItems = [
   { label: 'Boutique', icon: 'store' },
@@ -50,6 +54,55 @@ export default function NewArrivalsScreen({ onBack, onNavigate, favorites = [], 
   const [addedProduct, setAddedProduct] = useState(null);
   const [showVoiceModal, setShowVoiceModal] = useState(false);
   const [showCameraModal, setShowCameraModal] = useState(false);
+  const [allProducts, setAllProducts] = useState([]);
+  const [shopName, setShopName] = useState('Ma Boutique');
+
+  React.useEffect(() => {
+    loadSellerProducts();
+    loadShopName();
+  }, []);
+
+  const loadShopName = async () => {
+    try {
+      const saved = await SecureStore.getItemAsync('seller_shop_info');
+      if (saved) {
+        const data = JSON.parse(saved);
+        if (data.name) setShopName(data.name);
+      }
+    } catch (e) {
+      console.log('Error loading shop name:', e);
+    }
+  };
+
+  const loadSellerProducts = async () => {
+    try {
+      const saved = await SecureStore.getItemAsync('seller_products');
+      if (saved) {
+        const productsData = JSON.parse(saved);
+        const formatted = productsData
+          .filter(p => p.isVisible !== false)
+          .map(p => ({
+            id: p.id,
+            name: p.name,
+            brand: p.brand || shopName,
+            price: p.price.toString(),
+            minPrice: p.minPrice,
+            category: CATEGORIES_MAP[p.category] || p.categoryName || 'Autres',
+            isNew: p.tags?.includes('Nouveau'),
+            photos: p.photos,
+            seller: { name: shopName, rating: 4.5, avatar: null },
+            description: p.description,
+            stock: p.stock,
+            condition: p.condition,
+            colors: p.colors || [],
+            sizes: p.sizes || []
+          }));
+        setAllProducts(formatted);
+      }
+    } catch (e) {
+      console.log('Error loading seller products:', e);
+    }
+  };
 
   // Real Voice Search Hook
   const { 
@@ -83,14 +136,17 @@ export default function NewArrivalsScreen({ onBack, onNavigate, favorites = [], 
     }
   };
 
+  // Seulement garder les produits qui sont marqués "Nouveau"
+  const newArrivals = allProducts.filter(p => p.isNew);
+
   const filteredProducts = searchText.trim()
-    ? newProducts.filter(p =>
+    ? newArrivals.filter(p =>
       p.name.toLowerCase().includes(searchText.toLowerCase()) ||
       p.brand.toLowerCase().includes(searchText.toLowerCase())
     )
     : selectedCategory === 'Tous'
-      ? newProducts
-      : newProducts.filter((p) => p.category === selectedCategory);
+      ? newArrivals
+      : newArrivals.filter((p) => p.category === selectedCategory);
 
   const showSearchResults = searchText.trim().length > 0;
 
@@ -201,6 +257,11 @@ export default function NewArrivalsScreen({ onBack, onNavigate, favorites = [], 
                     onPress={() => handleProductPress(product)}
                   >
                     <View style={styles.productImage}>
+                      {product.photos && product.photos[0] ? (
+                        <Image source={{ uri: product.photos[0] }} style={{width: '100%', height: '100%', resizeMode: 'cover'}} />
+                      ) : (
+                        <MaterialCommunityIcons name="image" size={32} color="#4B5563" />
+                      )}
                       <View style={styles.newBadge}>
                         <MaterialCommunityIcons name="lightning-bolt" size={12} color="#fff" />
                         <Text style={styles.newBadgeText}>NOUVEAU</Text>

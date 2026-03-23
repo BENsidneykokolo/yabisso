@@ -135,6 +135,9 @@
 - Sprint 5: Notifications - Navigation Promotion, Nouveauté, Commande, Paiement fonctionnelle (Deep-linking)
 - Sprint 5: Marketplace Seller Workflow - SellerProfileScreen, AddProductScreen, upload photos (profil/bannière), menu "Vendre", produits visibles dans boutique/catégories/recherche, workflow achat complet (panier -> checkout -> commande)
 - Sprint 5: Loba - Appel téléphonique depuis Messages
+- Sprint 5: Favoris - Système de favoris avec stockage SecureStore, écran Favoris fonctionnel
+- Sprint 5: Comparaison de prix - Produits match par ID/nom, navigation vers détails produit avec prix vendeur sélectionné
+- Sprint 5: Confirmation réception - Modal avec commentaire + upload jusqu'à 3 photos, signalement problème commande
 
 ## Decisions techniques additionnelles
 - Navigation: React Navigation (a installer)

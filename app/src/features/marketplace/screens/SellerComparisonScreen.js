@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   View,
   Text,
@@ -10,64 +10,87 @@ import {
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 
-const productData = {
-  name: 'Apple iPhone 14 Pro Max - 256GB',
-  image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBl65MXaR1khjucFjFf84RCVBY4sddrCYrnCXF71155jd9awHMwneZECphbsl_0qejxiPUyeCQ_fD7n5prGDSen9xO5lEXKkxhISW75aSZc4ueqaQf00DOWUz-5QArXbmwjk6-wE6LZ3bHScnJ_i62twwys2PXquZRBMyxDmHKYdHWvMgkABL8DUWktG2oJ6GdbZ2hSnlhuxKZUphlYljCpifTFgOJ9zLuHFxxyflKCOrtDZdZ9zI0FZr_Xx-NiBMNEE2N2fYCC',
-};
+import * as SecureStore from 'expo-secure-store';
 
-const sellers = [
-  {
-    id: 1,
-    name: 'TechZone DRC',
-    location: 'Kinshasa, Gombe',
-    rating: 4.9,
-    reviews: 2100,
-    price: 1250,
-    deliveryTime: 'Instant (2h)',
-    deliveryType: 'instant',
-    verified: true,
-    isBestMatch: true,
-    avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDH6iTawFsVSvLMVv7gwwvv03MhgKYPEQcMP3hKcanDo_fMvGX8161pj-tIOBKUrhq5pOh1wmlX7xZ19vQyRDPov6zUYh6bWcWOhm5YehdnhfT4_4bf-W9jVfTfu9RpO7xKmoUhujuj0-pHtWkxgERCRjcaGNVJmmHTsKOlzEPxhaR3FhE-7gbVkUHMb5xtVOehxIwjZN3f25GweT92cU5c0b7Yg6OdFo_e-81uaSXvFS8v6eW1TPKKLmjeBfzc0KfSkvhvEv2X',
-  },
-  {
-    id: 2,
-    name: 'Market Kintambo',
-    location: 'Kintambo Magasin',
-    rating: 4.2,
-    reviews: 86,
-    price: 1190,
-    deliveryTime: '3-4 Days',
-    deliveryType: 'standard',
-    verified: false,
-    isBestPrice: true,
-    avatar: null,
-  },
-  {
-    id: 3,
-    name: 'Yabisso Official',
-    location: 'Kinshasa, Central',
-    rating: 5.0,
-    reviews: 500,
-    price: 1300,
-    deliveryTime: 'Next Day',
-    deliveryType: 'express',
-    verified: true,
-    isOfficial: true,
-    warranty: '1 Year',
-    freeReturn: true,
-    avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBThri00oB2_pUgd62JNEJP92G-IIQkQ0mwBBDBJbtGem9Yk9_z9S7A8UrCJqG9uFzF-Fh58E3_SvgFMAmegrDdJCRHYgsu7gg1SCTHHV8Hldb716QzEEveTOOljE0XSKo0BXbvqrnSs--up3Co_MfK2lPyYrs4zn-sTvRkqjwO5Cr8-ctqrIiZmRyPIXNdg_ifpnkKZEDBvAofi-BBdd5grhaeC2BtlQTeTU3XsjrGqN3LwvRKtD3n4pHXGts-lwawPR8d992D',
-  },
-];
-
-export default function SellerComparisonScreen({ onBack, onNavigate }) {
+export default function SellerComparisonScreen({ onBack, onNavigate, product, route }) {
   const [sortBy, setSortBy] = useState('best_match');
+  const [allSellers, setAllSellers] = useState([]);
 
-  const formatPrice = (price) => {
-    return price.toLocaleString('fr-FR') + ' $';
+  const incomingProduct = product || route?.params?.product;
+  const productData = incomingProduct || {
+    name: 'BassPro Wireless Headphones',
+    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCcH_wkhL9Vsdh3YOxVm8TuEpTlNbPnwEr08XwJFX8cQOKmYsov5xRS4oviF8wwFiErmeKAJE8wqc7HHjgknnv4KzHoszV5hLciu_pQp54wIA4QipzyT5tU4G2ungf-XnZCIvC9vCT45QSSAR-hngMPz8OFZUvmLzbxqjSGIQUG4VDjviScm2kUyCw6UrlhV9Adzej29zBtQdbaPpoRjqKgFgwvA_zZkcDHFEgZmG4fpm8r4dpAVhMvIcrZ3SkKgmzuYEaulaXF',
+    price: 150000,
   };
 
-  const handleSelectSeller = (sellerId) => {
-    onNavigate?.('select_seller', sellerId);
+  React.useEffect(() => {
+    loadRealSellers();
+  }, [incomingProduct?.id]);
+
+  const loadRealSellers = async () => {
+    try {
+      const saved = await SecureStore.getItemAsync('seller_products');
+      if (saved) {
+        const productsData = JSON.parse(saved);
+        
+        let categoryProducts = productsData.filter(p => p.id !== incomingProduct?.id && (p.category === incomingProduct?.category || p.name.trim().toLowerCase().includes(incomingProduct?.name?.trim().toLowerCase() || '')));
+        if (categoryProducts.length === 0) {
+           categoryProducts = productsData.filter(p => p.id !== incomingProduct?.id);
+        }
+
+        const mappedSellers = categoryProducts.map((p, index) => ({
+          id: p.id,
+          name: p.brand || 'Vendeur Indépendant',
+          location: 'Locale',
+          rating: 4.5,
+          reviews: Math.floor(Math.random() * 200) + 10,
+          deliveryTime: index % 2 === 0 ? 'Instant (2h)' : '3-4 Jours',
+          deliveryType: index % 2 === 0 ? 'instant' : 'standard',
+          verified: index % 2 === 0,
+          isOfficial: false,
+          condition: p.condition || 'Neuf',
+          avatar: null,
+          price: parseInt(p.price) || 0,
+          productRef: p
+        }));
+        
+        setAllSellers(mappedSellers);
+      }
+    } catch (e) {
+      console.log('Error loading sellers:', e);
+    }
+  };
+
+  const sellers = useMemo(() => {
+    return [...allSellers].sort((a, b) => {
+      if (sortBy === 'price') return a.price - b.price;
+      if (sortBy === 'delivery') {
+        const order = { instant: 0, express: 1, standard: 2 };
+        return order[a.deliveryType] - order[b.deliveryType];
+      }
+      return b.rating - a.rating;
+    });
+  }, [allSellers, sortBy]);
+
+  const sortedSellers = useMemo(() => {
+    if (sortBy === 'best_match') {
+      return [...sellers].sort((a, b) => b.rating - a.rating);
+    }
+    return sellers;
+  }, [sellers, sortBy]);
+
+  const getBestMatch = () => sortedSellers[0];
+
+  const formatPrice = (price) => {
+    return (price || 0).toLocaleString('fr-FR') + ' FCA';
+  };
+
+  const handleSelectSeller = (seller) => {
+    if (seller.productRef) {
+      onNavigate?.('product_details', { product: seller.productRef });
+    } else {
+      onNavigate?.('product_details', { product: { ...productData, seller: { name: seller.name, rating: seller.rating, avatar: seller.avatar }, price: seller.price } });
+    }
   };
 
   return (
@@ -77,13 +100,17 @@ export default function SellerComparisonScreen({ onBack, onNavigate }) {
         <Pressable onPress={onBack} style={styles.backBtn}>
           <MaterialCommunityIcons name="arrow-left" size={24} color="#fff" />
         </Pressable>
-        <Text style={styles.headerTitle}>Comparer les vendeurs</Text>
+        <Text style={styles.headerTitle}>Comparer les prix</Text>
         <View style={styles.headerSpacer} />
       </View>
 
       {/* Product Context */}
       <View style={styles.productContext}>
-        <Image source={{ uri: productData.image }} style={styles.productThumb} />
+        {productData.photos && productData.photos[0] ? (
+          <Image source={{ uri: productData.photos[0] }} style={styles.productThumb} />
+        ) : (
+          <Image source={{ uri: productData.image || 'https://via.placeholder.com/48' }} style={styles.productThumb} />
+        )}
         <View style={styles.productInfo}>
           <Text style={styles.productLabel}>Comparaison</Text>
           <Text style={styles.productName} numberOfLines={1}>{productData.name}</Text>
@@ -99,9 +126,6 @@ export default function SellerComparisonScreen({ onBack, onNavigate }) {
           <Text style={[styles.chipText, sortBy === 'best_match' && styles.chipTextActive]}>
             Meilleure correspondance
           </Text>
-          {sortBy === 'best_match' && (
-            <MaterialCommunityIcons name="expand-more" size={16} color="#fff" />
-          )}
         </Pressable>
         <Pressable 
           style={[styles.chip, sortBy === 'price' && styles.chipActive]}
@@ -123,7 +147,7 @@ export default function SellerComparisonScreen({ onBack, onNavigate }) {
 
       <ScrollView showsVerticalScrollIndicator={false} style={styles.scrollView}>
         {/* Seller Cards */}
-        {sellers.map((seller) => (
+        {sortedSellers.map((seller, index) => (
           <View 
             key={seller.id} 
             style={[
@@ -132,14 +156,14 @@ export default function SellerComparisonScreen({ onBack, onNavigate }) {
             ]}
           >
             {/* Badges */}
-            {seller.isBestMatch && (
-              <View style={styles.bestMatchBadge}>
+            {index === 0 && sortBy === 'best_match' && (
+              <View style={[styles.bestMatchBadge, { backgroundColor: '#22c55e' }]}>
                 <Text style={styles.bestMatchBadgeText}>Meilleure correspondance</Text>
               </View>
             )}
-            {seller.isBestPrice && (
-              <View style={styles.bestPriceBadge}>
-                <Text style={styles.bestPriceBadgeText}>Meilleur prix</Text>
+            {sortBy === 'price' && index === 0 && (
+              <View style={[styles.bestMatchBadge, { backgroundColor: '#eab308' }]}>
+                <Text style={styles.bestMatchBadgeText}>Meilleur prix</Text>
               </View>
             )}
             {seller.isOfficial && (
@@ -179,7 +203,7 @@ export default function SellerComparisonScreen({ onBack, onNavigate }) {
                   <Text style={styles.ratingText}>{seller.rating}</Text>
                   <MaterialCommunityIcons name="star" size={14} color="#fbbf24" />
                 </View>
-                <Text style={styles.reviewsText}>({seller.reviews.toLocaleString()} avis)</Text>
+                <Text style={styles.reviewsText}>({seller.reviews} avis)</Text>
               </View>
             </View>
 
@@ -189,8 +213,17 @@ export default function SellerComparisonScreen({ onBack, onNavigate }) {
             <View style={styles.metricsGrid}>
               <View style={styles.metricItem}>
                 <Text style={styles.metricLabel}>Prix</Text>
-                <Text style={styles.metricPrice}>{formatPrice(seller.price)}</Text>
+                <Text style={[styles.metricPrice, sortBy === 'price' && index === 0 && { color: '#22c55e' }]}>
+                  {formatPrice(seller.price)}
+                </Text>
               </View>
+              <View style={styles.metricItem}>
+                <Text style={styles.metricLabel}>État</Text>
+                <Text style={styles.conditionText}>{seller.condition}</Text>
+              </View>
+            </View>
+            
+            <View style={styles.metricsRow}>
               <View style={styles.metricItem}>
                 <Text style={styles.metricLabel}>Livraison</Text>
                 <View style={styles.deliveryRow}>
@@ -208,9 +241,11 @@ export default function SellerComparisonScreen({ onBack, onNavigate }) {
             {seller.isOfficial && (
               <View style={styles.extraTags}>
                 <View style={styles.extraTag}>
+                  <MaterialCommunityIcons name="shield-check" size={14} color="#22c55e" />
                   <Text style={styles.extraTagText}>Garantie: {seller.warranty}</Text>
                 </View>
                 <View style={styles.extraTag}>
+                  <MaterialCommunityIcons name="refresh" size={14} color="#22c55e" />
                   <Text style={styles.extraTagText}>Retour gratuit</Text>
                 </View>
               </View>
@@ -219,7 +254,7 @@ export default function SellerComparisonScreen({ onBack, onNavigate }) {
             {/* Select Button */}
             <Pressable 
               style={styles.selectBtn}
-              onPress={() => handleSelectSeller(seller.id)}
+              onPress={() => handleSelectSeller(seller)}
             >
               <Text style={styles.selectBtnText}>Choisir ce vendeur</Text>
               <MaterialCommunityIcons name="arrow-forward" size={18} color="#0E151B" />
@@ -275,7 +310,14 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 8,
+  },
+  productThumbPlaceholder: {
+    width: 48,
+    height: 48,
+    borderRadius: 8,
     backgroundColor: '#324d67',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   productInfo: {
     flex: 1,
@@ -466,6 +508,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
+  metricsRow: {
+    marginTop: 12,
+  },
   metricItem: {
     flex: 1,
   },
@@ -478,6 +523,11 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     color: '#137fec',
+  },
+  conditionText: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#fff',
   },
   deliveryRow: {
     flexDirection: 'row',

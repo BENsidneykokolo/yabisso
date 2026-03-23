@@ -122,6 +122,48 @@ export default function CheckoutScreen({ onBack, onNavigate, route }) {
   const taxes = 0;
   const total = subtotal + deliveryFee + taxes;
 
+  const updateStockAndNotify = async (items) => {
+    try {
+      const saved = await SecureStore.getItemAsync('seller_products');
+      if (saved) {
+        let products = JSON.parse(saved);
+        let lowStockAlerts = [];
+        let stockUpdated = false;
+
+        items.forEach(item => {
+          const prodIndex = products.findIndex(p => p.id === item.id);
+          if (prodIndex >= 0) {
+            const oldStock = parseInt(products[prodIndex].stock) || 0;
+            const newStock = Math.max(0, oldStock - item.quantity);
+            products[prodIndex].stock = newStock.toString();
+            stockUpdated = true;
+
+            if (newStock === 0) {
+              lowStockAlerts.push(`${products[prodIndex].name} est en rupture de stock!`);
+            } else if (newStock <= 10) {
+              lowStockAlerts.push(`Il ne reste que ${newStock} exemplaire(s) de ${products[prodIndex].name}!`);
+            }
+          }
+        });
+
+        if (stockUpdated) {
+          await SecureStore.setItemAsync('seller_products', JSON.stringify(products));
+        }
+        
+        if (lowStockAlerts.length > 0) {
+          setTimeout(() => {
+            Alert.alert(
+              '🔔 Notification Vendeur', 
+              lowStockAlerts.join('\\n')
+            );
+          }, 1500);
+        }
+      }
+    } catch (e) {
+      console.log('Error updating stock', e);
+    }
+  };
+
   const createOrder = (status) => {
     const newOrder = {
       id: `CMD-${Math.floor(1000 + Math.random() * 9000)}`,
@@ -170,6 +212,7 @@ export default function CheckoutScreen({ onBack, onNavigate, route }) {
           text: 'Confirmer',
           onPress: () => {
             const order = createOrder('en_cours');
+            updateStockAndNotify(orderItems);
             Alert.alert('Succès', 'Votre commande a été passée avec succès!');
             onNavigate?.('order_status', { orderId: order.id });
           }

@@ -48,6 +48,10 @@ S13-S16: reservations, services, admin console, Play Store launch
 - Seller Comparison, Blocked User Screen
 - CartContext & OrderContext: state management complet
 - Branchements: parcours complet marketplace (achat, négociation, cycle de vie) implemente
+- **Favoris**: Système de favoris avec stockage SecureStore, écran Favoris fonctionnel
+- **Comparaison de prix**: Affichage du même produit par plusieurs vendeurs (prix, état, livraison, localisation)
+- **Confirmation réception**: Modal avec commentaire texte + jusqu'à 3 photos pour confirmer/signaler commande
+- **SellerProfile**: Onglet "Avis" supprimé (mockups retirés)
 
 ## Roadmap agile (vue condensee)
 Phase 1 — Online + SMS Fallback + UI (MVP)

@@ -1,16 +1,17 @@
 import React from 'react';
-import { Pressable, SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, SafeAreaView, ScrollView, StyleSheet, Text, View, Image } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useCart } from '../context/CartContext';
 
-export default function MarketplaceFavoritesScreen({ onBack, onNavigate, favorites = [], onToggleFavorite }) {
+export default function MarketplaceFavoritesScreen({ onBack, onNavigate }) {
+  const { favorites, toggleFavorite } = useCart();
+
   const formatPrice = (price) => {
-    return price.toLocaleString('fr-FR') + ' FCA';
+    return (price || 0).toLocaleString('fr-FR') + ' FCA';
   };
 
-  const handleRemoveFavorite = (product) => {
-    if (onToggleFavorite) {
-      onToggleFavorite(product);
-    }
+  const handleRemoveFavorite = async (product) => {
+    await toggleFavorite(product);
   };
 
   return (
@@ -38,11 +39,15 @@ export default function MarketplaceFavoritesScreen({ onBack, onNavigate, favorit
                 style={styles.favoriteCard} 
                 onPress={() => onNavigate?.('product_details', { product: item })}
               >
-                <View style={styles.productImage}>
-                  <MaterialCommunityIcons name="image" size={32} color="#324d67" />
-                </View>
+                {item.photos && item.photos[0] ? (
+                  <Image source={{ uri: item.photos[0] }} style={styles.productImage} />
+                ) : (
+                  <View style={styles.productImagePlaceholder}>
+                    <MaterialCommunityIcons name="image" size={32} color="#324d67" />
+                  </View>
+                )}
                 <View style={styles.productInfo}>
-                  <Text style={styles.productBrand}>{item.brand}</Text>
+                  <Text style={styles.productBrand}>{item.categoryName || item.brand || 'Boutique'}</Text>
                   <Text style={styles.productName} numberOfLines={2}>{item.name}</Text>
                   <Text style={styles.productPrice}>{formatPrice(item.price)}</Text>
                 </View>
@@ -119,6 +124,11 @@ const styles = StyleSheet.create({
     padding: 12,
   },
   productImage: {
+    width: 80,
+    height: 80,
+    borderRadius: 12,
+  },
+  productImagePlaceholder: {
     width: 80,
     height: 80,
     borderRadius: 12,

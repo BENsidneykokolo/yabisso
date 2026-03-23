@@ -10,6 +10,7 @@ import {
   TextInput,
   Alert,
   TouchableOpacity,
+  Modal,
 } from 'react-native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import * as SecureStore from 'expo-secure-store';
@@ -30,7 +31,7 @@ export default function RestaurantSellerScreen({ onBack, onNavigate }) {
     location: '',
     phone: '',
     description: '',
-    category: '',
+    category: [],
     hours: '9h - 21h',
     delivery: true,
     deliveryFee: '500',
@@ -53,6 +54,11 @@ export default function RestaurantSellerScreen({ onBack, onNavigate }) {
       const saved = await SecureStore.getItemAsync('restaurant_shop_info');
       if (saved) {
         const data = JSON.parse(saved);
+        if (typeof data.category === 'string') {
+          data.category = data.category ? [data.category] : [];
+        } else if (!data.category) {
+          data.category = [];
+        }
         setShopInfo(data);
         setEditShopData(data);
       }
@@ -220,7 +226,7 @@ export default function RestaurantSellerScreen({ onBack, onNavigate }) {
                 </Pressable>
                 <View style={styles.profileInfo}>
                   <Text style={styles.profileName}>{shopInfo.name}</Text>
-                  <Text style={styles.profileMeta}>{shopInfo.category} · {shopInfo.location}</Text>
+                  <Text style={styles.profileMeta}>{(shopInfo.category || []).join(', ')} · {shopInfo.location}</Text>
                   <View style={styles.metaRow}>
                     <View style={styles.metaItem}>
                       <MaterialCommunityIcons name="clock" size={14} color="#94A3B8" />
@@ -328,7 +334,12 @@ export default function RestaurantSellerScreen({ onBack, onNavigate }) {
         )}
       </ScrollView>
 
-      {showEditShop && (
+      <Modal
+        visible={showEditShop}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setShowEditShop(false)}
+      >
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
@@ -390,24 +401,36 @@ export default function RestaurantSellerScreen({ onBack, onNavigate }) {
               </View>
 
               <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Catégorie</Text>
+                <Text style={styles.inputLabel}>Catégories</Text>
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categoryPicker}>
-                  {categories.map((cat) => (
-                    <TouchableOpacity
-                      key={cat.id}
-                      style={[styles.categoryChip, editShopData.category === cat.name && styles.categoryChipActive]}
-                      onPress={() => setEditShopData({...editShopData, category: cat.name})}
-                    >
-                      <MaterialCommunityIcons 
-                        name={cat.icon} 
-                        size={18} 
-                        color={editShopData.category === cat.name ? '#0E151B' : '#94A3B8'} 
-                      />
-                      <Text style={[styles.categoryChipText, editShopData.category === cat.name && styles.categoryChipTextActive]}>
-                        {cat.name}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
+                  {categories.map((cat) => {
+                    const currentCategories = Array.isArray(editShopData.category) ? editShopData.category : [];
+                    const isSelected = currentCategories.includes(cat.name);
+                    return (
+                      <TouchableOpacity
+                        key={cat.id}
+                        style={[styles.categoryChip, isSelected && styles.categoryChipActive]}
+                        onPress={() => {
+                          let newCategories = [...currentCategories];
+                          if (isSelected) {
+                            newCategories = newCategories.filter(c => c !== cat.name);
+                          } else {
+                            newCategories.push(cat.name);
+                          }
+                          setEditShopData({...editShopData, category: newCategories});
+                        }}
+                      >
+                        <MaterialCommunityIcons 
+                          name={cat.icon} 
+                          size={18} 
+                          color={isSelected ? '#0E151B' : '#94A3B8'} 
+                        />
+                        <Text style={[styles.categoryChipText, isSelected && styles.categoryChipTextActive]}>
+                          {cat.name}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  })}
                 </ScrollView>
               </View>
 
@@ -490,7 +513,7 @@ export default function RestaurantSellerScreen({ onBack, onNavigate }) {
             </ScrollView>
           </View>
         </View>
-      )}
+      </Modal>
     </SafeAreaView>
   );
 }

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -7,9 +7,16 @@ import {
   StyleSheet,
   SafeAreaView,
   Image,
+  TextInput,
+  Alert,
+  Modal,
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useOrders } from '../context/OrderContext';
+import * as ImagePicker from 'expo-image-picker';
+import * as SecureStore from 'expo-secure-store';
+
+const CONFIRMATION_KEY = 'order_confirmations';
 
 export default function OrderStatusScreen({ onBack, onNavigate, route }) {
   const { orders } = useOrders();
@@ -17,13 +24,111 @@ export default function OrderStatusScreen({ onBack, onNavigate, route }) {
   const order = orders.find(o => o.id === orderId) || {
     id: '####',
     products: [],
-    status: 'pending',
+    status: 'delivered',
     timeline: [],
     delivery: { arrivingBy: 'Calcul en cours...', addressType: 'Chargement...', address: '...' }
   };
 
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [confirmationComment, setConfirmationComment] = useState('');
+  const [confirmationImages, setConfirmationImages] = useState([]);
+  const [confirmationStatus, setConfirmationStatus] = useState(null);
+
+  React.useEffect(() => {
+    loadConfirmation();
+  }, [orderId]);
+
+  const loadConfirmation = async () => {
+    try {
+      const saved = await SecureStore.getItemAsync(`${CONFIRMATION_KEY}_${orderId}`);
+      if (saved) {
+        setConfirmationStatus(JSON.parse(saved));
+      }
+    } catch (e) {
+      console.log('Error loading confirmation:', e);
+    }
+  };
+
   const formatPrice = (price) => {
     return (price || 0).toLocaleString('fr-FR') + ' XAF';
+  };
+
+  const pickImage = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Permission requise', 'Autorisez l\'accès à la galerie pour ajouter des photos.');
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 0.8,
+    });
+
+    if (!result.canceled && confirmationImages.length < 3) {
+      setConfirmationImages([...confirmationImages, result.assets[0].uri]);
+    }
+  };
+
+  const takePhoto = async () => {
+    const { status } = await ImagePicker.requestCameraPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Permission requise', 'Autorisez l\'accès à la caméra pour prendre des photos.');
+      return;
+    }
+
+    const result = await ImagePicker.launchCameraAsync({
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 0.8,
+    });
+
+    if (!result.canceled && confirmationImages.length < 3) {
+      setConfirmationImages([...confirmationImages, result.assets[0].uri]);
+    }
+  };
+
+  const removeImage = (index) => {
+    const newImages = confirmationImages.filter((_, i) => i !== index);
+    setConfirmationImages(newImages);
+  };
+
+  const showImageOptions = () => {
+    Alert.alert(
+      'Ajouter une photo',
+      'Comment voulez-vous ajouter une photo?',
+      [
+        { text: 'Prendre une photo', onPress: takePhoto },
+        { text: 'Choisir dans la galerie', onPress: pickImage },
+        { text: 'Annuler', style: 'cancel' },
+      ]
+    );
+  };
+
+  const submitConfirmation = async (isCorrect) => {
+    const confirmation = {
+      orderId,
+      isCorrect,
+      comment: confirmationComment,
+      images: confirmationImages,
+      confirmedAt: new Date().toISOString(),
+    };
+
+    try {
+      await SecureStore.setItemAsync(`${CONFIRMATION_KEY}_${orderId}`, JSON.stringify(confirmation));
+      setConfirmationStatus(confirmation);
+      setShowConfirmModal(false);
+      
+      if (isCorrect) {
+        Alert.alert('Merci!', 'Vous avez confirmé que votre commande est conforme. Le vendeur sera notifié.');
+      } else {
+        Alert.alert('Signalement envoyé', 'Votre signalement a été envoyé au vendeur. Il sera contacté pour résoudre le problème.');
+      }
+    } catch (e) {
+      Alert.alert('Erreur', 'Impossible de soumettre votre confirmation.');
+    }
   };
 
   // Timeline Mock data if not present
@@ -170,8 +275,121 @@ export default function OrderStatusScreen({ onBack, onNavigate, route }) {
           </View>
         </View>
 
+        {/* Confirmation Section */}
+        {order.status === 'delivered' && (
+          <View style={styles.confirmationSection}>
+            {confirmationStatus ? (
+              <View style={styles.confirmedCard}>
+                <View style={styles.confirmedHeader}>
+                  <MaterialCommunityIcons 
+                    name={confirmationStatus.isCorrect ? "check-circle" : "alert-circle"} 
+                    size={24} 
+                    color={confirmationStatus.isCorrect ? "#22c55e" : "#eab308"} 
+                  />
+                  <Text style={styles.confirmedTitle}>
+                    {confirmationStatus.isCorrect ? 'Commande confirmée' : 'Problème signalé'}
+                  </Text>
+                </View>
+                {confirmationStatus.comment && (
+                  <Text style={styles.confirmedComment}>"{confirmationStatus.comment}"</Text>
+                )}
+                {confirmationStatus.images?.length > 0 && (
+                  <View style={styles.confirmedImages}>
+                    {confirmationStatus.images.map((img, i) => (
+                      <Image key={i} source={{ uri: img }} style={styles.confirmedImage} />
+                    ))}
+                  </View>
+                )}
+              </View>
+            ) : (
+              <View style={styles.confirmCard}>
+                <Text style={styles.confirmTitle}>Confirmer la réception</Text>
+                <Text style={styles.confirmSubtitle}>
+                  Avez-vous reçu votre commande? Est-elle conforme?
+                </Text>
+                <Pressable 
+                  style={styles.confirmBtn}
+                  onPress={() => setShowConfirmModal(true)}
+                >
+                  <MaterialCommunityIcons name="checkbox-marked-circle-outline" size={20} color="#fff" />
+                  <Text style={styles.confirmBtnText}>Confirmer maintenant</Text>
+                </Pressable>
+              </View>
+            )}
+          </View>
+        )}
+
         <View style={styles.bottomSpacer} />
       </ScrollView>
+
+      {/* Confirmation Modal */}
+      <Modal visible={showConfirmModal} transparent animationType="slide">
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Confirmer la réception</Text>
+              <Pressable onPress={() => setShowConfirmModal(false)}>
+                <MaterialCommunityIcons name="close" size={24} color="#fff" />
+              </Pressable>
+            </View>
+
+            <View style={styles.modalBody}>
+              <Text style={styles.modalSubtitle}>
+                Votre commande est-elle conforme à ce que vous avez commandé?
+              </Text>
+
+              {/* Images Section */}
+              <Text style={styles.inputLabel}>Photos (optionnel)</Text>
+              <Text style={styles.inputHint}>Ajoutez des photos pour montrer l'état de votre commande</Text>
+              <View style={styles.imagesRow}>
+                {confirmationImages.map((uri, index) => (
+                  <View key={index} style={styles.imagePreviewContainer}>
+                    <Image source={{ uri }} style={styles.imagePreview} />
+                    <Pressable style={styles.removeImageBtn} onPress={() => removeImage(index)}>
+                      <MaterialCommunityIcons name="close" size={14} color="#fff" />
+                    </Pressable>
+                  </View>
+                ))}
+                {confirmationImages.length < 3 && (
+                  <Pressable style={styles.addImageBtn} onPress={showImageOptions}>
+                    <MaterialCommunityIcons name="camera-plus" size={24} color="#94A3B8" />
+                    <Text style={styles.addImageText}>Ajouter</Text>
+                  </Pressable>
+                )}
+              </View>
+
+              {/* Comment Section */}
+              <Text style={styles.inputLabel}>Commentaire (optionnel)</Text>
+              <TextInput
+                style={styles.commentInput}
+                placeholder="Ex: Tout est conforme, merci!"
+                placeholderTextColor="#64748b"
+                value={confirmationComment}
+                onChangeText={setConfirmationComment}
+                multiline
+                numberOfLines={3}
+              />
+
+              {/* Action Buttons */}
+              <Pressable 
+                style={[styles.submitBtn, styles.submitBtnSuccess]}
+                onPress={() => submitConfirmation(true)}
+              >
+                <MaterialCommunityIcons name="check-circle" size={20} color="#fff" />
+                <Text style={styles.submitBtnText}>Tout est conforme</Text>
+              </Pressable>
+
+              <Pressable 
+                style={[styles.submitBtn, styles.submitBtnWarning]}
+                onPress={() => submitConfirmation(false)}
+              >
+                <MaterialCommunityIcons name="alert-circle" size={20} color="#fff" />
+                <Text style={styles.submitBtnText}>Signaler un problème</Text>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      </Modal>
 
       {/* Bottom Actions */}
       <View style={styles.bottomBar}>
@@ -544,5 +762,195 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: 'bold',
     color: '#0E151B',
+  },
+  // Confirmation Section
+  confirmationSection: {
+    paddingHorizontal: 16,
+    marginTop: 8,
+  },
+  confirmCard: {
+    backgroundColor: '#192633',
+    borderRadius: 12,
+    padding: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(34, 197, 94, 0.3)',
+  },
+  confirmTitle: {
+    fontSize: 17,
+    fontWeight: 'bold',
+    color: '#fff',
+    marginBottom: 8,
+  },
+  confirmSubtitle: {
+    fontSize: 14,
+    color: '#94a3b8',
+    marginBottom: 16,
+    lineHeight: 20,
+  },
+  confirmBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    backgroundColor: '#22c55e',
+    paddingVertical: 14,
+    borderRadius: 12,
+  },
+  confirmBtnText: {
+    fontSize: 15,
+    fontWeight: 'bold',
+    color: '#fff',
+  },
+  confirmedCard: {
+    backgroundColor: '#192633',
+    borderRadius: 12,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.05)',
+  },
+  confirmedHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  confirmedTitle: {
+    fontSize: 15,
+    fontWeight: 'bold',
+    color: '#fff',
+  },
+  confirmedComment: {
+    fontSize: 13,
+    color: '#94a3b8',
+    marginTop: 12,
+    fontStyle: 'italic',
+  },
+  confirmedImages: {
+    flexDirection: 'row',
+    gap: 8,
+    marginTop: 12,
+  },
+  confirmedImage: {
+    width: 60,
+    height: 60,
+    borderRadius: 8,
+  },
+  // Modal Styles
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.7)',
+    justifyContent: 'flex-end',
+  },
+  modalContent: {
+    backgroundColor: '#1a2632',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    paddingBottom: 40,
+    maxHeight: '85%',
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255,255,255,0.05)',
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#fff',
+  },
+  modalBody: {
+    padding: 20,
+  },
+  modalSubtitle: {
+    fontSize: 15,
+    color: '#94a3b8',
+    marginBottom: 20,
+    lineHeight: 22,
+  },
+  inputLabel: {
+    fontSize: 12,
+    color: '#94A3B8',
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+    marginBottom: 4,
+  },
+  inputHint: {
+    fontSize: 12,
+    color: '#64748b',
+    marginBottom: 12,
+  },
+  imagesRow: {
+    flexDirection: 'row',
+    gap: 10,
+    marginBottom: 20,
+  },
+  imagePreviewContainer: {
+    position: 'relative',
+  },
+  imagePreview: {
+    width: 70,
+    height: 70,
+    borderRadius: 8,
+  },
+  removeImageBtn: {
+    position: 'absolute',
+    top: -6,
+    right: -6,
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    backgroundColor: '#ef4444',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  addImageBtn: {
+    width: 70,
+    height: 70,
+    borderRadius: 8,
+    backgroundColor: '#192633',
+    borderWidth: 1,
+    borderColor: '#324d67',
+    borderStyle: 'dashed',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  addImageText: {
+    fontSize: 10,
+    color: '#94A3B8',
+    marginTop: 4,
+  },
+  commentInput: {
+    backgroundColor: '#192633',
+    borderRadius: 12,
+    padding: 14,
+    color: '#fff',
+    fontSize: 14,
+    minHeight: 80,
+    textAlignVertical: 'top',
+    borderWidth: 1,
+    borderColor: '#324d67',
+    marginBottom: 20,
+  },
+  submitBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
+    paddingVertical: 14,
+    borderRadius: 12,
+    marginBottom: 12,
+  },
+  submitBtnSuccess: {
+    backgroundColor: '#22c55e',
+  },
+  submitBtnWarning: {
+    backgroundColor: '#eab308',
+  },
+  submitBtnText: {
+    fontSize: 15,
+    fontWeight: 'bold',
+    color: '#fff',
   },
 });

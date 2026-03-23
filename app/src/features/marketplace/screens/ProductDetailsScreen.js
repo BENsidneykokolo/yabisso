@@ -26,13 +26,7 @@ const productImages = [
   'https://lh3.googleusercontent.com/aida-public/AB6AXuCjDSfJdVhAYoYewkB82Q1-Z_x9BohKCiN8EC6mgyvPViIv9kcSYFglwML0si1AN9N4K5JQ2q6B_gp1LvHQN99hUJ2czMutNFJC6YFDjX23pytL4Qgww6HApufV2fJGa0V5OwB-EkHrzs9y-yzbzOB1TboMc9tiRHnxU-mT5ZiLQmfSSOIDre1uuamWN23IxpqcTA1uq9muQ8F0acC1GdMx-3JsPGt7av2v-k2mufWHqs-rUrrLUmAN5UOaPEJjwnYAVOfb4pew',
 ];
 
-const colors = [
-  { name: 'Noir', hex: '#111' },
-  { name: 'Bleu', hex: '#3b82f6' },
-  { name: 'Rouge', hex: '#ef4444' },
-];
-
-const models = ['Pro', 'Lite'];
+// Removed hardcoded colors and models
 
 const seller = {
   name: 'AfroTech Gadgets',
@@ -43,21 +37,22 @@ const seller = {
 const hasMultipleSellers = true;
 
 export default function ProductDetailsScreen({ onBack, onNavigate, product }) {
-  const { addToCart } = useCart();
+  const { addToCart, isFavorite: checkIsFavorite, toggleFavorite } = useCart();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [selectedColor, setSelectedColor] = useState(colors[0]);
-  const [selectedModel, setSelectedModel] = useState(models[0]);
+  const [selectedColor, setSelectedColor] = useState(null);
+  const [selectedSize, setSelectedSize] = useState(null);
   const [quantity, setQuantity] = useState(1);
-  const [isFavorite, setIsFavorite] = useState(false);
-
-  // Negotiation States
+  const [isFavoriteState, setIsFavoriteState] = useState(false);
+  const [negotiatedPrice, setNegotiatedPrice] = useState(null);
+  const [lastOffer, setLastOffer] = useState(null);
   const [isOfferModalVisible, setIsOfferModalVisible] = useState(false);
   const [offerAmount, setOfferAmount] = useState('');
-  const [negotiatedPrice, setNegotiatedPrice] = useState(null);
-  const [lastOffer, setLastOffer] = useState(null); // { amount, timestamp }
 
   React.useEffect(() => {
     loadOfferHistory();
+    if (product?.id) {
+      setIsFavoriteState(checkIsFavorite(product.id));
+    }
   }, [product?.id]);
 
   const loadOfferHistory = async () => {
@@ -114,6 +109,17 @@ export default function ProductDetailsScreen({ onBack, onNavigate, product }) {
     minPrice: product?.minPrice ?? (product?.price ? parseFloat(product.price) * 0.75 : 100000),
   };
   
+  const productColors = productData.colors?.length > 0 
+    ? productData.colors.map(c => ({ name: c, hex: '#324d67' })) 
+    : [];
+
+  const productSizes = productData.sizes?.length > 0 ? productData.sizes : [];
+
+  React.useEffect(() => {
+    if (productColors.length > 0 && !selectedColor) setSelectedColor(productColors[0]);
+    if (productSizes.length > 0 && !selectedSize) setSelectedSize(productSizes[0]);
+  }, [product?.id]);
+  
   const displayImages = productData.photos && productData.photos.length > 0 
     ? productData.photos 
     : productImages;
@@ -128,7 +134,7 @@ export default function ProductDetailsScreen({ onBack, onNavigate, product }) {
       ...productData,
       image: productData.photos?.[0] || null,
     };
-    addToCart(productToAdd, quantity, selectedColor.name, selectedModel, negotiatedPrice);
+    addToCart(productToAdd, quantity, selectedColor?.name, selectedSize, negotiatedPrice);
 
     Alert.alert(
       'Ajouté au panier',
@@ -174,7 +180,7 @@ export default function ProductDetailsScreen({ onBack, onNavigate, product }) {
       if (amount < lastAmount && hoursPassed < 10) {
         Alert.alert(
           'Offre Refusée',
-          `Offre refusée, vous avez déjà une offre acceptée à ${formatPrice(lastAmount)}.`
+          `Vous ne pouvez pas descendre en dessous de votre dernière offre de ${formatPrice(lastAmount)}. Veuillez attendre 10 heures pour soumettre une offre inférieure.`
         );
         return;
       }
@@ -211,13 +217,16 @@ export default function ProductDetailsScreen({ onBack, onNavigate, product }) {
           </Pressable>
           <View style={styles.headerActions}>
             <Pressable
-              onPress={() => setIsFavorite(!isFavorite)}
+              onPress={async () => {
+                const newState = await toggleFavorite(productData);
+                setIsFavoriteState(newState);
+              }}
               style={styles.actionBtn}
             >
               <MaterialCommunityIcons
-                name={isFavorite ? "heart" : "heart-outline"}
+                name={isFavoriteState ? "heart" : "heart-outline"}
                 size={22}
-                color={isFavorite ? "#ef4444" : "#fff"}
+                color={isFavoriteState ? "#ef4444" : "#fff"}
               />
             </Pressable>
             <Pressable style={styles.actionBtn}>
@@ -310,44 +319,44 @@ export default function ProductDetailsScreen({ onBack, onNavigate, product }) {
         {/* Color & Model Selection */}
         <View style={styles.optionsSection}>
           {/* Color */}
+          {productColors.length > 0 && (
           <View style={styles.optionRow}>
             <Text style={styles.optionLabel}>Couleur</Text>
-            <View style={styles.colorOptions}>
-              {colors.map((color) => (
+            <View style={styles.colorOptionsList}>
+              {productColors.map((color) => (
                 <Pressable
                   key={color.name}
                   onPress={() => setSelectedColor(color)}
                   style={[
-                    styles.colorBtn,
-                    { backgroundColor: color.hex },
-                    selectedColor.name === color.name && styles.colorBtnSelected,
+                    styles.colorBtnTextFormat,
+                    selectedColor?.name === color.name && styles.colorBtnSelected,
                   ]}
                 >
-                  {selectedColor.name === color.name && (
-                    <MaterialCommunityIcons name="check" size={16} color="#fff" />
-                  )}
+                  <Text style={[styles.colorBtnText, selectedColor?.name === color.name && {color: '#fff'}]}>{color.name}</Text>
                 </Pressable>
               ))}
             </View>
           </View>
+          )}
 
           {/* Model */}
+          {productSizes.length > 0 && (
           <View style={styles.optionRow}>
-            <Text style={styles.optionLabel}>Modèle</Text>
+            <Text style={styles.optionLabel}>Taille / Variantes</Text>
             <View style={styles.modelOptions}>
-              {models.map((model) => (
+              {productSizes.map((model) => (
                 <Pressable
                   key={model}
-                  onPress={() => setSelectedModel(model)}
+                  onPress={() => setSelectedSize(model)}
                   style={[
                     styles.modelBtn,
-                    selectedModel === model && styles.modelBtnSelected,
+                    selectedSize === model && styles.modelBtnSelected,
                   ]}
                 >
                   <Text
                     style={[
                       styles.modelBtnText,
-                      selectedModel === model && styles.modelBtnTextSelected,
+                      selectedSize === model && styles.modelBtnTextSelected,
                     ]}
                   >
                     {model}
@@ -356,24 +365,38 @@ export default function ProductDetailsScreen({ onBack, onNavigate, product }) {
               ))}
             </View>
           </View>
+          )}
 
           {/* Quantity */}
           <View style={styles.optionRow}>
             <Text style={styles.optionLabel}>Quantité</Text>
-            <View style={styles.quantityContainer}>
-              <Pressable
-                onPress={() => setQuantity(Math.max(1, quantity - 1))}
-                style={styles.quantityBtn}
-              >
-                <MaterialCommunityIcons name="minus" size={18} color="#0E151B" />
-              </Pressable>
-              <Text style={styles.quantityText}>{quantity}</Text>
-              <Pressable
-                onPress={() => setQuantity(quantity + 1)}
-                style={styles.quantityBtn}
-              >
-                <MaterialCommunityIcons name="plus" size={18} color="#0E151B" />
-              </Pressable>
+            <View style={{ alignItems: 'flex-end' }}>
+              <View style={styles.quantityContainer}>
+                <Pressable
+                  onPress={() => setQuantity(Math.max(1, quantity - 1))}
+                  style={styles.quantityBtn}
+                >
+                  <MaterialCommunityIcons name="minus" size={18} color="#0E151B" />
+                </Pressable>
+                <Text style={styles.quantityText}>{quantity}</Text>
+                {productData.stock !== undefined && quantity >= parseInt(productData.stock) ? (
+                <View style={[styles.quantityBtn, { opacity: 0.3 }]}>
+                  <MaterialCommunityIcons name="plus" size={18} color="#0E151B" />
+                </View>
+                ) : (
+                <Pressable
+                  onPress={() => setQuantity(quantity + 1)}
+                  style={styles.quantityBtn}
+                >
+                  <MaterialCommunityIcons name="plus" size={18} color="#0E151B" />
+                </Pressable>
+                )}
+              </View>
+              {productData.stock !== undefined && (
+                <Text style={{color: parseInt(productData.stock) > 0 ? '#94a3b8' : '#ef4444', fontSize: 12, marginTop: 4}}>
+                  {parseInt(productData.stock) > 0 ? `${productData.stock} en stock` : 'Rupture de stock'}
+                </Text>
+              )}
             </View>
           </View>
         </View>
@@ -403,7 +426,7 @@ export default function ProductDetailsScreen({ onBack, onNavigate, product }) {
           {hasMultipleSellers && (
             <Pressable
               style={styles.compareBtn}
-              onPress={() => onNavigate?.('seller_comparison')}
+              onPress={() => onNavigate?.('seller_comparison', { product: productData })}
             >
               <MaterialCommunityIcons name="compare-arrows" size={18} color="#137fec" />
               <Text style={styles.compareBtnText}>Comparer les prix ({3} vendeurs)</Text>
@@ -418,16 +441,22 @@ export default function ProductDetailsScreen({ onBack, onNavigate, product }) {
         </View>
 
         {/* Tech Specs */}
+        {(productData.brand || productData.condition) && (
         <View style={styles.specsSection}>
+          {productData.brand ? (
           <View style={styles.specCard}>
-            <Text style={styles.specLabel}>Batterie</Text>
-            <Text style={styles.specValue}>{productData.specs.battery}</Text>
+            <Text style={styles.specLabel}>Marque</Text>
+            <Text style={styles.specValue}>{productData.brand}</Text>
           </View>
+          ) : null}
+          {productData.condition ? (
           <View style={styles.specCard}>
-            <Text style={styles.specLabel}>Connectivité</Text>
-            <Text style={styles.specValue}>{productData.specs.connectivity}</Text>
+            <Text style={styles.specLabel}>État</Text>
+            <Text style={styles.specValue}>{productData.condition}</Text>
           </View>
+          ) : null}
         </View>
+        )}
 
         <View style={styles.bottomSpacer} />
       </ScrollView>
@@ -443,10 +472,17 @@ export default function ProductDetailsScreen({ onBack, onNavigate, product }) {
               {negotiatedPrice ? 'Modifier l\'offre' : 'Faire une offre'}
             </Text>
           </Pressable>
+          {productData.stock !== undefined && parseInt(productData.stock) === 0 ? (
+          <View style={[styles.addToCartBtn, { backgroundColor: '#64748b' }]}>
+            <MaterialCommunityIcons name="cart-off" size={20} color="#cbd5e1" />
+            <Text style={[styles.addToCartBtnText, { color: '#cbd5e1' }]}>Rupture</Text>
+          </View>
+          ) : (
           <Pressable onPress={handleAddToCart} style={styles.addToCartBtn}>
             <MaterialCommunityIcons name="cart-plus" size={20} color="#0E151B" />
             <Text style={styles.addToCartBtnText}>Ajouter au panier</Text>
           </Pressable>
+          )}
         </View>
       </View>
 
@@ -701,21 +737,27 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#e2e8f0',
   },
-  colorOptions: {
+  colorOptionsList: {
     flexDirection: 'row',
-    gap: 12,
+    gap: 8,
+    flexWrap: 'wrap',
   },
-  colorBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 2,
-    borderColor: 'transparent',
+  colorBtnTextFormat: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+    backgroundColor: '#1a2632',
+    borderWidth: 1,
+    borderColor: '#324d67',
   },
   colorBtnSelected: {
+    backgroundColor: '#137fec',
     borderColor: '#137fec',
+  },
+  colorBtnText: {
+    fontSize: 13,
+    fontWeight: '500',
+    color: '#94a3b8',
   },
   modelOptions: {
     flexDirection: 'row',

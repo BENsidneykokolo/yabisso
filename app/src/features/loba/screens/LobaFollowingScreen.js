@@ -140,7 +140,23 @@ function LobaFollowingScreen({ onBack, onNavigate, videos = [] }) {
 
   React.useEffect(() => {
     setFeedVideos(displayPosts);
+    loadSavedVideos();
   }, [videos]);
+
+  const loadSavedVideos = async () => {
+    try {
+      const savedIdsJson = await SecureStore.getItemAsync('loba_saved_videos');
+      if (savedIdsJson) {
+        const savedIds = JSON.parse(savedIdsJson);
+        setFeedVideos(prev => prev.map(video => ({
+          ...video,
+          saved: savedIds.includes(video.id)
+        })));
+      }
+    } catch (error) {
+      console.log('Error loading saved videos:', error);
+    }
+  };
   const [isShareModalVisible, setIsShareModalVisible] = useState(false);
   const [isCommentsModalVisible, setIsCommentsModalVisible] = useState(false);
   const [selectedVideo, setSelectedVideo] = useState(null);
@@ -168,13 +184,30 @@ function LobaFollowingScreen({ onBack, onNavigate, videos = [] }) {
     }));
   };
 
-  const handleSave = (id) => {
+  const handleSave = async (id) => {
     setFeedVideos(prev => prev.map(video => {
       if (video.id === id) {
         return { ...video, saved: !video.saved };
       }
       return video;
     }));
+    try {
+      const savedIdsJson = await SecureStore.getItemAsync('loba_saved_videos');
+      let savedIds = savedIdsJson ? JSON.parse(savedIdsJson) : [];
+      
+      const video = feedVideos.find(v => v.id === id);
+      if (video?.saved) {
+        savedIds = savedIds.filter(savedId => savedId !== id);
+      } else {
+        if (!savedIds.includes(id)) {
+           savedIds.push(id);
+           Alert.alert('Sauvegardé', 'Cette publication a été ajoutée à vos favoris.');
+        }
+      }
+      await SecureStore.setItemAsync('loba_saved_videos', JSON.stringify(savedIds));
+    } catch (e) {
+      console.log('Error saving video:', e);
+    }
   };
 
   const openShare = (video) => {
@@ -199,17 +232,23 @@ function LobaFollowingScreen({ onBack, onNavigate, videos = [] }) {
     }
   };
 
-  const renderVideo = ({ item, index }) => (
-    <View style={styles.videoContainer}>
+  const renderVideo = ({ item, index }) => {
+    const isCloseToVisible = Math.abs(index - currentVideoIndex) <= 1;
+    return (
+    <View style={[styles.videoContainer, { height: height }]}>
       {item.type === 'video' ? (
-        <Video
-          source={{ uri: item.video }}
-          style={styles.videoBackground}
-          resizeMode={ResizeMode.COVER}
-          shouldPlay={index === currentVideoIndex}
-          isLooping
-          isMuted={false}
-        />
+        isCloseToVisible ? (
+          <Video
+            source={{ uri: item.video }}
+            style={styles.videoBackground}
+            resizeMode={ResizeMode.COVER}
+            shouldPlay={index === currentVideoIndex}
+            isLooping
+            isMuted={false}
+          />
+        ) : (
+          <View style={[styles.videoBackground, { backgroundColor: '#000' }]} />
+        )
       ) : (
         <Image source={{ uri: item.video }} style={styles.videoBackground} />
       )}
@@ -284,10 +323,12 @@ function LobaFollowingScreen({ onBack, onNavigate, videos = [] }) {
         <View style={[styles.progressFill, { width: `${item.progress}%` }]} />
       </View>
     </View>
-  );
+    );
+  };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
+      <View style={{ position: 'absolute', width: width, height: height, top: 0, left: 0 }}>
       <View style={styles.header}>
         <View style={styles.statusChip}>
           <MaterialCommunityIcons name="wifi-off" size={14} color="#fbbf24" />
@@ -310,29 +351,8 @@ function LobaFollowingScreen({ onBack, onNavigate, videos = [] }) {
           const index = Math.round(e.nativeEvent.contentOffset.y / height);
           setCurrentVideoIndex(index);
         }}
-        ListHeaderComponent={
-          <View style={styles.followedCreatorsSection}>
-            <Text style={styles.sectionTitle}>Creators que vous suivre</Text>
-            <ScrollView 
-              horizontal 
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.creatorsScroll}
-            >
-              {followedCreators.map((creator) => (
-                <Pressable key={creator.id} style={styles.creatorChip}>
-                  <Image source={{ uri: creator.avatar }} style={styles.creatorAvatar} />
-                  <Text style={styles.creatorName} numberOfLines={1}>{creator.name}</Text>
-                  {creator.following && (
-                    <View style={styles.creatorCheck}>
-                      <MaterialCommunityIcons name="check" size={12} color="#fff" />
-                    </View>
-                  )}
-                </Pressable>
-              ))}
-            </ScrollView>
-          </View>
-        }
       />
+      </View>
 
       <Modal
         visible={isShareModalVisible}
@@ -395,7 +415,7 @@ function LobaFollowingScreen({ onBack, onNavigate, videos = [] }) {
         else if (tab === 'messages') onNavigate?.('loba_messages');
         else if (tab === 'profile') onNavigate?.('loba_profile');
       }} />
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -489,7 +509,7 @@ const styles = StyleSheet.create({
   },
   videoContainer: {
     width,
-    height: height - 130,
+    height: height,
     backgroundColor: '#000',
   },
   videoBackground: {

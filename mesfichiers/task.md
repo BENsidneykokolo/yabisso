@@ -118,6 +118,13 @@
 | Marketplace - Navigation produit details -> panier -> checkout | Done | P1 | S4 |
 | Marketplace - Affichage details produit (image, prix, marque, description) | Done | P1 | S4 |
 | Loba - Appel telephonique depuis Messages | Done | P2 | S5 |
+| Marketplace - Favoris fonctionnel (ajout/retrait, stockage SecureStore) | Done | P1 | S5 |
+| Marketplace - Favoris s'affichent dans l'ecran Favoris | Done | P1 | S5 |
+| Marketplace - Comparaison de prix avec le meme produit (match par ID/nom) | Done | P1 | S5 |
+| Marketplace - Navigation comparaison -> details produit (choix vendeur) | Done | P1 | S5 |
+| Marketplace - Confirmation reception commande (commentaire + photo) | Done | P1 | S5 |
+| Marketplace - Signalement probleme commande avec upload image | Done | P1 | S5 |
+| Marketplace - SellerProfile sans onglet "Avis" (mockups supprimes) | Done | P1 | S5 |
 
 ---
 

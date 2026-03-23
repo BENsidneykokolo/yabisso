@@ -621,9 +621,10 @@ export default function App() {
     content = (
       <SellerComparisonScreen
         onBack={() => goBack()}
+        product={screenParams?.product}
         onNavigate={(action, data) => {
-          if (action === 'select_seller') {
-            navigate('marketplace_product_details');
+          if (action === 'select_seller' || action === 'product_details') {
+            navigate('marketplace_product_details', data);
           }
         }}
       />
