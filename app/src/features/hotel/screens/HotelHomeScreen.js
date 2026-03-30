@@ -41,6 +41,7 @@ const popularDestinations = [
 
 export default function HotelHomeScreen({ onBack, onNavigate }) {
   const [searchText, setSearchText] = useState('');
+  const [activeTab, setActiveTab] = useState('Accueil');
 
   return (
     <SafeAreaView style={styles.container}>
@@ -48,8 +49,8 @@ export default function HotelHomeScreen({ onBack, onNavigate }) {
         {/* Header */}
         <View style={styles.header}>
           <View>
-            <Text style={styles.greeting}>Find your perfect stay</Text>
-            <Text style={styles.subtitle}>Book hotels across Africa</Text>
+            <Text style={styles.greeting}>Trouvez votre hébergement idéal</Text>
+            <Text style={styles.subtitle}>Réservez des hôtels en Afrique</Text>
           </View>
           <Pressable style={styles.notificationBtn}>
             <MaterialCommunityIcons name="bell-outline" size={24} color="#fff" />
@@ -57,7 +58,7 @@ export default function HotelHomeScreen({ onBack, onNavigate }) {
         </View>
 
         {/* Search */}
-        <View style={styles.searchContainer}>
+        <Pressable style={styles.searchContainer} onPress={() => onNavigate?.('hotel_search')}>
           <View style={styles.searchRow}>
             <MaterialCommunityIcons name="magnify" size={20} color="#92adc9" />
             <TextInput
@@ -66,16 +67,17 @@ export default function HotelHomeScreen({ onBack, onNavigate }) {
               placeholderTextColor="#92adc9"
               value={searchText}
               onChangeText={setSearchText}
+              editable={false}
             />
           </View>
           <Pressable style={styles.filterBtn}>
             <MaterialCommunityIcons name="tune-variant" size={20} color="#fff" />
           </Pressable>
-        </View>
+        </Pressable>
 
         {/* Popular Destinations */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Popular Destinations</Text>
+          <Text style={styles.sectionTitle}>Destinations populaires</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
             {popularDestinations.map((dest) => (
               <Pressable key={dest.id} style={styles.destinationCard}>
@@ -91,14 +93,14 @@ export default function HotelHomeScreen({ onBack, onNavigate }) {
         {/* Featured Hotels */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Featured Hotels</Text>
-            <Text style={styles.seeAll}>See all</Text>
+            <Text style={styles.sectionTitle}>Hôtels en vedette</Text>
+            <Text style={styles.seeAll}>Voir tout</Text>
           </View>
           {featuredHotels.map((hotel) => (
             <Pressable 
               key={hotel.id} 
               style={styles.hotelCard}
-              onPress={() => onNavigate?.('hotel_rooms', { hotel })}
+              onPress={() => onNavigate?.('hotel_details', { hotel })}
             >
               <Image source={{ uri: hotel.image }} style={styles.hotelImage} />
               <View style={styles.hotelOverlay} />
@@ -128,7 +130,7 @@ export default function HotelHomeScreen({ onBack, onNavigate }) {
                   <Text style={styles.hotelPrice}>₦{hotel.price.toLocaleString()}</Text>
                   <Text style={styles.pricePerNight}>/night</Text>
                   <Pressable style={styles.bookBtn}>
-                    <Text style={styles.bookBtnText}>Book Now</Text>
+                    <Text style={styles.bookBtnText}>Réserver</Text>
                   </Pressable>
                 </View>
               </View>
@@ -138,7 +140,7 @@ export default function HotelHomeScreen({ onBack, onNavigate }) {
 
         {/* Quick Filters */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Browse by Type</Text>
+          <Text style={styles.sectionTitle}>Par type d'hébergement</Text>
           <View style={styles.typeGrid}>
             {[
               { name: 'Hotels', icon: 'domain', count: '2,400+' },
@@ -163,28 +165,46 @@ export default function HotelHomeScreen({ onBack, onNavigate }) {
       {/* Bottom Navigation */}
       <SafeAreaView style={styles.bottomNavWrapper}>
         <View style={styles.bottomNav}>
-          {bottomNavItems.map((item) => (
-            <Pressable
-              key={item.label}
-              style={styles.navItem}
-              onPress={() => {
-                if (item.label === 'Home') {
-                  onBack?.();
-                }
-              }}
-            >
-              <View style={[styles.navIconContainer, item.label === 'Home' && styles.navIconActive]}>
-                <MaterialCommunityIcons
-                  name={item.icon}
-                  size={22}
-                  color={item.label === 'Home' ? '#0E151B' : '#CBD5F5'}
-                />
-              </View>
-              <Text style={[styles.navLabel, item.label === 'Home' && styles.navLabelActive]}>
-                {item.label}
-              </Text>
-            </Pressable>
-          ))}
+          {bottomNavItems.map((item) => {
+            const isActive = activeTab === item.label;
+            return (
+              <Pressable
+                key={item.label}
+                style={({ pressed }) => [
+                  styles.navItem,
+                  pressed && styles.navItemPressed,
+                ]}
+                onPress={() => {
+                  setActiveTab(item.label);
+                  if (item.label === 'Accueil') {
+                    // Already on home
+                  } else if (item.label === 'Réservations') {
+                    onNavigate?.('hotel_bookings');
+                  } else if (item.label === 'Favoris') {
+                    onNavigate?.('hotel_favorites');
+                  } else if (item.label === 'Profil') {
+                    onNavigate?.('hotel_profile');
+                  }
+                }}
+              >
+                <View
+                  style={[
+                    styles.navIcon,
+                    isActive && styles.navIconActive,
+                  ]}
+                >
+                  <MaterialCommunityIcons
+                    name={item.icon}
+                    size={isActive ? 20 : 16}
+                    color={isActive ? '#0E151B' : '#CBD5F5'}
+                  />
+                </View>
+                <Text style={[styles.navLabel, isActive && styles.navLabelActive]}>
+                  {item.label}
+                </Text>
+              </Pressable>
+            );
+          })}
         </View>
       </SafeAreaView>
     </SafeAreaView>
@@ -192,10 +212,10 @@ export default function HotelHomeScreen({ onBack, onNavigate }) {
 }
 
 const bottomNavItems = [
-  { label: 'Home', icon: 'home' },
-  { label: 'My Bookings', icon: 'calendar-check' },
-  { label: 'Favorites', icon: 'heart' },
-  { label: 'Profile', icon: 'account' },
+  { label: 'Accueil', icon: 'home' },
+  { label: 'Réservations', icon: 'calendar-check' },
+  { label: 'Favoris', icon: 'heart' },
+  { label: 'Profil', icon: 'account' },
 ];
 
 const styles = StyleSheet.create({
@@ -462,22 +482,33 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flex: 1,
   },
+  navItemPressed: {
+    transform: [{ scale: 0.96 }],
+  },
+  navIcon: {
+    width: 22,
+    height: 22,
+    borderRadius: 6,
+    backgroundColor: 'rgba(255, 255, 255, 0.18)',
+    marginBottom: 6,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  navIconActive: {
+    backgroundColor: '#2BEE79',
+  },
+  navLabel: {
+    color: '#6B7280',
+    fontSize: 10,
+  },
+  navLabelActive: {
+    color: '#2BEE79',
+  },
   navIconContainer: {
     width: 32,
     height: 32,
     borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  navIconActive: {
-    backgroundColor: '#137fec',
-  },
-  navLabel: {
-    color: '#6B7280',
-    fontSize: 10,
-    marginTop: 4,
-  },
-  navLabelActive: {
-    color: '#2BEE79',
   },
 });

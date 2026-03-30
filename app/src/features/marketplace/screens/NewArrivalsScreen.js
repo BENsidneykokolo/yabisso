@@ -8,12 +8,15 @@ import {
   SafeAreaView,
   TextInput,
   Modal,
+  Image,
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useCart } from '../context/CartContext';
 import { useVoiceSearch } from '../../../hooks/useVoiceSearch';
 import { usePhotoSearch } from '../../../hooks/usePhotoSearch';
-
+import withObservables from '@nozbe/with-observables';
+import { database } from '../../../lib/db';
+import { Q } from '@nozbe/watermelondb';
 import * as SecureStore from 'expo-secure-store';
 
 const CATEGORIES_MAP = {
@@ -45,7 +48,7 @@ const bottomNavItems = [
   { label: 'Panier', icon: 'cart' },
 ];
 
-export default function NewArrivalsScreen({ onBack, onNavigate, favorites = [], onToggleFavorite }) {
+function NewArrivalsScreen({ products = [], onBack, onNavigate, favorites = [], onToggleFavorite }) {
   const { addToCart } = useCart();
   const [activeTab, setActiveTab] = useState('Nouveauté');
   const [selectedCategory, setSelectedCategory] = useState('Tous');
@@ -54,11 +57,34 @@ export default function NewArrivalsScreen({ onBack, onNavigate, favorites = [], 
   const [addedProduct, setAddedProduct] = useState(null);
   const [showVoiceModal, setShowVoiceModal] = useState(false);
   const [showCameraModal, setShowCameraModal] = useState(false);
-  const [allProducts, setAllProducts] = useState([]);
   const [shopName, setShopName] = useState('Ma Boutique');
 
+  const allProducts = (products || []).map(p => {
+    let photos = [];
+    try { photos = JSON.parse(p.photosJson || '[]'); } catch(e) {}
+    let tags = [];
+    try { tags = JSON.parse(p.tagsJson || '[]'); } catch(e) {}
+    
+    return {
+      id: p.id,
+      name: p.name,
+      brand: p.brand || shopName,
+      price: p.price.toString(),
+      minPrice: p.minPrice,
+      category: CATEGORIES_MAP[p.category] || p.categoryName || 'Autres',
+      isNew: p.isNew || tags.includes('Nouveau'),
+      isValidated: p.isValidated,
+      photos: photos,
+      seller: { name: p.sellerName || shopName, rating: 4.5, avatar: null },
+      description: p.description,
+      stock: p.stock,
+      condition: p.condition,
+      colors: [], 
+      sizes: []
+    };
+  });
+
   React.useEffect(() => {
-    loadSellerProducts();
     loadShopName();
   }, []);
 
@@ -74,35 +100,7 @@ export default function NewArrivalsScreen({ onBack, onNavigate, favorites = [], 
     }
   };
 
-  const loadSellerProducts = async () => {
-    try {
-      const saved = await SecureStore.getItemAsync('seller_products');
-      if (saved) {
-        const productsData = JSON.parse(saved);
-        const formatted = productsData
-          .filter(p => p.isVisible !== false)
-          .map(p => ({
-            id: p.id,
-            name: p.name,
-            brand: p.brand || shopName,
-            price: p.price.toString(),
-            minPrice: p.minPrice,
-            category: CATEGORIES_MAP[p.category] || p.categoryName || 'Autres',
-            isNew: p.tags?.includes('Nouveau'),
-            photos: p.photos,
-            seller: { name: shopName, rating: 4.5, avatar: null },
-            description: p.description,
-            stock: p.stock,
-            condition: p.condition,
-            colors: p.colors || [],
-            sizes: p.sizes || []
-          }));
-        setAllProducts(formatted);
-      }
-    } catch (e) {
-      console.log('Error loading seller products:', e);
-    }
-  };
+
 
   // Real Voice Search Hook
   const { 
@@ -136,8 +134,8 @@ export default function NewArrivalsScreen({ onBack, onNavigate, favorites = [], 
     }
   };
 
-  // Seulement garder les produits qui sont marqués "Nouveau"
-  const newArrivals = allProducts.filter(p => p.isNew);
+  // Seulement garder les produits qui sont marqués "Nouveau" ET validés par un kiosque
+  const newArrivals = allProducts.filter(p => p.isNew && p.isValidated);
 
   const filteredProducts = searchText.trim()
     ? newArrivals.filter(p =>
@@ -1091,3 +1089,9 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
 });
+
+const enhance = withObservables([], ({}) => ({
+  products: database.get('products').query(Q.where('is_validated', true)).observe(),
+}));
+
+export default enhance(NewArrivalsScreen);

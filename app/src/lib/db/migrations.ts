@@ -3,6 +3,29 @@ import { schemaMigrations, createTable, addColumns } from '@nozbe/watermelondb/S
 export default schemaMigrations({
   migrations: [
     {
+      toVersion: 7,
+      steps: [
+        addColumns({
+          table: 'products',
+          columns: [
+            { name: 'description', type: 'string' },
+            { name: 'min_price', type: 'string' },
+            { name: 'stock', type: 'number' },
+            { name: 'photos_json', type: 'string' },
+            { name: 'condition', type: 'string' },
+            { name: 'colors_json', type: 'string' },
+            { name: 'sizes_json', type: 'string' },
+            { name: 'tags_json', type: 'string' },
+            { name: 'seller_id', type: 'string', isIndexed: true },
+            { name: 'seller_name', type: 'string' },
+            { name: 'is_validated', type: 'boolean' },
+            { name: 'validated_by', type: 'string', isOptional: true },
+            { name: 'product_sync_status', type: 'string', isIndexed: true },
+          ],
+        }),
+      ],
+    },
+    {
       toVersion: 6,
       steps: [
         addColumns({

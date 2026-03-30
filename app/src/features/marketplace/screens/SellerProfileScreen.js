@@ -13,10 +13,14 @@ import {
   View,
 } from 'react-native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import QRCode from 'react-native-qrcode-svg';
 import * as SecureStore from 'expo-secure-store';
 import * as ImagePicker from 'expo-image-picker';
+import withObservables from '@nozbe/with-observables';
+import { database } from '../../../lib/db';
+import { Q } from '@nozbe/watermelondb';
 
-export default function SellerProfileScreen({ onBack, onOpenAddProduct, onEditProduct, onContact }) {
+function SellerProfileScreen({ products = [], onBack, onOpenAddProduct, onEditProduct, onContact }) {
   const [shopInfo, setShopInfo] = useState({
     name: 'Ma Boutique',
     location: 'Centre-ville',
@@ -26,16 +30,20 @@ export default function SellerProfileScreen({ onBack, onOpenAddProduct, onEditPr
     avatar: null,
     banner: null,
   });
-  const [products, setProducts] = useState([]);
   const [stats, setStats] = useState({ products: 0, followers: 0, sales: 0, rating: 0 });
   const [showEditShop, setShowEditShop] = useState(false);
   const [editShopData, setEditShopData] = useState(shopInfo);
   const [activeTab, setActiveTab] = useState('products');
+  const [showQrModal, setShowQrModal] = useState(false);
+  const [qrData, setQrData] = useState(null);
 
   useEffect(() => {
     loadShopInfo();
-    loadProducts();
   }, []);
+
+  useEffect(() => {
+    setStats(prev => ({ ...prev, products: products.length }));
+  }, [products]);
 
   const loadShopInfo = async () => {
     try {
@@ -47,19 +55,6 @@ export default function SellerProfileScreen({ onBack, onOpenAddProduct, onEditPr
       }
     } catch (e) {
       console.log('Error loading shop info:', e);
-    }
-  };
-
-  const loadProducts = async () => {
-    try {
-      const saved = await SecureStore.getItemAsync('seller_products');
-      if (saved) {
-        const productsData = JSON.parse(saved);
-        setProducts(productsData);
-        setStats(prev => ({ ...prev, products: productsData.length }));
-      }
-    } catch (e) {
-      console.log('Error loading products:', e);
     }
   };
 
@@ -208,6 +203,19 @@ export default function SellerProfileScreen({ onBack, onOpenAddProduct, onEditPr
     );
   };
 
+  const handleShowQr = (product) => {
+    const data = {
+      type: 'product_validation',
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      sellerName: shopInfo.name,
+      timestamp: new Date().getTime()
+    };
+    setQrData(JSON.stringify(data));
+    setShowQrModal(true);
+  };
+
   const deleteProduct = (productId) => {
     Alert.alert(
       'Supprimer le produit',
@@ -218,10 +226,22 @@ export default function SellerProfileScreen({ onBack, onOpenAddProduct, onEditPr
           text: 'Supprimer',
           style: 'destructive',
           onPress: async () => {
-            const updated = products.filter(p => p.id !== productId);
-            setProducts(updated);
-            await SecureStore.setItemAsync('seller_products', JSON.stringify(updated));
-            setStats(prev => ({ ...prev, products: updated.length }));
+            try {
+              await database.write(async () => {
+                const product = await database.get('products').find(productId);
+                await product.markAsDeleted();
+                
+                await database.get('sync_queue').create(syncItem => {
+                  syncItem.action = 'DELETE_PRODUCT';
+                  syncItem.payloadJson = JSON.stringify({ id: productId });
+                  syncItem.status = 'pending';
+                  syncItem.createdAt = new Date().getTime();
+                });
+              });
+            } catch (e) {
+              console.log('Error deleting product:', e);
+              Alert.alert('Erreur', 'Impossible de supprimer le produit');
+            }
           },
         },
       ]
@@ -229,11 +249,16 @@ export default function SellerProfileScreen({ onBack, onOpenAddProduct, onEditPr
   };
 
   const toggleProductVisibility = async (productId) => {
-    const updated = products.map(p => 
-      p.id === productId ? { ...p, isVisible: !p.isVisible } : p
-    );
-    setProducts(updated);
-    await SecureStore.setItemAsync('seller_products', JSON.stringify(updated));
+    try {
+      await database.write(async () => {
+        const product = await database.get('products').find(productId);
+        await product.update(record => {
+          record.isValidated = !record.isValidated;
+        });
+      });
+    } catch (e) {
+      console.log('Error toggling visibility:', e);
+    }
   };
 
   const renderStars = (rating) => {
@@ -354,49 +379,60 @@ export default function SellerProfileScreen({ onBack, onOpenAddProduct, onEditPr
                 </TouchableOpacity>
               </View>
             ) : (
-              products.map((product) => (
-                <View key={product.id} style={styles.productItem}>
-                  <View style={styles.productItemImage}>
-                    {product.photos?.[0] ? (
-                      <Image source={{ uri: product.photos[0] }} style={styles.productImg} />
-                    ) : (
-                      <Ionicons name="image" size={20} color="#4B5563" />
-                    )}
-                  </View>
-                  <View style={styles.productItemInfo}>
-                    <Text style={styles.productItemName}>{product.name}</Text>
-                    <Text style={styles.productItemCategory}>{product.categoryName}</Text>
-                    <View style={styles.productItemRow}>
-                      <Text style={styles.productItemPrice}>{product.price} FCA</Text>
-                      <Text style={styles.productItemStock}>Stock: {product.stock}</Text>
+              products.map((product) => {
+                let photos = [];
+                try { photos = JSON.parse(product.photosJson || '[]'); } catch(e) {}
+                
+                return (
+                  <View key={product.id} style={styles.productItem}>
+                    <View style={styles.productItemImage}>
+                      {photos?.[0] ? (
+                        <Image source={{ uri: photos[0] }} style={styles.productImg} />
+                      ) : (
+                        <Ionicons name="image" size={20} color="#4B5563" />
+                      )}
+                    </View>
+                    <View style={styles.productItemInfo}>
+                      <Text style={styles.productItemName}>{product.name}</Text>
+                      <Text style={styles.productItemCategory}>{product.category}</Text>
+                      <View style={styles.productItemRow}>
+                        <Text style={styles.productItemPrice}>{product.price} FCA</Text>
+                        <Text style={styles.productItemStock}>Stock: {product.stock}</Text>
+                      </View>
+                    </View>
+                    <View style={styles.productItemActions}>
+                      <TouchableOpacity 
+                        style={[styles.visibilityBtn, !product.isValidated && styles.visibilityBtnOff]}
+                        onPress={() => toggleProductVisibility(product.id)}
+                      >
+                        <Ionicons 
+                          name={product.isValidated ? 'eye' : 'eye-off'} 
+                          size={16} 
+                          color={product.isValidated ? '#2BEE79' : '#EF4444'} 
+                        />
+                       </TouchableOpacity>
+                      <TouchableOpacity 
+                        style={styles.qrBtn}
+                        onPress={() => handleShowQr(product)}
+                      >
+                        <MaterialCommunityIcons name="qrcode-scan" size={16} color="#137fec" />
+                      </TouchableOpacity>
+                      <TouchableOpacity 
+                        style={styles.editBtn}
+                        onPress={() => onEditProduct?.(product)}
+                      >
+                        <Ionicons name="pencil" size={16} color="#94A3B8" />
+                      </TouchableOpacity>
+                      <TouchableOpacity 
+                        style={styles.deleteBtn}
+                        onPress={() => deleteProduct(product.id)}
+                      >
+                        <Ionicons name="trash" size={16} color="#EF4444" />
+                      </TouchableOpacity>
                     </View>
                   </View>
-                  <View style={styles.productItemActions}>
-                    <TouchableOpacity 
-                      style={[styles.visibilityBtn, !product.isVisible && styles.visibilityBtnOff]}
-                      onPress={() => toggleProductVisibility(product.id)}
-                    >
-                      <Ionicons 
-                        name={product.isVisible ? 'eye' : 'eye-off'} 
-                        size={16} 
-                        color={product.isVisible ? '#2BEE79' : '#EF4444'} 
-                      />
-                    </TouchableOpacity>
-                    <TouchableOpacity 
-                      style={styles.editBtn}
-                      onPress={() => onEditProduct?.(product)}
-                    >
-                      <Ionicons name="pencil" size={16} color="#94A3B8" />
-                    </TouchableOpacity>
-                    <TouchableOpacity 
-                      style={styles.deleteBtn}
-                      onPress={() => deleteProduct(product.id)}
-                    >
-                      <Ionicons name="trash" size={16} color="#EF4444" />
-                    </TouchableOpacity>
-                  </View>
-                </View>
-              ))
+                );
+              })
             )}
           </View>
         )}
@@ -517,6 +553,34 @@ export default function SellerProfileScreen({ onBack, onOpenAddProduct, onEditPr
             </ScrollView>
           </View>
         </View>
+      </Modal>
+
+      <Modal visible={showQrModal} transparent animationType="fade">
+        <Pressable style={styles.modalOverlay} onPress={() => setShowQrModal(false)}>
+          <View style={styles.qrModalContent}>
+            <View style={styles.qrModalHeader}>
+              <Text style={styles.qrModalTitle}>Validation Kiosque</Text>
+              <TouchableOpacity onPress={() => setShowQrModal(false)}>
+                <Ionicons name="close" size={24} color="#fff" />
+              </TouchableOpacity>
+            </View>
+            <View style={styles.qrContainer}>
+              {qrData && (
+                <View style={styles.qrWrapper}>
+                  <QRCode
+                    value={qrData}
+                    size={200}
+                    color="#fff"
+                    backgroundColor="#1a2632"
+                  />
+                </View>
+              )}
+              <Text style={styles.qrHint}>
+                Présentez ce code à un agent de Kiosque Yabisso pour valider votre produit.
+              </Text>
+            </View>
+          </View>
+        </Pressable>
       </Modal>
     </SafeAreaView>
   );
@@ -691,114 +755,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  sectionRow: {
-    marginTop: 24,
-    marginBottom: 12,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  sectionTitle: {
-    color: '#F8FAFC',
-    fontSize: 16,
-    fontWeight: '700',
-  },
-  sectionLink: {
-    color: '#94A3B8',
-    fontSize: 12,
-  },
-  featuredRow: {
-    flexDirection: 'row',
-  },
-  productCard: {
-    width: 160,
-    borderRadius: 18,
-    padding: 14,
-    backgroundColor: 'rgba(24, 32, 40, 0.9)',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.08)',
-    marginRight: 12,
-  },
-  productBadge: {
-    alignSelf: 'flex-start',
-    backgroundColor: 'rgba(250, 204, 21, 0.18)',
-    borderRadius: 10,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-  },
-  productBadgeText: {
-    color: '#FACC15',
-    fontSize: 9,
-    fontWeight: '700',
-  },
-  productImage: {
-    marginTop: 16,
-    height: 70,
-    borderRadius: 16,
-    backgroundColor: 'rgba(43, 238, 121, 0.12)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  productName: {
-    color: '#F8FAFC',
-    fontSize: 13,
-    fontWeight: '600',
-    marginTop: 12,
-  },
-  productPrice: {
-    color: '#2BEE79',
-    fontSize: 12,
-    marginTop: 6,
-  },
-  reviewCard: {
-    padding: 14,
-    borderRadius: 16,
-    backgroundColor: 'rgba(24, 32, 40, 0.9)',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.08)',
-    marginBottom: 12,
-  },
-  reviewHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  reviewAvatar: {
-    width: 36,
-    height: 36,
-    borderRadius: 12,
-    backgroundColor: 'rgba(59, 130, 246, 0.2)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 10,
-  },
-  reviewInitial: {
-    color: '#60A5FA',
-    fontWeight: '700',
-  },
-  reviewInfo: {
-    flex: 1,
-  },
-  reviewName: {
-    color: '#F8FAFC',
-    fontSize: 13,
-    fontWeight: '600',
-  },
-  ratingRowSmall: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 4,
-    gap: 2,
-  },
-  reviewDate: {
-    color: '#7C8A9A',
-    fontSize: 10,
-  },
-  reviewText: {
-    color: '#CBD5F5',
-    fontSize: 12,
-    marginTop: 10,
-    lineHeight: 18,
-  },
   tabRow: {
     flexDirection: 'row',
     marginTop: 24,
@@ -891,6 +847,16 @@ const styles = StyleSheet.create({
   visibilityBtnOff: {
     backgroundColor: 'rgba(239, 68, 68, 0.1)',
   },
+  qrBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: 8,
+    backgroundColor: 'rgba(19, 127, 236, 0.1)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(19, 127, 236, 0.2)',
+  },
   editBtn: {
     padding: 6,
     borderRadius: 8,
@@ -900,9 +866,6 @@ const styles = StyleSheet.create({
     padding: 6,
     borderRadius: 8,
     backgroundColor: 'rgba(239, 68, 68, 0.1)',
-  },
-  reviewsSection: {
-    marginTop: 8,
   },
   emptyState: {
     alignItems: 'center',
@@ -935,7 +898,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.7)',
     justifyContent: 'flex-end',
-    paddingBottom: 0,
   },
   modalContent: {
     backgroundColor: '#1a2633',
@@ -994,7 +956,7 @@ const styles = StyleSheet.create({
   },
   saveButtonText: {
     color: '#0E151B',
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: '700',
   },
   sectionTitle: {
@@ -1094,3 +1056,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
 });
+
+const enhance = withObservables([], () => ({
+  products: database.get('products').query().observe(),
+}));
+
+export default enhance(SellerProfileScreen);

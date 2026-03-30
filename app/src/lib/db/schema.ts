@@ -1,7 +1,7 @@
 import { appSchema, tableSchema } from '@nozbe/watermelondb'
 
 export const schema = appSchema({
-  version: 6,
+  version: 7,
   tables: [
     tableSchema({
       name: 'profiles',
@@ -72,6 +72,19 @@ export const schema = appSchema({
         { name: 'category', type: 'string', isIndexed: true },
         { name: 'is_new', type: 'boolean' },
         { name: 'image_url', type: 'string', isOptional: true },
+        { name: 'description', type: 'string' },
+        { name: 'min_price', type: 'string' },
+        { name: 'stock', type: 'number' },
+        { name: 'photos_json', type: 'string' },
+        { name: 'condition', type: 'string' },
+        { name: 'colors_json', type: 'string' },
+        { name: 'sizes_json', type: 'string' },
+        { name: 'tags_json', type: 'string' },
+        { name: 'seller_id', type: 'string', isIndexed: true },
+        { name: 'seller_name', type: 'string' },
+        { name: 'is_validated', type: 'boolean' },
+        { name: 'validated_by', type: 'string', isOptional: true },
+        { name: 'product_sync_status', type: 'string', isIndexed: true },
         { name: 'created_at', type: 'number' },
         { name: 'updated_at', type: 'number' },
       ],

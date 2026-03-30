@@ -47,11 +47,43 @@ export default function ProductDetailsScreen({ onBack, onNavigate, product }) {
   const [lastOffer, setLastOffer] = useState(null);
   const [isOfferModalVisible, setIsOfferModalVisible] = useState(false);
   const [offerAmount, setOfferAmount] = useState('');
+  const [productReviews, setProductReviews] = useState([]);
+
+  const loadProductReviews = async (prodId) => {
+    if (!prodId) return;
+    try {
+      let reviews = [];
+      const allKeys = await SecureStore.getItemAsync('all_review_keys');
+      
+      if (allKeys) {
+        const keyList = JSON.parse(allKeys);
+        for (const key of keyList) {
+          if (key.includes(prodId)) {
+            const saved = await SecureStore.getItemAsync(key);
+            if (saved) {
+              reviews.push(JSON.parse(saved));
+            }
+          }
+        }
+      }
+      
+      const defaultKey = `product_review_default`;
+      const defaultSaved = await SecureStore.getItemAsync(defaultKey);
+      if (defaultSaved) {
+        reviews.push(JSON.parse(defaultSaved));
+      }
+      
+      setProductReviews(reviews);
+    } catch (e) {
+      console.log('Error loading product reviews:', e);
+    }
+  };
 
   React.useEffect(() => {
     loadOfferHistory();
     if (product?.id) {
       setIsFavoriteState(checkIsFavorite(product.id));
+      loadProductReviews(product.id);
     }
   }, [product?.id]);
 
@@ -456,6 +488,33 @@ export default function ProductDetailsScreen({ onBack, onNavigate, product }) {
           </View>
           ) : null}
         </View>
+        )}
+
+        {/* Reviews Section */}
+        {productReviews.length > 0 && (
+          <View style={styles.reviewsSection}>
+            <Text style={styles.reviewsSectionTitle}>Avis des clients</Text>
+            {productReviews.map((review, index) => (
+              <View key={index} style={styles.reviewCard}>
+                <View style={styles.reviewHeader}>
+                  <View style={styles.reviewStars}>
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <MaterialCommunityIcons 
+                        key={star} 
+                        name="star" 
+                        size={14} 
+                        color={star <= review.rating ? '#eab308' : '#324d67'} 
+                      />
+                    ))}
+                  </View>
+                  <Text style={styles.reviewDate}>
+                    {review.createdAt ? new Date(review.createdAt).toLocaleDateString('fr-FR') : ''}
+                  </Text>
+                </View>
+                <Text style={styles.reviewComment}>{review.comment}</Text>
+              </View>
+            ))}
+          </View>
         )}
 
         <View style={styles.bottomSpacer} />
@@ -1045,6 +1104,43 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 18,
     fontStyle: 'italic',
+  },
+  reviewsSection: {
+    padding: 20,
+    paddingTop: 8,
+  },
+  reviewsSectionTitle: {
+    fontSize: 17,
+    fontWeight: 'bold',
+    color: '#fff',
+    marginBottom: 16,
+  },
+  reviewCard: {
+    backgroundColor: '#1a2632',
+    borderRadius: 12,
+    padding: 14,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.05)',
+  },
+  reviewHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  reviewStars: {
+    flexDirection: 'row',
+    gap: 2,
+  },
+  reviewDate: {
+    fontSize: 11,
+    color: '#64748b',
+  },
+  reviewComment: {
+    fontSize: 13,
+    color: '#e2e8f0',
+    lineHeight: 18,
   },
 });
 

@@ -17,6 +17,7 @@ export default function SignupScreen({
   onOfflineQr,
   onOfflineBle,
   onKioskMode,
+  onKioskProductMode,
 }) {
   const [showOfflineChoice, setShowOfflineChoice] = useState(false);
   const [selectedRole, setSelectedRole] = useState('user');
@@ -138,11 +139,27 @@ export default function SignupScreen({
             onPress={() => setSelectedRole('kiosk')}
           >
             <View style={[styles.roleBadge, styles.roleBadgeKiosk]}>
-              <Text style={styles.roleBadgeText}>Kiosque</Text>
+              <Text style={styles.roleBadgeText}>Kiosque User</Text>
             </View>
-            <Text style={styles.roleCardTitle}>Kiosque</Text>
+            <Text style={styles.roleCardTitle}>Kiosque Inscription</Text>
             <Text style={styles.roleCardDesc}>
-              Pour vendre les recharges Yabisso, valider les users offline et recharger des points.
+              Pour valider les nouveaux utilisateurs offline et recharger des points.
+            </Text>
+          </Pressable>
+
+          <Pressable
+            style={[
+              styles.roleCard,
+              selectedRole === 'kiosk_product' && styles.roleCardActive,
+            ]}
+            onPress={() => setSelectedRole('kiosk_product')}
+          >
+            <View style={[styles.roleBadge, styles.roleBadgeKiosk, {backgroundColor: 'rgba(77, 159, 255, 0.18)'}]}>
+              <Text style={styles.roleBadgeText}>Kiosque Marche</Text>
+            </View>
+            <Text style={styles.roleCardTitle}>Kiosque Marché</Text>
+            <Text style={styles.roleCardDesc}>
+              Pour valider les produits des vendeurs et les rendre public sur le marché.
             </Text>
           </Pressable>
 
@@ -174,13 +191,16 @@ export default function SignupScreen({
             if (selectedRole === 'kiosk') {
               if (onKioskMode) onKioskMode();
               else setShowOfflineChoice(true);
+            } else if (selectedRole === 'kiosk_product') {
+              if (onKioskProductMode) onKioskProductMode();
+              else setShowOfflineChoice(true);
             } else {
               setShowOfflineChoice(true);
             }
           }}
         >
           <Text style={styles.primaryButtonText}>
-            {selectedRole === 'kiosk' ? 'Activer Mode Kiosque' : "S'inscrire"}
+            {selectedRole.startsWith('kiosk') ? 'Activer Mode Kiosque' : "S'inscrire"}
           </Text>
         </Pressable>
 

@@ -34,9 +34,71 @@ export default function OrderStatusScreen({ onBack, onNavigate, route }) {
   const [confirmationImages, setConfirmationImages] = useState([]);
   const [confirmationStatus, setConfirmationStatus] = useState(null);
 
+  const [showReviewModal, setShowReviewModal] = useState(false);
+  const [selectedProductForReview, setSelectedProductForReview] = useState(null);
+  const [reviewRating, setReviewRating] = useState(5);
+  const [reviewComment, setReviewComment] = useState('');
+  const [existingReview, setExistingReview] = useState(null);
+
   React.useEffect(() => {
     loadConfirmation();
+    loadReview();
   }, [orderId]);
+
+  const loadReview = async () => {
+    if (order?.products?.[0]?.id) {
+      try {
+        const productId = order.products[0].id;
+        const saved = await SecureStore.getItemAsync(`product_review_${orderId}_${productId}`);
+        if (saved) {
+          setExistingReview(JSON.parse(saved));
+        }
+      } catch (e) {
+        console.log('Error loading review:', e);
+      }
+    }
+  };
+
+  const submitReview = async () => {
+    if (!reviewComment.trim()) {
+      Alert.alert('Erreur', 'Veuillez entrer un commentaire.');
+      return;
+    }
+
+    const productId = selectedProductForReview?.id || 'default';
+    const reviewKey = `product_review_${orderId}_${productId}`;
+    
+    const review = {
+      orderId,
+      productId: selectedProductForReview?.id,
+      productName: selectedProductForReview?.name,
+      rating: reviewRating,
+      comment: reviewComment,
+      createdAt: new Date().toISOString(),
+    };
+
+    try {
+      await SecureStore.setItemAsync(reviewKey, JSON.stringify(review));
+      
+      let keyList = [];
+      const savedKeys = await SecureStore.getItemAsync('all_review_keys');
+      if (savedKeys) {
+        keyList = JSON.parse(savedKeys);
+      }
+      if (!keyList.includes(reviewKey)) {
+        keyList.push(reviewKey);
+        await SecureStore.setItemAsync('all_review_keys', JSON.stringify(keyList));
+      }
+      
+      setExistingReview(review);
+      setShowReviewModal(false);
+      setReviewComment('');
+      setReviewRating(5);
+      Alert.alert('Merci!', 'Votre avis a été enregistré.');
+    } catch (e) {
+      Alert.alert('Erreur', 'Impossible d\'enregistrer votre avis.');
+    }
+  };
 
   const loadConfirmation = async () => {
     try {
@@ -316,6 +378,48 @@ export default function OrderStatusScreen({ onBack, onNavigate, route }) {
                 </Pressable>
               </View>
             )}
+
+            {/* Review Section - Show after confirmation */}
+            {confirmationStatus?.isCorrect && order?.products && (
+              <View style={styles.reviewSection}>
+                <Text style={styles.reviewSectionTitle}>Votre avis sur cette commande</Text>
+                
+                {existingReview ? (
+                  <View style={styles.existingReviewCard}>
+                    <View style={styles.existingReviewHeader}>
+                      <View style={styles.existingReviewStars}>
+                        {[1,2,3,4,5].map((star) => (
+                          <MaterialCommunityIcons 
+                            key={star} 
+                            name="star" 
+                            size={16} 
+                            color={star <= existingReview.rating ? '#eab308' : '#324d67'} 
+                          />
+                        ))}
+                      </View>
+                      <Text style={styles.existingReviewDate}>
+                        {new Date(existingReview.createdAt).toLocaleDateString('fr-FR')}
+                      </Text>
+                    </View>
+                    <Text style={styles.existingReviewComment}>{existingReview.comment}</Text>
+                    <Text style={styles.existingReviewProduct}>
+                      Avis sur: {existingReview.productName}
+                    </Text>
+                  </View>
+                ) : (
+                  <Pressable 
+                    style={styles.leaveReviewBtn}
+                    onPress={() => {
+                      setSelectedProductForReview(order.products[0]);
+                      setShowReviewModal(true);
+                    }}
+                  >
+                    <MaterialCommunityIcons name="star-outline" size={20} color="#137fec" />
+                    <Text style={styles.leaveReviewBtnText}>Laisser un avis</Text>
+                  </Pressable>
+                )}
+              </View>
+            )}
           </View>
         )}
 
@@ -385,6 +489,52 @@ export default function OrderStatusScreen({ onBack, onNavigate, route }) {
               >
                 <MaterialCommunityIcons name="alert-circle" size={20} color="#fff" />
                 <Text style={styles.submitBtnText}>Signaler un problème</Text>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Review Modal */}
+      <Modal visible={showReviewModal} transparent animationType="slide">
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Laisser un avis</Text>
+              <Pressable onPress={() => setShowReviewModal(false)}>
+                <MaterialCommunityIcons name="close" size={24} color="#fff" />
+              </Pressable>
+            </View>
+
+            <View style={styles.modalBody}>
+              <Text style={styles.reviewProductName}>{selectedProductForReview?.name}</Text>
+              
+              <Text style={styles.inputLabel}>Note</Text>
+              <View style={styles.ratingStarsRow}>
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <Pressable key={star} onPress={() => setReviewRating(star)}>
+                    <MaterialCommunityIcons 
+                      name={star <= reviewRating ? "star" : "star-outline"} 
+                      size={36} 
+                      color={star <= reviewRating ? "#eab308" : "#64748b"} 
+                    />
+                  </Pressable>
+                ))}
+              </View>
+
+              <Text style={styles.inputLabel}>Votre commentaire</Text>
+              <TextInput
+                style={styles.reviewInput}
+                placeholder="Ex: Produit conforme, livraison rapide..."
+                placeholderTextColor="#64748b"
+                value={reviewComment}
+                onChangeText={setReviewComment}
+                multiline
+                numberOfLines={4}
+              />
+
+              <Pressable style={styles.submitReviewBtn} onPress={submitReview}>
+                <Text style={styles.submitReviewBtnText}>Soumettre mon avis</Text>
               </Pressable>
             </View>
           </View>
@@ -949,6 +1099,101 @@ const styles = StyleSheet.create({
     backgroundColor: '#eab308',
   },
   submitBtnText: {
+    fontSize: 15,
+    fontWeight: 'bold',
+    color: '#fff',
+  },
+  // Review Section
+  reviewSection: {
+    paddingHorizontal: 16,
+    marginTop: 8,
+    marginBottom: 16,
+  },
+  reviewSectionTitle: {
+    fontSize: 17,
+    fontWeight: 'bold',
+    color: '#fff',
+    marginBottom: 12,
+  },
+  leaveReviewBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    backgroundColor: 'rgba(19, 127, 236, 0.1)',
+    paddingVertical: 14,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#137fec',
+  },
+  leaveReviewBtnText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#137fec',
+  },
+  existingReviewCard: {
+    backgroundColor: '#192633',
+    borderRadius: 12,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.05)',
+  },
+  existingReviewHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  existingReviewStars: {
+    flexDirection: 'row',
+    gap: 2,
+  },
+  existingReviewDate: {
+    fontSize: 12,
+    color: '#64748b',
+  },
+  existingReviewComment: {
+    fontSize: 14,
+    color: '#e2e8f0',
+    lineHeight: 20,
+  },
+  existingReviewProduct: {
+    fontSize: 11,
+    color: '#64748b',
+    marginTop: 8,
+    fontStyle: 'italic',
+  },
+  reviewProductName: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#2BEE79',
+    marginBottom: 16,
+  },
+  ratingStarsRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 8,
+    marginBottom: 20,
+  },
+  reviewInput: {
+    backgroundColor: '#192633',
+    borderRadius: 12,
+    padding: 14,
+    color: '#fff',
+    fontSize: 14,
+    minHeight: 100,
+    textAlignVertical: 'top',
+    borderWidth: 1,
+    borderColor: '#324d67',
+    marginBottom: 20,
+  },
+  submitReviewBtn: {
+    backgroundColor: '#137fec',
+    paddingVertical: 14,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  submitReviewBtnText: {
     fontSize: 15,
     fontWeight: 'bold',
     color: '#fff',

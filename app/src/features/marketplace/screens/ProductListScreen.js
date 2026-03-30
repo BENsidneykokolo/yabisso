@@ -12,6 +12,9 @@ import {
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useCart } from '../context/CartContext';
 import * as SecureStore from 'expo-secure-store';
+import withObservables from '@nozbe/with-observables';
+import { database } from '../../../lib/db';
+import { Q } from '@nozbe/watermelondb';
 
 const CATEGORIES_MAP = {
   'fruits': 'Fruits & Légumes',
@@ -42,17 +45,19 @@ const bottomNavItems = [
   { label: 'Panier', icon: 'cart' },
 ];
 
-export default function ProductListScreen({ onBack, onNavigate, favorites = [], onToggleFavorite, filter }) {
+const enhance = withObservables([], () => ({
+  products: database.get('products').query().observe(),
+}));
+
+function ProductListScreen({ products, onBack, onNavigate, favorites = [], onToggleFavorite, filter }) {
   const { addToCart } = useCart();
   const [activeTab, setActiveTab] = useState('Marketplace');
   const [selectedCategory, setSelectedCategory] = useState(filter === 'promo' ? 'Promotions' : 'Téléphones');
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [searchText, setSearchText] = useState('');
-  const [allProducts, setAllProducts] = useState([]);
   const [shopName, setShopName] = useState('Ma Boutique');
 
   useEffect(() => {
-    loadSellerProducts();
     loadShopName();
   }, []);
 
@@ -70,46 +75,38 @@ export default function ProductListScreen({ onBack, onNavigate, favorites = [], 
     }
   };
 
-  const loadSellerProducts = async () => {
-    try {
-      const saved = await SecureStore.getItemAsync('seller_products');
-      if (saved) {
-        const sellerProducts = JSON.parse(saved);
-        const formattedProducts = sellerProducts
-          .filter(p => p.isVisible !== false)
-          .map(p => ({
-            id: p.id,
-            name: p.name,
-            brand: p.brand || shopName,
-            description: p.description,
-            condition: p.condition,
-            colors: p.colors || [],
-            sizes: p.sizes || [],
-            stock: p.stock,
-            price: p.price.toString(),
-            minPrice: p.minPrice,
-            originalPrice: p.originalPrice || null,
-            category: CATEGORIES_MAP[p.category] || p.categoryName || 'Autres',
-            isNew: p.tags?.includes('Nouveau'),
-            isPromo: p.tags?.includes('Promo'),
-            discount: p.tags?.includes('Promo') ? '-10%' : null,
-            description: p.description,
-            photos: p.photos,
-            stock: p.stock,
-            delivery: p.delivery,
-            tags: p.tags,
-            seller: {
-              name: shopName,
-              rating: 4.5,
-              avatar: null,
-            },
-          }));
-        setAllProducts(formattedProducts);
-      }
-    } catch (e) {
-      console.log('Error loading seller products:', e);
-    }
-  };
+  const allProducts = (products || []).map(p => {
+    let photos = [];
+    try { photos = JSON.parse(p.photosJson || '[]'); } catch(e) {}
+    let tags = [];
+    try { tags = JSON.parse(p.tagsJson || '[]'); } catch(e) {}
+    
+    return {
+      id: p.id,
+      name: p.name,
+      brand: p.brand || shopName,
+      description: p.description,
+      condition: p.condition,
+      colors: [], 
+      sizes: [],
+      stock: p.stock,
+      price: p.price.toString(),
+      minPrice: p.minPrice,
+      originalPrice: null,
+      category: CATEGORIES_MAP[p.category] || 'Autres',
+      isNew: p.isNew || tags.includes('Nouveau'),
+      isPromo: tags.includes('Promo'),
+      discount: tags.includes('Promo') ? '-10%' : null,
+      photos: photos,
+      delivery: [], // Default or load from DB if added
+      tags: tags,
+      seller: {
+        name: p.sellerName || shopName,
+        rating: 4.5,
+        avatar: null,
+      },
+    };
+  });
 
   const isFavorite = (productId) => favorites.some(f => f.id === productId);
 

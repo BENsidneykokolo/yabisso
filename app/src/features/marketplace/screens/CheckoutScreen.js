@@ -643,6 +643,83 @@ export default function CheckoutScreen({ onBack, onNavigate, route }) {
           </Pressable>
         </View>
       </View>
+      {/* Address Selection Modal */}
+      <Modal
+        visible={isAddressModalVisible}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setIsAddressModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Sélectionner une adresse</Text>
+              <Pressable onPress={() => setIsAddressModalVisible(false)}>
+                <MaterialCommunityIcons name="close" size={24} color="#fff" />
+              </Pressable>
+            </View>
+
+            <ScrollView style={styles.modalBody} showsVerticalScrollIndicator={false}>
+              {savedAddresses.map((addr) => (
+                <Pressable
+                  key={addr.id}
+                  onPress={() => {
+                    setSelectedAddressId(addr.id);
+                    setAddress(addr.uniqueId);
+                    setIsAddressModalVisible(false);
+                  }}
+                  style={[
+                    styles.optionCardAddress,
+                    selectedAddressId === addr.id && styles.optionCardActive
+                  ]}
+                >
+                  <View style={styles.addressContent}>
+                    <View style={[
+                      styles.addressIconContainer,
+                      selectedAddressId === addr.id && styles.addressIconSelected
+                    ]}>
+                      <MaterialCommunityIcons 
+                        name={addr.category === 'Maison' ? 'home' : (addr.category === 'Travail' ? 'briefcase' : 'map-marker')} 
+                        size={22} 
+                        color={selectedAddressId === addr.id ? '#fff' : '#64748b'} 
+                      />
+                    </View>
+                    <View style={styles.addressTextContainer}>
+                      <View style={styles.titleRow}>
+                        <Text style={styles.addressTitle}>{addr.name}</Text>
+                        <View style={styles.tagBadge}>
+                          <Text style={styles.tagBadgeText}>{addr.uniqueId}</Text>
+                        </View>
+                      </View>
+                      <Text style={styles.addressSubtitle}>{addr.fullAddress || 'Coordonnées GPS'}</Text>
+                    </View>
+                  </View>
+                  <View style={styles.radioOuter}>
+                    <View style={[
+                      styles.radioInner,
+                      selectedAddressId === addr.id && styles.radioInnerSelected
+                    ]} />
+                  </View>
+                </Pressable>
+              ))}
+
+              <Pressable 
+                style={styles.addAddressBtn} 
+                onPress={() => {
+                  setIsAddressModalVisible(false);
+                  onNavigate?.('profile_add_address');
+                }}
+              >
+                <MaterialCommunityIcons name="plus" size={20} color="#137fec" />
+                <Text style={styles.addAddressText}>Ajouter une nouvelle adresse</Text>
+              </Pressable>
+
+              <View style={{ height: 40 }} />
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
+
       {/* Recipient Modal */}
       <Modal
         visible={isRecipientModalVisible}
@@ -808,7 +885,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#1c2a38',
+    backgroundColor: '#1c2630',
     borderRadius: 12,
     padding: 14,
     marginBottom: 8,
@@ -1210,6 +1287,67 @@ const styles = StyleSheet.create({
     borderStyle: 'dashed',
   },
   addAddressModalText: {
+    color: '#137fec',
+    fontWeight: '600',
+  },
+  optionCardAddress: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#1c2630',
+    borderRadius: 12,
+    padding: 14,
+    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: 'transparent',
+  },
+  optionCardActive: {
+    borderColor: '#137fec',
+    backgroundColor: 'rgba(19, 127, 236, 0.1)',
+  },
+  addressContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  addressIconContainer: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: 'rgba(19, 127, 236, 0.1)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  addressIconSelected: {
+    backgroundColor: '#137fec',
+  },
+  addressTextContainer: {
+    flex: 1,
+    marginLeft: 12,
+  },
+  addressTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#fff',
+  },
+  addressSubtitle: {
+    fontSize: 12,
+    color: '#64748b',
+    marginTop: 2,
+  },
+  addAddressBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 16,
+    marginTop: 12,
+    gap: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(19, 127, 236, 0.3)',
+    borderRadius: 12,
+    borderStyle: 'dashed',
+  },
+  addAddressText: {
     color: '#137fec',
     fontWeight: '600',
   },

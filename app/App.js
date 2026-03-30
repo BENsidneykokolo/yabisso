@@ -13,6 +13,8 @@ import LoginScreen from './src/features/auth/screens/LoginScreen';
 import BleSignupScreen from './src/features/bluetooth/screens/BleSignupScreen';
 import BleKioskScreen from './src/features/bluetooth/screens/BleKioskScreen';
 import KioskValidationScreen from './src/features/kiosk/screens/KioskValidationScreen';
+import ProductValidationKioskScreen from './src/features/kiosk/screens/ProductValidationKioskScreen';
+
 
 import HomeScreen from './src/features/home/screens/HomeScreen';
 import QrHubScreen from './src/features/home/screens/QrHubScreen';
@@ -77,6 +79,15 @@ import FoodCheckoutScreen from './src/features/restaurant/screens/FoodCheckoutSc
 import RestaurantOrdersScreen from './src/features/restaurant/screens/RestaurantOrdersScreen';
 import RestaurantTrackingScreen from './src/features/restaurant/screens/RestaurantTrackingScreen';
 import HotelHomeScreen from './src/features/hotel/screens/HotelHomeScreen';
+import HotelSearchScreen from './src/features/hotel/screens/HotelSearchScreen';
+import HotelDetailsScreen from './src/features/hotel/screens/HotelDetailsScreen';
+import HotelRoomDetailsScreen from './src/features/hotel/screens/HotelRoomDetailsScreen';
+import HotelBookingScreen from './src/features/hotel/screens/HotelBookingScreen';
+import HotelPaymentScreen from './src/features/hotel/screens/HotelPaymentScreen';
+import HotelReservationScreen from './src/features/hotel/screens/HotelReservationScreen';
+import HotelMyBookingsScreen from './src/features/hotel/screens/HotelMyBookingsScreen';
+import HotelFavoritesScreen from './src/features/hotel/screens/HotelFavoritesScreen';
+import HotelProfileScreen from './src/features/hotel/screens/HotelProfileScreen';
 import ServicesHomeScreen from './src/features/services/screens/ServicesHomeScreen';
 import RealEstateHomeScreen from './src/features/real_estate/screens/RealEstateHomeScreen';
 import MarketplaceNotificationsScreen from './src/features/marketplace/screens/MarketplaceNotificationsScreen';
@@ -164,6 +175,7 @@ export default function App() {
         onOfflineQr={() => navigate('signup_qr')}
         onOfflineBle={() => navigate('signup_ble')}
         onKioskMode={() => navigate('kiosk_validation')}
+        onKioskProductMode={() => navigate('kiosk_product_validation')}
       />
     );
   }
@@ -220,6 +232,13 @@ export default function App() {
       <KioskValidationScreen
         navigation={{ navigate, goBack }}
         route={{ params: screenParams }}
+      />
+    );
+  }
+  if (screen === 'kiosk_product_validation') {
+    content = (
+      <ProductValidationKioskScreen
+        navigation={{ navigate, goBack }}
       />
     );
   }
@@ -835,6 +854,84 @@ export default function App() {
         onBack={() => goBack()}
         onNavigate={(screenName, params) => navigate(screenName, params)}
         route={{ params: screenParams }}
+      />
+    );
+  }
+  if (screen === 'hotel_search') {
+    content = (
+      <HotelSearchScreen
+        onBack={() => goBack()}
+        onNavigate={(screenName, params) => navigate(screenName, params)}
+        route={{ params: screenParams }}
+      />
+    );
+  }
+  if (screen === 'hotel_details') {
+    content = (
+      <HotelDetailsScreen
+        onBack={() => goBack()}
+        onNavigate={(screenName, params) => navigate(screenName, params)}
+        route={{ params: screenParams }}
+      />
+    );
+  }
+  if (screen === 'hotel_room_details') {
+    content = (
+      <HotelRoomDetailsScreen
+        onBack={() => goBack()}
+        onNavigate={(screenName, params) => navigate(screenName, params)}
+        route={{ params: screenParams }}
+      />
+    );
+  }
+  if (screen === 'hotel_booking') {
+    content = (
+      <HotelBookingScreen
+        onBack={() => goBack()}
+        onNavigate={(screenName, params) => navigate(screenName, params)}
+        route={{ params: screenParams }}
+      />
+    );
+  }
+  if (screen === 'hotel_payment') {
+    content = (
+      <HotelPaymentScreen
+        onBack={() => goBack()}
+        onNavigate={(screenName, params) => navigate(screenName, params)}
+        route={{ params: screenParams }}
+      />
+    );
+  }
+  if (screen === 'hotel_reservation') {
+    content = (
+      <HotelReservationScreen
+        onBack={() => goBack()}
+        onNavigate={(screenName, params) => navigate(screenName, params)}
+        route={{ params: screenParams }}
+      />
+    );
+  }
+  if (screen === 'hotel_bookings') {
+    content = (
+      <HotelMyBookingsScreen
+        onBack={() => goBack()}
+        onNavigate={(screenName, params) => navigate(screenName, params)}
+      />
+    );
+  }
+  if (screen === 'hotel_favorites') {
+    content = (
+      <HotelFavoritesScreen
+        onBack={() => goBack()}
+        onNavigate={(screenName, params) => navigate(screenName, params)}
+      />
+    );
+  }
+  if (screen === 'hotel_profile') {
+    content = (
+      <HotelProfileScreen
+        onBack={() => goBack()}
+        onNavigate={(screenName, params) => navigate(screenName, params)}
       />
     );
   }

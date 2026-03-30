@@ -17,6 +17,7 @@ import { useVoiceSearch } from '../../../hooks/useVoiceSearch';
 import { usePhotoSearch } from '../../../hooks/usePhotoSearch';
 import withObservables from '@nozbe/with-observables';
 import { database } from '../../../lib/db';
+import { Q } from '@nozbe/watermelondb';
 import * as SecureStore from 'expo-secure-store';
 
 const CATEGORIES_MAP = {
@@ -61,11 +62,9 @@ function MarketplaceHomeScreen({ onBack, onNavigate, favorites = [], onToggleFav
   const [searchText, setSearchText] = useState('');
   const [showCartPopup, setShowCartPopup] = useState(false);
   const [addedProduct, setAddedProduct] = useState(null);
-  const [sellerProducts, setSellerProducts] = useState([]);
   const [shopName, setShopName] = useState('Ma Boutique');
   
   useEffect(() => {
-    loadSellerProducts();
     loadShopName();
   }, []);
 
@@ -83,40 +82,34 @@ function MarketplaceHomeScreen({ onBack, onNavigate, favorites = [], onToggleFav
     }
   };
 
-  const loadSellerProducts = async () => {
-    try {
-      const saved = await SecureStore.getItemAsync('seller_products');
-      if (saved) {
-        const productsData = JSON.parse(saved);
-        const formatted = productsData
-          .filter(p => p.isVisible !== false)
-          .map(p => ({
-            id: p.id,
-            name: p.name,
-            description: p.description,
-            stock: p.stock,
-            brand: p.brand || shopName,
-            condition: p.condition,
-            colors: p.colors || [],
-            sizes: p.sizes || [],
-            price: p.price.toString(),
-            minPrice: p.minPrice,
-            category: CATEGORIES_MAP[p.category] || p.categoryName || 'Autres',
-            isNew: p.tags?.includes('Nouveau'),
-            isPromo: p.tags?.includes('Promo'),
-            photos: p.photos,
-            seller: {
-              name: shopName,
-              rating: 4.5,
-              avatar: null,
-            },
-          }));
-        setSellerProducts(formatted);
-      }
-    } catch (e) {
-      console.log('Error loading seller products:', e);
-    }
-  };
+  const sellerProducts = (products || []).map(p => {
+    let photos = [];
+    try { photos = JSON.parse(p.photosJson || '[]'); } catch(e) {}
+    let tags = [];
+    try { tags = JSON.parse(p.tagsJson || '[]'); } catch(e) {}
+    
+    return {
+      id: p.id,
+      name: p.name,
+      description: p.description,
+      stock: p.stock,
+      brand: p.brand || shopName,
+      condition: p.condition,
+      colors: [], // Parse if needed
+      sizes: [], // Parse if needed
+      price: p.price.toString(),
+      minPrice: p.minPrice,
+      category: CATEGORIES_MAP[p.category] || 'Autres',
+      isNew: p.isNew || tags.includes('Nouveau'),
+      isPromo: tags.includes('Promo'),
+      photos: photos,
+      seller: {
+        name: p.sellerName || shopName,
+        rating: 4.5,
+        avatar: null,
+      },
+    };
+  });
   const { addToCart } = useCart();
 
   const { isListening, transcript, error: voiceError, start: startVoice, stop: stopVoice } = useVoiceSearch({
@@ -1311,8 +1304,8 @@ const styles = StyleSheet.create({
   },
 });
 
-const enhance = withObservables([], () => ({
-  products: database.get('products').query().observe(),
+const enhance = withObservables([], ({}) => ({
+  products: database.get('products').query(Q.where('is_validated', true)).observe(),
 }));
 
 export default enhance(MarketplaceHomeScreen);

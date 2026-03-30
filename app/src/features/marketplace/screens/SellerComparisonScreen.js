@@ -118,7 +118,7 @@ export default function SellerComparisonScreen({ onBack, onNavigate, product, ro
       </View>
 
       {/* Sort Chips */}
-      <View style={styles.sortChips}>
+      <View style={styles.sortChipsRow} removeClippedSubviews={false}>
         <Pressable 
           style={[styles.chip, sortBy === 'best_match' && styles.chipActive]}
           onPress={() => setSortBy('best_match')}
@@ -334,7 +334,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#fff',
   },
-  sortChips: {
+  sortChipsRow: {
     flexDirection: 'row',
     paddingHorizontal: 16,
     paddingVertical: 12,
@@ -343,20 +343,21 @@ const styles = StyleSheet.create({
   chip: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 14,
+    paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 20,
     backgroundColor: '#192633',
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.1)',
     gap: 4,
+    flexShrink: 0,
   },
   chipActive: {
     backgroundColor: '#137fec',
     borderColor: '#137fec',
   },
   chipText: {
-    fontSize: 12,
+    fontSize: 11,
     color: 'rgba(255,255,255,0.7)',
     fontWeight: '500',
   },

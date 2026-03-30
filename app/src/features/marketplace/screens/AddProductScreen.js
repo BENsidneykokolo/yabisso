@@ -15,6 +15,8 @@ import {
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import * as SecureStore from 'expo-secure-store';
 import * as ImagePicker from 'expo-image-picker';
+import { database } from '../../../lib/db';
+import { Q } from '@nozbe/watermelondb';
 
 const CATEGORIES = [
   { id: 'fruits', name: 'Fruits & Légumes', icon: 'food-apple' },
@@ -75,12 +77,36 @@ export default function AddProductScreen({ onBack, onOpenSellerProfile, productT
 
   const loadProducts = async () => {
     try {
-      const saved = await SecureStore.getItemAsync('seller_products');
-      if (saved) {
-        setProducts(JSON.parse(saved));
-      }
+      const productCollection = database.get('products');
+      // For now we fetch all local products to show in seller list
+      // In a real app we would filter by seller_id
+      const allProducts = await productCollection.query().fetch();
+      
+      const formatted = allProducts.map(p => ({
+        id: p.id,
+        name: p.name,
+        brand: p.brand,
+        price: parseFloat(p.price),
+        category: p.category,
+        image: p.imageUrl,
+        description: p.description,
+        minPrice: parseFloat(p.minPrice),
+        stock: p.stock,
+        condition: p.condition,
+        photos: JSON.parse(p.photosJson || '[]'),
+        colors: JSON.parse(p.colorsJson || '[]'),
+        sizes: JSON.parse(p.sizesJson || '[]'),
+        tags: JSON.parse(p.tagsJson || '[]'),
+        isVisible: p.isValidated, // Using validated as visibility for now
+        createdAt: p.createdAt,
+      }));
+      
+      setProducts(formatted);
     } catch (e) {
-      console.log('Error loading products:', e);
+      console.log('Error loading products from WatermelonDB:', e);
+      // Fallback to SecureStore if DB fails (prevent crash)
+      const saved = await SecureStore.getItemAsync('seller_products');
+      if (saved) setProducts(JSON.parse(saved));
     }
   };
 
@@ -199,46 +225,105 @@ export default function AddProductScreen({ onBack, onOpenSellerProfile, productT
   const saveProduct = async (publish = true) => {
     if (!validateForm()) return;
 
-    const newProduct = {
-      id: productToEdit?.id || `prod_${Date.now()}`,
-      name: productName.trim(),
-      category: category.id,
-      categoryName: category.name,
-      price: parseFloat(price),
-      minPrice: minPrice ? parseFloat(minPrice) : parseFloat(price),
-      stock: parseInt(stock),
-      description: description.trim(),
-      tags: selectedTags,
-      delivery: deliveryOptions,
-      brand: brand.trim(),
-      condition: condition,
-      colors: colorsText.split(',').map(c => c.trim()).filter(c => c),
-      sizes: sizesText.split(',').map(s => s.trim()).filter(s => s),
-      stock: parseInt(stock) || 0,
-      isVisible: publish ? isVisible : false,
-      photos: photos,
-      createdAt: productToEdit?.createdAt || new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-
-    let updatedProducts;
-    if (productToEdit) {
-      updatedProducts = products.map(p => p.id === productToEdit.id ? newProduct : p);
-    } else {
-      updatedProducts = [newProduct, ...products];
-    }
-
     try {
-      await SecureStore.setItemAsync('seller_products', JSON.stringify(updatedProducts));
-      setProducts(updatedProducts);
+      const sellerId = await SecureStore.getItemAsync('user_id') || 'offline_seller_1';
       
+      const productData = {
+        name: productName.trim(),
+        brand: brand.trim(),
+        price: price.toString(),
+        category: category.id,
+        isNew: selectedTags.includes('Nouveau'),
+        imageUrl: photos[0] || null,
+        description: description.trim(),
+        minPrice: minPrice ? minPrice.toString() : price.toString(),
+        stock: parseInt(stock) || 0,
+        photosJson: JSON.stringify(photos),
+        condition: condition,
+        colorsJson: JSON.stringify(colorsText.split(',').map(c => c.trim()).filter(c => c)),
+        sizesJson: JSON.stringify(sizesText.split(',').map(s => s.trim()).filter(s => s)),
+        tagsJson: JSON.stringify(selectedTags),
+        sellerId: sellerId,
+        sellerName: shopInfo.name,
+        isValidated: false,
+        validatedBy: null,
+        productSyncStatus: 'pending',
+      };
+
+      await database.write(async () => {
+        const productsCollection = database.get('products');
+        const syncQueueCollection = database.get('sync_queue');
+
+        let productRecord;
+        if (productToEdit) {
+          productRecord = await productsCollection.find(productToEdit.id);
+          await productRecord.update(record => {
+            record.name = productData.name;
+            record.brand = productData.brand;
+            record.price = productData.price;
+            record.category = productData.category;
+            record.isNew = productData.isNew;
+            record.imageUrl = productData.imageUrl;
+            record.description = productData.description;
+            record.minPrice = productData.minPrice;
+            record.stock = productData.stock;
+            record.photosJson = productData.photosJson;
+            record.condition = productData.condition;
+            record.colorsJson = productData.colorsJson;
+            record.sizesJson = productData.sizesJson;
+            record.tagsJson = productData.tagsJson;
+            record.sellerId = productData.sellerId;
+            record.sellerName = productData.sellerName;
+            record.isValidated = productData.isValidated;
+            record.validatedBy = productData.validatedBy;
+            record.productSyncStatus = productData.productSyncStatus;
+          });
+        } else {
+          productRecord = await productsCollection.create(record => {
+            record.name = productData.name;
+            record.brand = productData.brand;
+            record.price = productData.price;
+            record.category = productData.category;
+            record.isNew = productData.isNew;
+            record.imageUrl = productData.imageUrl;
+            record.description = productData.description;
+            record.minPrice = productData.minPrice;
+            record.stock = productData.stock;
+            record.photosJson = productData.photosJson;
+            record.condition = productData.condition;
+            record.colorsJson = productData.colorsJson;
+            record.sizesJson = productData.sizesJson;
+            record.tagsJson = productData.tagsJson;
+            record.sellerId = productData.sellerId;
+            record.sellerName = productData.sellerName;
+            record.isValidated = productData.isValidated;
+            record.validatedBy = productData.validatedBy;
+            record.productSyncStatus = productData.productSyncStatus;
+          });
+        }
+
+        // Add to Sync Queue
+        await syncQueueCollection.create(syncItem => {
+          syncItem.action = productToEdit ? 'UPDATE_PRODUCT' : 'CREATE_PRODUCT';
+          syncItem.payloadJson = JSON.stringify({
+           ...productData,
+           id: productRecord.id,
+          });
+          syncItem.status = 'pending';
+          syncItem.retryCount = 0;
+          syncItem.createdAt = new Date().getTime();
+          syncItem.updatedAt = new Date().getTime();
+        });
+      });
+
       Alert.alert(
         'Succès',
-        publish ? 'Produit publié avec succès!' : 'Produit enregistré en brouillon',
+        publish ? 'Produit sauvegardé localement ! Il sera synchronisé dès que possible.' : 'Produit enregistré en brouillon',
         [{ text: 'OK', onPress: onBack }]
       );
     } catch (e) {
-      Alert.alert('Erreur', 'Impossible de sauvegarder le produit');
+      console.log('Error saving product to WatermelonDB:', e);
+      Alert.alert('Erreur', `Impossible de sauvegarder : ${e?.message || 'Erreur inconnue'}`);
     }
   };
 
