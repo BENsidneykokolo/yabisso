@@ -24,57 +24,35 @@ const stories = [
 ];
 
 
-export default function LobaFeedScreen({ onBack, onNavigate }) {
+import withObservables from '@nozbe/with-observables';
+import { database } from '../../../lib/db';
+
+function LobaFeedScreen({ onBack, onNavigate, posts = [] }) {
   const [activeTabNav, setActiveTabNav] = React.useState('Loba');
-  const [feedPosts, setFeedPosts] = React.useState([
-    {
-      id: 1,
-      user: {
-        name: 'Kofi Mensah',
-        avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCpQKycPMLIcj6lEgT3yylEk1PYLRLRoGgntAftVcxpaZk_rZCjF9tJVB74QcDXaov6pXlQd0xJc3Hzn42A1xSh9sZDFM8PgyDRwaUsq2dn7Bf4d23hd1L-NEElMtyMOXIXKC3n95_TmtmOznJyFX7p_fI7-3ZxTpsj7scTO5mwqImoclkDwp9xyQN6RBUdjQBm_U_wSO1O_DvULR6bLmrYThfVtAvmsqTQJoZByFXdNIm-IThl8u4qx54KVUdJpCvlTLEejlGP',
-        location: 'Lagos, Nigeria'
-      },
-      time: '2h ago',
-      content: 'Loving the vibes at the tech summit today! The future of African innovation is bright 🌍✨ #AfricanTech #Lagos',
-      image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAnsmNx5C1-w0Yj3lMlo7-VbFA9OZNzc8vCIqLLNiEWPlqfOQSn40V7O2anTjQdhiVVsOUPd1Fh80S2l0bXDXUxJqhNIq_5GB6gsUsXx0OCuH76RCqW8zwYWx3Z1nuto64008GB7dQ3GGUGAUDYbjA2dXyctAocSS9HrU9BqfKeUCbR0eAsO9ge8eYzPx4BNyZApogpBe7SnsiUhCQ36Q-JA2p3Wz5ZttmMg-YIjNKODC2cU2gW0AhE6WrSmspXkdYVewssDBFD',
-      likes: 46,
-      comments: 12,
-      liked: false,
-      saved: false,
+  
+  const displayPosts = posts.map(p => ({
+    id: p.id,
+    user: {
+      name: p.username,
+      avatar: p.avatar,
+      location: '',
     },
-    {
-      id: 2,
-      user: {
-        name: 'Nneka Abiola',
-        avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBG9ryT5cFc2G88JO3h8DaDLpspRqDhcS0RuM69yGtOBFp34gclVaDEHtiUxKsmXF99QAH4ibPpFCZLZiC7qyZZgX0nlA7vti6FKPUC1IvhxAFMiQ1zGv4L_xfpATknNKRvL5oCQXc3pvR3IVO2D69QnFQUJLSDWe5UAG1csGXIyUDQ8gT2Ih1Tu145H91SBbk-xQxa9d8GBonlI7z_Xejdsu-dEwIIu7Vxx0KiaWrKHAdT24z_gdzc0FlppLMjqkoCOaY5VFU9',
-        location: ''
-      },
-      time: '4h ago',
-      content: 'Does anyone know a good React Native developer available for a freelance gig? Need help with an offline-first module. DM me! 💻🚀',
-      image: null,
-      likes: 8,
-      comments: 3,
-      liked: false,
-      saved: false,
-    },
-    {
-      id: 3,
-      user: {
-        name: 'Tunde Onakoya',
-        avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCrBNcUWoYdPc2Bskk5N-kBh26TY4MWFS3o_cU3o6p57WSxfCTP9IVLiztlxzneIfniZIjXJZ6UbsjBFOV4PqONtEEt9SLTPLovCpRMTTp1TttH5o3QzUwSqn1YIlBfYvocZpzk87_v2BUzukDEgrE3B-cPz5WmlVOkh0G-PYdou-pBIeKBKiPfdXort4u9_Wx0qx9wDMMvdWb_59FlSzddh72pDfMd-2u48WrA2vppIrDrLQZVif3Famtkdye3ECl2qJ8WWW7J',
-        location: 'Lekki Phase 1'
-      },
-      time: '5h ago',
-      content: 'Chess is not just a game, it\'s a way of life. Teaching the next generation. ♟️',
-      image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBfF9PHKxOR2tAZuwd5F8NShIxRAeLJg0ZqeFL7xXTcWmK2W_PAHRgk6GBKJRlauzcsAoFWlLCMfYLJcr4TpTernxsjcpMjLH85xi9jPK21UdnQBE5SpsuMKHnenJUadVvy3M7RGxGJpyyyA17ZFVuUToBuPet0y9jHlEKby50mfupzZ1KQ2lpPCnrYXzySz3URSC2_q9fh2-XoRDfK0cvHlyPrXTkb3MK_A7eQmaUKpViMM_yY0ga_sz8QCtslioArZbN7eQ07',
-      isVideo: true,
-      videoDuration: '0:45',
-      likes: 245,
-      comments: 89,
-      liked: false,
-      saved: false,
-    },
-  ]);
+    time: '2h ago',
+    content: p.content,
+    image: p.imageUrl || p.videoUrl,
+    isVideo: !!p.videoUrl,
+    videoDuration: '0:00',
+    likes: p.likes,
+    comments: p.comments,
+    liked: p.isLiked,
+    saved: false,
+  })).reverse();
+
+  const [feedPosts, setFeedPosts] = React.useState(displayPosts);
+
+  React.useEffect(() => {
+    setFeedPosts(displayPosts);
+  }, [posts]);
 
   const handleLike = (id) => {
     setFeedPosts(prev => prev.map(post => {
@@ -616,3 +594,9 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
 });
+
+const enhance = withObservables([], () => ({
+  posts: database.get('loba_posts').query().observe(),
+}));
+
+export default enhance(LobaFeedScreen);

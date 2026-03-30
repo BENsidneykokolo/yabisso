@@ -94,8 +94,17 @@
 - Restaurant - Tracking: `app/src/features/restaurant/screens/RestaurantTrackingScreen.js`
 - Restaurant - Seller (Vendre): `app/src/features/restaurant/screens/RestaurantSellerScreen.js`
 - Marketplace - Seller Contact: `app/src/features/marketplace/screens/SellerContactScreen.js`
-- Hotels - Home: `app/src/features/hotel/screens/HotelHomeScreen.js`
-- Services - Home: `app/src/features/services/screens/ServicesHomeScreen.js`
+ - Hotels - Home: `app/src/features/hotel/screens/HotelHomeScreen.js`
+ - Hotels - Search: `app/src/features/hotel/screens/HotelSearchScreen.js`
+ - Hotels - Details: `app/src/features/hotel/screens/HotelDetailsScreen.js`
+ - Hotels - Room Details: `app/src/features/hotel/screens/HotelRoomDetailsScreen.js`
+ - Hotels - Booking: `app/src/features/hotel/screens/HotelBookingScreen.js`
+ - Hotels - Payment: `app/src/features/hotel/screens/HotelPaymentScreen.js`
+ - Hotels - Reservation: `app/src/features/hotel/screens/HotelReservationScreen.js`
+ - Hotels - My Bookings: `app/src/features/hotel/screens/HotelMyBookingsScreen.js`
+ - Hotels - Favorites: `app/src/features/hotel/screens/HotelFavoritesScreen.js`
+ - Hotels - Profile: `app/src/features/hotel/screens/HotelProfileScreen.js`
+ - Services - Home: `app/src/features/services/screens/ServicesHomeScreen.js`
 - Immobilier - Home: `app/src/features/real_estate/screens/RealEstateHomeScreen.js`
 - Marketplace - Cart Context: `app/src/features/marketplace/context/CartContext.js`
 - FloatingNav: `app/src/components/FloatingNav.js`

@@ -1,7 +1,7 @@
 import { appSchema, tableSchema } from '@nozbe/watermelondb'
 
 export const schema = appSchema({
-  version: 7,
+  version: 8,
   tables: [
     tableSchema({
       name: 'profiles',
@@ -109,11 +109,26 @@ export const schema = appSchema({
         { name: 'content', type: 'string' },
         { name: 'image_url', type: 'string', isOptional: true },
         { name: 'video_url', type: 'string', isOptional: true },
+        { name: 'hash', type: 'string', isIndexed: true },
+        { name: 'local_media_path', type: 'string', isOptional: true },
+        { name: 'category', type: 'string', isIndexed: true },
+        { name: 'size', type: 'number' },
         { name: 'likes', type: 'number' },
         { name: 'comments', type: 'number' },
         { name: 'is_liked', type: 'boolean' },
         { name: 'filter_color', type: 'string', isOptional: true },
+        { name: 'is_propagating', type: 'boolean' },
+        { name: 'downloaded_at', type: 'number', isOptional: true },
         { name: 'created_at', type: 'number' },
+        { name: 'updated_at', type: 'number' },
+      ],
+    }),
+    tableSchema({
+      name: 'user_interests',
+      columns: [
+        { name: 'service', type: 'string', isIndexed: true },
+        { name: 'category', type: 'string', isIndexed: true },
+        { name: 'weight', type: 'number' },
         { name: 'updated_at', type: 'number' },
       ],
     }),

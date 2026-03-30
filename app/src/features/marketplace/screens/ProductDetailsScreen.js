@@ -48,6 +48,17 @@ export default function ProductDetailsScreen({ onBack, onNavigate, product }) {
   const [isOfferModalVisible, setIsOfferModalVisible] = useState(false);
   const [offerAmount, setOfferAmount] = useState('');
   const [productReviews, setProductReviews] = useState([]);
+  const [isReviewModalVisible, setIsReviewModalVisible] = useState(false);
+  const [newReviewComment, setNewReviewComment] = useState('');
+  const [newReviewRating, setNewReviewRating] = useState(5);
+  const [showAllReviews, setShowAllReviews] = useState(false);
+
+  const suggestedProducts = [
+    { id: 101, name: 'AirPods Pro 2', price: 180000, image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCcH_wkhL9Vsdh3YOxVm8TuEpTlNbPnwEr08XwJFX8cQOKmYsov5xRS4oviF8wwFiErmeKAJE8wqc7HHjgknnv4KzHoszV5hLciu_pQp54wIA4QipzyT5tU4G2ungf-XnZCIvC9vCT45QSSAR-hngMPz8OFZUvmLzbxqjSGIQUG4VDjviScm2kUyCw6UrlhV9Adzej29zBtQdbaPpoRjqKgFgwvA_zZkcDHFEgZmG4fpm8r4dpAVhMvIcrZ3SkKgmzuYEaulaXF', category: 'Électronique' },
+    { id: 102, name: 'Samsung Galaxy Buds', price: 95000, image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBfgHwLBJYnKOIi77C-_Sub2wi5GCxAz-jHhpFfPrUaukNGy5WGNRlmJR6oagwn8EYnl7ubFbaeCTCDBVcPKrlgoQEshxuYSjDdBGTlaEIBTFYaVt0vU0hsku0xAbwE3KA0DE8nNKDjqpLBbKMvDakt6iueX_DWwGovpVBJ26mrdAPAzgryouPISp-fsshxnYmqFCGjSZ1oiRnvU6kTUAdIcc13nI26JriXy3ACLrtL-xvws54ccMqRcc3HmlevActSwl1ZzC00', category: 'Électronique' },
+    { id: 103, name: 'Sony WH-1000XM5', price: 280000, image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCjDSfJdVhAYoYewkB82Q1-Z_x9BohKCiN8EC6mgyvPViIv9kcSYFglwML0si1AN9N4K5JQ2q6B_gp1LvHQN99hUJ2czMutNFJC6YFDjX23pytL4Qgww6HApufV2fJGa0V5OwB-EkHrzs9y-yzbzOB1TboMc9tiRHnxU-mT5ZiLQmfSSOIDre1uuamWN23IxpqcTA1uq9muQ8F0acC1GdMx-3JsPGt7av2v-k2mufWHqs-rUrrLUmAN5UOaPEJjwnYAVOfb4pew', category: 'Électronique' },
+    { id: 104, name: 'JBL Tune 770NC', price: 65000, image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCcH_wkhL9Vsdh3YOxVm8TuEpTlNbPnwEr08XwJFX8cQOKmYsov5xRS4oviF8wwFiErmeKAJE8wqc7HHjgknnv4KzHoszV5hLciu_pQp54wIA4QipzyT5tU4G2ungf-XnZCIvC9vCT45QSSAR-hngMPz8OFZUvmLzbxqjSGIQUG4VDjviScm2kUyCw6UrlhV9Adzej29zBtQdbaPpoRjqKgFgwvA_zZkcDHFEgZmG4fpm8r4dpAVhMvIcrZ3SkKgmzuYEaulaXF', category: 'Électronique' },
+  ];
 
   const loadProductReviews = async (prodId) => {
     if (!prodId) return;
@@ -111,6 +122,46 @@ export default function ProductDetailsScreen({ onBack, onNavigate, product }) {
     } catch (e) {
       console.log('Error saving offer history:', e);
     }
+  };
+
+  const handleAddReview = async () => {
+    if (!newReviewComment.trim()) {
+      Alert.alert('Erreur', 'Veuillez entrer un commentaire.');
+      return;
+    }
+    
+    try {
+      const productId = product?.id || 1;
+      const review = {
+        id: `review_${productId}_${Date.now()}`,
+        rating: newReviewRating,
+        comment: newReviewComment,
+        author: 'Vous',
+        createdAt: new Date().toISOString(),
+      };
+      
+      const reviewKey = `product_review_${productId}_${Date.now()}`;
+      await SecureStore.setItemAsync(reviewKey, JSON.stringify(review));
+      
+      let allKeys = await SecureStore.getItemAsync('all_review_keys') || '[]';
+      let keyList = JSON.parse(allKeys);
+      keyList.push(reviewKey);
+      await SecureStore.setItemAsync('all_review_keys', JSON.stringify(keyList));
+      
+      setProductReviews([review, ...productReviews]);
+      setNewReviewComment('');
+      setNewReviewRating(5);
+      setIsReviewModalVisible(false);
+      
+      Alert.alert('Merci !', 'Votre avis a été ajouté avec succès.');
+    } catch (e) {
+      console.log('Error saving review:', e);
+      Alert.alert('Erreur', 'Impossible d\'enregistrer votre avis.');
+    }
+  };
+
+  const handleSuggestedProductPress = (suggestedProduct) => {
+    onNavigate?.('product_details', { product: suggestedProduct });
   };
 
   const defaultProduct = {
@@ -491,31 +542,101 @@ export default function ProductDetailsScreen({ onBack, onNavigate, product }) {
         )}
 
         {/* Reviews Section */}
-        {productReviews.length > 0 && (
-          <View style={styles.reviewsSection}>
+        <View style={styles.reviewsSection}>
+          <View style={styles.reviewsSectionHeader}>
             <Text style={styles.reviewsSectionTitle}>Avis des clients</Text>
-            {productReviews.map((review, index) => (
-              <View key={index} style={styles.reviewCard}>
-                <View style={styles.reviewHeader}>
-                  <View style={styles.reviewStars}>
-                    {[1, 2, 3, 4, 5].map((star) => (
-                      <MaterialCommunityIcons 
-                        key={star} 
-                        name="star" 
-                        size={14} 
-                        color={star <= review.rating ? '#eab308' : '#324d67'} 
-                      />
-                    ))}
+            <Pressable 
+              style={styles.writeReviewBtn}
+              onPress={() => setIsReviewModalVisible(true)}
+            >
+              <MaterialCommunityIcons name="pencil" size={16} color="#137fec" />
+              <Text style={styles.writeReviewText}>Écrire un avis</Text>
+            </Pressable>
+          </View>
+          
+          {productReviews.length > 0 ? (
+            <>
+              {(showAllReviews ? productReviews : productReviews.slice(0, 2)).map((review, index) => (
+                <View key={index} style={styles.reviewCard}>
+                  <View style={styles.reviewHeader}>
+                    <View style={styles.reviewAuthorRow}>
+                      <View style={styles.reviewAvatar}>
+                        <Text style={styles.reviewAvatarText}>
+                          {review.author ? review.author.charAt(0).toUpperCase() : 'A'}
+                        </Text>
+                      </View>
+                      <View>
+                        <Text style={styles.reviewAuthor}>{review.author || 'Anonyme'}</Text>
+                        <View style={styles.reviewStars}>
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <MaterialCommunityIcons 
+                              key={star} 
+                              name="star" 
+                              size={14} 
+                              color={star <= review.rating ? '#eab308' : '#324d67'} 
+                            />
+                          ))}
+                        </View>
+                      </View>
+                    </View>
+                    <Text style={styles.reviewDate}>
+                      {review.createdAt ? new Date(review.createdAt).toLocaleDateString('fr-FR') : ''}
+                    </Text>
                   </View>
-                  <Text style={styles.reviewDate}>
-                    {review.createdAt ? new Date(review.createdAt).toLocaleDateString('fr-FR') : ''}
+                  <Text style={styles.reviewComment}>{review.comment}</Text>
+                </View>
+              ))}
+              
+              {productReviews.length > 2 && (
+                <Pressable 
+                  style={styles.showMoreReviewsBtn}
+                  onPress={() => setShowAllReviews(!showAllReviews)}
+                >
+                  <Text style={styles.showMoreReviewsText}>
+                    {showAllReviews ? 'Voir moins' : `Voir les ${productReviews.length} avis`}
+                  </Text>
+                </Pressable>
+              )}
+            </>
+          ) : (
+            <View style={styles.noReviewsContainer}>
+              <MaterialCommunityIcons name="star-outline" size={48} color="#324d67" />
+              <Text style={styles.noReviewsText}>Aucun avis pour le moment</Text>
+              <Text style={styles.noReviewsSubtext}>Soyez le premier à donner votre avis !</Text>
+            </View>
+          )}
+        </View>
+
+        {/* Product Suggestions */}
+        <View style={styles.suggestionsSection}>
+          <Text style={styles.suggestionsSectionTitle}>Produits similaires</Text>
+          <ScrollView 
+            horizontal 
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.suggestionsScrollContent}
+          >
+            {suggestedProducts.map((suggested) => (
+              <Pressable 
+                key={suggested.id}
+                style={styles.suggestionCard}
+                onPress={() => handleSuggestedProductPress(suggested)}
+              >
+                <Image 
+                  source={{ uri: suggested.image }} 
+                  style={styles.suggestionImage}
+                />
+                <View style={styles.suggestionInfo}>
+                  <Text style={styles.suggestionName} numberOfLines={2}>
+                    {suggested.name}
+                  </Text>
+                  <Text style={styles.suggestionPrice}>
+                    {suggested.price.toLocaleString('fr-FR')} XAF
                   </Text>
                 </View>
-                <Text style={styles.reviewComment}>{review.comment}</Text>
-              </View>
+              </Pressable>
             ))}
-          </View>
-        )}
+          </ScrollView>
+        </View>
 
         <View style={styles.bottomSpacer} />
       </ScrollView>
@@ -593,6 +714,66 @@ export default function ProductDetailsScreen({ onBack, onNavigate, product }) {
               <Text style={styles.negotiationInfo}>
                 Le vendeur a déjà défini des limites de négociation. Votre offre sera acceptée instantanément si elle est dans la plage autorisée.
               </Text>
+            </View>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
+
+      {/* Review Modal */}
+      <Modal
+        visible={isReviewModalVisible}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setIsReviewModalVisible(false)}
+      >
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={styles.modalOverlay}
+        >
+          <View style={styles.reviewModalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Donner votre avis</Text>
+              <Pressable onPress={() => setIsReviewModalVisible(false)}>
+                <MaterialCommunityIcons name="close" size={24} color="#fff" />
+              </Pressable>
+            </View>
+
+            <View style={styles.reviewModalBody}>
+              <Text style={styles.reviewModalSubtitle}>
+                Comment évaluez-vous ce produit ?
+              </Text>
+
+              <View style={styles.ratingStarsContainer}>
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <Pressable
+                    key={star}
+                    onPress={() => setNewReviewRating(star)}
+                    style={styles.ratingStarBtn}
+                  >
+                    <MaterialCommunityIcons 
+                      name={star <= newReviewRating ? "star" : "star-outline"} 
+                      size={40} 
+                      color={star <= newReviewRating ? "#eab308" : "#64748b"} 
+                    />
+                  </Pressable>
+                ))}
+              </View>
+
+              <Text style={styles.reviewModalLabel}>Votre commentaire</Text>
+              <TextInput
+                style={styles.reviewInput}
+                placeholder="Partagez votre expérience avec ce produit..."
+                placeholderTextColor="#64748b"
+                multiline
+                numberOfLines={4}
+                value={newReviewComment}
+                onChangeText={setNewReviewComment}
+                textAlignVertical="top"
+              />
+
+              <Pressable onPress={handleAddReview} style={styles.submitReviewBtn}>
+                <Text style={styles.submitReviewBtnText}>Soumettre mon avis</Text>
+              </Pressable>
             </View>
           </View>
         </KeyboardAvoidingView>
@@ -1141,6 +1322,166 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: '#e2e8f0',
     lineHeight: 18,
+  },
+  reviewsSectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  writeReviewBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    backgroundColor: 'rgba(19, 127, 236, 0.1)',
+    borderRadius: 8,
+  },
+  writeReviewText: {
+    fontSize: 13,
+    color: '#137fec',
+    fontWeight: '600',
+  },
+  reviewAuthorRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  reviewAvatar: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#137fec',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  reviewAvatarText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+  reviewAuthor: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#fff',
+  },
+  noReviewsContainer: {
+    alignItems: 'center',
+    paddingVertical: 32,
+  },
+  noReviewsText: {
+    fontSize: 16,
+    color: '#94a3b8',
+    marginTop: 12,
+  },
+  noReviewsSubtext: {
+    fontSize: 13,
+    color: '#64748b',
+    marginTop: 4,
+  },
+  showMoreReviewsBtn: {
+    alignItems: 'center',
+    paddingVertical: 12,
+  },
+  showMoreReviewsText: {
+    fontSize: 14,
+    color: '#137fec',
+    fontWeight: '600',
+  },
+  suggestionsSection: {
+    padding: 20,
+    paddingTop: 8,
+  },
+  suggestionsSectionTitle: {
+    fontSize: 17,
+    fontWeight: 'bold',
+    color: '#fff',
+    marginBottom: 16,
+  },
+  suggestionsScrollContent: {
+    paddingRight: 20,
+    gap: 12,
+  },
+  suggestionCard: {
+    width: 140,
+    backgroundColor: '#1a2632',
+    borderRadius: 12,
+    overflow: 'hidden',
+    marginRight: 12,
+  },
+  suggestionImage: {
+    width: '100%',
+    height: 140,
+    backgroundColor: '#0d1117',
+  },
+  suggestionInfo: {
+    padding: 10,
+  },
+  suggestionName: {
+    fontSize: 13,
+    color: '#fff',
+    fontWeight: '500',
+    marginBottom: 4,
+  },
+  suggestionPrice: {
+    fontSize: 14,
+    color: '#137fec',
+    fontWeight: 'bold',
+  },
+  reviewModalContent: {
+    backgroundColor: '#1a2632',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    paddingBottom: Platform.OS === 'ios' ? 40 : 24,
+    maxHeight: height * 0.85,
+  },
+  reviewModalBody: {
+    padding: 20,
+  },
+  reviewModalSubtitle: {
+    fontSize: 15,
+    color: '#94a3b8',
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  ratingStarsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 8,
+    marginBottom: 24,
+  },
+  ratingStarBtn: {
+    padding: 4,
+  },
+  reviewModalLabel: {
+    fontSize: 14,
+    color: '#fff',
+    fontWeight: '600',
+    marginBottom: 8,
+  },
+  reviewInput: {
+    backgroundColor: '#101922',
+    borderRadius: 12,
+    padding: 14,
+    fontSize: 14,
+    color: '#fff',
+    minHeight: 100,
+    borderWidth: 1,
+    borderColor: '#324d67',
+    marginBottom: 20,
+  },
+  submitReviewBtn: {
+    height: 52,
+    borderRadius: 12,
+    backgroundColor: '#137fec',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  submitReviewBtnText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#fff',
   },
 });
 

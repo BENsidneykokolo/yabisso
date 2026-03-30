@@ -11,103 +11,8 @@ import {
 } from 'react-native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 
-const baseServices = [
-  {
-    key: 'market',
-    labelFr: 'Marche',
-    labelEn: 'Marche',
-    icon: 'storefront-outline',
-    color: '#FFD166',
-  },
-  {
-    key: 'food',
-    labelFr: 'Restauration',
-    labelEn: 'Restauration',
-    icon: 'silverware-fork-knife',
-    color: '#FF6B6B',
-  },
-  {
-    key: 'taxi',
-    labelFr: 'Taxi',
-    labelEn: 'Taxi',
-    icon: 'taxi',
-    color: '#2BEE79',
-  },
-  {
-    key: 'loba',
-    labelFr: 'Loba',
-    labelEn: 'Loba',
-    icon: 'play-circle',
-    color: '#F472B6',
-  },
-  {
-    key: 'hotels',
-    labelFr: 'Hotels',
-    labelEn: 'Hotels',
-    icon: 'bed-queen',
-    color: '#60A5FA',
-  },
-  {
-    key: 'realestate',
-    labelFr: 'Immobilier',
-    labelEn: 'Immobilier',
-    icon: 'home-city',
-    color: '#C084FC',
-  },
-  {
-    key: 'flights',
-    labelFr: 'Vols',
-    labelEn: 'Vols',
-    icon: 'airplane',
-    color: '#38BDF8',
-  },
-  {
-    key: 'betting',
-    labelFr: 'Paris',
-    labelEn: 'Paris',
-    icon: 'dice-5',
-    color: '#34D399',
-  },
-  {
-    key: 'services',
-    labelFr: 'Services',
-    labelEn: 'Services',
-    icon: 'briefcase-variant',
-    color: '#FB923C',
-  },
-  {
-    key: 'transport',
-    labelFr: 'Transport',
-    labelEn: 'Transport',
-    icon: 'bus',
-    color: '#818CF8',
-  },
-  {
-    key: 'music',
-    labelFr: 'Musique',
-    labelEn: 'Musique',
-    icon: 'headphones',
-    color: '#F472B6',
-  },
-  {
-    key: 'appartements',
-    labelFr: 'Appartements',
-    labelEn: 'Appartements',
-    icon: 'home-city',
-    color: '#C084FC',
-  },
-];
-
-const extraServices = [
-  { key: 'wallet', label: 'Portefeuille', icon: 'wallet', color: '#60A5FA' },
-  { key: 'swap', label: 'Swap', icon: 'swap-horizontal', color: '#F59E0B' },
-  { key: 'delivery', label: 'Livraison', icon: 'truck-delivery', color: '#34D399' },
-  { key: 'streaming', label: 'Streaming', icon: 'movie-open', color: '#F472B6' },
-  { key: 'formation', label: 'Formation', icon: 'school', color: '#38BDF8' },
-  { key: 'chatbot', label: 'Assistant IA', icon: 'robot', color: '#A78BFA' },
-  { key: 'notebook', label: 'Bloc-notes', icon: 'notebook-outline', color: '#FBBF24' },
-  { key: 'reservation', label: 'Reservation', icon: 'calendar-check', color: '#F97316' },
-];
+import { useServicePreferences } from '../../../hooks/useServicePreferences';
+import { ALL_SERVICES } from '../../../constants/Services';
 
 
 export default function HomeScreen({
@@ -125,7 +30,10 @@ export default function HomeScreen({
   onOpenHotel,
   onOpenServices,
   onOpenRealEstate,
+  onOpenChat,
+  onOpenPharmacy,
 }) {
+  const { baseVisible, extraVisible, visibleServices, loading } = useServicePreferences();
   const [activeTab, setActiveTab] = useState('Accueil');
   const [showAllServices, setShowAllServices] = useState(false);
   const [showVoiceModal, setShowVoiceModal] = useState(false);
@@ -218,59 +126,57 @@ export default function HomeScreen({
 
         <View style={styles.sectionRow}>
           <Text style={styles.sectionTitle}>Services</Text>
-          <Pressable
-            onPress={() => {
-              if (isExpanded) {
-                setShowAllServices(false);
-              } else {
-                setShowAllServices(true);
-                setActiveTab('Services');
-              }
-            }}
-          >
-            <Text style={styles.sectionLink}>
-              {isExpanded ? 'Masquer' : 'Tout voir'}
-            </Text>
-          </Pressable>
+          {visibleServices.length > 16 && (
+            <Pressable
+              onPress={() => {
+                if (isExpanded) {
+                  setShowAllServices(false);
+                } else {
+                  setShowAllServices(true);
+                  setActiveTab('Services');
+                }
+              }}
+            >
+              <Text style={styles.sectionLink}>
+                {isExpanded ? 'Masquer' : 'Tout voir'}
+              </Text>
+            </Pressable>
+          )}
         </View>
 
         <View style={styles.servicesGrid}>
-          {baseServices.map((item) => (
+          {(showAllServices ? visibleServices : visibleServices.slice(0, 16)).map((item) => (
             <Pressable
-              key={item.key}
+              key={`${item.key}_v2`}
               style={({ pressed }) => [
                 styles.serviceItem,
                 pressed && styles.serviceItemPressed,
               ]}
               onPress={() => {
-                if (item.key === 'market') {
-                  onOpenMarket?.();
+                // Handlers unifiés pour tous les services
+                if (item.key === 'market') onOpenMarket?.();
+                if (item.key === 'loba') onOpenLoba?.();
+                if (item.key === 'food') onOpenRestaurant?.();
+                if (item.key === 'hotels') onOpenHotel?.();
+                if (item.key === 'services') onOpenServices?.();
+                if (item.key === 'realestate' || item.key === 'appartements') onOpenRealEstate?.();
+                if (item.key === 'wallet') {
+                  onOpenWallet?.();
+                  setActiveTab('Portefeuille');
                 }
-                if (item.key === 'loba') {
-                  onOpenLoba?.();
+                if (item.key === 'chatbot') {
+                  onOpenAssistant?.();
+                  setActiveTab('Assistant IA');
                 }
-                if (item.key === 'food') {
-                  onOpenRestaurant?.();
-                }
-                if (item.key === 'hotels') {
-                  onOpenHotel?.();
-                }
-                if (item.key === 'services') {
-                  onOpenServices?.();
-                }
-                if (item.key === 'realestate') {
-                  onOpenRealEstate?.();
-                }
-                if (item.key === 'appartements') {
-                  onOpenRealEstate?.();
-                }
+                if (item.key === 'chat') onOpenChat?.();
+                if (item.key === 'pharmacy') onOpenPharmacy?.();
               }}
             >
               <View style={[styles.serviceIcon, { backgroundColor: item.color }]}>
                 <MaterialCommunityIcons name={item.icon} size={22} color="#0E151B" />
               </View>
-              <Text style={styles.serviceLabel}>
-                {item.labelFr ? (isExpanded ? item.labelFr : item.labelEn) : item.label}
+              <Text style={styles.serviceLabel} numberOfLines={1}>
+                {item.labelFr || item.label}
               </Text>
             </Pressable>
           ))}
@@ -278,32 +184,6 @@ export default function HomeScreen({
 
         {showAllServices && (
           <View style={styles.allServicesSection}>
-            <View style={styles.servicesGrid}>
-              {extraServices.map((item) => (
-                <Pressable
-                  key={item.key}
-                  style={({ pressed }) => [
-                    styles.serviceItem,
-                    pressed && styles.serviceItemPressed,
-                  ]}
-                  onPress={() => {
-                    if (item.key === 'wallet') {
-                      onOpenWallet?.();
-                      setActiveTab('Portefeuille');
-                    }
-                    if (item.key === 'chatbot') {
-                      onOpenAssistant?.();
-                      setActiveTab('Assistant IA');
-                    }
-                  }}
-                >
-                  <View style={[styles.serviceIcon, { backgroundColor: item.color }]}>
-                    <MaterialCommunityIcons name={item.icon} size={22} color="#0E151B" />
-                  </View>
-                  <Text style={styles.serviceLabel}>{item.label}</Text>
-                </Pressable>
-              ))}
-            </View>
             <Text style={styles.sectionHint}>Supplementaires disponibles sur Yabisso</Text>
           </View>
         )}
@@ -667,12 +547,15 @@ const styles = StyleSheet.create({
   servicesGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    justifyContent: 'space-between',
+    justifyContent: 'flex-start',
+    alignItems: 'flex-start',
+    width: '100%',
   },
   serviceItem: {
-    width: '23%',
+    width: '25%',
     alignItems: 'center',
-    marginBottom: 16,
+    justifyContent: 'center',
+    marginBottom: 20,
   },
   serviceItemPressed: {
     transform: [{ scale: 0.96 }],

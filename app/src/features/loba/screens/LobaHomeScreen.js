@@ -12,6 +12,7 @@ import {
   Modal,
   Alert,
   Share,
+  Animated,
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Video, ResizeMode } from 'expo-av';
@@ -19,39 +20,11 @@ import * as SecureStore from 'expo-secure-store';
 import LobaBottomNav from '../components/LobaBottomNav';
 import withObservables from '@nozbe/with-observables';
 import { database } from '../../../lib/db';
+import { MeshSyncService } from '../../bluetooth/services/MeshSyncService';
+import { useMeshConnection } from '../../bluetooth/hooks/useMeshConnection';
 
 const { width, height } = Dimensions.get('window');
 
-const initialVideos = [
-  {
-    id: 1,
-    username: '@LagosEats',
-    avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuB-cZ953z6Pef-m-esMbutiujQzwcQ3gXocj0ErdwM9gmhxLpWo4SKz4VFvkSga_qlHMvvYo8Lkoex8tWespXnC8gKlURT7iGPPII63Uh98f-AX-ZYpjq5WOAHrL1QarS-bIe8awUnOztGtUDF19UvJerb2PYVsQUw5cJLRSU5yM8wnobwysn7cOF3j3h71OchJaZfAHWd1qNkkVk6oEEAlMw63bsadLjh3IsXVs3Db_jad-rzwr27E6XhAExYmUfH2A85zZ_Q7',
-    video: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCtK8TvWjtBzKDjxuNCgfKCM4VlXkH7Hg9QBzK5eG3Ln-zP7vsQaoci0T6qobNgJTG-5XhMtb5xOpfX-pW4Q51r7E1jBDBkJ8ui72wvXPeaDdJ4XWogDMTXMK4rRBmj96uJkepQcbLbXghuHhcfgXXwVoJgVoNN7_EkMxkinirFlaspT4lpwuIVSIzP4iJEeJQuWKp8mryxMKc8Yr_16eVJt7gdmfV4Zzh-JOxvlDIzL-0kM-4AUc-kHPKVwQ1Aa020PiWFk7KE',
-    caption: 'Trying the best suya in the city! 🔥🥩 This place is hidden but worth the trek. #Lagos #Foodie #Yabisso',
-    song: 'Burna Boy - Last Last',
-    likes: 1245,
-    comments: 320,
-    progress: 35,
-    liked: false,
-    followed: false,
-    saved: false,
-  },
-  {
-    id: 2,
-    username: '@TechGhana',
-    avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCpQKycPMLIcj6lEgT3yylEk1PYLRLRoGgntAftVcxpaZk_rZCjF9tJVB74QcDXaov6pXlQd0xJc3Hzn42A1xSh9sZDFM8PgyDRwaUsq2dn7Bf4d23hd1L-NEElMtyMOXIXKC3n95_TmtmOznJyFX7p_fI7-3ZxTpsj7scTO5mwqImoclkDwp9xyQN6RBUdjQBm_U_wSO1O_DvULR6bLmrYThfVtAvmsqTQJoZByFXdNIm-IThl8u4qx54KVUdJpCvlTLEejlGP',
-    video: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAnsmNx5C1-w0Yj3lMlo7-VbFA9OZNzc8vCIqLLNiEWPlqfOQSn40V7O2anTjQdhiVVsOUPd1Fh80S2l0bXDXUxJqhNIq_5GB6gsUsXx0OCuH76RCqW8zwYWx3Z1nuto64008GB7dQ3GGUGAUDYbjA2dXyctAocSS9HrU9BqfKeUCbR0eAsO9ge8eYzPx4BNyZApogpBe7SnsiUhCQ36Q-JA2p3Wz5ZttmMg-YIjNKODC2cU2gW0AhE6WrSmspXkdYVewssDBFD',
-    caption: 'Building the future of African tech! 🌍✨ #AfricanTech #Innovation',
-    song: 'Wizkid - Essence',
-    likes: 4500,
-    comments: 180,
-    progress: 60,
-    liked: true,
-    followed: true,
-    saved: true,
-  },
-];
 
 const stories = [
   { id: 1, name: 'My Story', avatar: null, isAdd: true },
@@ -61,28 +34,6 @@ const stories = [
   { id: 5, name: 'Nneka', avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDPs-a2lSM_bmNLNs1GkXRzOsSShLYwv_rSzvZ0vFkTZAC35XyDj_29VltZJ1ki-g5kR08ShBo0wAYd1_SBpqR-NbTCcjwfxTR1y2ffn7FwboHugN7JgcDIanSbRlZ43uL81mGHqHonrY1D85VV3D4PtZBH8kQmrPd_od1JQL8Dby0EiiyRwUpolz3ch6BV0z9kOK4jh7mC5Ka3CNlMw4iBGxyPUB6qeLDVis7qzYzApjaA63kBYEemlMf70N-C6fsqRjJZ4E68' },
 ];
 
-const posts = [
-  {
-    id: 1,
-    user: { name: 'Kofi Mensah', avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCpQKycPMLIcj6lEgT3yylEk1PYLRLRoGgntAftVcxpaZk_rZCjF9tJVB74QcDXaov6pXlQd0xJc3Hzn42A1xSh9sZDFM8PgyDRwaUsq2dn7Bf4d23hd1L-NEElMtyMOXIXKC3n95_TmtmOznJyFX7p_fI7-3ZxTpsj7scTO5mwqImoclkDwp9xyQN6RBUdjQBm_U_wSO1O_DvULR6bLmrYThfVtAvmsqTQJoZByFXdNIm-IThl8u4qx54KVUdJpCvlTLEejlGP', location: 'Lagos, Nigeria' },
-    time: '2h ago',
-    content: 'Loving the vibes at the tech summit today! The future of African innovation is bright 🌍✨ #AfricanTech #Lagos',
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAnsmNx5C1-w0Yj3lMlo7-VbFA9OZNzc8vCIqLLNiEWPlqfOQSn40V7O2anTjQdhiVVsOUPd1Fh80S2l0bXDXUxJqhNIq_5GB6gsUsXx0OCuH76RCqW8zwYWx3Z1nuto64008GB7dQ3GGUGAUDYbjA2dXyctAocSS9HrU9BqfKeUCbR0eAsO9ge8eYzPx4BNyZApogpBe7SnsiUhCQ36Q-JA2p3Wz5ZttmMg-YIjNKODC2cU2gW0AhE6WrSmspXkdYVewssDBFD',
-    likes: 46,
-    comments: 12,
-    liked: false,
-  },
-  {
-    id: 2,
-    user: { name: 'Nneka Abiola', avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBG9ryT5cFc2G88JO3h8DaDLpspRqDhcS0RuM69yGtOBFp34gclVaDEHtiUxKsmXF99QAH4ibPpFCZLZiC7qyZZgX0nlA7vti6FKPUC1IvhxAFMiQ1zGv4L_xfpATknNKRvL5oCQXc3pvR3IVO2D69QnFQUJLSDWe5UAG1csGXIyUDQ8gT2Ih1Tu145H91SBbk-xQxa9d8GBonlI7z_Xejdsu-dEwIIu7Vxx0KiaWrKHAdT24z_gdzc0FlppLMjqkoCOaY5VFU9', location: '' },
-    time: '4h ago',
-    content: 'Does anyone know a good React Native developer available for a freelance gig? Need help with an offline-first module. DM me! 💻🚀',
-    image: null,
-    likes: 8,
-    comments: 3,
-    liked: false,
-  },
-];
 
 function LobaHomeScreen({ onBack, onNavigate, posts = [] }) {
   const [activeTab, setActiveTab] = useState('For You');
@@ -108,11 +59,16 @@ function LobaHomeScreen({ onBack, onNavigate, posts = [] }) {
       followed: false,
       saved: false,
       filterColor: p.filterColor,
-    })).reverse(),
-    ...initialVideos.map(v => ({ ...v, type: 'video', filterColor: 'transparent' }))
+    })).reverse()
   ];
 
+  const meshState = useMeshConnection();
+
   const [feedVideos, setFeedVideos] = useState(getDisplayPosts());
+
+  useEffect(() => {
+    MeshSyncService.startAutoDiscovery();
+  }, []);
 
   useEffect(() => {
     setFeedVideos(getDisplayPosts());
@@ -207,13 +163,19 @@ function LobaHomeScreen({ onBack, onNavigate, posts = [] }) {
   };
 
   const renderVideo = ({ item, index }) => {
+    // Logique de source prioritaire : Local (Mesh) > Cloud (Internet)
+    const videoSource = item.localMediaPath 
+      ? { uri: item.localMediaPath } 
+      : (item.videoUrl ? { uri: item.videoUrl } : { uri: item.video });
+
     const isCloseToVisible = Math.abs(index - currentVideoIndex) <= 1;
+    
     return (
     <View style={[styles.videoContainer, { height: height }]}>
       {item.type === 'video' ? (
         isCloseToVisible ? (
           <Video
-            source={{ uri: item.video }}
+            source={videoSource}
             style={styles.videoBackground}
             resizeMode={ResizeMode.COVER}
             shouldPlay={index === currentVideoIndex}
@@ -309,10 +271,27 @@ function LobaHomeScreen({ onBack, onNavigate, posts = [] }) {
         </Pressable>
 
         <View style={styles.statusChip}>
-          <MaterialCommunityIcons name="wifi-off" size={14} color="#fbbf24" />
-          <Text style={styles.statusText}>Mode Offline</Text>
+          {meshState.isConnected ? (
+            <MaterialCommunityIcons name="bluetooth-connect" size={14} color="#22c55e" />
+          ) : (
+            <MaterialCommunityIcons name="wifi-off" size={14} color="#fbbf24" />
+          )}
+          <Text style={[styles.statusText, meshState.isConnected && { color: '#22c55e' }]}>
+            {meshState.isConnected ? `Mesh Actif (${meshState.peerCount})` : 'Mode Offline'}
+          </Text>
         </View>
       </View>
+
+      {/* Propagation Status Bar (Background Mesh) */}
+      {posts.some(p => p.isPropagating) && (
+        <View style={styles.propagationBar}>
+          <MaterialCommunityIcons name="broadcast" size={18} color="#A855F7" />
+          <Text style={styles.propagationText}>Diffusion locale en cours (Mesh)...</Text>
+          <View style={styles.propagationLoader}>
+             <Animated.View style={[styles.propagationFill, { width: '60%' }]} /> 
+          </View>
+        </View>
+      )}
 
       <FlatList
         data={feedVideos}
@@ -409,6 +388,39 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#101922',
+  },
+  propagationBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(168, 85, 247, 0.15)',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    position: 'absolute',
+    top: 90,
+    left: 16,
+    right: 16,
+    zIndex: 30,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(168, 85, 247, 0.3)',
+    gap: 8,
+  },
+  propagationText: {
+    color: '#d8b4fe',
+    fontSize: 12,
+    fontWeight: '600',
+    flex: 1,
+  },
+  propagationLoader: {
+    width: 60,
+    height: 4,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    borderRadius: 2,
+    overflow: 'hidden',
+  },
+  propagationFill: {
+    height: '100%',
+    backgroundColor: '#A855F7',
   },
   header: {
     flexDirection: 'row',
@@ -740,6 +752,39 @@ const styles = StyleSheet.create({
   commentPlaceholder: {
     color: 'rgba(255,255,255,0.4)',
     fontSize: 14,
+  },
+  propagationBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(168, 85, 247, 0.15)',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    gap: 10,
+    position: 'absolute',
+    top: 110,
+    left: 16,
+    right: 16,
+    borderRadius: 12,
+    zIndex: 30,
+    borderWidth: 1,
+    borderColor: 'rgba(168, 85, 247, 0.3)',
+  },
+  propagationText: {
+    color: '#A855F7',
+    fontSize: 12,
+    fontWeight: 'bold',
+    flex: 1,
+  },
+  propagationLoader: {
+    width: 60,
+    height: 4,
+    backgroundColor: 'rgba(168, 85, 247, 0.2)',
+    borderRadius: 2,
+    overflow: 'hidden',
+  },
+  propagationFill: {
+    height: '100%',
+    backgroundColor: '#A855F7',
   },
 });
 

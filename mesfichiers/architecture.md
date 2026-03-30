@@ -56,10 +56,19 @@ Note: pas de vrai mesh automatique open source type Bridgefy; mesh a construire.
 Demarrage: SMS fallback + local storage, puis BLE mesh (leger), puis WiFi Direct (lourd).
 Phase 1: Bluetooth simple (pas de mesh) pour QR/P2P, mesh reporte.
 
-## Kiosque
-- Validation locale : Inscription users offline et validation produits marchands via QR Code.
-- CRL locale + cle USB vendeur pour securite.
-- Protocole de scan simple (Vendeur -> QR -> Kiosque) pour propagation de confiance.
+## Modes de Propagation & Synchronisation Locale (Mesh)
+Yabisso utilise le maillage (Mesh) pour contourner le manque d'internet. Les données circulent différemment selon le service :
+
+- **1. Mode SOCIAL (Propagation Directe)** : Loba, Dating, Réseaux Sociaux.
+  - *Règle* : Dès que l'utilisateur publie/upload, le contenu est diffusé immédiatement au voisinage via Bluetooth Mesh / WiFi Direct. Pas besoin de kiosque pour la visibilité locale.
+  - *Packs* : Le kiosque vend des packs pour accéder à des contenus massifs (ex: vidéos Loba) collectés sur le réseau global.
+
+- **2. Mode COMMERCIAL (Propagation Validée)** : Marché, Hôtel, Restaurant, Vols, Immobilier, etc.
+  - *Règle* : Nécessite une validation QR par un kiosque Yabisso pour devenir "public". Une fois validé, il se propage au voisinage mesh.
+  - *Packs* : Le kiosque vend des packs de catalogues/offres consolidés.
+
+- **3. Mode PERSONNEL (Privé & Chiffré)** : Portefeuille (Wallet), Assistant IA, Bloc-note.
+  - *Règle* : Aucune propagation mesh publique. Les données restent sur l'appareil. Sync Cloud uniquement ou P2P direct pour une transaction (ex: paiement QR).
 
 ## Architecture en couches
 
@@ -371,3 +380,7 @@ PackSvc --> APIG
 - SMS: uniquement tokens legers (signup, confirmation, OTP), pas de medias.
 - QR/PIN: tokens signes Ed25519, verifiables offline puis sync.
 - Swap: delta selectionne selon interets; petits deltas via Mesh, gros via Wi-Fi Direct/USB.
+- **Universal Sync** : Le modèle Validation -> Mesh -> Pack s'applique à TOUS les services (Marché, Hôtel, Restaurant, Vols, Immobilier, Paris, Transport, Musique, Streaming, Formation, Réservation).
+- **Priorité de transport** : BLE Mesh pour les micro-mises à jour (prix, dispo) -> WiFi Direct pour les médias/packs -> SMS pour les tokens de sécurité.
+- **Packs** : Les YAB-Packs sont le "carburant" de l'économie offline; ils permettent aux kiosques de rester à jour et de monétiser la distribution de données.
+- **Confiance** : La validation kiosque signe la donnée, la rendant légitime pour la propagation mesh entre pairs.

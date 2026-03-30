@@ -45,7 +45,7 @@
 - Pages: Assistant IA (Entièrement réécrit: clavier, layout stable, menu, 6 outils), Profil + sous-pages
 - **Loba (Vidéo)** : LobaHomeScreen, LobaFeedScreen, LobaRecordScreen, LobaProfileScreen, LobaStoriesScreen, LobaForYouScreen, LobaFollowingScreen (Implémenté)
 - **Restaurant** : RestaurantHomeScreen, RestaurantDetailsScreen, FoodItemDetailsScreen, FoodCheckoutScreen, RestaurantOrdersScreen, RestaurantTrackingScreen, RestaurantSellerScreen (Implémenté)
-- **Hotels** : HotelHomeScreen (UI Base Implémenté)
+ - **Hotels** : HotelHomeScreen, HotelSearchScreen, HotelDetailsScreen, HotelRoomDetailsScreen, HotelBookingScreen, HotelPaymentScreen, HotelReservationScreen, HotelMyBookingsScreen, HotelFavoritesScreen, HotelProfileScreen (Implémenté)
 - **Services** : ServicesHomeScreen (UI Base Implémenté)
 - **Immobilier** : RealEstateHomeScreen (UI Base Implémenté)
 - **Marketplace** (COMPLET S5) : MarketplaceHomeScreen, ProductListScreen, CategoryPageScreen, CartScreen, CheckoutScreen, OrdersScreen, OrderStatusScreen, DeliveryTrackingScreen, AddProductScreen, SellerProfileScreen, SellerContactScreen, SellerComparisonScreen, BlockedUserScreen, MarketplaceFavoritesScreen, MarketplaceHistoryScreen, MarketplaceNotificationsScreen, MarketplaceSettingsScreen
@@ -55,7 +55,11 @@
 - Schema DB local: profiles, sync_queue, signup_nonces, signup_verifications, products, wallet_transactions, loba_posts, assistant_messages
 - Service offline signup: generation payload + enqueue SyncQueue (connecté à l'UI et fonctionnel)
 - **Universal Offline-First**: Marketplace (Home, New Arrivals, Seller Profile), Wallet, Loba, et Assistant utilisent désormais WatermelonDB pour le stockage local (Migration complète Sprint 4/5).
-- **Validation Kiosque (Produits)** : Nouveau workflow officiel via QR Code. Les vendeurs génèrent un QR, les agents de Kiosque scannent et valident le produit pour le rendre public.
+- **Stratégie de Sync Mesh** :
+  - *DIRECT* : Loba, Dating (diffusion dès l'upload).
+  - *VALIDÉ* : Marché, Hôtels, Restaurants (diffusion après scan Kiosque).
+  - *PRIVÉ* : Wallet, AI, Notebook (pas de diffusion publique).
+- **YAB-Packs** : Disponibles pour tous les services publics pour accélérer l'accès aux données sans internet.
 - Bluetooth Low Energy (BLE): intégré pour communication locale
 - Supabase/OTP: pas encore integre
 

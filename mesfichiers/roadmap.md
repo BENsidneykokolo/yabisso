@@ -44,6 +44,19 @@ S13-S16: reservations, services, admin console, Play Store launch
 - **Migration WatermelonDB (Marketplace)**: Migration complète (Profil Vendeur, Nouveautés, Accueil) pour une gestion offline performante et réactive.
 - **Validation Kiosque (Produits)**: Système de validation officielle par QR Code (Vendeur -> Kiosque) pour activer la visibilité publique.
 
+## Hotels (COMPLETED)
+- HotelHome: Accueil avec destinations populaires, hôtels en vedette, recherche
+- HotelSearch: Recherche avec filtres (étoiles, piscine, wifi, etc.)
+- HotelDetails: Détails hôtel + liste des chambres
+- HotelRoomDetails: Détails d'une chambre
+- HotelBooking: Formulaire de réservation (dates, guests, infos client)
+- HotelPayment: Paiement (Wallet, Mobile Money, Cash)
+- HotelReservation: Confirmation + actions (itinéRAire, appeler, email)
+- HotelMyBookings: Réservations (À venir, Terminées, Annulées)
+- HotelFavorites: Hôtels sauvegardés
+- HotelProfile: Profil utilisateur + paramètres
+- Navigation: Bottom nav avec animation style dashboard
+
 ## Marketplace - Sprint 4 & 5 (COMPLETED)
 - Marketplace: Home, Product List, Category Page, Product Details
 - Cart, Checkout, Order Status, Delivery Tracking, Orders History
@@ -122,8 +135,8 @@ Sprint 9 — Delivery validation & payouts
 - QR & PIN validation. DoD: tokens signes, scan/entry, verify local, payout ledger.
 
 Sprint 10 — YAB-Pack & Kiosk USB
-- YAB-Pack builder. DoD: bundle, sign, export .yab.zip.
-- Kiosk USB key flow. DoD: OTG detect, unlock, import pack, record sales.
+- **YAB-Pack builder (Universel)** : Bundle multi-services (Marché, Hôtel, Resto, etc.), compression zstd, signature Ed25519.
+- **Kiosk USB & Mesh Distribution** : OTG detect, vente de packs aux utilisateurs, activation de la propagation mesh locale.
 
 Sprint 11 — AI ingest & moderation
 - AI Ingest Job. DoD: job admin, fetcher API demo, moderation/tag, publish LOBA.

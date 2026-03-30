@@ -14,6 +14,9 @@ import BleSignupScreen from './src/features/bluetooth/screens/BleSignupScreen';
 import BleKioskScreen from './src/features/bluetooth/screens/BleKioskScreen';
 import KioskValidationScreen from './src/features/kiosk/screens/KioskValidationScreen';
 import ProductValidationKioskScreen from './src/features/kiosk/screens/ProductValidationKioskScreen';
+import ChatHomeScreen from './src/features/chat/screens/ChatHomeScreen';
+import ChatConversationScreen from './src/features/chat/screens/ChatConversationScreen';
+import PharmacyHomeScreen from './src/features/pharmacy/screens/PharmacyHomeScreen';
 
 
 import HomeScreen from './src/features/home/screens/HomeScreen';
@@ -99,6 +102,8 @@ import AddAddressScreen from './src/features/profile/screens/AddAddressScreen';
 import AddressDetailScreen from './src/features/profile/screens/AddressDetailScreen';
 import SearchAddressScreen from './src/features/profile/screens/SearchAddressScreen';
 import AddressMapScreen from './src/features/profile/screens/AddressMapScreen';
+import StorageManagementScreen from './src/features/profile/screens/StorageManagementScreen';
+import ServiceManagementScreen from './src/features/profile/screens/ServiceManagementScreen';
 import { CartProvider } from './src/features/marketplace/context/CartContext';
 import { OrderProvider } from './src/features/marketplace/context/OrderContext';
 import { RestaurantCartProvider } from './src/features/restaurant/context/RestaurantCartContext';
@@ -269,6 +274,8 @@ export default function App() {
         onOpenHotel={() => navigate('hotel_home')}
         onOpenServices={() => navigate('services_home')}
         onOpenRealEstate={() => navigate('real_estate_home')}
+        onOpenChat={() => navigate('chat_home')}
+        onOpenPharmacy={() => navigate('pharmacy_home')}
         showAllServicesOverride={homeShowAllServices}
       />
     );
@@ -399,6 +406,21 @@ export default function App() {
         onSearchAddress={() => navigate('search_address')}
         onViewAddress={(addr) => navigate('profile_address_detail', { address: addr })}
         onNavigate={(screenName, params) => navigate(screenName, params)}
+      />
+    );
+  }
+  if (screen === 'storage_management') {
+    content = (
+      <StorageManagementScreen
+        onBack={() => goBack()}
+      />
+    );
+  }
+
+  if (screen === 'service_management') {
+    content = (
+      <ServiceManagementScreen
+        onBack={() => goBack()}
       />
     );
   }
@@ -703,29 +725,8 @@ export default function App() {
       <LobaPreviewScreen
         media={screenParams?.media}
         onBack={() => goBack()}
-        onUpload={async (data) => {
-          try {
-            await database.write(async () => {
-              await database.get('loba_posts').create(post => {
-                post.username = '@Moi';
-                post.avatar = 'https://lh3.googleusercontent.com/a/ACg8ocL-K84-0Q0Q0Q0Q0Q=s96-c';
-                post.content = data.caption || '';
-                if (data.type === 'video') {
-                  post.videoUrl = data.uri;
-                } else {
-                  post.imageUrl = data.uri;
-                }
-                post.likes = 0;
-                post.comments = 0;
-                post.isLiked = false;
-                post.filterColor = data.filter?.color || 'transparent';
-              });
-            });
-            resetTo('loba_home');
-          } catch (error) {
-            console.error('Upload failed:', error);
-            Alert.alert('Erreur', 'Impossible de publier votre contenu.');
-          }
+        onUpload={() => {
+          resetTo('loba_home');
         }}
       />
     );
@@ -954,6 +955,35 @@ export default function App() {
         onBack={() => goBack()}
         onNavigate={(screenName, params) => navigate(screenName, params)}
         route={{ params: screenParams }}
+      />
+    );
+  }
+
+  // Chat Screens
+  if (screen === 'chat_home') {
+    content = (
+      <ChatHomeScreen
+        onBack={() => goBack()}
+        onNavigate={(screenName, params) => navigate(screenName, params)}
+      />
+    );
+  }
+  if (screen === 'chat_conversation') {
+    content = (
+      <ChatConversationScreen
+        onBack={() => goBack()}
+        onNavigate={(screenName, params) => navigate(screenName, params)}
+        conversation={screenParams?.conversation}
+      />
+    );
+  }
+
+  // Pharmacy Screens
+  if (screen === 'pharmacy_home') {
+    content = (
+      <PharmacyHomeScreen
+        onBack={() => goBack()}
+        onNavigate={(screenName, params) => navigate(screenName, params)}
       />
     );
   }

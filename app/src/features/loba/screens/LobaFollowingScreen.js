@@ -15,94 +15,15 @@ import {
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Video, ResizeMode } from 'expo-av';
+import * as SecureStore from 'expo-secure-store';
+import LobaBottomNav from '../components/LobaBottomNav';
+import { useMeshConnection } from '../../bluetooth/hooks/useMeshConnection';
 import withObservables from '@nozbe/with-observables';
 import { database } from '../../../lib/db';
-import LobaBottomNav from '../components/LobaBottomNav';
 
 const { width, height } = Dimensions.get('window');
 
-const followingVideos = [
-  {
-    id: 1,
-    username: '@KofiMensah',
-    displayName: 'Kofi Mensah',
-    avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCpQKycPMLIcj6lEgT3yylEk1PYLRLRoGgntAftVcxpaZk_rZCjF9tJVB74QcDXaov6pXlQd0xJc3Hzn42A1xSh9sZDFM8PgyDRwaUsq2dn7Bf4d23hd1L-NEElMtyMOXIXKC3n95_TmtmOznJyFX7p_fI7-3ZxTpsj7scTO5mwqImoclkDwp9xyQN6RBUdjQBm_U_wSO1O_DvULR6bLmrYThfVtAvmsqTQJoZByFXdNIm-IThl8u4qx54KVUdJpCvlTLEejlGP',
-    video: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAnsmNx5C1-w0Yj3lMlo7-VbFA9OZNzc8vCIqLLNiEWPlqfOQSn40V7O2anTjQdhiVVsOUPd1Fh80S2l0bXDXUxJqhNIq_5GB6gsUsXx0OCuH76RCqW8zwYWx3Z1nuto64008GB7dQ3GGUGAUDYbjA2dXyctAocSS9HrU9BqfKeUCbR0eAsO9ge8eYzPx4BNyZApogpBe7SnsiUhCQ36Q-JA2p3Wz5ZttmMg-YIjNKODC2cU2gW0AhE6WrSmspXkdYVewssDBFD',
-    caption: 'First time trying jollof rice! 🌶️🇬🇭 The best I\'ve ever had!',
-    song: 'Kwaw Kese - Abena',
-    likes: 890,
-    comments: 56,
-    progress: 45,
-    liked: false,
-    followed: true,
-    saved: false,
-    time: '2h',
-  },
-  {
-    id: 2,
-    username: '@AmaraStyles',
-    displayName: 'Amara Design',
-    avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCZtvwVsq92pKVw0nXGx_XhXbbPPsbKmE9-z0m2J9WZN-Q7-x4NnpDNCTcWql6QEdqtk-huBz0JSQ4yHlBVN66Dt7ajEsDc6KiRl1TcDqL_6NXJA7kKwetBmiuyTFoD40GPkBd1Imv0vWcQ_s6TSjUp4ytupfFylDPPvezXmaHhDz1q6H34cCxru3EaSFtY_kxt4CopSle4Saf6hdNyu1qGbocUgyYlvdfuhtCoyvb2aR6EkwlVAG5fPE_gZiWzKySpArm-PMn2',
-    video: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCtK8TvWjtBzKDjxuNCgfKCM4VlXkH7Hg9QBzK5eG3Ln-zP7vsQaoci0T6qobNgJTG-5XhMtb5xOpfX-pW4Q51r7E1jBDBkJ8ui72wvXPeaDdJ4XWogDMTXMK4rRBmj96uJkepQcbLbXghuHhcfgXXwVoJgVoNN7_EkMxkinirFlaspT4lpwuIVSIzP4iJEeJQuWKp8mryxMKc8Yr_16eVJt7gdmfV4Zzh-JOxvlDIzL-0kM-4AUc-kHPKVwQ1Aa020PiWFk7KE',
-    caption: 'New collection dropping next week! 🔥 Sewing the final pieces',
-    song: 'Rema - Calm Down',
-    likes: 2300,
-    comments: 145,
-    progress: 70,
-    liked: true,
-    followed: true,
-    saved: true,
-    time: '4h',
-  },
-  {
-    id: 3,
-    username: '@TundeTech',
-    displayName: 'Tunde Okafor',
-    avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAGUIGCFh4WwJs-zcZagu4DefthTyTr2-oikHgtM3FLsrK4k4WYUIW3b_2GS2oRMPlrv8eKGDXxfztn8o5q7BQclsPNTf-frOgXE6uVDhPJGectXH72Pixv8LHhenb_HjsDFlTAWVA2T0rc2HB-BNRci5_XU2Qc_g06Yyvqs6hoV4uxd6bXODQCANYc3oorUQLGKnZLoYlYEm8QGzI1ygstqinDLD15aIbmIFIc6Vd2DlsNLK2cbVUZiRf0C9BADopfMkgkEuYf',
-    video: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAnsmNx5C1-w0Yj3lMlo7-VbFA9OZNzc8vCIqLLNiEWPlqfOQSn40V7O2anTjQdhiVVsOUPd1Fh80S2l0bXDXUxJqhNIq_5GB6gsUsXx0OCuH76RCqW8zwYWx3Z1nuto64008GB7dQ3GGUGAUDYbjA2dXyctAocSS9HrU9BqfKeUCbR0eAsO9ge8eYzPx4BNyZApogpBe7SnsiUhCQ36Q-JA2p3Wz5ZttmMg-YIjNKODC2cU2gW0AhE6WrSmspXkdYVewssDBFD',
-    caption: 'Building my first React Native app! 🎉 Follow my journey #CodingLife',
-    song: 'Wizkid - Essence',
-    likes: 450,
-    comments: 89,
-    progress: 30,
-    liked: false,
-    followed: true,
-    saved: false,
-    time: '6h',
-  },
-  {
-    id: 4,
-    username: '@NnekaKitchen',
-    displayName: 'Nneka\'s Kitchen',
-    avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDPs-a2lSM_bmNLNs1GkXRzOsSShLYwv_rSzvZ0vFkTZAC35XyDj_29VltZJ1ki-g5kR08ShBo0wAYd1_SBpqR-NbTCcjwfxTR1y2ffn7FwboHugN7JgcDIanSbRlZ43uL81mGHqHonrY1D85VV3D4PtZBH8kQmrPd_od1JQL8Dby0EiiyRwUpolz3ch6BV0z9kOK4jh7mC5Ka3CNlMw4iBGxyPUB6qeLDVis7qzYzApjaA63kBYEemlMf70N-C6fsqRjJZ4E68',
-    video: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCtK8TvWjtBzKDjxuNCgfKCM4VlXkH7Hg9QBzK5eG3Ln-zP7vsQaoci0T6qobNgJTG-5XhMtb5xOpfX-pW4Q51r7E1jBDBkJ8ui72wvXPeaDdJ4XWogDMTXMK4rRBmj96uJkepQcbLbXghuHhcfgXXwVoJgVoNN7_EkMxkinirFlaspT4lpwuIVSIzP4iJEeJQuWKp8mryxMKc8Yr_16eVJt7gdmfV4Zzh-JOxvlDIzL-0kM-4AUc-kHPKVwQ1Aa020PiWFk7KE',
-    caption: 'Making puff puff! 🍩 Classic Nigerian snack recipe coming soon!',
-    song: 'Davido - Unavailable',
-    likes: 3200,
-    comments: 210,
-    progress: 85,
-    liked: true,
-    followed: true,
-    saved: true,
-    time: '1d',
-  },
-  {
-    id: 5,
-    username: '@LagosRunner',
-    displayName: 'Marathon Mike',
-    avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuEjemploRunnerAvatar123',
-    video: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAnsmNx5C1-w0Yj3lMlo7-VbFA9OZNzc8vCIqLLNiEWPlqfOQSn40V7O2anTjQdhiVVsOUPd1Fh80S2l0bXDXUxJqhNIq_5GB6gsUsXx0OCuH76RCqW8zwYWx3Z1nuto64008GB7dQ3GGUGAUDYbjA2dXyctAocSS9HrU9BqfKeUCbR0eAsO9ge8eYzPx4BNyZApogpBe7SnsiUhCQ36Q-JA2p3Wz5ZttmMg-YIjNKODC2cU2gW0AhE6WrSmspXkdYVewssDBFD',
-    caption: '10km morning run completed! 💪 Who else is up early?',
-    song: 'Burna Boy - Last Last',
-    likes: 670,
-    comments: 45,
-    progress: 55,
-    liked: false,
-    followed: true,
-    saved: false,
-    time: '2d',
-  },
-];
+
 
 const followedCreators = [
   { id: 1, name: 'Kofi Mensah', avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCpQKycPMLIcj6lEgT3yylEk1PYLRLRoGgntAftVcxpaZk_rZCjF9tJVB74QcDXaov6pXlQd0xJc3Hzn42A1xSh9sZDFM8PgyDRwaUsq2dn7Bf4d23hd1L-NEElMtyMOXIXKC3n95_TmtmOznJyFX7p_fI7-3ZxTpsj7scTO5mwqImoclkDwp9xyQN6RBUdjQBm_U_wSO1O_DvULR6bLmrYThfVtAvmsqTQJoZByFXdNIm-IThl8u4qx54KVUdJpCvlTLEejlGP', following: true },
@@ -132,11 +53,11 @@ function LobaFollowingScreen({ onBack, onNavigate, videos = [] }) {
       saved: false,
       filterColor: p.filterColor,
       time: 'Maintenant',
-    })).reverse(),
-    ...followingVideos.map(v => ({ ...v, type: 'video', filterColor: 'transparent' }))
+    })).reverse()
   ];
 
   const [feedVideos, setFeedVideos] = useState(displayPosts);
+  const meshState = useMeshConnection();
 
   React.useEffect(() => {
     setFeedVideos(displayPosts);
@@ -331,8 +252,14 @@ function LobaFollowingScreen({ onBack, onNavigate, videos = [] }) {
       <View style={{ position: 'absolute', width: width, height: height, top: 0, left: 0 }}>
       <View style={styles.header}>
         <View style={styles.statusChip}>
-          <MaterialCommunityIcons name="wifi-off" size={14} color="#fbbf24" />
-          <Text style={styles.statusText}>Mode Offline</Text>
+          {meshState.isConnected ? (
+            <MaterialCommunityIcons name="bluetooth-connect" size={14} color="#22c55e" />
+          ) : (
+            <MaterialCommunityIcons name="wifi-off" size={14} color="#fbbf24" />
+          )}
+          <Text style={[styles.statusText, meshState.isConnected && { color: '#22c55e' }]}>
+            {meshState.isConnected ? `Mesh Actif (${meshState.peerCount})` : 'Mode Offline'}
+          </Text>
         </View>
 
         <View style={styles.titleContainer}>

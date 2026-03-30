@@ -14,89 +14,15 @@ import {
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Video, ResizeMode } from 'expo-av';
+import * as SecureStore from 'expo-secure-store';
+import { useMeshConnection } from '../../bluetooth/hooks/useMeshConnection';
 import withObservables from '@nozbe/with-observables';
 import { database } from '../../../lib/db';
 import LobaBottomNav from '../components/LobaBottomNav';
 
 const { width, height } = Dimensions.get('window');
 
-const forYouVideos = [
-  {
-    id: 1,
-    username: '@LagosEats',
-    avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuB-cZ953z6Pef-m-esMbutiujQzwcQ3gXocj0ErdwM9gmhxLpWo4SKz4VFvkSga_qlHMvvYo8Lkoex8tWespXnC8gKlURT7iGPPII63Uh98f-AX-ZYpjq5WOAHrL1QarS-bIe8awUnOztGtUDF19UvJerb2PYVsQUw5cJLRSU5yM8wnobwysn7cOF3j3h71OchJaZfAHWd1qNkkVk6oEEAlMw63bsadLjh3IsXVs3Db_jad-rzwr27E6XhAExYmUfH2A85zZ_Q7',
-    video: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCtK8TvWjtBzKDjxuNCgfKCM4VlXkH7Hg9QBzK5eG3Ln-zP7vsQaoci0T6qobNgJTG-5XhMtb5xOpfX-pW4Q51r7E1jBDBkJ8ui72wvXPeaDdJ4XWogDMTXMK4rRBmj96uJkepQcbLbXghuHhcfgXXwVoJgVoNN7_EkMxkinirFlaspT4lpwuIVSIzP4iJEeJQuWKp8mryxMKc8Yr_16eVJt7gdmfV4Zzh-JOxvlDIzL-0kM-4AUc-kHPKVwQ1Aa020PiWFk7KE',
-    caption: 'Trying the best suya in the city! 🔥🥩 This place is hidden but worth the trek. #Lagos #Foodie #Yabisso',
-    song: 'Burna Boy - Last Last',
-    likes: 1245,
-    comments: 320,
-    progress: 35,
-    liked: false,
-    followed: false,
-    saved: false,
-    tags: ['food', 'lagos', 'nigerian'],
-  },
-  {
-    id: 2,
-    username: '@TechGhana',
-    avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCpQKycPMLIcj6lEgT3yylEk1PYLRLRoGgntAftVcxpaZk_rZCjF9tJVB74QcDXaov6pXlQd0xJc3Hzn42A1xSh9sZDFM8PgyDRwaUsq2dn7Bf4d23hd1L-NEElMtyMOXIXKC3n95_TmtmOznJyFX7p_fI7-3ZxTpsj7scTO5mwqImoclkDwp9xyQN6RBUdjQBm_U_wSO1O_DvULR6bLmrYThfVtAvmsqTQJoZByFXdNIm-IThl8u4qx54KVUdJpCvlTLEejlGP',
-    video: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAnsmNx5C1-w0Yj3lMlo7-VbFA9OZNzc8vCIqLLNiEWPlqfOQSn40V7O2anTjQdhiVVsOUPd1Fh80S2l0bXDXUxJqhNIq_5GB6gsUsXx0OCuH76RCqW8zwYWx3Z1nuto64008GB7dQ3GGUGAUDYbjA2dXyctAocSS9HrU9BqfKeUCbR0eAsO9ge8eYzPx4BNyZApogpBe7SnsiUhCQ36Q-JA2p3Wz5ZttmMg-YIjNKODC2cU2gW0AhE6WrSmspXkdYVewssDBFD',
-    caption: 'Building the future of African tech! 🌍✨ #AfricanTech #Innovation',
-    song: 'Wizkid - Essence',
-    likes: 4500,
-    comments: 180,
-    progress: 60,
-    liked: true,
-    followed: true,
-    saved: true,
-    tags: ['tech', 'innovation', 'ghana'],
-  },
-  {
-    id: 3,
-    username: '@CongoVibes',
-    avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDkdN0I7I4vR0nS9cY8hKmP2tGjL5wZ1qX3nL6oK9pQ8rT4vW2xY1zA0bC8dE6fG9hI2jK1lM0nO9pQ8rT4vW2xY',
-    video: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCtK8TvWjtBzKDjxuNCgfKCM4VlXkH7Hg9QBzK5eG3Ln-zP7vsQaoci0T6qobNgJTG-5XhMtb5xOpfX-pW4Q51r7E1jBDBkJ8ui72wvXPeaDdJ4XWogDMTXMK4rRBmj96uJkepQcbLbXghuHhcfgXXwVoJgVoNN7_EkMxkinirFlaspT4lpwuIVSIzP4iJEeJQuWKp8mryxMKc8Yr_16eVJt7gdmfV4Zzh-JOxvlDIzL-0kM-4AUc-kHPKVwQ1Aa020PiWFk7KE',
-    caption: 'Congolese rhythms are taking over the world! 🎶💃 #CongoMusic #Afrobeats',
-    song: 'Fally Ipupa - Noki',
-    likes: 8900,
-    comments: 450,
-    progress: 80,
-    liked: false,
-    followed: false,
-    saved: false,
-    tags: ['music', 'congo', 'afrobeats'],
-  },
-  {
-    id: 4,
-    username: '@KenyaRun',
-    avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuEjemploAvatar123456789',
-    video: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAnsmNx5C1-w0Yj3lMlo7-VbFA9OZNzc8vCIqLLNiEWPlqfOQSn40V7O2anTjQdhiVVsOUPd1Fh80S2l0bXDXUxJqhNIq_5GB6gsUsXx0OCuH76RCqW8zwYWx3Z1nuto64008GB7dQ3GGUGAUDYbjA2dXyctAocSS9HrU9BqfKeUCbR0eAsO9ge8eYzPx4BNyZApogpBe7SnsiUhCQ36Q-JA2p3Wz5ZttmMg-YIjNKODC2cU2gW0AhE6WrSmspXkdYVewssDBFD',
-    caption: 'Morning run in Nairobi! 🏃‍♂️🌅 The weather is perfect today #KenyaRun #Fitness',
-    song: 'Sauti Sol - Melodious',
-    likes: 2100,
-    comments: 89,
-    progress: 45,
-    liked: false,
-    followed: true,
-    saved: false,
-    tags: ['fitness', 'kenya', 'running'],
-  },
-  {
-    id: 5,
-    username: '@SenegalStyle',
-    avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAnotherExampleAvatarSenegal',
-    video: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCtK8TvWjtBzKDjxuNCgfKCM4VlXkH7Hg9QBzK5eG3Ln-zP7vsQaoci0T6qobNgJTG-5XhMtb5xOpfX-pW4Q51r7E1jBDBkJ8ui72wvXPeaDdJ4XWogDMTXMK4rRBmj96uJkepQcbLbXghuHhcfgXXwVoJgVoNN7_EkMxkinirFlaspT4lpwuIVSIzP4iJEeJQuWKp8mryxMKc8Yr_16eVJt7gdmfV4Zzh-JOxvlDIzL-0kM-4AUc-kHPKVwQ1Aa020PiWFk7KE',
-    caption: 'Traditional Wolof dress for the cultural festival! 🇸🇳✨ #Senegal #Culture #Fashion',
-    song: 'Doudou N\'Diaye Rose',
-    likes: 5600,
-    comments: 234,
-    progress: 20,
-    liked: true,
-    followed: false,
-    saved: true,
-    tags: ['fashion', 'senegal', 'culture'],
-  },
-];
+
 
 const userInterests = ['Food', 'Tech', 'Music', 'Fashion', 'Sports', 'Travel', 'Comedy', 'Education'];
 
@@ -120,12 +46,12 @@ function LobaForYouScreen({ onBack, onNavigate, videos = [] }) {
       saved: false,
       filterColor: p.filterColor,
       tags: [],
-    })).reverse(),
-    ...forYouVideos.map(v => ({ ...v, type: 'video', filterColor: 'transparent' }))
+    })).reverse()
   ];
 
   const [feedVideos, setFeedVideos] = useState(displayPosts);
-  
+  const meshState = useMeshConnection();
+
   // Update local state when prop changes
   React.useEffect(() => {
     setFeedVideos(displayPosts);
@@ -322,8 +248,14 @@ function LobaForYouScreen({ onBack, onNavigate, videos = [] }) {
       <View style={{ position: 'absolute', width: width, height: height, top: 0, left: 0 }}>
       <View style={styles.header}>
         <View style={styles.statusChip}>
-          <MaterialCommunityIcons name="wifi-off" size={14} color="#fbbf24" />
-          <Text style={styles.statusText}>Mode Offline</Text>
+          {meshState.isConnected ? (
+            <MaterialCommunityIcons name="bluetooth-connect" size={14} color="#22c55e" />
+          ) : (
+            <MaterialCommunityIcons name="wifi-off" size={14} color="#fbbf24" />
+          )}
+          <Text style={[styles.statusText, meshState.isConnected && { color: '#22c55e' }]}>
+            {meshState.isConnected ? `Mesh Actif (${meshState.peerCount})` : 'Mode Offline'}
+          </Text>
         </View>
 
         <View style={styles.titleContainer}>

@@ -11,23 +11,38 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  Switch,
+  ActivityIndicator,
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Video, ResizeMode } from 'expo-av';
 
 const { width, height } = Dimensions.get('window');
 
+import { useLobaPublish } from '../hooks/useLobaPublish';
+
 export default function LobaPreviewScreen({ media, onBack, onUpload }) {
   const [caption, setCaption] = useState('');
   const [showFilters, setShowFilters] = useState(false);
+  const [compress, setCompress] = useState(true);
+  const { publishPost, isPublishing } = useLobaPublish();
   
-  const handleUpload = () => {
-    onUpload?.({
+  const handleUpload = async () => {
+    // 1. Déclenche la publication en arrière-plan (DB + Mesh) avec l'option compress
+    publishPost({
       uri: media.uri,
       type: media.type,
       caption,
       filter: media.filter,
+      compress
     });
+
+    // 2. Navigation immédiate (non-bloquant)
+    if (onUpload) {
+        onUpload(); // On signale au parent qu'on a fini
+    } else {
+        onBack?.();
+    }
   };
 
   return (
@@ -79,13 +94,33 @@ export default function LobaPreviewScreen({ media, onBack, onUpload }) {
             />
           </View>
 
+          <View style={styles.compressRow}>
+            <View style={styles.compressTextCol}>
+              <MaterialCommunityIcons name="folder-zip-outline" size={20} color={compress ? "#22c55e" : "rgba(255,255,255,0.5)"} />
+              <Text style={styles.compressLabel}>Compresser au max (Mesh)</Text>
+            </View>
+            <Switch
+              value={compress}
+              onValueChange={setCompress}
+              trackColor={{ false: '#333', true: 'rgba(34, 197, 94, 0.5)' }}
+              thumbColor={compress ? '#22c55e' : '#f4f3f4'}
+              disabled={isPublishing}
+            />
+          </View>
+
           <View style={styles.actions}>
             <Pressable style={styles.draftBtn}>
               <Text style={styles.draftBtnText}>Brouillon</Text>
             </Pressable>
-            <Pressable style={styles.uploadBtn} onPress={handleUpload}>
-              <MaterialCommunityIcons name="cloud-upload" size={20} color="#000" />
-              <Text style={styles.uploadBtnText}>Publier</Text>
+            <Pressable style={[styles.uploadBtn, isPublishing && { opacity: 0.7 }]} onPress={handleUpload} disabled={isPublishing}>
+              {isPublishing ? (
+                <ActivityIndicator color="#000" size="small" />
+              ) : (
+                <MaterialCommunityIcons name="cloud-upload" size={20} color="#000" />
+              )}
+              <Text style={styles.uploadBtnText}>
+                {isPublishing ? 'Compression...' : 'Publier'}
+              </Text>
             </Pressable>
           </View>
         </KeyboardAvoidingView>
@@ -177,20 +212,40 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.4)',
   },
   inputContainer: {
-    backgroundColor: 'rgba(255,255,255,0.15)',
-    borderRadius: 12,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
+    paddingHorizontal: 16,
+    marginBottom: 16,
   },
   captionInput: {
     color: '#fff',
-    fontSize: 14,
+    fontSize: 16,
+    minHeight: 40,
     maxHeight: 100,
+  },
+  compressRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    marginBottom: 20,
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    paddingVertical: 12,
+    marginHorizontal: 16,
+    borderRadius: 12,
+  },
+  compressTextCol: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  compressLabel: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
   },
   actions: {
     flexDirection: 'row',
+    paddingHorizontal: 16,
+    paddingBottom: Platform.OS === 'ios' ? 34 : 24,
     gap: 12,
   },
   draftBtn: {

@@ -132,6 +132,22 @@ export default function ProfileScreen({
           <Ionicons name="chevron-forward" size={18} color="#6B7280" />
         </Pressable>
 
+        <Pressable style={styles.settingRow} onPress={() => onNavigate('service_management')}>
+          <View style={[styles.settingIcon, { backgroundColor: 'rgba(167, 139, 250, 0.2)' }]}>
+            <MaterialCommunityIcons name="view-grid-plus-outline" size={20} color="#A78BFA" />
+          </View>
+          <Text style={styles.settingLabel}>Mes Services</Text>
+          <Ionicons name="chevron-forward" size={18} color="#6B7280" />
+        </Pressable>
+
+        <Pressable style={styles.settingRow} onPress={() => onNavigate('storage_management')}>
+          <View style={[styles.settingIcon, { backgroundColor: 'rgba(96, 165, 250, 0.2)' }]}>
+            <MaterialCommunityIcons name="harddisk" size={20} color="#60A5FA" />
+          </View>
+          <Text style={styles.settingLabel}>Gestion du Stockage</Text>
+          <Ionicons name="chevron-forward" size={18} color="#6B7280" />
+        </Pressable>
+
         <Pressable style={styles.settingRow} onPress={onOpenLogout}>
           <View style={[styles.settingIcon, { backgroundColor: 'rgba(239, 68, 68, 0.2)' }]}>
             <Ionicons name="log-out-outline" size={20} color="#EF4444" />

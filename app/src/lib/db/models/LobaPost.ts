@@ -8,12 +8,18 @@ export default class LobaPost extends Model {
   @text('avatar') avatar!: string
   @text('content') content!: string
   @text('image_url') imageUrl!: string
-  @text('video_url') videoUrl!: string
+  @field('video_url') videoUrl!: string | null;
+  @field('hash') hash!: string;
+  @field('local_media_path') localMediaPath!: string | null;
+  @field('category') category!: string;
+  @field('size') size!: number;
   @field('likes') likes!: number
   @field('comments') comments!: number
   @field('is_liked') isLiked!: boolean
-  @text('filter_color') filterColor!: string
+  @field('filter_color') filterColor!: string | null;
+  @field('is_propagating') isPropagating!: boolean
+  @field('downloaded_at') downloadedAt!: number | null;
 
-  @readonly @date('created_at') createdAt!: number
-  @readonly @date('updated_at') updatedAt!: number
+  @readonly @date('created_at') createdAt!: Date;
+  @readonly @date('updated_at') updatedAt!: Date;
 }

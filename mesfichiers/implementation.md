@@ -150,7 +150,17 @@ Ne jamais bloquer l'utilisateur avec une erreur reseau
   - `RestaurantDetailsScreen.js`
   - `FoodItemDetailsScreen.js`
   - `FoodCheckoutScreen.js`
-- UI Hotels: `app/src/features/hotel/screens/HotelHomeScreen.js`
+ - UI Hotels: `app/src/features/hotel/screens/`
+  - `HotelHomeScreen.js`
+  - `HotelSearchScreen.js`
+  - `HotelDetailsScreen.js`
+  - `HotelRoomDetailsScreen.js`
+  - `HotelBookingScreen.js`
+  - `HotelPaymentScreen.js`
+  - `HotelReservationScreen.js`
+  - `HotelMyBookingsScreen.js`
+  - `HotelFavoritesScreen.js`
+  - `HotelProfileScreen.js`
 - UI Services: `app/src/features/services/screens/ServicesHomeScreen.js`
 - UI Immobilier: `app/src/features/real_estate/screens/RealEstateHomeScreen.js`
 - UI Wallet (Recharge, Send, Receive): `app/src/features/wallet/screens/`

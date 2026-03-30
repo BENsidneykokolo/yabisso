@@ -3,6 +3,31 @@ import { schemaMigrations, createTable, addColumns } from '@nozbe/watermelondb/S
 export default schemaMigrations({
   migrations: [
     {
+      toVersion: 8,
+      steps: [
+        addColumns({
+          table: 'loba_posts',
+          columns: [
+            { name: 'hash', type: 'string', isIndexed: true },
+            { name: 'local_media_path', type: 'string', isOptional: true },
+            { name: 'category', type: 'string', isIndexed: true },
+            { name: 'size', type: 'number' },
+            { name: 'is_propagating', type: 'boolean' },
+            { name: 'downloaded_at', type: 'number', isOptional: true },
+          ],
+        }),
+        createTable({
+          name: 'user_interests',
+          columns: [
+            { name: 'service', type: 'string', isIndexed: true },
+            { name: 'category', type: 'string', isIndexed: true },
+            { name: 'weight', type: 'number' },
+            { name: 'updated_at', type: 'number' },
+          ],
+        }),
+      ],
+    },
+    {
       toVersion: 7,
       steps: [
         addColumns({
