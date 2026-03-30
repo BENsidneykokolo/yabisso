@@ -23,6 +23,15 @@
 | Configurer build local Android (Correction SDK/NDK) | Done | P1 | S0 |
 | Fix WatermelonDB adapter import (SQLiteAdapter) | Done | P1 | S0 |
 | Local storage init (WatermelonDB + SecureStore) | Done | P1 | S0 |
+| Migration Marketplace vers WatermelonDB (Offline-First) | Done | P1 | S4 |
+| - SellerProfileScreen (Reactivité avecObservables) | Done | P1 | S4 |
+| - NewArrivalsScreen (Filtrage validation) | Done | P1 | S4 |
+| - MarketplaceHomeScreen (Filtrage validation) | Done | P1 | S4 |
+| - AddProductScreen (Persistance locale) | Done | P1 | S4 |
+| Prodecure de Validation Kiosque (Produits) | Done | P1 | S10 |
+| - Generation QR Code Vendeur | Done | P1 | S10 |
+| - Scanner & Approbation Kiosque | Done | P1 | S10 |
+
 | Design system de base (YScreen/YText/YButton/YInput) | Not Started | P1 | S0 |
 | UI base (login/signup + screens de base) | Done | P1 | S1 |
 | Creer WelcomeScreen (bienvenue) | Done | P1 | S1 |
@@ -69,7 +78,8 @@
 | Definir stack SMS fallback (Android only) | Done | P1 | S1 |
 | Configurer permissions BLE/WiFi/SMS Android | Done | P1 | S1 |
 | Offline Signup (flow complet) | Done | P1 | S1 |
-| QR kiosque (scan/validate) | Not Started | P1 | S1 |
+| QR kiosque (scan/validate Users) | Not Started | P1 | S1 |
+| QR kiosque (scan/validate Produits) | Done | P1 | S10 |
 | Auth kiosque offline (QR activation locale) | Not Started | P1 | S1 |
 | Secure local DB (SQLite chiffré) | Not Started | P1 | S1 |
 | Schema SQL Supabase complet | Not Started | P1 | S1 |

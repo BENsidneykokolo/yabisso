@@ -41,6 +41,8 @@ S13-S16: reservations, services, admin console, Play Store launch
 - **RestaurantSellerScreen**: Creation restaurant virtuel (nom, catégorie, livraison, plats)
 - **Restaurant Menu**: Menu popup style Marketplace (gauche)
 - **Nom boutique dynamique**: Charge depuis SecureStore sur tous les ecrans parcours achat
+- **Migration WatermelonDB (Marketplace)**: Migration complète (Profil Vendeur, Nouveautés, Accueil) pour une gestion offline performante et réactive.
+- **Validation Kiosque (Produits)**: Système de validation officielle par QR Code (Vendeur -> Kiosque) pour activer la visibilité publique.
 
 ## Marketplace - Sprint 4 & 5 (COMPLETED)
 - Marketplace: Home, Product List, Category Page, Product Details

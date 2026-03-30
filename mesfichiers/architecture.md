@@ -24,7 +24,7 @@ Supabase (Auth + RLS + Edge Functions)
 - Wallet Send: `app/src/features/wallet/screens/SendScreen.js` + sub-screens
 - Wallet Receive: `app/src/features/wallet/screens/ReceiveScreen.js` + sub-screens
 - Wallet History: `app/src/features/wallet/screens/HistoryScreen.js`
-- DB locale WatermelonDB: `app/src/lib/db/schema.ts` (Schéma v6: tables profiles, products, wallet_transactions, loba_posts, assistant_messages)
+- DB locale WatermelonDB: `app/src/lib/db/schema.ts` (Schéma v7: tables profiles, products, wallet_transactions, loba_posts, assistant_messages, sync_queue)
 
 ## Principes offline-first
 L'app doit fonctionner sans internet.
@@ -57,8 +57,9 @@ Demarrage: SMS fallback + local storage, puis BLE mesh (leger), puis WiFi Direct
 Phase 1: Bluetooth simple (pas de mesh) pour QR/P2P, mesh reporte.
 
 ## Kiosque
-Noeud physique pour cash-in/out, update offline, validation locale.
-CRL locale + cle USB vendeur pour securite.
+- Validation locale : Inscription users offline et validation produits marchands via QR Code.
+- CRL locale + cle USB vendeur pour securite.
+- Protocole de scan simple (Vendeur -> QR -> Kiosque) pour propagation de confiance.
 
 ## Architecture en couches
 
