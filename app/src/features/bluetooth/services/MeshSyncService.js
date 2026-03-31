@@ -13,6 +13,9 @@ export const MESH_CHANNEL = {
   WIFI: 'WIFI_DIRECT',
 };
 
+import Constants from 'expo-constants';
+import { database } from '../../../lib/db';
+
 export const MESH_POLICY = {
   PUBLIC: ['SOCIAL_POST', 'marketplace_product', 'hotel_room', 'restaurant_dish', 'service_booking'],
   PRIVATE: ['wallet_data', 'ai_assistant_message', 'personal_note'],
@@ -39,20 +42,91 @@ export const meshConnectionState = {
 };
 export const MeshConnectionEvents = new SimpleEventEmitter();
 
+let relaySocket = null;
+
+const getRelayUrls = () => {
+  let ip = null;
+  
+  // Stratégie 1: hostUri (Apparait souvent dans Expo)
+  const hostUri = Constants.expoConfig?.hostUri || Constants.manifest?.hostUri;
+  if (hostUri) {
+    ip = hostUri.split(':')[0];
+  }
+  
+  // Stratégie 2: URL de liaison directe "exp://192.168..."
+  if (!ip) {
+    const expUrl = Constants.experienceUrl || Constants.linkingUri;
+    const match = expUrl?.match(/\/\/([0-9\.]+):/);
+    if (match) {
+      ip = match[1];
+    }
+  }
+
+  if (ip && ip.includes('.')) {
+    console.log(`[MeshSyncService] LAN Résolu: IP de l'Hôte trouvée: ${ip}`);
+    return { ws: `ws://${ip}:4000`, http: `http://${ip}:4000` };
+  }
+  
+  // Fallback 
+  console.warn('[MeshSyncService] Aucune IP détectée automatiquement pour LAN. Fallback 192.168...');
+  return { ws: 'ws://192.168.1.15:4000', http: 'http://192.168.1.15:4000' };
+};
 
 export const MeshSyncService = {
   /**
-   * Lance la détection automatique des voisins Mesh en tâche de fond.
+   * Lance la détection automatique des voisins via le Relay Server (Simulation LAN du Mesh)
    */
   startAutoDiscovery() {
-    console.log('[MeshSyncService] Démarrage AutoDiscovery en arrière-plan...');
-    // Constante simulation pour connecter un voisin rapidement 
-    setTimeout(() => {
+    if (relaySocket) return;
+    
+    console.log('[MeshSyncService] Connexion au Relay Server P2P...');
+    const urls = getRelayUrls();
+    
+    relaySocket = new WebSocket(urls.ws);
+
+    relaySocket.onopen = () => {
+      console.log('[MeshSyncService] Connecté au Mesh Local (Relay).');
       meshConnectionState.isConnected = true;
-      meshConnectionState.peerCount = 1;
+      meshConnectionState.peerCount = 1; // Arbitraire pour la démo
       MeshConnectionEvents.emit({ ...meshConnectionState });
-      console.log('[MeshSyncService] Voisin Mesh simulé trouvé. Statut: Connecté.');
-    }, 5000);
+    };
+
+    relaySocket.onmessage = async (e) => {
+      try {
+        const msg = JSON.parse(e.data);
+        if (msg.action === 'NEW_POST' && msg.payload) {
+          console.log('[MeshSyncService] Réception un nouveau post P2P!', msg.payload.username);
+          const p = msg.payload;
+          
+          await database.write(async () => {
+            await database.get('loba_posts').create(post => {
+              post.username = p.username;
+              post.content = p.content;
+              post.videoUrl = p.videoUrl;
+              post.imageUrl = p.imageUrl;
+              post.filterColor = p.filterColor;
+              post.isLiked = false;
+              post.likes = 0;
+              post.comments = 0;
+              post.isPropagating = false;
+              post.isPropagatedLocally = true;
+            });
+          });
+        }
+      } catch (err) {
+        console.error('[MeshSyncService] Erreur lors de la réception locale:', err);
+      }
+    };
+
+    relaySocket.onclose = () => {
+      console.log('[MeshSyncService] Déconnecté du Mesh Relay.');
+      meshConnectionState.isConnected = false;
+      meshConnectionState.peerCount = 0;
+      MeshConnectionEvents.emit({ ...meshConnectionState });
+      relaySocket = null;
+      // Reconnexion auto
+      setTimeout(() => this.startAutoDiscovery(), 4000);
+    };
   },
 
   /**
@@ -75,11 +149,52 @@ export const MeshSyncService = {
       return { success: false, reason: 'POLICY_RESTRICTION' };
     }
     
-    const channel = await this.getOptimalChannel(fileUri);
-    console.log(`[MeshSyncService] Broadcasting ${type} via ${channel}`);
-    
-    // Simulation du délai réseau
-    return new Promise(resolve => setTimeout(() => resolve({ success: true, channel }), 1500));
+    // Téléchargement (Upload) P2P du fichier vers le Relay
+    const urls = getRelayUrls();
+    let finalMediaUrl = payload.videoUrl || payload.imageUrl;
+
+    try {
+      if (fileUri && fileUri.startsWith('file://')) {
+        console.log(`[MeshSyncService] Upload du media vers le Relay P2P...`);
+        const formData = new FormData();
+        formData.append('media', {
+          uri: fileUri,
+          name: fileUri.split('/').pop() || 'media.mp4',
+          type: type === 'photo' ? 'image/jpeg' : 'video/mp4'
+        });
+
+        const uploadRes = await fetch(`${urls.http}/upload`, {
+          method: 'POST',
+          body: formData,
+        });
+        const uploadData = await uploadRes.json();
+        
+        if (uploadData.url) {
+          finalMediaUrl = uploadData.url;
+        }
+      }
+
+      // Modifier le payload avec le bon lien Cloud/Relay
+      const sentPayload = { ...payload };
+      if (sentPayload.videoUrl) sentPayload.videoUrl = finalMediaUrl;
+      else if (sentPayload.imageUrl) sentPayload.imageUrl = finalMediaUrl;
+
+      // Envoi de la notification de nouveau post au réseau pour les autres
+      if (relaySocket && relaySocket.readyState === WebSocket.OPEN) {
+        relaySocket.send(JSON.stringify({
+          action: 'NEW_POST',
+          payload: sentPayload
+        }));
+        console.log(`[MeshSyncService] ${type} diffusé avec succès sur le Relay.`);
+        return { success: true, url: finalMediaUrl };
+      } else {
+        return { success: false, reason: 'NOT_CONNECTED' };
+      }
+
+    } catch (e) {
+      console.error('[MeshSyncService] Erreur propagation Relay:', e);
+      return { success: false, error: e.message };
+    }
   },
 
   /**

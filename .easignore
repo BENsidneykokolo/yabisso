@@ -1,0 +1,47 @@
+# .easignore - Fichiers à exclure du build EAS
+
+# Node modules (réinstallés sur le serveur)
+node_modules/
+
+# Dossiers natifs (rebuild sur serveur)
+android/
+ios/
+
+# Git
+.git/
+.gitignore
+
+# Expo (cache local)
+.expo/
+.expo-shared/
+
+# Build local
+dist/
+build/
+*.apk
+*.aab
+
+# Logs
+npm-debug.*
+*.log
+yarn-debug.*
+yarn-error.*
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Assets locaux (si pas nécessaires pour le build)
+assets local/
+*.zip
+*.rar
+
+# Backup
+backup/
+*.bak

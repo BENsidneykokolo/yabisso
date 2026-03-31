@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { database } from '../../../lib/db';
 import { MeshSyncService } from '../../bluetooth/services/MeshSyncService';
+import { Video as VideoCompressor, Image as ImageCompressor } from 'react-native-compressor';
 
 /**
  * Hook useLobaPublish
@@ -15,13 +16,28 @@ export function useLobaPublish() {
     setIsPublishing(true);
 
     try {
-      // 0. (Optionnel) Simulation de la compression Média pour Mesh
+      // 0. Vraie Compression Média native pour Mesh P2P
       let finalUri = uri;
       if (compress) {
-        console.log(`[LobaPublish] Début de la compression ${type} pour le transport Mesh...`);
-        // On simule le délai de compression asynchrone sans bloquer avec expo-image-manipulator ou react-native-compressor
-        await new Promise(resolve => setTimeout(resolve, 3000));
-        console.log(`[LobaPublish] Compression terminée. Fichier réduit au maximum.`);
+        console.log(`[LobaPublish] Début de la compression native ${type} via FFmpeg...`);
+        try {
+          if (type === 'video') {
+             finalUri = await VideoCompressor.compress(
+               uri, 
+               { compressionMethod: 'auto', maxSize: 1080 },
+               (progress) => { console.log('Compression Vidéo:', Math.round(progress * 100) + '%'); }
+             );
+          } else if (type === 'image') {
+             finalUri = await ImageCompressor.compress(
+               uri, 
+               { compressionMethod: 'auto', quality: 0.8, maxWidth: 1080 }
+             );
+          }
+          console.log(`[LobaPublish] Compression terminée ! URI compressé : ${finalUri}`);
+        } catch(cErr) {
+          console.error('[LobaPublish] Erreur pendant la compression native (fallback original) :', cErr);
+          finalUri = uri; // Fallback pour ne pas bloquer
+        }
       }
 
       // 1. Persistance locale (WatermelonDB)
@@ -48,17 +64,35 @@ export function useLobaPublish() {
         });
       });
 
-      // 3. Propagation Mesh en Arrière-plan (Social Direct)
+      // 3. Propagation Mesh en Arrière-plan (Social Direct via Relay)
       // On ne 'await' pas pour ne pas bloquer l'UI
-      MeshSyncService.broadcast('SOCIAL_POST', { postId: newPost.id }, uri)
+      const p2pPayload = {
+        postId: newPost.id,
+        username,
+        content: caption || '',
+        videoUrl: type === 'video' ? finalUri : null,
+        imageUrl: type === 'image' ? finalUri : null,
+        filterColor: filter?.color || 'transparent'
+      };
+
+      MeshSyncService.broadcast('SOCIAL_POST', p2pPayload, finalUri)
         .then(async (res) => {
           if (res.success) {
             await database.write(async () => {
               // On marque comme propagé localement
               const found = await database.get('loba_posts').find(newPost.id);
-              await found.update(st => { st.isPropagatedLocally = true; });
+              if (found) {
+                 await found.update(st => {
+                   st.isPropagatedLocally = true;
+                   st.isPropagating = false;
+                   if (res.url) {
+                      st.videoUrl = type === 'video' ? res.url : null;
+                      st.imageUrl = type === 'image' ? res.url : null;
+                   }
+                 });
+              }
             });
-            console.log('[LobaPublish] Mesh Success');
+            console.log('[LobaPublish] Mesh/Relay Success:', res.url);
           }
         })
         .catch(err => console.error('[LobaPublish] Mesh Error', err));
