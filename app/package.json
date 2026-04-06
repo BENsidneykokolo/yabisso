@@ -4,6 +4,7 @@
   "main": "index.js",
   "scripts": {
     "start": "expo start",
+    "dev": "cross-env EXPO_PACKAGER_HOSTNAME=192.168.1.66 expo start --dev-client --host lan --port 8081",
     "android": "expo run:android",
     "ios": "expo run:ios",
     "web": "expo start --web"
@@ -12,7 +13,7 @@
     "@nozbe/watermelondb": "^0.28.0",
     "@nozbe/with-observables": "^1.6.0",
     "@react-native-async-storage/async-storage": "^2.2.0",
-    "@react-native-community/netinfo": "^12.0.1",
+    "@react-native-community/netinfo": "11.4.1",
     "@react-native-ml-kit/image-labeling": "^2.0.0",
     "@react-native-ml-kit/text-recognition": "^2.0.0",
     "buffer": "^6.0.3",
@@ -35,14 +36,17 @@
     "react": "19.1.0",
     "react-native": "0.81.5",
     "react-native-ble-plx": "^3.5.1",
+    "react-native-compressor": "^1.16.0",
     "react-native-get-sms-android": "^1.2.0",
     "react-native-qrcode-svg": "^6.3.21",
-    "react-native-svg": "^15.15.4",
+    "react-native-screens": "~4.16.0",
+    "react-native-svg": "15.12.1",
     "rxjs": "^7.8.2"
   },
   "private": true,
   "devDependencies": {
     "@types/react": "~19.1.10",
+    "cross-env": "^10.1.0",
     "typescript": "~5.9.2"
   }
 }

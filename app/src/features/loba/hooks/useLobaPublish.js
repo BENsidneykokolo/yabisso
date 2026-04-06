@@ -2,7 +2,9 @@
 import { useState } from 'react';
 import { database } from '../../../lib/db';
 import { MeshSyncService } from '../../bluetooth/services/MeshSyncService';
-import { Video as VideoCompressor, Image as ImageCompressor } from 'react-native-compressor';
+// import { Video as VideoCompressor, Image as ImageCompressor } from 'react-native-compressor';
+const VideoCompressor = null;
+const ImageCompressor = null;
 
 /**
  * Hook useLobaPublish
@@ -18,8 +20,8 @@ export function useLobaPublish() {
     try {
       // 0. Vraie Compression Média native pour Mesh P2P
       let finalUri = uri;
-      if (compress) {
-        console.log(`[LobaPublish] Début de la compression native ${type} via FFmpeg...`);
+      if (compress && VideoCompressor && ImageCompressor) {
+        console.log(`[LobaPublish] Début de la compression native ${type}...`);
         try {
           if (type === 'video') {
              finalUri = await VideoCompressor.compress(
@@ -38,6 +40,9 @@ export function useLobaPublish() {
           console.error('[LobaPublish] Erreur pendant la compression native (fallback original) :', cErr);
           finalUri = uri; // Fallback pour ne pas bloquer
         }
+      } else if (compress) {
+        console.log('[LobaPublish] Compression désactivée (module non lié)');
+        finalUri = uri;
       }
 
       // 1. Persistance locale (WatermelonDB)

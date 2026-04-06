@@ -138,22 +138,17 @@
 
 ---
 
-## Hotels
+## Dating (Rencontre)
 
 | Tâche | Status | Priorité | Sprint |
 |-------|--------|----------|--------|
-| Hotels - Home | Done | P1 | S5 |
-| Hotels - Search | Done | P1 | S5 |
-| Hotels - Details | Done | P1 | S5 |
-| Hotels - Room Details | Done | P1 | S5 |
-| Hotels - Booking | Done | P1 | S5 |
-| Hotels - Payment | Done | P1 | S5 |
-| Hotels - Reservation | Done | P1 | S5 |
-| Hotels - My Bookings | Done | P1 | S5 |
-| Hotels - Favorites | Done | P1 | S5 |
-| Hotels - Profile | Done | P1 | S5 |
-| Hotels - Bottom Navigation anime | Done | P1 | S5 |
-| Hotels - Traduction francais | Done | P1 | S5 |
+| Dating - Home (swipe profils) | Done | P2 | S5 |
+| Dating - Profile (vue détaillée) | Done | P2 | S5 |
+| Dating - Edit Profile (creation/edition) | Done | P2 | S5 |
+| Dating - Chat (messagerie) | Done | P2 | S5 |
+| Dating - Likes (liste des likes) | Done | P2 | S5 |
+| Dating - Chats (liste conversations) | Done | P2 | S5 |
+| Dating - Filtres | Done | P2 | S5 |
 
 ---
 

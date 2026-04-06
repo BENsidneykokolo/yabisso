@@ -73,17 +73,23 @@
         {
           "microphonePermission": "Autoriser l'accès au microphone pour la recherche vocale",
           "speechRecognitionPermission": "Autoriser la reconnaissance vocale",
-          "androidSpeechServicePackages": ["com.google.android.googlequicksearchbox"]
+          "androidSpeechServicePackages": [
+            "com.google.android.googlequicksearchbox"
+          ]
         }
       ],
       [
         "react-native-ble-plx",
         {
           "isBackgroundEnabled": true,
-          "modes": ["peripheral", "central"],
+          "modes": [
+            "peripheral",
+            "central"
+          ],
           "bluetoothAlwaysPermission": "Autoriser Yabisso à utiliser le Bluetooth P2P pour l'inscription offline."
         }
-      ]
+      ],
+      "react-native-compressor"
     ]
   }
 }
