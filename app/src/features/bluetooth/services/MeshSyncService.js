@@ -1,20 +1,29 @@
 // app/src/features/bluetooth/services/MeshSyncService.js
+import { BleManager, State } from 'react-native-ble-plx';
 import * as FileSystem from 'expo-file-system/legacy';
+import { encode as btoa, decode as atob } from 'base-64';
+import { database } from '../../../lib/db';
+import { Q } from '@nozbe/watermelondb';
+import { NetworkRailDetector } from './NetworkRailDetector';
+import { NetworkPermissionsService } from './NetworkPermissionsService';
+import { ManifestService } from '../../loba/services/ManifestService';
+import { RecommendationEngine } from '../../loba/services/RecommendationEngine';
+import { TransferQueueManager } from '../../loba/services/TransferQueueManager';
+import { LocalStorageManager } from '../../loba/services/LocalStorageManager';
 
-/**
- * MeshSyncService
- * Gère la décision de transport Mesh selon la taille du fichier.
- * BLE Mesh: <= 5MB
- * WiFi Direct: > 5MB
- */
+// UUIDs Yabisso Mesh
+const YABISSO_MESH_SERVICE_UUID = '12345678-1234-1234-1234-123456780001';
+const MANIFEST_CHAR_UUID        = '12345678-1234-1234-1234-123456780002';
+const DATA_CHAR_UUID            = '12345678-1234-1234-1234-123456780003';
+const ACK_CHAR_UUID             = '12345678-1234-1234-1234-123456780004';
+
+const BLE_CHUNK_SIZE = 512; // bytes par chunk BLE
+const MAX_BLE_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
 
 export const MESH_CHANNEL = {
   BLE: 'BLE_MESH',
   WIFI: 'WIFI_DIRECT',
 };
-
-import Constants from 'expo-constants';
-import { database } from '../../../lib/db';
 
 export const MESH_POLICY = {
   PUBLIC: ['SOCIAL_POST', 'marketplace_product', 'hotel_room', 'restaurant_dish', 'service_booking'],
@@ -42,245 +51,286 @@ export const meshConnectionState = {
 };
 export const MeshConnectionEvents = new SimpleEventEmitter();
 
-let relaySocket = null;
+/**
+ * MeshSyncService (V2 — Vrai BLE)
+ * Gère la synchronisation P2P via Bluetooth Low Energy.
+ * - Advertising : s'annonce comme nœud Yabisso
+ * - Scanning : cherche les voisins Yabisso
+ * - Manifest Exchange : échange de manifestes pour déduplication
+ * - Chunked Transfer : transfert de fichiers ≤ 5 MB par chunks BLE
+ * - 1-Hop Relay : repartage automatique aux voisins
+ */
 
-const getRelayUrls = () => {
-  let ip = null;
-  
-  // Stratégie 1: hostUri (Apparait souvent dans Expo)
-  const hostUri = Constants.expoConfig?.hostUri || Constants.manifest?.hostUri;
-  if (hostUri) {
-    ip = hostUri.split(':')[0];
+class MeshSyncServiceClass {
+  constructor() {
+    this.bleManager = null;
+    this.discoveredPeers = new Map(); // deviceId -> { device, lastSeen }
+    this.connectedPeers = new Map(); // deviceId -> device
+    this.seenHashes = new Set(); // Anti-boucle de relay
+    this.isScanning = false;
+    this.scanSubscription = null;
+    this._incomingChunks = new Map(); // hash -> { chunks: [], totalSize, received }
   }
-  
-  // Stratégie 2: URL de liaison directe "exp://192.168..."
-  if (!ip) {
-    const expUrl = Constants.experienceUrl || Constants.linkingUri;
-    const match = expUrl?.match(/\/\/([0-9\.]+):/);
-    if (match) {
-      ip = match[1];
-    }
-  }
-
-  if (ip && ip.includes('.')) {
-    console.log(`[MeshSyncService] LAN Résolu: IP de l'Hôte trouvée: ${ip}`);
-    return { ws: `ws://${ip}:4000`, http: `http://${ip}:4000` };
-  }
-  
-  // Fallback 
-  console.warn('[MeshSyncService] Aucune IP détectée automatiquement pour LAN. Fallback 192.168...');
-  return { ws: 'ws://192.168.1.15:4000', http: 'http://192.168.1.15:4000' };
-};
-
-export const MeshSyncService = {
-  /**
-   * Lance la détection automatique des voisins via le Relay Server (Simulation LAN du Mesh)
-   */
-  startAutoDiscovery() {
-    if (relaySocket) return;
-    
-    console.log('[MeshSyncService] Connexion au Relay Server P2P...');
-    const urls = getRelayUrls();
-    
-    relaySocket = new WebSocket(urls.ws);
-
-    relaySocket.onopen = () => {
-      console.log('[MeshSyncService] Connecté au Mesh Local (Relay).');
-      meshConnectionState.isConnected = true;
-      meshConnectionState.peerCount = 1; // Arbitraire pour la démo
-      MeshConnectionEvents.emit({ ...meshConnectionState });
-    };
-
-    relaySocket.onmessage = async (e) => {
-      try {
-        const msg = JSON.parse(e.data);
-        if (msg.action === 'NEW_POST' && msg.payload) {
-          console.log('[MeshSyncService] Réception un nouveau post P2P!', msg.payload.username);
-          const p = msg.payload;
-          
-          await database.write(async () => {
-            await database.get('loba_posts').create(post => {
-              post.username = p.username;
-              post.content = p.content;
-              post.videoUrl = p.videoUrl;
-              post.imageUrl = p.imageUrl;
-              post.filterColor = p.filterColor;
-              post.isLiked = false;
-              post.likes = 0;
-              post.comments = 0;
-              post.isPropagating = false;
-              post.isPropagatedLocally = true;
-            });
-          });
-        }
-      } catch (err) {
-        console.error('[MeshSyncService] Erreur lors de la réception locale:', err);
-      }
-    };
-
-    relaySocket.onclose = () => {
-      console.log('[MeshSyncService] Déconnecté du Mesh Relay.');
-      meshConnectionState.isConnected = false;
-      meshConnectionState.peerCount = 0;
-      MeshConnectionEvents.emit({ ...meshConnectionState });
-      relaySocket = null;
-      // Reconnexion auto
-      setTimeout(() => this.startAutoDiscovery(), 4000);
-    };
-  },
 
   /**
-   * Vérifie si le type de données est autorisé à la diffusion publique.
+   * Initialise le BleManager avec permissions.
    */
-  isBroadcastAllowed(type) {
-    if (MESH_POLICY.PRIVATE.includes(type)) {
-      console.warn(`[MeshSyncService] BLOCKED: Propagation mesh interdite pour les données privées (${type}).`);
-      return false;
-    }
-    return MESH_POLICY.PUBLIC.includes(type) || type.startsWith('SOCIAL_');
-  },
+  async initialize() {
+    if (this.bleManager) return;
 
-  /**
-   * Diffuse un message sur le réseau Mesh.
-   */
-  async broadcast(type, payload, fileUri) {
-    if (!this.isBroadcastAllowed(type)) {
-      console.warn('[MeshSyncService] Broadcast interdit pour: ' + type);
-      return { success: false, reason: 'POLICY_RESTRICTION' };
-    }
-    
-    // Téléchargement (Upload) P2P du fichier vers le Relay
-    const urls = getRelayUrls();
-    let finalMediaUrl = payload.videoUrl || payload.imageUrl;
-
+    // 1. Demander les permissions Android
     try {
-      if (fileUri && fileUri.startsWith('file://')) {
-        console.log(`[MeshSyncService] Upload du media vers le Relay P2P...`);
-        const formData = new FormData();
-        formData.append('media', {
-          uri: fileUri,
-          name: fileUri.split('/').pop() || 'media.mp4',
-          type: type === 'photo' ? 'image/jpeg' : 'video/mp4'
-        });
+      const hasPermission = await NetworkPermissionsService.requestAll();
+      if (!hasPermission) {
+        console.error('[MeshSync] Permissions réseau refusées.');
+        return;
+      }
+    } catch (err) {
+      console.warn('[MeshSync] Erreur lors de la demande de permissions:', err);
+    }
 
-        const uploadRes = await fetch(`${urls.http}/upload`, {
-          method: 'POST',
-          body: formData,
-        });
-        const uploadData = await uploadRes.json();
-        
-        if (uploadData.url) {
-          finalMediaUrl = uploadData.url;
+    this.bleManager = new BleManager();
+
+    // Attendre que le BLE soit allumé
+    const state = await this.bleManager.state();
+    if (state !== State.PoweredOn) {
+      console.warn('[MeshSync] BLE non allumé. En attente...');
+      return new Promise((resolve) => {
+        const sub = this.bleManager.onStateChange((newState) => {
+          if (newState === State.PoweredOn) {
+            sub.remove();
+            console.log('[MeshSync] BLE allumé.');
+            resolve();
+          }
+        }, true);
+      });
+    }
+  }
+
+  async startMeshScanning() {
+    if (this.isScanning) return;
+    await this.initialize();
+    if (!this.bleManager) return;
+
+    this.isScanning = true;
+    console.log('[MeshSync] Démarrage du scan Mesh BLE...');
+
+    this.bleManager.startDeviceScan(
+      [YABISSO_MESH_SERVICE_UUID],
+      { allowDuplicates: false },
+      (error, device) => {
+        if (error) {
+          console.error('[MeshSync] Erreur scan:', error.message);
+          this.isScanning = false;
+          return;
+        }
+        if (!device) return;
+
+        const peerId = device.id;
+        if (!this.discoveredPeers.has(peerId)) {
+          console.log(`[MeshSync] Nouveau voisin détecté: ${device.name || peerId}`);
+          this.discoveredPeers.set(peerId, { device, lastSeen: Date.now() });
+          meshConnectionState.peerCount = this.discoveredPeers.size;
+          meshConnectionState.isConnected = this.discoveredPeers.size > 0;
+          MeshConnectionEvents.emit({ ...meshConnectionState });
+          NetworkRailDetector.setBleAvailable(true);
+          this.onPeerDetected(peerId, device);
+        } else {
+          this.discoveredPeers.get(peerId).lastSeen = Date.now();
         }
       }
+    );
 
-      // Modifier le payload avec le bon lien Cloud/Relay
-      const sentPayload = { ...payload };
-      if (sentPayload.videoUrl) sentPayload.videoUrl = finalMediaUrl;
-      else if (sentPayload.imageUrl) sentPayload.imageUrl = finalMediaUrl;
+    this._cleanupInterval = setInterval(() => {
+      const now = Date.now();
+      for (const [peerId, peerData] of this.discoveredPeers) {
+        if (now - peerData.lastSeen > 60000) {
+          this.discoveredPeers.delete(peerId);
+          this.connectedPeers.delete(peerId);
+        }
+      }
+      meshConnectionState.peerCount = this.discoveredPeers.size;
+      meshConnectionState.isConnected = this.discoveredPeers.size > 0;
+      if (!meshConnectionState.isConnected) NetworkRailDetector.setBleAvailable(false);
+      MeshConnectionEvents.emit({ ...meshConnectionState });
+    }, 30000);
+  }
 
-      // Envoi de la notification de nouveau post au réseau pour les autres
-      if (relaySocket && relaySocket.readyState === WebSocket.OPEN) {
-        relaySocket.send(JSON.stringify({
-          action: 'NEW_POST',
-          payload: sentPayload
-        }));
-        console.log(`[MeshSyncService] ${type} diffusé avec succès sur le Relay.`);
-        return { success: true, url: finalMediaUrl };
-      } else {
-        return { success: false, reason: 'NOT_CONNECTED' };
+  stopMeshScanning() {
+    if (this.bleManager && this.isScanning) {
+      this.bleManager.stopDeviceScan();
+      this.isScanning = false;
+      if (this._cleanupInterval) clearInterval(this._cleanupInterval);
+    }
+  }
+
+  async onPeerDetected(peerId, device) {
+    try {
+      const connected = await device.connect({ autoConnect: false, timeout: 10000 });
+      const discovered = await connected.discoverAllServicesAndCharacteristics();
+      this.connectedPeers.set(peerId, discovered);
+
+      const myManifest = await ManifestService.generateManifest();
+      if (myManifest) {
+        const manifestJson = JSON.stringify(myManifest);
+        const chunks = this._chunkString(manifestJson);
+        for (const chunk of chunks) {
+          await discovered.writeCharacteristicWithResponseForService(YABISSO_MESH_SERVICE_UUID, MANIFEST_CHAR_UUID, btoa(chunk));
+        }
+        await discovered.writeCharacteristicWithResponseForService(YABISSO_MESH_SERVICE_UUID, MANIFEST_CHAR_UUID, btoa('__MANIFEST_END__'));
       }
 
+      const manifestChunks = [];
+      await new Promise((resolve) => {
+        const timeout = setTimeout(resolve, 15000);
+        discovered.monitorCharacteristicForService(YABISSO_MESH_SERVICE_UUID, MANIFEST_CHAR_UUID, (error, char) => {
+          if (error) { clearTimeout(timeout); resolve(); return; }
+          const decoded = atob(char.value);
+          if (decoded === '__MANIFEST_END__') { clearTimeout(timeout); resolve(); }
+          else manifestChunks.push(decoded);
+        });
+      });
+
+      if (manifestChunks.length > 0) {
+        const remoteManifest = JSON.parse(manifestChunks.join(''));
+        await this.handleManifestReceived(peerId, remoteManifest);
+      }
     } catch (e) {
-      console.error('[MeshSyncService] Erreur propagation Relay:', e);
-      return { success: false, error: e.message };
+      console.error(`[MeshSync] Erreur échange manifest avec ${peerId}:`, e.message);
+      this.connectedPeers.delete(peerId);
     }
-  },
+  }
 
-  /**
-   * Détermine le canal de propagation optimal.
-   * @param {string} fileUri 
-   */
-  async getOptimalChannel(fileUri) {
-    try {
-      if (!fileUri) return MESH_CHANNEL.BLE; // Par défaut pour métadonnées seules
-
-      const fileInfo = await FileSystem.getInfoAsync(fileUri);
-      if (!fileInfo.exists) return MESH_CHANNEL.BLE;
-
-      const sizeInMB = fileInfo.size / (1024 * 1024);
-      console.log(`[MeshSyncService] Taille du média: ${sizeInMB.toFixed(2)} MB`);
-
-      return sizeInMB <= 5 ? MESH_CHANNEL.BLE : MESH_CHANNEL.WIFI;
-    } catch (e) {
-      console.error('[MeshSyncService] Erreur mesure taille:', e);
-      return MESH_CHANNEL.BLE;
-    }
-  },
-
-  /**
-   * Point d'entrée quand un voisin (peer) est détecté.
-   * Déclenche l'échange de manifestes.
-   */
-  async onPeerDetected(peerId) {
-    console.log(`[MeshSyncService] Voisin détecté: ${peerId}. Échange de manifestes...`);
-    const myManifest = await ManifestService.generateManifest();
-    
-    // Simulation : On envoie notre manifest et on reçoit le sien
-    // En prod: transport via BLE ou WiFi Direct
-    this.handleManifestReceived(peerId, { /* remote manifest data */ });
-  },
-
-  /**
-   * Gère la réception d'un manifeste distant.
-   */
   async handleManifestReceived(peerId, remoteManifest) {
-    // 1. Calcul du Delta (ce qui nous manque)
     const delta = await ManifestService.calculateDelta(remoteManifest);
     if (delta.length === 0) return;
 
-    // 2. Filtrage par intérêts (95/5) et tri par taille ↑
-    const prioritized = RecommendationEngine.filterAndPrioritize(delta, remoteManifest.interests);
+    const localInterests = remoteManifest.interests || {};
+    const prioritized = RecommendationEngine.filterAndPrioritize(delta, localInterests);
+    const bleCompatible = prioritized.filter(item => item.size <= MAX_BLE_FILE_SIZE);
 
-    // 3. Ajout à la base locale (statut pending download)
     await database.write(async () => {
-      for (const item of prioritized) {
-        await database.get('loba_posts').create(post => {
-          post.hash = item.hash;
-          post.size = item.size;
-          post.category = item.category;
-          post.localMediaPath = null; // Marqueur de téléchargement en attente
-          post.username = 'Utilisateur Mesh';
-          post.content = 'Contenu partagé via Mesh';
-        });
+      for (const item of bleCompatible) {
+        const existing = await database.get('loba_posts').query(Q.where('hash', item.hash)).fetch();
+        if (existing.length === 0) {
+          await database.get('loba_posts').create(post => {
+            post.hash = item.hash;
+            post.size = item.size;
+            post.category = item.category;
+            post.localMediaPath = null;
+            post.username = item.username || 'Mesh User';
+            post.avatar = item.avatar || null;
+            post.content = item.content || '';
+            post.isPropagating = false;
+            post.imageUrl = item.type === 'image' ? `yabisso_mesh://${item.hash}` : null;
+            post.videoUrl = item.type === 'video' ? `yabisso_mesh://${item.hash}` : null;
+            post.likes = 0;
+            post.comments = 0;
+            post.isLiked = false;
+          });
+        }
       }
     });
-
-    // 4. Lancement du cycle de téléchargement
-    this.downloadNext();
-  },
-
-  /**
-   * Gère le téléchargement séquentiel des médias.
-   */
-  async downloadNext() {
-    const nextItem = await TransferQueueManager.getNext();
-    if (!nextItem) {
-      console.log('[MeshSyncService] Tous les téléchargements terminés.');
-      return;
-    }
-
-    console.log(`[MeshSyncService] Téléchargement: ${nextItem.hash} (${nextItem.size} bytes)...`);
-
-    // Simulation de transfert binaire
-    // En prod : FileSystem.downloadAsync ou transfert chunk BLE
-    setTimeout(async () => {
-      const localPath = await LocalStorageManager.saveMedia('temp_uri', nextItem.hash);
-      if (localPath) {
-        await TransferQueueManager.markComplete(nextItem.hash, localPath);
-        // On passe au suivant
-        this.downloadNext();
-      }
-    }, 2000);
+    await this.downloadFromPeer(peerId, bleCompatible);
   }
-};
+
+  async downloadFromPeer(peerId, items) {
+    const peer = this.connectedPeers.get(peerId);
+    if (!peer) return;
+
+    for (const item of items) {
+      if (this.seenHashes.has(item.hash)) continue;
+      try {
+        await peer.writeCharacteristicWithResponseForService(YABISSO_MESH_SERVICE_UUID, DATA_CHAR_UUID, btoa(JSON.stringify({ action: 'REQUEST_FILE', hash: item.hash })));
+        const fileChunks = [];
+        await new Promise((resolve) => {
+          const timeout = setTimeout(resolve, 30000);
+          peer.monitorCharacteristicForService(YABISSO_MESH_SERVICE_UUID, DATA_CHAR_UUID, (error, char) => {
+            if (error) { clearTimeout(timeout); resolve(); return; }
+            const decoded = atob(char.value);
+            if (decoded === '__FILE_END__') { clearTimeout(timeout); resolve(); }
+            else fileChunks.push(decoded);
+          });
+        });
+
+        if (fileChunks.length > 0) {
+          const fileContent = fileChunks.join('');
+          const ext = item.type === 'video' ? 'mp4' : 'jpg';
+          const tempPath = `${FileSystem.cacheDirectory}${item.hash}.${ext}`;
+          await FileSystem.writeAsStringAsync(tempPath, fileContent, { encoding: FileSystem.EncodingType.Base64 });
+          const savedPath = await LocalStorageManager.saveMedia(tempPath, item.hash, ext);
+          if (savedPath) {
+            await TransferQueueManager.markComplete(item.hash, savedPath);
+            this.seenHashes.add(item.hash);
+            this.relayToNeighbors(item.hash, fileContent, peerId);
+          }
+        }
+      } catch (e) { console.error(`[MeshSync] Erreur téléchargement ${item.hash}:`, e.message); }
+    }
+  }
+
+  async relayToNeighbors(hash, data, sourcePeerId) {
+    if (this.seenHashes.has(`relay_${hash}`)) return;
+    this.seenHashes.add(`relay_${hash}`);
+    for (const [peerId, peer] of this.connectedPeers) {
+      if (peerId === sourcePeerId) continue;
+      try {
+        const chunks = this._chunkString(data);
+        for (const chunk of chunks) await peer.writeCharacteristicWithResponseForService(YABISSO_MESH_SERVICE_UUID, DATA_CHAR_UUID, btoa(chunk));
+        await peer.writeCharacteristicWithResponseForService(YABISSO_MESH_SERVICE_UUID, DATA_CHAR_UUID, btoa('__FILE_END__'));
+      } catch (e) { console.warn(`[MeshSync] Relay échoué vers ${peerId}:`, e.message); }
+    }
+  }
+
+  isBroadcastAllowed(type) {
+    if (MESH_POLICY.PRIVATE.includes(type)) return false;
+    return MESH_POLICY.PUBLIC.includes(type) || type.startsWith('SOCIAL_');
+  }
+
+  async broadcast(type, payload, fileUri) {
+    if (!this.isBroadcastAllowed(type)) return { success: false, reason: 'POLICY_RESTRICTION' };
+    try {
+      let localPath = null;
+      if (fileUri && fileUri.startsWith('file://')) {
+        const hash = await LocalStorageManager.hashFile(fileUri);
+        const ext = fileUri.includes('.mp4') || payload.videoUrl ? 'mp4' : 'jpg';
+        localPath = await LocalStorageManager.saveMedia(fileUri, hash, ext);
+      }
+      let sent = false;
+      for (const [peerId, peer] of this.connectedPeers) {
+        try {
+          const chunks = this._chunkString(JSON.stringify(payload));
+          for (const chunk of chunks) await peer.writeCharacteristicWithResponseForService(YABISSO_MESH_SERVICE_UUID, MANIFEST_CHAR_UUID, btoa(chunk));
+          await peer.writeCharacteristicWithResponseForService(YABISSO_MESH_SERVICE_UUID, MANIFEST_CHAR_UUID, btoa('__MANIFEST_END__'));
+          sent = true;
+        } catch (e) { console.warn(`[MeshSync] Broadcast vers ${peerId} échoué:`, e.message); }
+      }
+      return { success: sent || localPath !== null, url: localPath };
+    } catch (e) { return { success: false, error: e.message }; }
+  }
+
+  async getOptimalChannel(fileUri) {
+    try {
+      if (!fileUri) return MESH_CHANNEL.BLE;
+      const fileInfo = await FileSystem.getInfoAsync(fileUri);
+      return (fileInfo.exists && fileInfo.size / (1024 * 1024) <= 5) ? MESH_CHANNEL.BLE : MESH_CHANNEL.WIFI;
+    } catch (e) { return MESH_CHANNEL.BLE; }
+  }
+
+  _chunkString(str) {
+    const chunks = [];
+    for (let i = 0; i < str.length; i += BLE_CHUNK_SIZE) chunks.push(str.slice(i, i + BLE_CHUNK_SIZE));
+    return chunks;
+  }
+
+  cleanup() {
+    this.stopMeshScanning();
+    for (const [_, peer] of this.connectedPeers) { try { peer.cancelConnection(); } catch (e) {} }
+    this.connectedPeers.clear();
+    this.discoveredPeers.clear();
+    this.seenHashes.clear();
+    if (this.bleManager) { this.bleManager.destroy(); this.bleManager = null; }
+  }
+}
+
+export const MeshSyncService = new MeshSyncServiceClass();

@@ -20,7 +20,7 @@ import * as SecureStore from 'expo-secure-store';
 import LobaBottomNav from '../components/LobaBottomNav';
 import withObservables from '@nozbe/with-observables';
 import { database } from '../../../lib/db';
-import { MeshSyncService } from '../../bluetooth/services/MeshSyncService';
+import { P2PAutoSync } from '../../bluetooth/services/P2PAutoSync';
 import { useMeshConnection } from '../../bluetooth/hooks/useMeshConnection';
 
 const { width, height } = Dimensions.get('window');
@@ -67,7 +67,8 @@ function LobaHomeScreen({ onBack, onNavigate, posts = [] }) {
   const [feedVideos, setFeedVideos] = useState(getDisplayPosts());
 
   useEffect(() => {
-    MeshSyncService.startAutoDiscovery();
+    P2PAutoSync.start();
+    return () => P2PAutoSync.stop();
   }, []);
 
   useEffect(() => {
@@ -164,6 +165,7 @@ function LobaHomeScreen({ onBack, onNavigate, posts = [] }) {
 
   const renderVideo = ({ item, index }) => {
     // Logique de source prioritaire : Local (Mesh) > Cloud (Internet)
+    const hasLocalMedia = item.localMediaPath || item.video || item.videoUrl;
     const videoSource = item.localMediaPath 
       ? { uri: item.localMediaPath } 
       : (item.videoUrl ? { uri: item.videoUrl } : { uri: item.video });
@@ -172,7 +174,19 @@ function LobaHomeScreen({ onBack, onNavigate, posts = [] }) {
     
     return (
     <View style={[styles.videoContainer, { height: height }]}>
-      {item.type === 'video' ? (
+      {!hasLocalMedia ? (
+        /* MediaPlaceholder — s'affiche quand le fichier n'est pas encore téléchargé */
+        <View style={[styles.videoBackground, styles.mediaPlaceholder]}>
+          <View style={styles.placeholderContent}>
+            <MaterialCommunityIcons name="cloud-download-outline" size={48} color="rgba(255,255,255,0.3)" />
+            <Text style={styles.placeholderText}>Contenu en attente...</Text>
+            <Text style={styles.placeholderSubText}>Ce média sera disponible dès qu'un transfert P2P sera terminé</Text>
+            <View style={styles.placeholderProgressBar}>
+              <Animated.View style={[styles.placeholderProgressFill, { width: '30%' }]} />
+            </View>
+          </View>
+        </View>
+      ) : item.type === 'video' ? (
         isCloseToVisible ? (
           <Video
             source={videoSource}
@@ -186,7 +200,7 @@ function LobaHomeScreen({ onBack, onNavigate, posts = [] }) {
           <View style={[styles.videoBackground, { backgroundColor: '#000' }]} />
         )
       ) : (
-        <Image source={{ uri: item.video }} style={styles.videoBackground} />
+        <Image source={{ uri: item.video || item.localMediaPath }} style={styles.videoBackground} />
       )}
       <View style={[styles.filterOverlay, { backgroundColor: item.filterColor || 'transparent' }]} />
       <View style={styles.videoGradient} />
@@ -785,6 +799,40 @@ const styles = StyleSheet.create({
   propagationFill: {
     height: '100%',
     backgroundColor: '#A855F7',
+  },
+  mediaPlaceholder: {
+    backgroundColor: '#1a1a1a',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  placeholderContent: {
+    alignItems: 'center',
+    paddingHorizontal: 40,
+  },
+  placeholderText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginTop: 16,
+  },
+  placeholderSubText: {
+    color: 'rgba(255,255,255,0.5)',
+    fontSize: 14,
+    textAlign: 'center',
+    marginTop: 8,
+    lineHeight: 20,
+  },
+  placeholderProgressBar: {
+    width: '100%',
+    height: 4,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    borderRadius: 2,
+    marginTop: 24,
+    overflow: 'hidden',
+  },
+  placeholderProgressFill: {
+    height: '100%',
+    backgroundColor: '#3B82F6',
   },
 });
 

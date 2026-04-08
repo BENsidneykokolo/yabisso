@@ -1,0 +1,309 @@
+// app/src/features/bluetooth/services/WifiDirectService.js
+import { Platform } from 'react-native';
+import * as FileSystem from 'expo-file-system/legacy';
+import { NetworkRailDetector } from './NetworkRailDetector';
+import { NetworkPermissionsService } from './NetworkPermissionsService';
+
+/**
+ * WifiDirectService
+ * Gère les transferts P2P via WiFi Direct (Android).
+ * 
+ * NOTE: Ce service nécessite `react-native-wifi-p2p` qui doit être
+ * installé et lié nativement (rebuild APK requis).
+ * En attendant le rebuild, les méthodes sont implémentées avec un
+ * try/catch qui dégrade gracefully si le module n'est pas lié.
+ */
+
+let WifiP2P = null;
+try {
+  // Tentative d'import dynamique — ne crash pas si non installé
+  WifiP2P = require('react-native-wifi-p2p');
+} catch (e) {
+  console.warn('[WifiDirectService] Module react-native-wifi-p2p non disponible. WiFi Direct désactivé.');
+}
+
+class WifiDirectServiceClass {
+  constructor() {
+    this.initialized = false;
+    this.isInitializing = false;
+    this.peers = [];
+    this.connectedPeer = null;
+    this.isDiscovering = false;
+    this.listeners = {
+      onPeerFound: [],
+      onPeerLost: [],
+      onConnectionChange: [],
+      onTransferProgress: [],
+    };
+  }
+
+  /**
+   * Initialise le service WiFi P2P.
+   * Doit être appelé une fois au démarrage.
+   */
+  async initialize() {
+    if (this.initialized) {
+      console.log('[WifiDirectService] Déjà initialisé.');
+      return true;
+    }
+
+    if (this.isInitializing) {
+      console.log('[WifiDirectService] Initialisation déjà en cours...');
+      // Attendre un peu ou retourner un succès partiel (ou false) pour éviter l'erreur
+      // L'idéal serait d'attendre la complétion, mais on peut juste skip pour le moment.
+      return false;
+    }
+    
+    this.isInitializing = true;
+
+    if (!WifiP2P || Platform.OS !== 'android') {
+      console.warn('[WifiDirectService] Non disponible sur cette plateforme.');
+      this.isInitializing = false;
+      return false;
+    }
+
+    // 1. Demander les permissions
+    const hasPermission = await NetworkPermissionsService.requestAll();
+    if (!hasPermission) {
+      console.error('[WifiDirectService] Permissions réseau refusées.');
+      this.isInitializing = false;
+      return false;
+    }
+
+    try {
+      await WifiP2P.initialize();
+      this.initialized = true;
+      this.isInitializing = false;
+
+      // Écouter les changements de peers
+      WifiP2P.subscribeOnPeersUpdates(({ devices }) => {
+        this.peers = devices || [];
+        console.log(`[WifiDirectService] ${this.peers.length} peers détectés.`);
+        this.peers.forEach(peer => {
+          this._emit('onPeerFound', peer);
+        });
+      });
+
+      // Écouter les changements de connexion
+      WifiP2P.subscribeOnConnectionInfoUpdates((info) => {
+        if (info.groupFormed) {
+          this.connectedPeer = info;
+          NetworkRailDetector.setWifiDirectAvailable(true);
+          this._emit('onConnectionChange', { connected: true, info });
+        } else {
+          this.connectedPeer = null;
+          NetworkRailDetector.setWifiDirectAvailable(false);
+          this._emit('onConnectionChange', { connected: false });
+        }
+      });
+
+      console.log('[WifiDirectService] Initialisé avec succès.');
+      return true;
+    } catch (e) {
+      console.error('[WifiDirectService] Erreur initialisation:', e);
+      this.isInitializing = false;
+      return false;
+    }
+  }
+
+  /**
+   * Démarre la découverte de peers WiFi Direct.
+   */
+  async startDiscovery() {
+    if (!this.initialized) {
+      console.warn('[WifiDirectService] Non initialisé.');
+      return false;
+    }
+
+    try {
+      this.isDiscovering = true;
+      await WifiP2P.startDiscoveringPeers();
+      console.log('[WifiDirectService] Découverte de peers démarrée.');
+      return true;
+    } catch (e) {
+      console.error('[WifiDirectService] Erreur découverte:', e);
+      this.isDiscovering = false;
+      return false;
+    }
+  }
+
+  /**
+   * Arrête la découverte.
+   */
+  async stopDiscovery() {
+    if (!this.initialized) return;
+    try {
+      await WifiP2P.stopDiscoveringPeers();
+      this.isDiscovering = false;
+    } catch (e) {
+      console.warn('[WifiDirectService] stopDiscovery:', e.message);
+    }
+  }
+
+  /**
+   * Se connecte à un peer WiFi Direct.
+   */
+  async connectToPeer(device) {
+    if (!this.initialized) return false;
+
+    try {
+      console.log(`[WifiDirectService] Connexion à ${device.deviceName || device.deviceAddress}...`);
+      await WifiP2P.connect(device.deviceAddress);
+      console.log('[WifiDirectService] Connecté!');
+      return true;
+    } catch (e) {
+      console.error('[WifiDirectService] Erreur connexion:', e);
+      return false;
+    }
+  }
+
+  /**
+   * Envoie un fichier au peer connecté.
+   * @param {string} filePath - Chemin local du fichier
+   * @param {Object} metadata - { hash, type, category, size }
+   * @returns {boolean} true si envoyé avec succès
+   */
+  async sendFile(filePath, metadata = {}) {
+    if (!this.initialized || !this.connectedPeer) {
+      console.warn('[WifiDirectService] Pas connecté à un peer.');
+      return false;
+    }
+
+    try {
+      // Vérifier que le fichier existe
+      const fileInfo = await FileSystem.getInfoAsync(filePath);
+      if (!fileInfo.exists) {
+        console.error('[WifiDirectService] Fichier introuvable:', filePath);
+        return false;
+      }
+
+      console.log(`[WifiDirectService] Envoi de ${filePath} (${(fileInfo.size / 1024 / 1024).toFixed(1)} MB)...`);
+
+      // Envoyer les métadonnées d'abord (via message)
+      const metaPayload = JSON.stringify({
+        action: 'FILE_TRANSFER',
+        hash: metadata.hash,
+        type: metadata.type || 'video',
+        category: metadata.category || 'general',
+        username: metadata.username || 'Anonymous',
+        avatar: metadata.avatar || null,
+        content: metadata.content || '',
+        size: fileInfo.size,
+        filename: filePath.split('/').pop(),
+      });
+      await WifiP2P.sendMessage(metaPayload);
+
+      // Puis envoyer le fichier binaire
+      await WifiP2P.sendFile(filePath);
+
+      console.log(`[WifiDirectService] Fichier envoyé avec succès: ${metadata.hash}`);
+      this._emit('onTransferProgress', { hash: metadata.hash, progress: 100, status: 'complete' });
+      return true;
+    } catch (e) {
+      console.error('[WifiDirectService] Erreur envoi fichier:', e);
+      this._emit('onTransferProgress', { hash: metadata.hash, progress: 0, status: 'failed', error: e.message });
+      return false;
+    }
+  }
+
+  /**
+   * Écoute les fichiers entrants.
+   * @param {Function} onFileReceived - (filePath, metadata) => void
+   */
+  async startReceiving(onFileReceived) {
+    if (!this.initialized) return;
+
+    try {
+      WifiP2P.receiveMessage((message) => {
+        try {
+          const meta = JSON.parse(message);
+          if (meta.action === 'FILE_TRANSFER') {
+            console.log(`[WifiDirectService] Transfert entrant: ${meta.hash} (${(meta.size / 1024 / 1024).toFixed(1)} MB)`);
+            
+            // Recevoir le fichier
+            WifiP2P.receiveFile(
+              `${FileSystem.documentDirectory}loba_media/`,
+              meta.filename || `${meta.hash}.mp4`
+            ).then((receivedPath) => {
+              console.log(`[WifiDirectService] Fichier reçu: ${receivedPath}`);
+              if (onFileReceived) {
+                onFileReceived(receivedPath, meta);
+              }
+            }).catch(err => {
+              console.error('[WifiDirectService] Erreur réception fichier:', err);
+            });
+          }
+        } catch (parseErr) {
+          // Pas un message JSON, ignorer
+        }
+      });
+    } catch (e) {
+      console.error('[WifiDirectService] startReceiving error:', e);
+    }
+  }
+
+  /**
+   * Déconnexion propre.
+   */
+  async disconnect() {
+    if (!this.initialized) return;
+    try {
+      await WifiP2P.disconnect();
+      this.connectedPeer = null;
+      NetworkRailDetector.setWifiDirectAvailable(false);
+      console.log('[WifiDirectService] Déconnecté.');
+    } catch (e) {
+      console.warn('[WifiDirectService] disconnect:', e.message);
+    }
+  }
+
+  /**
+   * Nettoyage complet.
+   */
+  async cleanup() {
+    await this.stopDiscovery();
+    await this.disconnect();
+    if (WifiP2P) {
+      try {
+        WifiP2P.unsubscribeFromPeersUpdates();
+        WifiP2P.unsubscribeFromConnectionInfoUpdates();
+      } catch (e) {}
+    }
+    this.initialized = false;
+  }
+
+  /**
+   * Abonnement aux événements.
+   */
+  on(event, callback) {
+    if (this.listeners[event]) {
+      this.listeners[event].push(callback);
+    }
+    return () => {
+      if (this.listeners[event]) {
+        this.listeners[event] = this.listeners[event].filter(cb => cb !== callback);
+      }
+    };
+  }
+
+  _emit(event, data) {
+    if (this.listeners[event]) {
+      this.listeners[event].forEach(cb => cb(data));
+    }
+  }
+
+  /**
+   * Retourne l'état courant pour l'UI.
+   */
+  getState() {
+    return {
+      initialized: this.initialized,
+      isDiscovering: this.isDiscovering,
+      peers: this.peers,
+      connectedPeer: this.connectedPeer,
+      isAvailable: !!WifiP2P && Platform.OS === 'android',
+    };
+  }
+}
+
+export const WifiDirectService = new WifiDirectServiceClass();

@@ -11,6 +11,7 @@ export default class LobaPost extends Model {
   @field('video_url') videoUrl!: string | null;
   @field('hash') hash!: string;
   @field('local_media_path') localMediaPath!: string | null;
+  @field('thumbnail_path') thumbnailPath!: string | null;
   @field('category') category!: string;
   @field('size') size!: number;
   @field('likes') likes!: number

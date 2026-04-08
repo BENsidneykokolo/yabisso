@@ -6,7 +6,7 @@ import {
 } from 'react-native';
 import { BleManager, State } from 'react-native-ble-plx';
 import { BleSignupService } from '../services/BleSignupService';
-import { BlePermissionsService } from '../services/BlePermissionsService';
+import { NetworkPermissionsService } from '../services/NetworkPermissionsService';
 import { YABISSO_SERVICE_UUID, SIGNUP_CHAR_UUID, ACK_CHAR_UUID } from '../hooks/useBleP2P';
 
 const C = {
@@ -161,7 +161,7 @@ export default function BleKioskScreen({ navigation }) {
 
   // ── Démarrer le kiosque en écoute ────────────────────────
   const startListening = useCallback(async () => {
-    const granted = await BlePermissionsService.requestAll();
+    const granted = await NetworkPermissionsService.requestAll();
     if (!granted) return;
 
     const state = await managerRef.current.state();

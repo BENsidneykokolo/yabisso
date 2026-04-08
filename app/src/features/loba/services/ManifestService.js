@@ -38,7 +38,10 @@ export const ManifestService = {
           hash: p.hash,
           size: p.size,
           category: p.category,
-          type: p.videoUrl ? 'video' : 'image'
+          type: p.videoUrl ? 'video' : 'image',
+          username: p.username,
+          avatar: p.avatar,
+          content: p.content
         })),
         interests: interestMap
       };

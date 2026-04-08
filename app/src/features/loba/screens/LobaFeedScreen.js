@@ -39,7 +39,8 @@ function LobaFeedScreen({ onBack, onNavigate, posts = [] }) {
     },
     time: '2h ago',
     content: p.content,
-    image: p.imageUrl || p.videoUrl,
+    image: p.localMediaPath || p.imageUrl || p.videoUrl,
+    hasLocalMedia: !!(p.localMediaPath || p.imageUrl || p.videoUrl),
     isVideo: !!p.videoUrl,
     videoDuration: '0:00',
     likes: p.likes,
@@ -220,7 +221,7 @@ const PostCard = ({ post, onLike, onShare, onSave, onComment }) => (
 
     <Text style={styles.postContent}>{post.content}</Text>
 
-    {post.image && (
+    {post.hasLocalMedia ? (
       <View style={styles.mediaContainer}>
         <Image source={{ uri: post.image }} style={styles.postMedia} />
         {post.isVideo && (
@@ -233,6 +234,16 @@ const PostCard = ({ post, onLike, onShare, onSave, onComment }) => (
             </View>
           </>
         )}
+      </View>
+    ) : (
+      <View style={[styles.mediaContainer, styles.mediaPlaceholder]}>
+        <View style={styles.placeholderContent}>
+          <MaterialCommunityIcons name="cloud-download-outline" size={32} color="rgba(255,255,255,0.3)" />
+          <Text style={styles.placeholderText}>Média en attente...</Text>
+          <View style={styles.placeholderProgressBar}>
+            <View style={[styles.placeholderProgressFill, { width: '30%' }]} />
+          </View>
+        </View>
       </View>
     )}
 
@@ -592,6 +603,37 @@ const styles = StyleSheet.create({
     color: '#2BEE79',
     opacity: 1,
     fontWeight: '700',
+  },
+  mediaPlaceholder: {
+    backgroundColor: '#1a222a',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 12,
+    marginHorizontal: 16,
+    marginBottom: 12,
+  },
+  placeholderContent: {
+    alignItems: 'center',
+    width: '100%',
+    paddingHorizontal: 20,
+  },
+  placeholderText: {
+    color: '#92adc9',
+    fontSize: 14,
+    fontWeight: '600',
+    marginTop: 8,
+  },
+  placeholderProgressBar: {
+    width: '60%',
+    height: 3,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    borderRadius: 2,
+    marginTop: 12,
+    overflow: 'hidden',
+  },
+  placeholderProgressFill: {
+    height: '100%',
+    backgroundColor: '#137fec',
   },
 });
 

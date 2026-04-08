@@ -3,7 +3,7 @@ import { useState, useCallback, useRef, useEffect } from 'react';
 import { Platform } from 'react-native';
 import { BleManager, State } from 'react-native-ble-plx';
 import { BleSignupService } from '../services/BleSignupService';
-import { BlePermissionsService } from '../services/BlePermissionsService';
+import { NetworkPermissionsService } from '../services/NetworkPermissionsService';
 
 // UUIDs Yabisso — fixes, partagés entre tous les appareils
 export const YABISSO_SERVICE_UUID = '12345678-1234-1234-1234-123456789abc';
@@ -75,7 +75,7 @@ export function useBleP2P() {
     setProgress(5);
 
     // 1) Permissions
-    const granted = await BlePermissionsService.requestAll();
+    const granted = await NetworkPermissionsService.requestAll();
     if (!granted) {
       _setError('Permissions Bluetooth refusées');
       return;

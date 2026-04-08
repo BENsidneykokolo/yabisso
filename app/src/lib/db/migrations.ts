@@ -3,6 +3,33 @@ import { schemaMigrations, createTable, addColumns } from '@nozbe/watermelondb/S
 export default schemaMigrations({
   migrations: [
     {
+      toVersion: 9,
+      steps: [
+        addColumns({
+          table: 'loba_posts',
+          columns: [
+            { name: 'thumbnail_path', type: 'string', isOptional: true },
+          ],
+        }),
+        createTable({
+          name: 'p2p_transfers',
+          columns: [
+            { name: 'hash', type: 'string', isIndexed: true },
+            { name: 'peer_id', type: 'string' },
+            { name: 'direction', type: 'string' },
+            { name: 'rail', type: 'string' },
+            { name: 'file_size', type: 'number' },
+            { name: 'bytes_transferred', type: 'number' },
+            { name: 'status', type: 'string', isIndexed: true },
+            { name: 'error', type: 'string', isOptional: true },
+            { name: 'retry_count', type: 'number' },
+            { name: 'created_at', type: 'number' },
+            { name: 'updated_at', type: 'number' },
+          ],
+        }),
+      ],
+    },
+    {
       toVersion: 8,
       steps: [
         addColumns({

@@ -31,14 +31,16 @@
         "WRITE_EXTERNAL_STORAGE",
         "ACCESS_COARSE_LOCATION",
         "ACCESS_FINE_LOCATION",
+        "ACCESS_WIFI_STATE",
+        "CHANGE_WIFI_STATE",
+        "NEARBY_WIFI_DEVICES",
         "BLUETOOTH",
         "BLUETOOTH_ADMIN",
         "BLUETOOTH_SCAN",
         "BLUETOOTH_CONNECT",
         "BLUETOOTH_ADVERTISE",
         "READ_CONTACTS"
-      ],
-      "kotlinVersion": "2.1.21"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -54,7 +56,6 @@
         "expo-build-properties",
         {
           "android": {
-            "kotlinVersion": "2.1.21",
             "minSdkVersion": 24,
             "targetSdkVersion": 35,
             "compileSdkVersion": 35

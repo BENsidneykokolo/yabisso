@@ -8,6 +8,7 @@ import WalletTransaction from './WalletTransaction'
 import LobaPost from './LobaPost'
 import AssistantMessage from './AssistantMessage'
 import { LobaFriend } from './LobaFriend'
+import P2PTransfer from './P2PTransfer'
 
 export const modelClasses = [
   Address,
@@ -20,4 +21,5 @@ export const modelClasses = [
   LobaPost,
   AssistantMessage,
   LobaFriend,
+  P2PTransfer,
 ]

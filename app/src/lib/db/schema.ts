@@ -1,7 +1,7 @@
 import { appSchema, tableSchema } from '@nozbe/watermelondb'
 
 export const schema = appSchema({
-  version: 8,
+  version: 9,
   tables: [
     tableSchema({
       name: 'profiles',
@@ -111,6 +111,7 @@ export const schema = appSchema({
         { name: 'video_url', type: 'string', isOptional: true },
         { name: 'hash', type: 'string', isIndexed: true },
         { name: 'local_media_path', type: 'string', isOptional: true },
+        { name: 'thumbnail_path', type: 'string', isOptional: true },
         { name: 'category', type: 'string', isIndexed: true },
         { name: 'size', type: 'number' },
         { name: 'likes', type: 'number' },
@@ -119,6 +120,22 @@ export const schema = appSchema({
         { name: 'filter_color', type: 'string', isOptional: true },
         { name: 'is_propagating', type: 'boolean' },
         { name: 'downloaded_at', type: 'number', isOptional: true },
+        { name: 'created_at', type: 'number' },
+        { name: 'updated_at', type: 'number' },
+      ],
+    }),
+    tableSchema({
+      name: 'p2p_transfers',
+      columns: [
+        { name: 'hash', type: 'string', isIndexed: true },
+        { name: 'peer_id', type: 'string' },
+        { name: 'direction', type: 'string' },
+        { name: 'rail', type: 'string' },
+        { name: 'file_size', type: 'number' },
+        { name: 'bytes_transferred', type: 'number' },
+        { name: 'status', type: 'string', isIndexed: true },
+        { name: 'error', type: 'string', isOptional: true },
+        { name: 'retry_count', type: 'number' },
         { name: 'created_at', type: 'number' },
         { name: 'updated_at', type: 'number' },
       ],
