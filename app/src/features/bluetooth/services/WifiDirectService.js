@@ -1,6 +1,7 @@
 // app/src/features/bluetooth/services/WifiDirectService.js
 import { Platform } from 'react-native';
 import * as FileSystem from 'expo-file-system/legacy';
+import * as Location from 'expo-location';
 import { NetworkRailDetector } from './NetworkRailDetector';
 import { NetworkPermissionsService } from './NetworkPermissionsService';
 
@@ -29,6 +30,8 @@ class WifiDirectServiceClass {
     this.peers = [];
     this.connectedPeer = null;
     this.isSupported = true; // Par défaut on suppose que oui
+    this.isDiscovering = false; // true si un scan est en cours
+    this.isLocationEnabled = true; // true si le GPS est allumé (Android requis)
     this.listeners = {
       onPeerFound: [],
       onPeerLost: [],
@@ -60,6 +63,15 @@ class WifiDirectServiceClass {
       console.warn('[WifiDirectService] Non disponible sur cette plateforme.');
       this.isInitializing = false;
       return false;
+    }
+
+    // 0. Vérifier le GPS (Android)
+    if (Platform.OS === 'android') {
+      const providerStatus = await Location.getProviderStatusAsync();
+      this.isLocationEnabled = providerStatus.locationServicesEnabled;
+      if (!this.isLocationEnabled) {
+        console.warn('[WifiDirectService] GPS désactivé. La détection P2P va échouer.');
+      }
     }
 
     // 1. Demander les permissions
@@ -127,14 +139,23 @@ class WifiDirectServiceClass {
    * Démarre la découverte de peers WiFi Direct.
    */
   async startDiscovery() {
-    if (!this.initialized || !this.isSupported) {
+    if (!this.initialized || !this.isSupported || this.isDiscovering) {
       return false;
+    }
+
+    // Vérifier à nouveau le GPS
+    if (Platform.OS === 'android') {
+      const providerStatus = await Location.getProviderStatusAsync();
+      this.isLocationEnabled = providerStatus.locationServicesEnabled;
+      if (!this.isLocationEnabled) {
+        console.error('[WifiDirectService] Impossible de démarrer : GPS désactivé.');
+        this.isDiscovering = false;
+        return false;
+      }
     }
 
     try {
       this.isDiscovering = true;
-      // Sur certains appareils, un stop avant le start aide à réinitialiser le scan
-      await this.stopDiscovery();
       await WifiP2P.startDiscoveringPeers();
       console.log('[WifiDirectService] Découverte de peers démarrée.');
       return true;
@@ -209,38 +230,52 @@ class WifiDirectServiceClass {
     }
 
     try {
-      // Vérifier que le fichier existe
-      const fileInfo = await FileSystem.getInfoAsync(filePath);
-      if (!fileInfo.exists) {
-        console.error('[WifiDirectService] Fichier introuvable:', filePath);
-        return false;
-      }
+      let fileInfo = { exists: false, size: 0 };
+      let nativePath = filePath;
 
-      console.log(`[WifiDirectService] Envoi de ${filePath} (${(fileInfo.size / 1024 / 1024).toFixed(1)} MB)...`);
+      if (filePath) {
+        // Nettoyer le chemin pour le module natif (enlever file://)
+        nativePath = filePath.replace('file://', '');
+        
+        // Vérifier que le fichier existe
+        fileInfo = await FileSystem.getInfoAsync(filePath);
+        if (!fileInfo.exists) {
+          console.error('[WifiDirectService] Fichier introuvable:', filePath);
+          return false;
+        }
+        console.log(`[WifiDirectService] Envoi de ${nativePath} (${(fileInfo.size / 1024 / 1024).toFixed(1)} MB)...`);
+      }
 
       // Envoyer les métadonnées d'abord (via message)
       const metaPayload = JSON.stringify({
-        action: 'FILE_TRANSFER',
-        hash: metadata.hash,
+        action: metadata.type === 'PING' ? 'PING' : 'FILE_TRANSFER',
+        hash: metadata.hash || 'ping',
         type: metadata.type || 'video',
         category: metadata.category || 'general',
         username: metadata.username || 'Anonymous',
         avatar: metadata.avatar || null,
         content: metadata.content || '',
         size: fileInfo.size,
-        filename: filePath.split('/').pop(),
+        filename: filePath ? filePath.split('/').pop() : 'none',
+        timestamp: Date.now(),
       });
       await WifiP2P.sendMessage(metaPayload);
 
-      // Puis envoyer le fichier binaire
-      await WifiP2P.sendFile(filePath);
+      // Petite pause pour laisser le récepteur parser le message avant d'envoyer le binaire
+      if (filePath) {
+        await new Promise(resolve => setTimeout(resolve, 500));
+        await WifiP2P.sendFile(nativePath);
+        console.log(`[WifiDirectService] Fichier envoyé avec succès: ${metadata.hash}`);
+      } else {
+        console.log('[WifiDirectService] Ping envoyé avec succès.');
+      }
 
-      console.log(`[WifiDirectService] Fichier envoyé avec succès: ${metadata.hash}`);
-      this._emit('onTransferProgress', { hash: metadata.hash, progress: 100, status: 'complete' });
+      this._emit('onTransferProgress', { hash: metadata.hash || 'ping', progress: 100, status: 'complete' });
       return true;
     } catch (e) {
-      console.error('[WifiDirectService] Erreur envoi fichier:', e);
-      this._emit('onTransferProgress', { hash: metadata.hash, progress: 0, status: 'failed', error: e.message });
+      console.error('[WifiDirectService] Erreur envoi:', e);
+      const errorMsg = e?.message || (typeof e === 'string' ? e : 'Unknown error');
+      this._emit('onTransferProgress', { hash: metadata.hash || 'ping', progress: 0, status: 'failed', error: errorMsg });
       return false;
     }
   }
@@ -351,6 +386,7 @@ class WifiDirectServiceClass {
       connectedPeer: this.connectedPeer,
       isAvailable: !!WifiP2P && Platform.OS === 'android' && this.isSupported,
       isSupported: this.isSupported,
+      isLocationEnabled: this.isLocationEnabled,
     };
   }
 }

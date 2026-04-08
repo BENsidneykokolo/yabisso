@@ -68,6 +68,8 @@ function LobaHomeScreen({ onBack, onNavigate, posts = [] }) {
   const wifiState = useWifiDirect();
 
   const [p2pLogModal, setP2pLogModal] = useState(false);
+  const [p2pLogs, setP2pLogs] = useState([]);
+
 
   const [feedVideos, setFeedVideos] = useState(getDisplayPosts());
 
@@ -75,7 +77,16 @@ function LobaHomeScreen({ onBack, onNavigate, posts = [] }) {
     P2PAutoSync.start();
     // Popup d'autorisation demandé par l'utilisateur
     P2PAutoSync.requestWifiDirectActivation();
-    return () => P2PAutoSync.stop();
+
+    // S'abonner aux logs P2P pour l'UI
+    const unsubLogs = P2PAutoSync.onLogUpdate((logs) => {
+      setP2pLogs([...logs]);
+    });
+
+    return () => {
+      P2PAutoSync.stop();
+      unsubLogs();
+    };
   }, []);
 
   useEffect(() => {
@@ -280,6 +291,14 @@ function LobaHomeScreen({ onBack, onNavigate, posts = [] }) {
   return (
     <View style={styles.container}>
       <View style={{ position: 'absolute', width: width, height: height, top: 0, left: 0 }}>
+      {/* Alerte GPS (Android) */}
+      {!wifiState.isLocationEnabled && Platform.OS === 'android' && (
+        <View style={styles.gpsWarning}>
+          <MaterialCommunityIcons name="map-marker-off" size={16} color="#fff" />
+          <Text style={styles.gpsWarningText}>Localisation désactivée. Allumez le GPS pour le partage.</Text>
+        </View>
+      )}
+      
       {/* Header Statut & Actions */}
       <View style={styles.header}>
         <Pressable 
@@ -389,6 +408,48 @@ function LobaHomeScreen({ onBack, onNavigate, posts = [] }) {
             </Pressable>
           </View>
         </Pressable>
+      </Modal>
+
+      {/* P2P Log Modal */}
+      <Modal
+        visible={p2pLogModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setP2pLogModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalContent, { height: '60%', backgroundColor: '#000' }]}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Logs Partage Offline</Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <Pressable 
+                  style={styles.pingBtn} 
+                  onPress={() => P2PAutoSync.sendTestPing()}
+                >
+                  <Text style={styles.pingBtnText}>Test Ping</Text>
+                </Pressable>
+                <Pressable 
+                  style={[styles.pingBtn, { backgroundColor: '#ef4444', marginLeft: 10 }]} 
+                  onPress={() => P2PAutoSync.forceRefresh()}
+                >
+                  <Text style={styles.pingBtnText}>RESET HP</Text>
+                </Pressable>
+                <Pressable onPress={() => setP2pLogModal(false)}>
+                  <MaterialCommunityIcons name="close" size={24} color="#fff" style={{ marginLeft: 15 }} />
+                </Pressable>
+              </View>
+            </View>
+            <ScrollView style={styles.logContainer}>
+              {p2pLogs.length === 0 ? (
+                <Text style={styles.emptyLogText}>Aucun log pour le moment...</Text>
+              ) : (
+                p2pLogs.map((log, i) => (
+                  <Text key={i} style={styles.logText}>{log}</Text>
+                ))
+              )}
+            </ScrollView>
+          </View>
+        </View>
       </Modal>
 
       {/* Comments Modal (Simplified) */}
@@ -722,6 +783,54 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  pingBtn: {
+    backgroundColor: '#3b82f6',
+    padding: 10,
+    borderRadius: 8,
+  },
+  pingBtnText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+  gpsWarning: {
+    position: 'absolute',
+    top: 100,
+    left: 20,
+    right: 20,
+    backgroundColor: '#ef4444',
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 10,
+    borderRadius: 8,
+    zIndex: 30,
+    elevation: 5,
+  },
+  gpsWarningText: {
+    color: '#fff',
+    fontSize: 11,
+    fontWeight: '500',
+    marginLeft: 8,
+  },
+  logContainer: {
+    flex: 1,
+    padding: 10,
+  },
+  emptyLogText: {
+    color: '#666',
+    fontSize: 14,
+    textAlign: 'center',
+    marginTop: 40,
+  },
+  logText: {
+    color: '#ccc',
+    fontSize: 12,
+    fontFamily: 'monospace',
+    marginBottom: 8,
+    borderBottomWidth: 0.5,
+    borderBottomColor: '#333',
+    paddingBottom: 4,
   },
   commentsList: {
     flex: 1,

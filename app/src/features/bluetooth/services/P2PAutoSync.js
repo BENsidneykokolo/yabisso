@@ -44,7 +44,14 @@ class P2PAutoSyncClass {
     this.stats.logs.unshift(logLine);
     if (this.stats.logs.length > 50) this.stats.logs.pop();
     // Émettre un signal via le service WiFi pour rafraîchir l'UI des logs
-    WifiDirectService._emit('onLogUpdate');
+    WifiDirectService._emit('onLogUpdate', this.stats.logs);
+  }
+
+  /**
+   * S'abonner aux logs de synchronisation.
+   */
+  onLogUpdate(callback) {
+    return WifiDirectService.on('onLogUpdate', (logs) => callback(logs || this.stats.logs));
   }
 
   /**
@@ -135,6 +142,41 @@ class P2PAutoSyncClass {
   }
 
   /**
+   * Envoie un petit message de test pour vérifier la connectivité.
+   */
+  async sendTestPing() {
+    this._log('📡 Envoi d\'un TEST PING...');
+    const bestRail = NetworkRailDetector.getBestRail(true);
+    
+    if (bestRail === RAIL_TYPES.OFFLINE) {
+      this._log('⚠️ Erreur: Aucun rail actif pour le Ping.');
+      return false;
+    }
+
+    try {
+      if (bestRail === RAIL_TYPES.WIFI_DIRECT) {
+        const success = await WifiDirectService.sendFile(null, {
+          type: 'PING',
+          timestamp: Date.now(),
+          username: 'System Test',
+        });
+        if (success) this._log('✅ Ping envoyé via WiFi!');
+        return success;
+      } else if (bestRail === RAIL_TYPES.BLE_MESH) {
+        const result = await MeshSyncService.broadcast('PING', {
+          type: 'PING',
+          timestamp: Date.now(),
+        });
+        if (result.success) this._log('✅ Ping envoyé via Mesh!');
+        return result.success;
+      }
+    } catch (e) {
+      this._log(`❌ Échec Ping: ${e.message}`);
+    }
+    return false;
+  }
+
+  /**
    * Arrête l'orchestrateur.
    */
   stop() {
@@ -157,6 +199,18 @@ class P2PAutoSyncClass {
     try {
       const bestP2P = NetworkRailDetector.getBestRail(true); // Priorité WiFi > BLE
       
+      // Si on cherche depuis longtemps sans rien trouver, on redémarre le scan
+      if (bestP2P === RAIL_TYPES.OFFLINE && WifiDirectService.isDiscovering) {
+        this._discoveryRetryCount = (this._discoveryRetryCount || 0) + 1;
+        if (this._discoveryRetryCount >= 3) {
+           this._log('🔄 Scan bloqué. Tentative de refresh automatique...');
+           this._discoveryRetryCount = 0;
+           WifiDirectService.startDiscovery();
+        }
+      } else {
+        this._discoveryRetryCount = 0;
+      }
+
       if (bestP2P === RAIL_TYPES.OFFLINE || bestP2P === RAIL_TYPES.INTERNET) {
         // Optionnel: On peut loguer ici si on veut débugger pourquoi aucun rail P2P n'est vu
         // this._log('ℹ️ Aucun rail P2P dispo pour la sync.');
@@ -224,6 +278,7 @@ class P2PAutoSyncClass {
     const fileSize = post.size || 0;
 
     if (rail === RAIL_TYPES.WIFI_DIRECT && WifiDirectService.connectedPeer) {
+      this._log(`📤 Tentative d'envoi: ${post.hash.substring(0,8)}...`);
       const sent = await WifiDirectService.sendFile(post.localMediaPath, {
         hash: post.hash,
         type: post.videoUrl ? 'video' : 'image',
@@ -233,8 +288,10 @@ class P2PAutoSyncClass {
         content: post.content,
       });
       if (sent) {
-        this._log(`📤 Fichier envoyé: ${post.hash.substring(0,8)}...`);
+        this._log(`✅ Succès: ${post.hash.substring(0,8)} envoyé.`);
         await this._markAsPropagated(post);
+      } else {
+        this._log(`⚠️ Échec envoi: ${post.hash.substring(0,8)}`);
       }
     } else if (rail === RAIL_TYPES.BLE_MESH && fileSize <= 5 * 1024 * 1024) {
       const result = await MeshSyncService.broadcast('SOCIAL_POST', {
@@ -265,6 +322,14 @@ class P2PAutoSyncClass {
 
   async _handleReceivedFile(filePath, metadata, source) {
     try {
+      if (!metadata || !metadata.hash) {
+        if (metadata?.action === 'PING') {
+          this._log(`⭐ REÇU PING via ${source}! (Connecté OK)`);
+          return;
+        }
+        return;
+      }
+      
       const hash = metadata.hash || await LocalStorageManager.hashFile(filePath);
       const ext = metadata.type === 'video' ? 'mp4' : 'jpg';
       const savedPath = await LocalStorageManager.saveMedia(filePath, hash, ext);
