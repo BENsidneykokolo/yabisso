@@ -26,6 +26,7 @@ const stories = [
 
 import withObservables from '@nozbe/with-observables';
 import { database } from '../../../lib/db';
+import { Q } from '@nozbe/watermelondb';
 
 function LobaFeedScreen({ onBack, onNavigate, posts = [] }) {
   const [activeTabNav, setActiveTabNav] = React.useState('Loba');
@@ -37,17 +38,17 @@ function LobaFeedScreen({ onBack, onNavigate, posts = [] }) {
       avatar: p.avatar,
       location: '',
     },
-    time: '2h ago',
+    time: 'A l\'instant',
     content: p.content,
     image: p.localMediaPath || p.imageUrl || p.videoUrl,
     hasLocalMedia: !!(p.localMediaPath || p.imageUrl || p.videoUrl),
-    isVideo: !!p.videoUrl,
+    isVideo: !!p.videoUrl || (p.localMediaPath && p.localMediaPath.endsWith('.mp4')),
     videoDuration: '0:00',
     likes: p.likes,
     comments: p.comments,
     liked: p.isLiked,
     saved: false,
-  })).reverse();
+  }));
 
   const [feedPosts, setFeedPosts] = React.useState(displayPosts);
 
@@ -145,8 +146,12 @@ function LobaFeedScreen({ onBack, onNavigate, posts = [] }) {
             onComment={() => Alert.alert('Commentaires', 'Chargement des commentaires...')}
           />
         )}
-        showsVerticalScrollIndicator={false}
+        showVerticalScrollIndicator={false}
         contentContainerStyle={styles.feedList}
+        initialNumToRender={5}
+        maxToRenderPerBatch={5}
+        windowSize={5}
+        removeClippedSubviews={true}
       />
 
       <Pressable style={styles.fab}>
@@ -638,7 +643,10 @@ const styles = StyleSheet.create({
 });
 
 const enhance = withObservables([], () => ({
-  posts: database.get('loba_posts').query().observe(),
+  posts: database.get('loba_posts').query(
+    Q.sortBy('created_at', Q.desc),
+    Q.take(30)
+  ).observe(),
 }));
 
 export default enhance(LobaFeedScreen);

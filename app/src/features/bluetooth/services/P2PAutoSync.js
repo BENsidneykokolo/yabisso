@@ -32,9 +32,19 @@ class P2PAutoSyncClass {
     this.stats = {
       totalSyncedP2P: 0,
       totalSyncedCloud: 0,
-      lastSyncAt: null,
       activeRails: [],
+      logs: [],
     };
+  }
+
+  _log(msg) {
+    const timestamp = new Date().toLocaleTimeString();
+    const logLine = `[${timestamp}] ${msg}`;
+    console.log(`[P2PAutoSync] ${msg}`);
+    this.stats.logs.unshift(logLine);
+    if (this.stats.logs.length > 50) this.stats.logs.pop();
+    // Émettre un signal via le service WiFi pour rafraîchir l'UI des logs
+    WifiDirectService._emit('onLogUpdate');
   }
 
   /**
@@ -62,21 +72,35 @@ class P2PAutoSyncClass {
     }
 
     try {
-      await WifiDirectService.initialize();
-      WifiDirectService.startDiscovery();
+      if (WifiDirectService.getState().isSupported) {
+        // Au démarrage, on initialise mais on ne lance PAS la découverte automatiquement
+        // Elle sera lancée soit par le popup, soit manuellement
+        await WifiDirectService.initialize();
+      }
       
-      // Auto-connect aux pairs WiFi Direct détectés pour échange de manifestes
+      // Auto-connect aux pairs WiFi Direct détectés...
       WifiDirectService.on('onPeerFound', async (peer) => {
         if (!WifiDirectService.connectedPeer && this._running) {
-          console.log(`[P2PAutoSync] Pair WiFi trouvé: ${peer.deviceName}. Tentative de connexion...`);
-          await WifiDirectService.connectToPeer(peer);
+          this._log(`📡 Pair WiFi trouvé: ${peer.deviceName || peer.deviceAddress}. Tentative de connexion...`);
+          const success = await WifiDirectService.connectToPeer(peer);
+          if (success) {
+            this._log(`✅ Connecté à ${peer.deviceName || peer.deviceAddress}`);
+          } else {
+            this._log(`❌ Échec connexion à ${peer.deviceName}`);
+          }
         }
       });
 
-      WifiDirectService.on('onConnectionChange', async ({ connected }) => {
+      WifiDirectService.on('onConnectionChange', async ({ connected, info }) => {
         if (connected) {
-          console.log('[P2PAutoSync] WiFi Direct Connecté. Échange de manifestes imminent...');
-          // On pourrait déclencher un échange de manifestes spécifique ici si WifiDirectService le supportait
+          console.log('[P2PAutoSync] WiFi Direct Connecté. Déclenchement d\'un cycle de sync...');
+          // On force un rail WiFi Direct pour le prochain cycle immédiat
+          this._p2pSyncCycle();
+          
+          // Démarrer la réception automatique sur ce rail
+          WifiDirectService.startReceiving(async (filePath, metadata) => {
+            await this._handleReceivedFile(filePath, metadata, 'WIFI_DIRECT');
+          });
         }
       });
 
@@ -89,12 +113,25 @@ class P2PAutoSyncClass {
 
     // 3. Lancer les cycles de sync
     this._p2pInterval = setInterval(() => this._p2pSyncCycle(), P2P_SYNC_INTERVAL_MS);
-    this._cloudInterval = setInterval(() => this._cloudFallbackCycle(), CLOUD_SYNC_INTERVAL_MS);
+    // this._cloudInterval = setInterval(() => this._cloudFallbackCycle(), CLOUD_SYNC_INTERVAL_MS);
 
     // Sync immédiat
     this._p2pSyncCycle();
 
-    console.log('[P2PAutoSync] Orchestrateur prêt (Mode Cloud Saver Actif).');
+    this._log('🚀 Orchestrateur démarré (Mode Cloud Saver).');
+  }
+
+  /**
+   * Redémarrage complet (Hard Reset) suite à une erreur ou demande manuelle.
+   */
+  async forceRefresh() {
+    this._log('🔄 Hard Reset des services P2P...');
+    this.stop();
+    // Attendre un peu que le hardware se libère
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    await this.start();
+    // Forcer le popup si nécessaire
+    this.requestWifiDirectActivation();
   }
 
   /**
@@ -121,11 +158,12 @@ class P2PAutoSyncClass {
       const bestP2P = NetworkRailDetector.getBestRail(true); // Priorité WiFi > BLE
       
       if (bestP2P === RAIL_TYPES.OFFLINE || bestP2P === RAIL_TYPES.INTERNET) {
-        // Pas de peer P2P dispo actuellement
+        // Optionnel: On peut loguer ici si on veut débugger pourquoi aucun rail P2P n'est vu
+        // this._log('ℹ️ Aucun rail P2P dispo pour la sync.');
         return;
       }
 
-      console.log(`[P2PAutoSync] Cycle P2P via ${bestP2P}...`);
+      this._log(`🔄 Cycle P2P via ${bestP2P}...`);
 
       // 1. Propager nos nouveaux posts aux voisins
       const pendingUploads = await this._getPendingUploads();
@@ -194,7 +232,10 @@ class P2PAutoSyncClass {
         avatar: post.avatar,
         content: post.content,
       });
-      if (sent) await this._markAsPropagated(post);
+      if (sent) {
+        this._log(`📤 Fichier envoyé: ${post.hash.substring(0,8)}...`);
+        await this._markAsPropagated(post);
+      }
     } else if (rail === RAIL_TYPES.BLE_MESH && fileSize <= 5 * 1024 * 1024) {
       const result = await MeshSyncService.broadcast('SOCIAL_POST', {
         postId: post.id,
@@ -258,9 +299,9 @@ class P2PAutoSyncClass {
         }
       });
       this.stats.totalSyncedP2P++;
-      console.log(`[P2PAutoSync] ✅ Contenu reçu via ${source}: ${hash}`);
+      this._log(`📥 Reçu via ${source}: ${hash.substring(0,8)}...`);
     } catch (e) {
-      console.error('[P2PAutoSync] handleReceivedFile error:', e);
+      this._log(`❌ Erreur réception: ${e.message}`);
     }
   }
 
@@ -308,6 +349,9 @@ class P2PAutoSyncClass {
             category
           });
           item.status = 'pending';
+          item.retryCount = 0;
+          item.createdAt = Date.now();
+          item.updatedAt = Date.now();
         });
       });
 
@@ -316,6 +360,29 @@ class P2PAutoSyncClass {
       console.error('[P2PAutoSync] publishLocal error:', e);
       return { success: false, error: e.message };
     }
+  }
+
+  /**
+   * Demande à l'utilisateur d'activer le WiFi Direct (Popup demandé)
+   */
+  requestWifiDirectActivation() {
+    if (!this._running || !WifiDirectService.getState().isSupported) return;
+    if (WifiDirectService.getState().isDiscovering) return;
+
+    require('react-native').Alert.alert(
+      "🚀 Mode Partage Offline",
+      "Voulez-vous activer le WiFi Direct pour échanger des contenus avec les utilisateurs à proximité sans utiliser votre data ?",
+      [
+        { text: "Plus tard", style: "cancel" },
+        { 
+          text: "Activer", 
+          onPress: async () => {
+            const ok = await WifiDirectService.initialize();
+            if (ok) WifiDirectService.startDiscovery();
+          } 
+        }
+      ]
+    );
   }
 
   getStats() {

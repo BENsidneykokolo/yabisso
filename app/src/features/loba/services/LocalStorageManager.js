@@ -32,34 +32,27 @@ export const LocalStorageManager = {
   },
 
   /**
-   * Calcule le hash SHA-256 d'un fichier pour la déduplication.
+   * Calcule le hash d'un fichier pour la déduplication.
+   * OOM-Free : au lieu de lire tout le fichier en mémoire (Base64), on utilise le MD5 côté natif.
    * @param {string} uri - Chemin du fichier (file://)
-   * @returns {string} Hash hexadécimal
+   * @returns {string} Hash string
    */
   async hashFile(uri) {
     try {
-      const content = await FileSystem.readAsStringAsync(uri, {
-        encoding: FileSystem.EncodingType.Base64,
-      });
-      const hash = await Crypto.digestStringAsync(
-        Crypto.CryptoDigestAlgorithm.SHA256,
-        content
-      );
-      return hash;
-    } catch (e) {
-      // Fallback: hash basé sur le nom + taille  
-      console.warn('[LocalStorageManager] hashFile fallback:', e.message);
-      try {
-        const info = await FileSystem.getInfoAsync(uri);
-        const fallbackInput = `${uri}_${info.size || 0}_${Date.now()}`;
-        return await Crypto.digestStringAsync(
-          Crypto.CryptoDigestAlgorithm.SHA256,
-          fallbackInput
-        );
-      } catch (e2) {
-        // Dernier recours: UUID-like
-        return `${Date.now()}_${Math.random().toString(36).substr(2, 16)}`;
+      const info = await FileSystem.getInfoAsync(uri, { md5: true });
+      if (info.exists && info.md5) {
+        return info.md5; // Renvoie l'empreinte native sans JS Memory Impact
       }
+
+      // Si le MD5 échoue, pseudo-hash avec taille au lieu d'un crash OOM
+      const fallbackInput = `${uri}_${info.size || 0}`;
+      return await Crypto.digestStringAsync(
+        Crypto.CryptoDigestAlgorithm.SHA256,
+        fallbackInput
+      );
+    } catch (e) {
+      console.warn('[LocalStorageManager] Erreur calcul hash natif, fallback UUID:', e.message);
+      return `${Date.now()}_${Math.random().toString(36).substr(2, 16)}`;
     }
   },
 

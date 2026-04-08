@@ -28,7 +28,7 @@ class WifiDirectServiceClass {
     this.isInitializing = false;
     this.peers = [];
     this.connectedPeer = null;
-    this.isDiscovering = false;
+    this.isSupported = true; // Par défaut on suppose que oui
     this.listeners = {
       onPeerFound: [],
       onPeerLost: [],
@@ -71,9 +71,21 @@ class WifiDirectServiceClass {
     }
 
     try {
-      await WifiP2P.initialize();
+      try {
+        await WifiP2P.initialize();
+      } catch (nativeErr) {
+        // Ignorer l'erreur d'initialisation multiple (fréquente en Hot Reload)
+        if (nativeErr?.message?.includes('initialized once') || nativeErr?.message?.includes('already initialized')) {
+          console.log('[WifiDirectService] Module natif déjà initialisé (ignoring error).');
+        } else {
+          // Si c'est une autre erreur, on la relance pour le catch global
+          throw nativeErr;
+        }
+      }
+      
       this.initialized = true;
       this.isInitializing = false;
+      this.isSupported = true;
 
       // Écouter les changements de peers
       WifiP2P.subscribeOnPeersUpdates(({ devices }) => {
@@ -100,7 +112,12 @@ class WifiDirectServiceClass {
       console.log('[WifiDirectService] Initialisé avec succès.');
       return true;
     } catch (e) {
-      console.error('[WifiDirectService] Erreur initialisation:', e);
+      if (e?.message?.includes('P2P_UNSUPPORTED')) {
+        console.warn('[WifiDirectService] P2P non supporté sur ce matériel.');
+        this.isSupported = false;
+      } else {
+        console.error('[WifiDirectService] Erreur initialisation:', e);
+      }
       this.isInitializing = false;
       return false;
     }
@@ -110,18 +127,40 @@ class WifiDirectServiceClass {
    * Démarre la découverte de peers WiFi Direct.
    */
   async startDiscovery() {
-    if (!this.initialized) {
-      console.warn('[WifiDirectService] Non initialisé.');
+    if (!this.initialized || !this.isSupported) {
       return false;
     }
 
     try {
       this.isDiscovering = true;
+      // Sur certains appareils, un stop avant le start aide à réinitialiser le scan
+      await this.stopDiscovery();
       await WifiP2P.startDiscoveringPeers();
       console.log('[WifiDirectService] Découverte de peers démarrée.');
       return true;
     } catch (e) {
-      console.error('[WifiDirectService] Erreur découverte:', e);
+      // Gérer l'erreur 0 (BUSY / INTERNAL_ERROR)
+      if (e?.code === 0 || e?.message?.includes('failed due to an internal error') || (typeof e === 'string' && e.includes('internal error'))) {
+        console.warn('[WifiDirectService] Hardware Busy (Err 0). Tentative de retry dans 1s...');
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        // Retry récursif limité à un essai par appel
+        try {
+          await WifiP2P.startDiscoveringPeers();
+          console.log('[WifiDirectService] Découverte démarrée après retry.');
+          return true;
+        } catch (retryErr) {
+          console.error('[WifiDirectService] Échec permanent après retry:', retryErr);
+        }
+      }
+
+      // Si on attrape P2P_UNSUPPORTED ici, on désactive silencieusement
+      if (e?.message?.includes('P2P_UNSUPPORTED') || (typeof e === 'string' && e.includes('P2P_UNSUPPORTED'))) {
+        console.warn('[WifiDirectService] Découverte impossible: P2P non supporté.');
+        this.isSupported = false;
+        this.isDiscovering = false;
+      } else {
+        console.error('[WifiDirectService] Erreur découverte:', e);
+      }
       this.isDiscovering = false;
       return false;
     }
@@ -214,15 +253,23 @@ class WifiDirectServiceClass {
     if (!this.initialized) return;
 
     try {
+      // S'assurer que le dossier existe avant de recevoir
+      const mediaDir = `${FileSystem.documentDirectory}loba_media/`;
+      const dirInfo = await FileSystem.getInfoAsync(mediaDir);
+      if (!dirInfo.exists) {
+        await FileSystem.makeDirectoryAsync(mediaDir, { intermediates: true });
+      }
+
       WifiP2P.receiveMessage((message) => {
         try {
+          if (!message) return;
           const meta = JSON.parse(message);
           if (meta.action === 'FILE_TRANSFER') {
             console.log(`[WifiDirectService] Transfert entrant: ${meta.hash} (${(meta.size / 1024 / 1024).toFixed(1)} MB)`);
             
             // Recevoir le fichier
             WifiP2P.receiveFile(
-              `${FileSystem.documentDirectory}loba_media/`,
+              mediaDir,
               meta.filename || `${meta.hash}.mp4`
             ).then((receivedPath) => {
               console.log(`[WifiDirectService] Fichier reçu: ${receivedPath}`);
@@ -234,7 +281,8 @@ class WifiDirectServiceClass {
             });
           }
         } catch (parseErr) {
-          // Pas un message JSON, ignorer
+          // Ce n'est probablement pas notre protocole, on ignore
+          console.log('[WifiDirectService] Message ignoré (non-JSON)');
         }
       });
     } catch (e) {
@@ -301,7 +349,8 @@ class WifiDirectServiceClass {
       isDiscovering: this.isDiscovering,
       peers: this.peers,
       connectedPeer: this.connectedPeer,
-      isAvailable: !!WifiP2P && Platform.OS === 'android',
+      isAvailable: !!WifiP2P && Platform.OS === 'android' && this.isSupported,
+      isSupported: this.isSupported,
     };
   }
 }

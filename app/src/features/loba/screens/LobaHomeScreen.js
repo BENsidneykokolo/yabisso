@@ -12,6 +12,7 @@ import {
   Modal,
   Alert,
   Share,
+  ActivityIndicator,
   Animated,
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -22,7 +23,8 @@ import withObservables from '@nozbe/with-observables';
 import { database } from '../../../lib/db';
 import { P2PAutoSync } from '../../bluetooth/services/P2PAutoSync';
 import { useMeshConnection } from '../../bluetooth/hooks/useMeshConnection';
-
+import { useWifiDirect } from '../hooks/useWifiDirect';
+import { Q } from '@nozbe/watermelondb';
 const { width, height } = Dimensions.get('window');
 
 
@@ -48,8 +50,8 @@ function LobaHomeScreen({ onBack, onNavigate, posts = [] }) {
       id: p.id,
       username: p.username,
       avatar: p.avatar,
-      video: p.videoUrl || p.imageUrl,
-      type: p.videoUrl ? 'video' : 'photo',
+      video: p.localMediaPath || p.videoUrl || p.imageUrl,
+      type: p.videoUrl || (p.localMediaPath && p.localMediaPath.endsWith('.mp4')) ? 'video' : 'photo',
       caption: p.content,
       song: 'Original Sound - ' + p.username,
       likes: p.likes,
@@ -59,15 +61,20 @@ function LobaHomeScreen({ onBack, onNavigate, posts = [] }) {
       followed: false,
       saved: false,
       filterColor: p.filterColor,
-    })).reverse()
+    }))
   ];
 
   const meshState = useMeshConnection();
+  const wifiState = useWifiDirect();
+
+  const [p2pLogModal, setP2pLogModal] = useState(false);
 
   const [feedVideos, setFeedVideos] = useState(getDisplayPosts());
 
   useEffect(() => {
     P2PAutoSync.start();
+    // Popup d'autorisation demandé par l'utilisateur
+    P2PAutoSync.requestWifiDirectActivation();
     return () => P2PAutoSync.stop();
   }, []);
 
@@ -175,7 +182,7 @@ function LobaHomeScreen({ onBack, onNavigate, posts = [] }) {
     return (
     <View style={[styles.videoContainer, { height: height }]}>
       {!hasLocalMedia ? (
-        /* MediaPlaceholder — s'affiche quand le fichier n'est pas encore téléchargé */
+        /* MediaPlaceholder */
         <View style={[styles.videoBackground, styles.mediaPlaceholder]}>
           <View style={styles.placeholderContent}>
             <MaterialCommunityIcons name="cloud-download-outline" size={48} color="rgba(255,255,255,0.3)" />
@@ -186,21 +193,22 @@ function LobaHomeScreen({ onBack, onNavigate, posts = [] }) {
             </View>
           </View>
         </View>
-      ) : item.type === 'video' ? (
-        isCloseToVisible ? (
+      ) : index === currentVideoIndex ? (
+        item.type === 'video' ? (
           <Video
             source={videoSource}
             style={styles.videoBackground}
             resizeMode={ResizeMode.COVER}
-            shouldPlay={index === currentVideoIndex}
-            isLooping
+            shouldPlay={true}
+            isLooping={true}
             isMuted={false}
           />
         ) : (
-          <View style={[styles.videoBackground, { backgroundColor: '#000' }]} />
+          <Image source={{ uri: item.video || item.localMediaPath }} style={styles.videoBackground} />
         )
       ) : (
-        <Image source={{ uri: item.video || item.localMediaPath }} style={styles.videoBackground} />
+        /* Pour les voisins ou posts éloignés : Image fixe uniquement pour préserver la RAM */
+        <Image source={{ uri: item.video || item.localMediaPath }} style={[styles.videoBackground, { opacity: 0.6 }]} />
       )}
       <View style={[styles.filterOverlay, { backgroundColor: item.filterColor || 'transparent' }]} />
       <View style={styles.videoGradient} />
@@ -227,7 +235,7 @@ function LobaHomeScreen({ onBack, onNavigate, posts = [] }) {
           onPress={() => handleLike(item.id)}
         />
         <ActionButton
-          icon="chat-bubble"
+          icon="comment-text"
           count={item.comments}
           onPress={() => openComments(item)}
         />
@@ -272,29 +280,46 @@ function LobaHomeScreen({ onBack, onNavigate, posts = [] }) {
   return (
     <View style={styles.container}>
       <View style={{ position: 'absolute', width: width, height: height, top: 0, left: 0 }}>
-      {/* Header Tabs */}
+      {/* Header Statut & Actions */}
       <View style={styles.header}>
-        <Pressable style={styles.headerChip} onPress={() => onNavigate?.('loba_following')}>
-          <Text style={styles.headerChipText}>Abonnements</Text>
-          <MaterialCommunityIcons name="chevron-right" size={16} color="#fff" />
+        <Pressable 
+          style={styles.refreshBtn} 
+          onPress={() => P2PAutoSync.forceRefresh()}
+        >
+          <MaterialCommunityIcons name="refresh" size={20} color="#fff" />
         </Pressable>
 
-        <Pressable style={styles.headerChip} onPress={() => onNavigate?.('loba_for_you')}>
-          <Text style={styles.headerChipText}>Pour Toi</Text>
-          <MaterialCommunityIcons name="chevron-right" size={16} color="#fff" />
-        </Pressable>
-
-        <View style={styles.statusChip}>
-          {meshState.isConnected ? (
+        <Pressable 
+          style={styles.statusChip} 
+          onPress={() => setP2pLogModal(true)}
+        >
+          {wifiState.connectedPeer ? (
+             <MaterialCommunityIcons name="wifi-star" size={14} color="#22c55e" />
+          ) : wifiState.isDiscovering ? (
+             <ActivityIndicator size={10} color="#fbbf24" style={{ marginRight: 4 }} />
+          ) : meshState.isConnected ? (
             <MaterialCommunityIcons name="bluetooth-connect" size={14} color="#22c55e" />
           ) : (
             <MaterialCommunityIcons name="wifi-off" size={14} color="#fbbf24" />
           )}
-          <Text style={[styles.statusText, meshState.isConnected && { color: '#22c55e' }]}>
-            {meshState.isConnected ? `Mesh Actif (${meshState.peerCount})` : 'Mode Offline'}
+          <Text style={[styles.statusText, (wifiState.connectedPeer || meshState.isConnected) && { color: '#22c55e' }]}>
+            {wifiState.connectedPeer 
+              ? 'WiFi P2P Connecté' 
+              : wifiState.isDiscovering 
+                ? 'Recherche...' 
+                : meshState.isConnected 
+                  ? `Mesh Actif (${meshState.peerCount})` 
+                  : 'Mode Offline'}
           </Text>
-        </View>
+        </Pressable>
       </View>
+ 
+      {/* Mesh Status Text Overlay (Discret) */}
+      {meshState.isConnected && !wifiState.connectedPeer && (
+        <View style={styles.meshOverlay}>
+          <Text style={styles.meshOverlayText}>Diffusion locale (Mesh) active ✨</Text>
+        </View>
+      )}
 
       {/* Propagation Status Bar (Background Mesh) */}
       {posts.some(p => p.isPropagating) && (
@@ -307,18 +332,30 @@ function LobaHomeScreen({ onBack, onNavigate, posts = [] }) {
         </View>
       )}
 
-      <FlatList
-        data={feedVideos}
-        renderItem={renderVideo}
-        keyExtractor={(item, index) => item.id?.toString() || index.toString()}
-        pagingEnabled
-        vertical
-        showsVerticalScrollIndicator={false}
-        onMomentumScrollEnd={(e) => {
-          const index = Math.round(e.nativeEvent.contentOffset.y / height);
-          setCurrentVideoIndex(index);
-        }}
-      />
+      {feedVideos.length === 0 ? (
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#101922' }}>
+          <MaterialCommunityIcons name="image-off-outline" size={64} color="rgba(255,255,255,0.1)" />
+          <Text style={{ color: 'rgba(255,255,255,0.4)', marginTop: 16, fontSize: 16 }}>Aucune publication pour le moment</Text>
+          <Text style={{ color: 'rgba(255,255,255,0.2)', marginTop: 8, fontSize: 12 }}>Les nouveaux uploads apparaîtront ici</Text>
+        </View>
+      ) : (
+        <FlatList
+          data={feedVideos}
+          renderItem={renderVideo}
+          keyExtractor={(item, index) => item.id?.toString() || index.toString()}
+          pagingEnabled
+          vertical
+          showsVerticalScrollIndicator={false}
+          initialNumToRender={1}
+          maxToRenderPerBatch={1}
+          windowSize={2}
+          removeClippedSubviews={true}
+          onMomentumScrollEnd={(e) => {
+            const index = Math.round(e.nativeEvent.contentOffset.y / height);
+            setCurrentVideoIndex(index);
+          }}
+        />
+      )}
       </View>
 
       {/* Share Modal */}
@@ -437,90 +474,48 @@ const styles = StyleSheet.create({
     backgroundColor: '#A855F7',
   },
   header: {
+    paddingTop: 50,
+    paddingHorizontal: 15,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingTop: 54,
-    paddingBottom: 16,
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    zIndex: 20,
+    zIndex: 10,
+    width: '100%',
+  },
+  refreshBtn: {
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    padding: 8,
+    borderRadius: 20,
   },
   statusChip: {
     flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
     backgroundColor: 'rgba(0,0,0,0.5)',
-    paddingHorizontal: 12,
+    paddingHorizontal: 15,
     paddingVertical: 8,
     borderRadius: 20,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.15)',
-    backdropFilter: 'blur(10px)',
-  },
-  headerChip: {
-    flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
-    backgroundColor: 'rgba(255,255,255,0.15)',
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 20,
-  },
-  headerChipText: {
-    color: '#fff',
-    fontSize: 14,
-    fontWeight: '700',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
   },
   statusText: {
     color: '#fff',
     fontSize: 12,
-    fontWeight: '700',
+    fontWeight: 'bold',
+    marginLeft: 6,
   },
-  tabContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 24,
-  },
-  tabItem: {
-    alignItems: 'center',
-  },
-  tabText: {
-    color: 'rgba(255,255,255,0.6)',
-    fontSize: 16,
-    fontWeight: '600',
-    textShadowColor: 'rgba(0, 0, 0, 0.4)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 2,
-  },
-  tabTextActive: {
-    color: '#fff',
-    fontWeight: '800',
-  },
-  activeIndicator: {
-    width: 20,
-    height: 2,
-    backgroundColor: '#fff',
-    borderRadius: 1,
-    marginTop: 4,
+  meshOverlay: {
     position: 'absolute',
-    bottom: -8,
+    top: 60,
+    alignSelf: 'center',
+    backgroundColor: 'rgba(168, 85, 247, 0.4)',
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 15,
   },
-  tabSpacer: {
-    width: 1,
-    height: 16,
-    backgroundColor: 'rgba(255,255,255,0.2)',
-  },
-  searchBtn: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'rgba(0,0,0,0.2)',
+  meshOverlayText: {
+    color: '#fff',
+    fontSize: 10,
+    fontWeight: '500',
   },
   videoContainer: {
     width,
@@ -857,7 +852,10 @@ const ShareOption = ({ icon, color, label, onPress }) => (
 );
 
 const enhance = withObservables([], () => ({
-  posts: database.get('loba_posts').query().observe(),
+  posts: database.get('loba_posts').query(
+    Q.sortBy('created_at', Q.desc),
+    Q.take(30)
+  ).observe(),
 }));
 
 export default enhance(LobaHomeScreen);
