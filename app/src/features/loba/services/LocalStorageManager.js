@@ -87,8 +87,8 @@ export const LocalStorageManager = {
         to: dest
       });
 
-      console.log(`[LocalStorageManager] Média sauvegardé: ${hash}.${ext}`);
-      return dest;
+      console.log(`[LocalStorageManager] Média sauvegardé: ${hash}.${ext} (${(fileInfo.size / 1024).toFixed(1)} KB)`);
+      return { path: dest, size: fileInfo.size };
     } catch (e) {
       console.error('[LocalStorageManager] Erreur sauvegarde:', e);
       return null;

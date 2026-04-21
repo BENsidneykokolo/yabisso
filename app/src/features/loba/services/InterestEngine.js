@@ -3,6 +3,12 @@ import { Q } from '@nozbe/watermelondb';
 import { LocalStorageManager } from './LocalStorageManager';
 import * as FileSystem from 'expo-file-system';
 
+const normalizePath = (path) => {
+  if (!path) return path;
+  if (!path.startsWith('file://')) return `file://${path}`;
+  return path;
+};
+
 export class InterestEngine {
   /**
    * Traite le contenu d'un manifeste de Pack.
@@ -18,22 +24,21 @@ export class InterestEngine {
      for (const post of manifestPosts) {
          try {
              // 1. Déduplication : Vérification si le post existe déjà
-             const existing = await database.get('loba_posts').query(Q.where('hash', post.hash)).fetch();
-             if (existing.length > 0) {
+             const existingCount = await database.get('loba_posts').query(Q.where('hash', post.hash)).count();
+             if (existingCount > 0) {
                  console.log(`[InterestEngine] Ignoré : ${post.hash} (déjà existant localement).`);
                  continue;
              }
              
-             // 2. Filtrage Intelligent (Interests Engine)
-             // L'application devient intelligente en analysant le comportement (Likes, Views)
+             // 2. Évaluation de l'intérêt (Phase 17: Réactivé avec seuils de volume)
              const isInteresting = await this._evaluateInterest(post.category);
              if (!isInteresting) {
                  console.log(`[InterestEngine] Ignoré : ${post.hash} (sans intérêt pour l'utilisateur).`);
                  continue; 
              }
 
-             // 3. Sauvegarde physique du fichier
-             const sourcePath = `${unpackDir}${post.filename}`;
+             // 3. Sauvegarde physique du fichier (Phase 16: Normalisation sourcePath)
+             const sourcePath = normalizePath(`${unpackDir}${post.filename}`);
              const fileInfo = await FileSystem.getInfoAsync(sourcePath);
              
              if (!fileInfo.exists) {
@@ -42,9 +47,10 @@ export class InterestEngine {
              }
 
              // On utilise le LocalStorageManager pour stocker durablement et hasher/sécuriser
-             const savedPath = await LocalStorageManager.saveMedia(sourcePath, post.hash, post.type === 'video' ? 'mp4' : 'jpg');
-             
-             if (savedPath) {
+             const result = await LocalStorageManager.saveMedia(sourcePath, post.hash, post.type === 'video' ? 'mp4' : 'jpg');
+            
+             if (result && result.path) {
+                 const { path: savedPath, size: savedSize } = result;
                  // 4. Inscription en base de données de la source de vérité
                  await database.write(async () => {
                     await database.get('loba_posts').create(newPost => {
@@ -54,11 +60,9 @@ export class InterestEngine {
                         newPost.username = post.username;
                         newPost.avatar = post.avatar;
                         newPost.content = post.content;
-                        // On limite la re-propagation sauvage (Storm control)
-                        // On pourra le réactiver plus tard si l'utilisateur l'aime.
                         newPost.isPropagating = false; 
                         newPost.category = post.category || 'general';
-                        newPost.size = post.size;
+                        newPost.size = savedSize || post.size || 0;
                         newPost.imageUrl = post.type === 'image' ? savedPath : null;
                         newPost.videoUrl = post.type === 'video' ? savedPath : null;
                         newPost.likes = post.likes;
@@ -67,7 +71,7 @@ export class InterestEngine {
                     });
                  });
                  successCount++;
-                 console.log(`[InterestEngine] ✅ Nouveau contenu ajouté : ${post.hash}`);
+                 console.log(`[InterestEngine] ✅ Enregistré en base : ${post.hash} (${post.category})`);
              }
          } catch (err) {
              console.error(`[InterestEngine] Erreur sur le traitement du post ${post.hash}:`, err);
@@ -79,31 +83,48 @@ export class InterestEngine {
 
   /**
    * Évalue dynamiquement si une catégorie intéresse l'utilisateur.
-   * Basé sur l'analyse de l'historique de ses likes ("is_liked" = true).
+   * Basé sur le volume total et l'historique des likes. (Phase 17)
    */
   static async _evaluateInterest(category) {
-      if (!category) return true; // Si pas de catégorie, on accepte par défaut
-      
       try {
-          // Récupère les posts que l'utilisateur a aimés
-          const likedPosts = await database.get('loba_posts').query(Q.where('is_liked', true)).fetch();
+          // 1. Vérification du volume total
+          const totalPosts = await database.get('loba_posts').query().count();
           
-          // PHASE D'APPRENTISSAGE : Si l'utilisateur n'a encore presque rien liké (< 5), on est "ouvert" à tout.
-          if (likedPosts.length < 5) return true;
+          // MODE APPRENTISSAGE : Pas de tri avant 10 000 vidéos
+          if (totalPosts < 10000) {
+              return true;
+          }
 
-          // Combien de vidéos de cette catégorie l'utilisateur a-t-il aimées ?
-          const categoryLikes = likedPosts.filter(p => p.category === category).length;
+          // 2. Vérification de l'intérêt explicite (Likes)
+          if (!category) return true;
+          const categoryLikes = await database.get('loba_posts').query(
+              Q.where('category', category),
+              Q.where('is_liked', true)
+          ).count();
           
-          // Si la catégorie a été likée au moins une fois, l'intérêt est prouvé.
           if (categoryLikes > 0) return true;
 
-          // SÉRENDIPITÉ : On introduit tout de même une chance (20%) de découvrir une nouvelle catégorie.
-          // Cela évite la "bulle de filtres".
-          return Math.random() < 0.2;
+          // 3. Calcul de la chance de découverte (Luck Factor) basé sur les seuils utilisateur
+          let luckFactor = 0.8; // Par défaut, on accepte 80% des contenus inconnus
+
+          if (totalPosts >= 10000 && totalPosts < 100000) {
+              // Entre 10k et 100k : Filtrage entre 10% et 30% (Luck entre 90% et 70%)
+              const progress = (totalPosts - 10000) / 90000;
+              luckFactor = 0.9 - (progress * 0.2); 
+          } else if (totalPosts >= 100000 && totalPosts < 250000) {
+              // Entre 100k et 250k : Transition vers le filtrage à 80% (Luck à 20%)
+              const progress = (totalPosts - 100000) / 150000;
+              luckFactor = 0.7 - (progress * 0.5);
+          } else if (totalPosts >= 250000) {
+              // Au delà de 250k : Filtrage à 80% (Luck à 20%)
+              luckFactor = 0.2;
+          }
+
+          return Math.random() < luckFactor;
           
       } catch (e) {
           console.warn('[InterestEngine] Erreur d\'évaluation, acceptation par défaut.', e);
-          return true; // En cas de doute ou d'erreur SQL, on accepte le contenu.
+          return true;
       }
   }
 }

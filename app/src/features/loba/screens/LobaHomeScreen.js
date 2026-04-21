@@ -980,8 +980,8 @@ const ShareOption = ({ icon, color, label, onPress }) => (
 
 const enhance = withObservables([], () => ({
   posts: database.get('loba_posts').query(
-    Q.sortBy('created_at', Q.desc),
-    Q.take(30)
+    Q.sortBy('downloaded_at', Q.desc),
+    Q.take(50)
   ).observe(),
 }));
 

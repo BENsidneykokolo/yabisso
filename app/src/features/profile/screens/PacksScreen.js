@@ -19,7 +19,7 @@ const PACK_STATUS = {
   DOWNLOADED: 'DOWNLOADED'
 };
 
-export default function PacksScreen({ onBack }) {
+export default function PacksScreen({ onBack, onNavigate }) {
   // States des packs
   const [lobaPackStatus, setLobaPackStatus] = useState(PACK_STATUS.NOT_DOWNLOADED);
   const [walletPackStatus, setWalletPackStatus] = useState(PACK_STATUS.DOWNLOADED);
@@ -215,6 +215,25 @@ export default function PacksScreen({ onBack }) {
                <Text style={styles.removeBtnText}>Supprimer</Text>
              </Pressable>
            </View>
+        </View>
+
+        {/* Section Partage P2P */}
+        <View style={styles.p2pSection}>
+          <Text style={styles.p2pTitle}>Partage entre téléphones</Text>
+          <Pressable 
+            style={styles.p2pCard}
+            onPress={() => onNavigate?.('loba_packs')}
+          >
+            <View style={styles.p2pIcons}>
+              <MaterialCommunityIcons name="cellphone-arrow-down" size={28} color="#8B5CF6" />
+              <MaterialCommunityIcons name="wifi-star" size={20} color="#8B5CF6" style={styles.wifiStar} />
+            </View>
+            <View style={styles.p2pInfo}>
+              <Text style={styles.p2pCardTitle}>Partager via WiFi Direct</Text>
+              <Text style={styles.p2pCardDesc}>Envoyez ou recevez des packs sans internet ni câbles.</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={20} color="#94a3b8" />
+          </Pressable>
         </View>
 
       </ScrollView>
@@ -422,5 +441,53 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: 'bold',
     letterSpacing: 0.5,
+  },
+  p2pSection: {
+    marginTop: 32,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255, 255, 255, 0.05)',
+    paddingTop: 24,
+  },
+  p2pTitle: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 16,
+  },
+  p2pCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(139, 92, 246, 0.08)',
+    borderRadius: 16,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(139, 92, 246, 0.2)',
+  },
+  p2pIcons: {
+    width: 48,
+    height: 48,
+    borderRadius: 12,
+    backgroundColor: 'rgba(139, 92, 246, 0.15)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 16,
+  },
+  wifiStar: {
+    position: 'absolute',
+    top: -2,
+    right: -2,
+  },
+  p2pInfo: {
+    flex: 1,
+  },
+  p2pCardTitle: {
+    color: '#FFFFFF',
+    fontSize: 15,
+    fontWeight: 'bold',
+  },
+  p2pCardDesc: {
+    color: '#94a3b8',
+    fontSize: 12,
+    marginTop: 2,
   }
 });

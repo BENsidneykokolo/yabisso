@@ -37,10 +37,13 @@ class WifiDirectServiceClass {
     this.isLocationEnabled = true;
     this._receiveMessages = false;
     this._lastSendAttempt = 0;
-    this._lastConnectAttempt = 0; // Cooldown entre les tentatives de connexion
+    this._lastConnectAttempt = 0; 
+    this.globalFileHandler = null; // Phase 13: Handler global pour P2PAutoSync
     this.listeners = {
       onPeerFound: [],
       onPeerLost: [],
+      onPeersUpdates: [],
+      onSyncStatus: [],
       onConnectionChange: [],
       onTransferProgress: [],
       onLogUpdate: [],
@@ -116,21 +119,50 @@ class WifiDirectServiceClass {
       WifiP2P.subscribeOnPeersUpdates(({ devices }) => {
         this.peers = devices || [];
         console.log(`[WifiDirectService] ${this.peers.length} peers détectés.`);
+        this._emit('onPeersUpdates', this.peers);
         this.peers.forEach(peer => {
           this._emit('onPeerFound', peer);
         });
       });
 
       // Écouter les changements de connexion
-      WifiP2P.subscribeOnConnectionInfoUpdates((info) => {
+      WifiP2P.subscribeOnConnectionInfoUpdates((info = {}) => {
         if (info.groupFormed) {
+          // Extraction robuste de l'IP du Group Owner
+          let addr = info.groupOwnerAddress;
+          
+          // react-native-wifi-p2p renvoie souvent un objet { hostAddress: '...' }
+          if (addr && typeof addr === 'object' && addr.hostAddress) {
+            addr = addr.hostAddress;
+          }
+          
+          // Fallback ultime si l'IP est absente ou non-string
+          if (typeof addr !== 'string' || !addr || addr === 'null' || addr.includes('object')) {
+            addr = '192.168.49.1';
+          }
+          
           this.connectedPeer = info;
+          this.isConnected = true;
           this.isGroupOwner = !!info.isGroupOwner;
-          this.groupOwnerAddress = info.groupOwnerAddress || '192.168.49.1';
+          this.groupOwnerAddress = addr;
           this.isConnecting = false;
-          console.log(`[WifiDirectService] Connexion P2P: GO=${this.isGroupOwner}, GOAddr=${this.groupOwnerAddress}`);
+          
+          const statusSuffix = this.isGroupOwner ? '(Portail Ouvert)' : '(Connecté au Portail)';
+          console.log(`[WifiDirectService] État P2P: GO=${this.isGroupOwner}, Addr=${this.groupOwnerAddress} ${statusSuffix}`);
+          
           NetworkRailDetector.setWifiDirectAvailable(true);
-          this._emit('onConnectionChange', { connected: true, info });
+
+          this._emit('onConnectionChange', { 
+            connected: true, 
+            isGroupOwner: this.isGroupOwner,
+            info 
+          });
+
+          // Phase 13: Automatisation de la réception
+          if (this.isGroupOwner && this.globalFileHandler) {
+             console.log('[WifiDirectService] Auto-Starting Receiver Server (Group Owner mode)...');
+             this.startReceiving(this.globalFileHandler);
+          }
         } else {
           this.connectedPeer = null;
           this.isGroupOwner = false;
@@ -161,16 +193,22 @@ class WifiDirectServiceClass {
    * IMPORTANT: Toujours stopper puis redémarrer pour éviter les erreurs
    * "already discovering" du framework natif Android.
    */
-  async startDiscovery(force = false) {
-    if (!this.initialized || !this.isSupported) {
-      console.warn('[WifiDirectService] startDiscovery: non initialisé ou non supporté, abandon.');
-      return false;
-    }
+   async startDiscovery(force = false) {
+     if (!this.initialized || !this.isSupported) {
+       console.warn('[WifiDirectService] startDiscovery: non initialisé ou non supporté, abandon.');
+       return false;
+     }
 
-    if (this.isDiscovering && !force) {
-      // Déjà en cours selon notre état JS — on fait quand même confiance à Android
-      return true;
-    }
+     // NOUVEAU: Bloquer le scan si on est en train de se connecter
+     // Cela évite l'erreur framework "Internal Error" (collision matérielle)
+     if (this.isConnecting && !force) {
+       console.log('[WifiDirectService] Connexion en cours — scan ignoré pour éviter collision.');
+       return false;
+     }
+
+     if (this.isDiscovering && !force) {
+       return true;
+     }
 
     // Vérifier le GPS
     if (Platform.OS === 'android') {
@@ -203,8 +241,8 @@ class WifiDirectServiceClass {
 
       // Err 0 = BUSY — Android n'a pas encore libéré la puce, on attend + retry
       if (errCode === 0 || errMsg.includes('internal error') || errMsg.includes('BUSY')) {
-        console.warn('[WifiDirectService] Hardware Busy. Retry dans 2s...');
-        await new Promise(resolve => setTimeout(resolve, 2000));
+        console.warn('[WifiDirectService] Hardware Busy. Mode ZEN activé (Pause 5s)...');
+        await new Promise(resolve => setTimeout(resolve, 5000));
         try {
           await WifiP2P.startDiscoveringPeers();
           console.log('[WifiDirectService] Découverte démarrée après retry.');
@@ -238,6 +276,68 @@ class WifiDirectServiceClass {
   }
 
   /**
+   * Supprime le groupe WiFi Direct courant.
+   */
+  async removeGroup() {
+    if (!this.initialized) return;
+    try {
+      await WifiP2P.removeGroup();
+      this.isGroupOwner = false;
+      this.connectedPeer = null;
+      console.log('[WifiDirectService] Groupe supprimé avec succès.');
+    } catch (e) {
+      console.warn('[WifiDirectService] removeGroup erreur:', e.message);
+    }
+  }
+
+  /**
+   * Crée un groupe WiFi Direct (Devient le Group Owner).
+   * Utilisé pour la méthode "Recevoir" (Mode Passif).
+   */
+   async createGroup(retryCount = 0) {
+    if (!this.initialized) return false;
+
+    // Nettoyer SEULEMENT au premier essai pour ne pas créer de boucle "Busy"
+    if (retryCount === 0) {
+      try {
+        console.log('[WifiDirectService] Nettoyage préventif...');
+        try { await WifiP2P.cancelConnect(); } catch(_) {}
+        
+        if (this.isDiscovering) {
+          await this.stopDiscovery();
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        }
+        if (this.isConnected) {
+          await WifiP2P.removeGroup();
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        }
+      } catch (e) {
+        console.log('[WifiDirectService] Skip pre-create cleanup.');
+      }
+    }
+
+    try {
+      console.log(`[WifiDirectService] Création du groupe (Tentative ${retryCount})...`);
+      await WifiP2P.createGroup();
+      console.log('[WifiDirectService] Groupe créé avec succès. HOSTE actif.');
+      this.isGroupOwner = true;
+      return true;
+    } catch (e) {
+      const errMsg = e?.message || '';
+      console.warn(`[WifiDirectService] ❌ Erreur createGroup (Retry ${retryCount}):`, errMsg);
+
+      // Si le framework est occupé, on attend et on réessaie (Mode ZEN)
+      if (retryCount < 2 && (errMsg.includes('busy') || errMsg.includes('BUSY') || e?.code === 0)) {
+        console.log('[WifiDirectService] Framework occupé - Pause de 3s avant retry...');
+        await new Promise(resolve => setTimeout(resolve, 3000));
+        return this.createGroup(retryCount + 1);
+      }
+      
+      return false;
+    }
+  }
+
+  /**
    * Se connecte à un peer WiFi Direct.
    * 
    * STRATÉGIE ANTI-COLLISION:
@@ -260,61 +360,65 @@ class WifiDirectServiceClass {
       return false;
     }
 
-    // VERROU 2: cooldown de 15s entre les tentatives
+    // VERROU 2: cooldown entre les tentatives
     const now = Date.now();
-    if (now - this._lastConnectAttempt < 15000 && retryCount === 0) {
-      console.log('[WifiDirectService] Cooldown actif, requête ignorée.');
+    const cooldownMs = 5000; // 5 secondes suffisent pour empêcher le spam
+    if (now - this._lastConnectAttempt < cooldownMs && retryCount === 0) {
+      console.log('[WifiDirectService] Cooldown actif, retour.');
       return false;
     }
 
-    // Arrêt du scan AVANT la connexion (requis par les drivers budget)
-    if (this.isDiscovering) {
-      console.log('[WifiDirectService] Arrêt du scan avant connexion...');
-      await this.stopDiscovery();
-      await new Promise(resolve => setTimeout(resolve, 500));
-    }
-
-    // DÉLAI DÉTERMINISTE basé sur l'adresse MAC du peer
-    // Chaque téléphone voit un peer DIFFÉRENT → délai DIFFÉRENT → UN SEUL gagne
-    const macAddr = device.deviceAddress || '';
-    const lastByte = parseInt(macAddr.split(':').pop() || '0', 16); // 0-255
-    const delay = lastByte * 50; // 0ms - 12750ms selon le peer qu'on voit
-    console.log(`[WifiDirectService] Délai déterministe: ${delay}ms (MAC peer: ...${macAddr.split(':').pop()})...`);
-    await new Promise(resolve => setTimeout(resolve, delay));
-
-    // Vérifier après le délai (l'autre téléphone a peut-être déjà connecté)
-    if (this.isConnecting || this.connectedPeer) {
-      console.log('[WifiDirectService] Connexion déjà établie pendant le délai — abandon.');
-      return false;
-    }
-
+    // LOCK
     this.isConnecting = true;
-    this._lastConnectAttempt = Date.now();
+
     try {
-      console.log(`[WifiDirectService] Connexion à ${device.deviceName || device.deviceAddress}...`);
-      await WifiP2P.connect(device.deviceAddress);
-      console.log('[WifiDirectService] Commande de connexion envoyée. En attente de confirmation...');
+      // Phase 8 : On ne force plus stopDiscovery() ici. 
+      // La commande connect() s'en charge nativement et évite les conflits d'état.
+      
+      // Nettoyage matériel SEULEMENT si c'est un retry
+      if (retryCount > 0) {
+        console.log('[WifiDirectService] Nettoyage matériel (cancel) pour retry...');
+        try { await WifiP2P.cancelConnect(); } catch(_) {}
+        await new Promise(resolve => setTimeout(resolve, 2000));
+      }
+
+      this._lastConnectAttempt = Date.now();
+      const macAddr = device.deviceAddress || '';
+      console.log(`[WifiDirectService] Tentative de connexion (Retry ${retryCount}) à MAC: ${macAddr}...`);
+      
+      // Lancer la connexion via le module natif
+      // Utilisation du connect() standard, car forcer le groupOwnerIntent à 0 
+      // peut crasher le driver natif si le peer distant a déjà créé son groupe (createGroup)
+      console.log(`[WifiDirectService] Appel de WifiP2P.connect...`);
+      await WifiP2P.connect(macAddr);
+      
+      console.log('[WifiDirectService] ✅ Commande de connexion acceptée par le matériel. En attente...');
       return true;
+
     } catch (e) {
       const errCode = e?.code;
       const errMsg = e?.message || '';
-      // code:2 = BUSY
-      if ((errCode === 2 || errMsg.includes('busy')) && retryCount < 1) {
-        console.warn('[WifiDirectService] Framework busy. Retry dans 5s...');
-        this.isConnecting = false;
-        await new Promise(resolve => setTimeout(resolve, 5000));
+      console.warn(`[WifiDirectService] ❌ Erreur connexion (Code: ${errCode}):`, errMsg);
+
+      // Autoriser jusqu'à 2 retries (Total: 3 tentatives)
+      if (retryCount < 2) {
+        if (errMsg.includes('internal error') || errCode === 0) {
+          console.log('[WifiDirectService] Erreur BUSY Framework - Pause longue (10s) avant retry...');
+          try { await WifiP2P.cancelConnect(); } catch(_) {}
+          this.isConnecting = false;
+          await new Promise(resolve => setTimeout(resolve, 10000));
+        } else {
+          this.isConnecting = false;
+          await new Promise(resolve => setTimeout(resolve, 3000));
+        }
         return this.connectToPeer(device, retryCount + 1);
       }
-      // code:0 = Collision GO Negotiation — on passe en mode passif
-      if (errCode === 0 || errMsg.includes('internal error')) {
-        console.log('[WifiDirectService] Collision détectée. Mode passif: on attend que l\'autre se connecte.');
-        // Relancer la découverte pour rester visible
-        this.isDiscovering = false;
-        setTimeout(() => this.startDiscovery(true), 2000);
-      } else {
-        console.warn('[WifiDirectService] Erreur connexion:', errMsg);
-      }
+
+      console.warn('[WifiDirectService] Abandon après 3 tentatives infructueuses.');
       this.isConnecting = false;
+      
+      // Relancer la découverte pour rester visible
+      setTimeout(() => this.startDiscovery(true), 3000);
       return false;
     }
   }
@@ -409,13 +513,32 @@ class WifiDirectServiceClass {
         return false;
       }
 
-      // Petite pause pour laisser le récepteur parser le message avant d'envoyer le binaire
+      let progressInterval = null;
       if (filePath) {
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        console.log(`[WifiDirectService] 📤 Début du flux binaire pour ${metadata.hash}...`);
+        
+        // Simuler la progression toutes les 500ms jusqu'à 95%
+        let simulatedProgress = 5;
+        const estimatedTimeMs = (fileInfo.size / 1024 / 1024) * 500; // Estime 2Mo/s
+        const step = Math.max(2, Math.floor(90 / (estimatedTimeMs / 500)));
+        
+        progressInterval = setInterval(() => {
+          simulatedProgress = Math.min(95, simulatedProgress + step);
+          this._emit('onTransferProgress', { 
+            hash: metadata.hash, 
+            progress: simulatedProgress, 
+            status: 'sending',
+            size: fileInfo.size 
+          });
+        }, 500);
+
+        await new Promise(resolve => setTimeout(resolve, 800));
         try {
           await WifiP2P.sendFile(nativePath);
-          console.log(`[WifiDirectService] Fichier envoyé avec succès: ${metadata.hash}`);
+          if (progressInterval) clearInterval(progressInterval);
+          console.log(`[WifiDirectService] ✅ Fichier envoyé avec succès: ${metadata.hash}`);
         } catch (sendErr) {
+          if (progressInterval) clearInterval(progressInterval);
           console.warn('[WifiDirectService] Échec sendFile natif:', sendErr.message);
           return false;
         }
@@ -439,6 +562,14 @@ class WifiDirectServiceClass {
    * Démarrer le MessageServer natif sans connexion cause un OOM sur appareils budget.
    * @param {Function} onFileReceived - (filePath, metadata) => void
    */
+  setGlobalFileHandler(callback) {
+    this.globalFileHandler = callback;
+    // Si on est déjà connecté en tant que GO, on démarre immédiatement
+    if (this.isConnected && this.isGroupOwner && !this._receiveMessages) {
+       this.startReceiving(callback);
+    }
+  }
+
   async startReceiving(onFileReceived) {
     if (!this.initialized || this._receiveMessages) return;
 
@@ -496,19 +627,42 @@ class WifiDirectServiceClass {
             console.log(`[WifiDirectService] ${logMsg}`);
             this._emit('onLogUpdate', [logMsg]);
 
-            WifiP2P.receiveFile(
-              nativeMediaDir,
-              meta.filename || `${meta.hash}.mp4`
-            ).then((receivedPath) => {
-              const successMsg = `✅ Fichier reçu: ${meta.hash?.substring(0,8)}`;
+            // Simulation de progression côté récepteur ( Phase 20 )
+            let simulatedProgress = 0;
+            const estimatedTimeMs = (meta.size / 1024 / 1024) * 800; // Un peu plus lent en réception
+            const step = Math.max(1, Math.floor(90 / (estimatedTimeMs / 800)));
+            
+            const progressInterval = setInterval(() => {
+              simulatedProgress = Math.min(98, simulatedProgress + step);
+              this._emit('onTransferProgress', { 
+                hash: meta.hash, 
+                progress: simulatedProgress, 
+                status: 'receiving',
+                size: meta.size 
+              });
+            }, 800);
+
+            try {
+              const receivedPath = await WifiP2P.receiveFile(
+                nativeMediaDir,
+                meta.filename || `${meta.hash}.mp4`
+              );
+              
+              if (progressInterval) clearInterval(progressInterval);
+              this._emit('onTransferProgress', { hash: meta.hash, progress: 100, status: 'complete' });
+
+              const successMsg = `📦 Envoi du pack reçu ! (${meta.hash?.substring(0,8)})`;
               console.log(`[WifiDirectService] ${successMsg}`);
-              this._emit('onLogUpdate', [successMsg]);
+              this._emit('onLogUpdate', [successMsg, "⚙️ Traitement et décompression..."]);
+              
               if (onFileReceived) onFileReceived(receivedPath, meta);
-            }).catch(err => {
+            } catch (err) {
+              if (progressInterval) clearInterval(progressInterval);
+              this._emit('onTransferProgress', { hash: meta.hash, progress: 0, status: 'failed' });
               const errMsg = `❌ Erreur réception: ${err?.message || 'Inconnue'}`;
               console.error(`[WifiDirectService] ${errMsg}`, err);
               this._emit('onLogUpdate', [errMsg]);
-            });
+            }
           }
         } catch (parseErr) {
           console.log('[WifiDirectService] Message ignoré (non-JSON)');

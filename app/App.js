@@ -74,6 +74,7 @@ import LobaPreviewScreen from './src/features/loba/screens/LobaPreviewScreen';
 import LobaFriendsScreen from './src/features/loba/screens/LobaFriendsScreen';
 import LobaMessagesScreen from './src/features/loba/screens/LobaMessagesScreen';
 import LobaSettingsScreen from './src/features/loba/screens/LobaSettingsScreen';
+import LobaPacksScreen from './src/features/loba/screens/LobaPacksScreen';
 import RestaurantHomeScreen from './src/features/restaurant/screens/RestaurantHomeScreen';
 import RestaurantSellerScreen from './src/features/restaurant/screens/RestaurantSellerScreen';
 import RestaurantDetailsScreen from './src/features/restaurant/screens/RestaurantDetailsScreen';
@@ -421,6 +422,7 @@ export default function App() {
     content = (
       <PacksScreen
         onBack={() => goBack()}
+        onNavigate={(screenName) => navigate(screenName)}
       />
     );
   }
@@ -774,6 +776,14 @@ export default function App() {
   if (screen === 'loba_settings') {
     content = (
       <LobaSettingsScreen
+        onBack={() => goBack()}
+        onNavigate={(screenName) => navigate(screenName)}
+      />
+    );
+  }
+  if (screen === 'loba_packs') {
+    content = (
+      <LobaPacksScreen
         onBack={() => goBack()}
         onNavigate={(screenName) => navigate(screenName)}
       />

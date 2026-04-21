@@ -3,10 +3,20 @@ import { zip, unzip } from 'react-native-zip-archive';
 import { database } from '../../../lib/db';
 import { Q } from '@nozbe/watermelondb';
 import { InterestEngine } from './InterestEngine';
+import { WifiDirectService } from '../../bluetooth/services/WifiDirectService';
 
 const MAX_PACK_SIZE = 50 * 1024 * 1024; // 50 MB
 const PACKS_DIR = `${FileSystem.documentDirectory}loba_packs/`;
 const TEMP_UNPACK_DIR = `${FileSystem.documentDirectory}loba_packs_temp/`;
+
+/**
+ * Phase 15 Utility: Normalise les chemins pour les bridges natifs Android
+ */
+const normalizePath = (path) => {
+  if (!path) return path;
+  if (!path.startsWith('file://')) return `file://${path}`;
+  return path;
+};
 
 export class LobaPackService {
   /**
@@ -24,10 +34,11 @@ export class LobaPackService {
   }
 
   /**
-   * Génère un nouveau pack de 50MB maximum avec les publications à propager.
+   * Génère un nouveau pack de 50MB maximum avec les publications d'une catégorie spécifique.
+   * @param {string|null} category - La catégorie à filtrer (ex: 'marche', 'hotel'). Si null, prend tout.
    * @returns {Promise<string|null>} Le chemin local du fichier ZIP, ou null si rien à envoyer.
    */
-  static async buildPack() {
+  static async buildPack(category = null) {
     await this.initDirectories();
 
     const timestamp = Date.now();
@@ -37,15 +48,17 @@ export class LobaPackService {
     await FileSystem.makeDirectoryAsync(stagingDir, { intermediates: true });
 
     try {
-      // 1. Récupérer les posts candidats à la propagation
-      // Pour maximiser l'échange, on peut prendre tous les posts récents (jusqu'à 100) qui ont un média local
-      const posts = await database.get('loba_posts')
-        .query(
-          Q.where('local_media_path', Q.notEq(null)),
-          Q.sortBy('created_at', Q.desc),
-          Q.take(100)
-        )
-        .fetch();
+      const queryArgs = [
+        Q.where('local_media_path', Q.notEq(null)),
+        Q.sortBy('created_at', Q.desc),
+        Q.take(100)
+      ];
+      
+      if (category && category !== 'general') {
+        queryArgs.push(Q.where('category', category));
+      }
+
+      const posts = await database.get('loba_posts').query(...queryArgs).fetch();
 
       let currentSize = 0;
       const manifestList = [];
@@ -66,6 +79,12 @@ export class LobaPackService {
 
         const fileName = post.localMediaPath.split('/').pop();
         const destinationFile = `${stagingDir}${fileName}`;
+
+        // Phase 12: Granular UX - Informer l'utilisateur de la progression du packaging
+        WifiDirectService._emit('onSyncStatus', { 
+           status: 'PACKING', 
+           message: `Préparation: ${manifestList.length + 1}/${posts.length} ...` 
+        });
 
         // Copier le média dans le dossier de staging
         await FileSystem.copyAsync({
@@ -149,11 +168,14 @@ export class LobaPackService {
     try {
       console.log(`[LobaPackService] Décompression de ${zipPath}...`);
       
-      // 1. Unzip
-      await unzip(zipPath, unpackDir);
+      // 1. Unzip (Phase 15: Normalisation Bridge Natif)
+      const normalizedZip = normalizePath(zipPath);
+      const normalizedDest = normalizePath(unpackDir);
       
-      // 2. Lire le manifeste
-      const manifestPath = `${unpackDir}manifest.json`;
+      await unzip(normalizedZip, normalizedDest);
+      
+      // 2. Lire le manifeste (Phase 16: Normalisation complète)
+      const manifestPath = normalizePath(`${unpackDir}manifest.json`);
       const manifestInfo = await FileSystem.getInfoAsync(manifestPath);
       
       if (!manifestInfo.exists) {
@@ -171,8 +193,9 @@ export class LobaPackService {
 
       console.log(`[LobaPackService] Manifeste lu : ${manifestData.posts.length} posts à traiter.`);
 
-      // 3. Déléguer au moteur d'intelligence (tri, déduplication et sauvegarde locale)
-      const successCount = await InterestEngine.processPackContent(unpackDir, manifestData.posts);
+      // 3. Déléguer au moteur d'intelligence (Phase 16: Normalisation unpackDir)
+      const normalizedUnpackDir = normalizePath(unpackDir);
+      const successCount = await InterestEngine.processPackContent(normalizedUnpackDir, manifestData.posts);
       
       console.log(`[LobaPackService] Pack traité avec succès. ${successCount} nouvelles publications conservées.`);
       return true;
@@ -184,6 +207,50 @@ export class LobaPackService {
       // Nettoyage impératif des fichiers temporaires (zip recu et dossier dézippé)
       await FileSystem.deleteAsync(unpackDir, { idempotent: true });
       await FileSystem.deleteAsync(zipPath, { idempotent: true });
+    }
+  }
+
+  /**
+   * Retourne les statistiques des packs disponibles par catégorie.
+   */
+  static async getAvailablePacks() {
+    try {
+      const categories = ['marche', 'hotel', 'restauration', 'general'];
+      const stats = [];
+
+      for (const cat of categories) {
+        const queryArgs = [Q.where('local_media_path', Q.notEq(null))];
+        if (cat !== 'general') {
+          queryArgs.push(Q.where('category', cat));
+        }
+
+        const posts = await database.get('loba_posts').query(...queryArgs).fetch();
+        
+        let totalSize = 0;
+        for (const p of posts) {
+          if (p.size) {
+            totalSize += p.size;
+          } else if (p.localMediaPath) {
+            // Fallback dynamique si la taille en base est manquante (Phase 12 Fix)
+            const info = await FileSystem.getInfoAsync(p.localMediaPath);
+            if (info.exists) totalSize += info.size;
+          }
+        }
+
+        if (posts.length > 0) {
+          stats.push({
+            id: cat,
+            title: cat === 'general' ? 'Pack Général' : `Pack ${cat.charAt(0).toUpperCase() + cat.slice(1)}`,
+            count: posts.length,
+            sizeMB: (totalSize / 1024 / 1024).toFixed(1),
+            category: cat
+          });
+        }
+      }
+      return stats;
+    } catch (e) {
+      console.error('[LobaPackService] Error getting stats:', e);
+      return [];
     }
   }
 }

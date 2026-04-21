@@ -361,6 +361,9 @@ export default function LobaProfileScreen({ onBack, onNavigate }) {
               <MaterialCommunityIcons name="cloud-check-outline" size={14} color="#22c55e" />
               <Text style={styles.offlineText}>En cache</Text>
             </View>
+            <Pressable style={styles.iconBtn} onPress={() => onNavigate?.('loba_packs')}>
+              <MaterialCommunityIcons name="folder-download-outline" size={22} color="#fff" />
+            </Pressable>
             <Pressable style={styles.iconBtn} onPress={() => setShowShareModal(true)}>
               <MaterialCommunityIcons name="share-variant" size={22} color="#fff" />
             </Pressable>
