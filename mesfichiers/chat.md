@@ -1050,10 +1050,69 @@ Assistant: J'ai corrig� les deux erreurs identifi�es dans les captures d'�
 2. Erreur 'setScreen' dans App.js : Remplac� par 'navigate' pour le bouton flottant.
 Ces deux �crans devraient maintenant fonctionner sans planter.
 
-User: [Demande d'impl�mentation du syst�me d'adresses multiples avec g�olocalisation, ID uniques et QR codes]
+Assistant: J'ai corrig les deux erreurs identifies dans les captures d'cran :
+1. Erreur 'showMenu' dans MarketplaceHomeScreen.js : tat manquant ajout.
+2. Erreur 'setScreen' dans App.js : Remplac par 'navigate' pour le bouton flottant.
+Ces deux crans devraient maintenant fonctionner sans planter.
 
-Assistant: J'ai impl�ment� le syst�me complet de gestion d'adresses.
-1. Mod�le et table 'addresses' ajout�s � la base de donn�es.
-2. �crans de liste, d'ajout (via GPS) et de d�tails (avec QR) cr��s.
-3. Int�gration du partage (WhatsApp, SMS) et g�n�ration d'identifiants uniques YB-XXX-ZZ.
-4. S�lection dynamique des adresses ajout�e au tunnel de commande (Checkout).
+User: [Demande d'implmentation du systme d'adresses multiples avec golocalisation, ID uniques et QR codes]
+
+Assistant: J'ai implment le systme complet de gestion d'adresses.
+1. Modle et table 'addresses' ajouts  la base de donnes.
+2. crans de liste, d'ajout (via GPS) et de dtails (avec QR) crs.
+3. Intgration du partage (WhatsApp, SMS) et gnration d'identifiants uniques YB-XXX-ZZ.
+4. Slection dynamique des adresses ajoute au tunnel de commande (Checkout).
+
+User: tu peux fixer cette erreur quand je lance l'application sur mon telephone (Unable to load script)
+Assistant: Explication des causes (BUG-002 / BUG-011) et demande vérification adresse IP.
+User: Partage du résultat d'ipconfig (IP locale passée à 192.168.1.66).
+Assistant: Mise à jour réussie du fichier `.env` avec la nouvelle IP (192.168.1.66). Le bundle devrait charger après vidage du cache.
+
+---
+
+## 2026-04-21 - Stabilisation P2P WiFi Direct (Session longue)
+
+User: j'ai toujours un probleme d'echec d'envoi de pack yabisso via wifi direct, les telephones ne se connectent plus
+Assistant: Diagnostic: les modifications expérimentales (watchdog, retry agressif) avaient cassé la connexion. Rollback vers le code original stable + conservation de la logique de rôles (seul le Client envoie, le GO reçoit).
+
+User: dans mon scenario, quand l'autre envoie la pack apres son envoi il demande le pack de l'autre comme ça chaqun s'envoit des packs
+Assistant: Explication de la limitation WiFi Direct (unidirectionnel Client→GO). Proposition du mécanisme "Ping-Pong" avec swap de rôles automatique (déconnexion après envoi pour inverser les rôles).
+
+User: super ajoute le
+Assistant: Ajout de la déconnexion automatique 3s après envoi/réception réussi d'un pack dans P2PAutoSync.js pour forcer le swap de rôles.
+
+User: mon autre telephone intel A50 ne lance plus la recherche
+Assistant: Fix du heartbeat de découverte — le scan était déclaré actif (`isDiscovering=true`) alors qu'Android l'avait tué silencieusement. Réécriture de la pulsation pour relancer le scan toutes les ~40s.
+
+User: think deeper, j'ai toujours le meme probleme
+Assistant: Diagnostic profond — 3 bugs racines identifiés:
+1. `isDiscovering` menteur (Android tue le scan après ~30s sans prévenir le JS)
+2. Pas de `stop` avant `start` dans `startDiscovery()` (erreur BUSY native)
+3. `disconnect()` ne relançait pas le scan automatiquement
+Fix: `startDiscovery()` fait toujours stop→300ms→start. `disconnect()` relance auto le scan après 2s.
+
+User: j'ai cette erreur dans le telephone itel (OutOfMemoryError)
+Assistant: Le `MessageServer` natif de `react-native-wifi-p2p` se lançait au démarrage sans connexion active, causant un OOM sur l'itel (téléphone budget, peu de RAM). Fix:
+- Suppression de `startReceiving()` au démarrage
+- Garde `connectedPeer` obligatoire avant de démarrer le serveur TCP
+- Ajout de `stopReceiving()` à la déconnexion
+
+User: les 2 telephones lancent la recherche mais ils n'arrivent pas à se connecté
+Assistant: Bug de spam de connexion identifié — `connectToPeer()` retournait `true` (optimistic) avant la vraie connexion, donc `onPeerFound` se redéclenchait et lançait un NOUVEAU `connect()`. Fix:
+- Ajout du flag `isConnecting` dans WifiDirectService
+- Vérifié dans `onPeerFound` et `connectToPeer`
+- Reset dans `subscribeOnConnectionInfoUpdates` (succès ET échec)
+
+User: les telephones ne se connectent toujours pas (collision GO Negotiation)
+Assistant: Les deux téléphones appelaient `connect()` simultanément (jitter aléatoire trop étroit: 1240ms vs 1201ms = 39ms d'écart). De plus, `removeGroup()` avant `connect()` tuait la tentative de l'autre téléphone. Fix final:
+- Remplacement du jitter aléatoire par un **délai déterministe basé sur l'adresse MAC du peer**
+- Chaque téléphone voit un MAC différent → délai différent → un seul gagne la course
+- Suppression de `removeGroup()` avant `connect()` (gardé uniquement dans `disconnect()`)
+- Après collision (code:0), le téléphone perdant passe en mode passif et relance le scan
+- `removeGroup()` utilisé dans `disconnect()` pour nettoyage total
+- Délai de stabilisation IP de 2s après connexion avant de lancer le sync
+
+### Fichiers modifiés:
+- `app/src/features/bluetooth/services/WifiDirectService.js` — Refonte complète de `startDiscovery()`, `connectToPeer()`, `disconnect()`, ajout `stopReceiving()`
+- `app/src/features/bluetooth/services/P2PAutoSync.js` — Fix heartbeat, suppression startReceiving prématuré, délai post-connexion 2s
+

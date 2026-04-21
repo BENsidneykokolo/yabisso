@@ -14,7 +14,7 @@ import {
   ScrollView,
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { Video, ResizeMode } from 'expo-av';
+import { VideoView, useVideoPlayer } from 'expo-video';
 import * as SecureStore from 'expo-secure-store';
 import LobaBottomNav from '../components/LobaBottomNav';
 import { useMeshConnection } from '../../bluetooth/hooks/useMeshConnection';
@@ -32,6 +32,18 @@ const followedCreators = [
   { id: 4, name: 'Nneka\'s Kitchen', avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDPs-a2lSM_bmNLNs1GkXRzOsSShLYwv_rSzvZ0vFkTZAC35XyDj_29VltZJ1ki-g5kR08ShBo0wAYd1_SBpqR-NbTCcjwfxTR1y2ffn7FwboHugN7JgcDIanSbRlZ43uL81mGHqHonrY1D85VV3D4PtZBH8kQmrPd_od1JQL8Dby0EiiyRwUpolz3ch6BV0z9kOK4jh7mC5Ka3CNlMw4iBGxyPUB6qeLDVis7qzYzApjaA63kBYEemlMf70N-C6fsqRjJZ4E68', following: true },
   { id: 5, name: 'Marathon Mike', avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuEjemploRunnerAvatar123', following: false },
 ];
+
+const VideoPlayerItem = ({ source, shouldPlay, style }) => {
+  const player = useVideoPlayer(source, p => {
+    p.loop = true;
+    p.muted = false;
+  });
+  React.useEffect(() => {
+    if (shouldPlay) player.play();
+    else player.pause();
+  }, [shouldPlay]);
+  return <VideoView player={player} style={style} contentFit="cover" />;
+};
 
 function LobaFollowingScreen({ onBack, onNavigate, videos = [] }) {
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
@@ -159,13 +171,10 @@ function LobaFollowingScreen({ onBack, onNavigate, videos = [] }) {
     <View style={[styles.videoContainer, { height: height }]}>
       {item.type === 'video' ? (
         isCloseToVisible ? (
-          <Video
+          <VideoPlayerItem
             source={{ uri: item.video }}
-            style={styles.videoBackground}
-            resizeMode={ResizeMode.COVER}
             shouldPlay={index === currentVideoIndex}
-            isLooping
-            isMuted={false}
+            style={styles.videoBackground}
           />
         ) : (
           <View style={[styles.videoBackground, { backgroundColor: '#000' }]} />

@@ -112,6 +112,17 @@ class MeshSyncServiceClass {
     await this.initialize();
     if (!this.bleManager) return;
 
+    // S'assurer qu'aucun scan natif n'est déjà actif avant d'en démarrer un
+    try { this.bleManager.stopDeviceScan(); } catch (_) {}
+
+    // Anti-boucle: limiter les retries
+    this._scanRetryCount = this._scanRetryCount || 0;
+    if (this._scanRetryCount >= 3) {
+      console.warn('[MeshSync] Scan BLE: trop de tentatives échouées. Abandon (réessayer manuellement).');
+      this._scanRetryCount = 0;
+      return;
+    }
+
     this.isScanning = true;
     console.log('[MeshSync] Démarrage du scan Mesh BLE...');
 
@@ -120,10 +131,21 @@ class MeshSyncServiceClass {
       { allowDuplicates: false },
       (error, device) => {
         if (error) {
-          console.error('[MeshSync] Erreur scan:', error.message);
+          console.warn('[MeshSync] Erreur scan:', error.message);
           this.isScanning = false;
+          this._scanRetryCount = (this._scanRetryCount || 0) + 1;
+          // Retry avec backoff exponentiel (5s, 10s, 15s) puis stop
+          if (this._scanRetryCount < 3) {
+            const delay = this._scanRetryCount * 5000;
+            console.log(`[MeshSync] Retry scan dans ${delay/1000}s (tentative ${this._scanRetryCount}/3)...`);
+            setTimeout(() => this.startMeshScanning(), delay);
+          } else {
+            console.warn('[MeshSync] Scan BLE abandonné après 3 tentatives.');
+          }
           return;
         }
+        // Reset le compteur de retry si le scan fonctionne
+        this._scanRetryCount = 0;
         if (!device) return;
 
         const peerId = device.id;

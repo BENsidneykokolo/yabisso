@@ -104,6 +104,7 @@ import SearchAddressScreen from './src/features/profile/screens/SearchAddressScr
 import AddressMapScreen from './src/features/profile/screens/AddressMapScreen';
 import StorageManagementScreen from './src/features/profile/screens/StorageManagementScreen';
 import ServiceManagementScreen from './src/features/profile/screens/ServiceManagementScreen';
+import PacksScreen from './src/features/profile/screens/PacksScreen';
 import { CartProvider } from './src/features/marketplace/context/CartContext';
 import { OrderProvider } from './src/features/marketplace/context/OrderContext';
 import { RestaurantCartProvider } from './src/features/restaurant/context/RestaurantCartContext';
@@ -412,6 +413,13 @@ export default function App() {
   if (screen === 'storage_management') {
     content = (
       <StorageManagementScreen
+        onBack={() => goBack()}
+      />
+    );
+  }
+  if (screen === 'packs_management') {
+    content = (
+      <PacksScreen
         onBack={() => goBack()}
       />
     );

@@ -148,6 +148,14 @@ export default function ProfileScreen({
           <Ionicons name="chevron-forward" size={18} color="#6B7280" />
         </Pressable>
 
+        <Pressable style={styles.settingRow} onPress={() => onNavigate('packs_management')}>
+          <View style={[styles.settingIcon, { backgroundColor: 'rgba(236, 72, 153, 0.2)' }]}>
+            <MaterialCommunityIcons name="folder-zip-outline" size={20} color="#EC4899" />
+          </View>
+          <Text style={styles.settingLabel}>Packs Hors-Ligne</Text>
+          <Ionicons name="chevron-forward" size={18} color="#6B7280" />
+        </Pressable>
+
         <Pressable style={styles.settingRow} onPress={onOpenLogout}>
           <View style={[styles.settingIcon, { backgroundColor: 'rgba(239, 68, 68, 0.2)' }]}>
             <Ionicons name="log-out-outline" size={20} color="#EF4444" />

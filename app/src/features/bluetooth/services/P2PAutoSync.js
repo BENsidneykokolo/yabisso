@@ -6,6 +6,7 @@ import { ManifestService } from '../../loba/services/ManifestService';
 import { RecommendationEngine } from '../../loba/services/RecommendationEngine';
 import { TransferQueueManager } from '../../loba/services/TransferQueueManager';
 import { LocalStorageManager } from '../../loba/services/LocalStorageManager';
+import { LobaPackService } from '../../loba/services/LobaPackService';
 import { database } from '../../../lib/db';
 import { Q } from '@nozbe/watermelondb';
 
@@ -79,41 +80,59 @@ class P2PAutoSyncClass {
     }
 
     try {
-      if (WifiDirectService.getState().isSupported) {
-        // Au démarrage, on initialise mais on ne lance PAS la découverte automatiquement
-        // Elle sera lancée soit par le popup, soit manuellement
-        await WifiDirectService.initialize();
+      if (WifiDirectService.getState().isAvailable) {
+        const initOk = await WifiDirectService.initialize();
+        if (initOk) {
+          await WifiDirectService.startDiscovery();
+        } else {
+          console.warn('[P2PAutoSync] WiFi Direct init échouée au démarrage, retry dans 5s...');
+          // Réessayer après un délai (l'itel peut avoir besoin de plus de temps)
+          setTimeout(async () => {
+            const ok = await WifiDirectService.initialize();
+            if (ok) await WifiDirectService.startDiscovery();
+          }, 5000);
+        }
       }
       
       // Auto-connect aux pairs WiFi Direct détectés...
       WifiDirectService.on('onPeerFound', async (peer) => {
-        if (!WifiDirectService.connectedPeer && this._running) {
-          this._log(`📡 Pair WiFi trouvé: ${peer.deviceName || peer.deviceAddress}. Tentative de connexion...`);
-          const success = await WifiDirectService.connectToPeer(peer);
-          if (success) {
-            this._log(`✅ Connecté à ${peer.deviceName || peer.deviceAddress}`);
-          } else {
-            this._log(`❌ Échec connexion à ${peer.deviceName}`);
-          }
+        // VERROU: ignorer si déjà connecté OU si une connexion est en cours
+        if (WifiDirectService.connectedPeer || WifiDirectService.isConnecting || !this._running) {
+          return;
+        }
+        this._log(`📡 Pair WiFi trouvé: ${peer.deviceName || peer.deviceAddress}. Tentative de connexion...`);
+        const success = await WifiDirectService.connectToPeer(peer);
+        if (success) {
+          this._log(`📶 Connexion initiée vers ${peer.deviceName || peer.deviceAddress}. En attente...`);
+        } else {
+          this._log(`❌ Échec connexion à ${peer.deviceName || peer.deviceAddress}`);
         }
       });
 
       WifiDirectService.on('onConnectionChange', async ({ connected, info }) => {
         if (connected) {
-          console.log('[P2PAutoSync] WiFi Direct Connecté. Déclenchement d\'un cycle de sync...');
-          // On force un rail WiFi Direct pour le prochain cycle immédiat
-          this._p2pSyncCycle();
-          
-          // Démarrer la réception automatique sur ce rail
-          WifiDirectService.startReceiving(async (filePath, metadata) => {
-            await this._handleReceivedFile(filePath, metadata, 'WIFI_DIRECT');
-          });
+          this._log('📶 Connexion P2P établie. Attente de la stabilisation IP (2s)...');
+          // NOUVEAU: Délai indispensable pour laisser Android assigner les IPs
+          // (192.168.49.1 n'est pas joignable instantanément)
+          setTimeout(() => {
+            if (WifiDirectService.connectedPeer) {
+                this._log('🚀 Lancement du cycle de synchronisation P2P...');
+                this._p2pSyncCycle();
+                
+                // Démarrer la réception UNIQUEMENT quand un peer est connecté
+                WifiDirectService.startReceiving(async (filePath, metadata) => {
+                  await this._handleReceivedFile(filePath, metadata, 'WIFI_DIRECT');
+                });
+            }
+          }, 2000);
+        } else {
+          // Arrêter la réception quand la connexion est perdue
+          WifiDirectService.stopReceiving();
         }
       });
 
-      WifiDirectService.startReceiving(async (filePath, metadata) => {
-        await this._handleReceivedFile(filePath, metadata, 'WIFI_DIRECT');
-      });
+      // NE PAS appeler startReceiving() ici — le MessageServer natif ne doit
+      // démarrer QUE quand un peer est connecté (sinon OOM sur appareils à faible RAM)
     } catch (e) {
       console.warn('[P2PAutoSync] WiFi Direct init error:', e.message);
     }
@@ -137,6 +156,8 @@ class P2PAutoSyncClass {
     // Attendre un peu que le hardware se libère
     await new Promise(resolve => setTimeout(resolve, 1500));
     await this.start();
+    // Forcer le scan immédiatement
+    WifiDirectService.startDiscovery(true);
     // Forcer le popup si nécessaire
     this.requestWifiDirectActivation();
   }
@@ -199,30 +220,78 @@ class P2PAutoSyncClass {
     try {
       const bestP2P = NetworkRailDetector.getBestRail(true); // Priorité WiFi > BLE
       
-      // Si on cherche depuis longtemps sans rien trouver, on redémarre le scan
-      if (bestP2P === RAIL_TYPES.OFFLINE && WifiDirectService.isDiscovering) {
-        this._discoveryRetryCount = (this._discoveryRetryCount || 0) + 1;
-        if (this._discoveryRetryCount >= 3) {
-           this._log('🔄 Scan bloqué. Tentative de refresh automatique...');
-           this._discoveryRetryCount = 0;
-           WifiDirectService.startDiscovery();
+      // Si on n'a pas de peer connecté, on vérifie l'état de la découverte
+      if (bestP2P === RAIL_TYPES.OFFLINE) {
+        const state = WifiDirectService.getState();
+        
+        // Si pas encore initialisé (échec au démarrage), réessayer
+        if (state.isAvailable && !state.initialized) {
+          this._log('🔧 Itel/appareil non initialisé — tentative d\'init...');
+          const ok = await WifiDirectService.initialize();
+          if (ok) await WifiDirectService.startDiscovery();
+        } else if (!state.isDiscovering) {
+          this._log('💓 Pulsation: Scan inactif, relance automatique...');
+          await WifiDirectService.startDiscovery(true);
+          this._discoveryRetryCount = 0;
+        } else {
+          this._discoveryRetryCount = (this._discoveryRetryCount || 0) + 1;
+          if (this._discoveryRetryCount >= 2) { // Toutes les 40s
+            this._log('💓 Pulsation: Rafraîchissement du scan...');
+            this._discoveryRetryCount = 0;
+            await WifiDirectService.startDiscovery(true);
+          }
         }
       } else {
         this._discoveryRetryCount = 0;
       }
 
       if (bestP2P === RAIL_TYPES.OFFLINE || bestP2P === RAIL_TYPES.INTERNET) {
-        // Optionnel: On peut loguer ici si on veut débugger pourquoi aucun rail P2P n'est vu
-        // this._log('ℹ️ Aucun rail P2P dispo pour la sync.');
         return;
       }
 
       this._log(`🔄 Cycle P2P via ${bestP2P}...`);
 
-      // 1. Propager nos nouveaux posts aux voisins
-      const pendingUploads = await this._getPendingUploads();
-      for (const post of pendingUploads) {
-        await this._propagateToPeers(post, bestP2P);
+      // 1. Échange de Pack (Loba Packs) via WiFi Direct
+      if (bestP2P === RAIL_TYPES.WIFI_DIRECT && WifiDirectService.connectedPeer) {
+         // VÉRIFICATION CRÉTIQUE DU RÔLE:
+         // Si ce device est le Group Owner, il ne peut PAS envoyer via sendMessage
+         // (l'API WiFi P2P cible toujours 192.168.49.1:8988 = le GO lui-même).
+         // Le GO doit RECEVOIR. Seul le CLIENT peut envoyer des packs.
+         if (WifiDirectService.isGroupOwner) {
+           // Le GO écoute en mode réception (déjà actif via startReceiving)
+           if (!this._goLoggedOnce) {
+             this._log('📡 Ce device est le Group Owner — mode réception actif. En attente de packs des clients...');
+             this._goLoggedOnce = true;
+           }
+         } else {
+           // Ce device est le CLIENT — il peut envoyer vers le GO
+           this._goLoggedOnce = false;
+           this._log('📦 Création du Loba Pack en cours (Max 50MB)...');
+           const packPath = await LobaPackService.buildPack();
+           if (packPath) {
+               this._log('📤 Envoi du Loba Pack via WiFi Direct...');
+               const sent = await WifiDirectService.sendFile(packPath, {
+                  hash: `pack_${Date.now()}`,
+                  type: 'LOBA_PACK',
+                  category: 'bundle'
+               });
+               if (sent) {
+                  this._log('✅ Succès: Loba Pack envoyé !');
+                  this._log('🔄 Déconnexion automatique (Swap des rôles)...');
+                  setTimeout(() => WifiDirectService.disconnect(), 3000);
+               } else {
+                  this._log('⚠️ Échec de l\'envoi du Loba Pack.');
+               }
+           } else {
+               this._log('ℹ️ Rien de nouveau à envoyer dans le Pack.');
+           }
+         }
+      } else {
+          // Fallback BLE Mesh local (envois unitaires 5Mo max)
+          const pendingUploads = await this._getPendingUploads();
+          for (const post of pendingUploads) {
+            await this._propagateToPeers(post, bestP2P);
+          }
       }
 
       // 2. Nettoyage LRU
@@ -330,6 +399,21 @@ class P2PAutoSyncClass {
         return;
       }
       
+      // TRAITEMENT DES LOBA PACKS
+      if (metadata.type === 'LOBA_PACK') {
+          this._log(`📥 Reçu Loba Pack via ${source}. Décompression & Traitement...`);
+          const success = await LobaPackService.unpackAndProcess(filePath);
+          if (success) {
+              this._log(`✅ Pack traité avec succès !`);
+              this.stats.totalSyncedP2P++;
+              this._log('🔄 Déconnexion automatique (Swap des rôles)...');
+              setTimeout(() => WifiDirectService.disconnect(), 3000);
+          } else {
+              this._log(`❌ Échec du traitement du Pack.`);
+          }
+          return; // On sort car c'est un pack, on ne continue pas avec la logique unitaire.
+      }
+      
       const hash = metadata.hash || await LocalStorageManager.hashFile(filePath);
       const ext = metadata.type === 'video' ? 'mp4' : 'jpg';
       const savedPath = await LocalStorageManager.saveMedia(filePath, hash, ext);
@@ -432,18 +516,21 @@ class P2PAutoSyncClass {
    */
   requestWifiDirectActivation() {
     if (!this._running || !WifiDirectService.getState().isSupported) return;
-    if (WifiDirectService.getState().isDiscovering) return;
+    
+    const state = WifiDirectService.getState();
+    // Ne pas déranger si on est déjà en cours ou déjà connecté
+    if (state.isDiscovering || state.connectedPeer) return;
 
     require('react-native').Alert.alert(
       "🚀 Mode Partage Offline",
-      "Voulez-vous activer le WiFi Direct pour échanger des contenus avec les utilisateurs à proximité sans utiliser votre data ?",
+      "Voulez-vous activer le WiFi Direct pour partager vos contenus sans data avec les utilisateurs proches ?",
       [
         { text: "Plus tard", style: "cancel" },
         { 
           text: "Activer", 
           onPress: async () => {
             const ok = await WifiDirectService.initialize();
-            if (ok) WifiDirectService.startDiscovery();
+            if (ok) WifiDirectService.startDiscovery(true);
           } 
         }
       ]

@@ -13,7 +13,7 @@ import {
   Share,
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { Video, ResizeMode } from 'expo-av';
+import { VideoView, useVideoPlayer } from 'expo-video';
 import * as SecureStore from 'expo-secure-store';
 import { useMeshConnection } from '../../bluetooth/hooks/useMeshConnection';
 import withObservables from '@nozbe/with-observables';
@@ -25,6 +25,18 @@ const { width, height } = Dimensions.get('window');
 
 
 const userInterests = ['Food', 'Tech', 'Music', 'Fashion', 'Sports', 'Travel', 'Comedy', 'Education'];
+
+const VideoPlayerItem = ({ source, shouldPlay, style }) => {
+  const player = useVideoPlayer(source, p => {
+    p.loop = true;
+    p.muted = false;
+  });
+  React.useEffect(() => {
+    if (shouldPlay) player.play();
+    else player.pause();
+  }, [shouldPlay]);
+  return <VideoView player={player} style={style} contentFit="cover" />;
+};
 
 function LobaForYouScreen({ onBack, onNavigate, videos = [] }) {
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
@@ -158,13 +170,10 @@ function LobaForYouScreen({ onBack, onNavigate, videos = [] }) {
     <View style={[styles.videoContainer, { height: height }]}>
       {item.type === 'video' ? (
         isCloseToVisible ? (
-          <Video
+          <VideoPlayerItem
             source={{ uri: item.video }}
-            style={styles.videoBackground}
-            resizeMode={ResizeMode.COVER}
             shouldPlay={index === currentVideoIndex}
-            isLooping
-            isMuted={false}
+            style={styles.videoBackground}
           />
         ) : (
           <View style={[styles.videoBackground, { backgroundColor: '#000' }]} />

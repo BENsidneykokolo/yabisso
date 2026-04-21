@@ -90,19 +90,6 @@ function LobaFeedScreen({ onBack, onNavigate, posts = [] }) {
   };
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.topBar}>
-        <Text style={styles.title}>Yabisso Social</Text>
-        <View style={styles.topBarRight}>
-          <Pressable style={styles.iconBtn}>
-            <MaterialCommunityIcons name="magnify" size={26} color="#fff" />
-          </Pressable>
-          <Pressable style={styles.iconBtn}>
-            <MaterialCommunityIcons name="chat-bubble-outline" size={26} color="#fff" />
-            <View style={styles.notificationDot} />
-          </Pressable>
-        </View>
-      </View>
-
       <View style={styles.storiesContainer}>
         <ScrollView
           horizontal
@@ -157,46 +144,6 @@ function LobaFeedScreen({ onBack, onNavigate, posts = [] }) {
       <Pressable style={styles.fab}>
         <MaterialCommunityIcons name="pencil" size={28} color="#fff" />
       </Pressable>
-
-      {/* Floating Bottom Navigation */}
-      <SafeAreaView style={styles.bottomNavWrapper}>
-        <View style={styles.bottomNav}>
-          {navItems.map((item) => {
-            const isActive = activeTabNav === item.label;
-            return (
-              <Pressable
-                key={item.label}
-                style={({ pressed }) => [
-                  styles.navItem,
-                  pressed && styles.navItemPressed,
-                ]}
-                onPress={() => {
-                  if (item.label === 'Home') onBack?.();
-                  else if (item.label === 'Profile') onNavigate?.('profile');
-                  else {
-                    setActiveTabNav(item.label);
-                  }
-                }}
-              >
-                <View style={[
-                  styles.navIcon,
-                  isActive && styles.navIconActive,
-                  item.primary && styles.navIconCenter,
-                ]}>
-                  <MaterialCommunityIcons
-                    name={item.icon}
-                    size={isActive || item.primary ? 22 : 18}
-                    color={isActive ? '#0E151B' : '#E6EDF3'}
-                  />
-                </View>
-                <Text style={[styles.navLabel, isActive && styles.navLabelActive]}>
-                  {item.label}
-                </Text>
-              </Pressable>
-            );
-          })}
-        </View>
-      </SafeAreaView>
     </SafeAreaView>
   );
 }
@@ -308,41 +255,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#111a22',
   },
-  topBar: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingTop: 48,
-    paddingBottom: 12,
-    backgroundColor: '#111a22',
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255,255,255,0.05)',
-  },
-  title: {
-    color: '#fff',
-    fontSize: 20,
-    fontWeight: 'bold',
-  },
-  topBarRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 16,
-  },
-  iconBtn: {
-    position: 'relative',
-  },
-  notificationDot: {
-    position: 'absolute',
-    top: -2,
-    right: -2,
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: '#ef4444',
-    borderWidth: 2,
-    borderColor: '#111a22',
-  },
   storiesContainer: {
     backgroundColor: '#111a22',
     paddingVertical: 12,
@@ -393,7 +305,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   feedList: {
-    paddingBottom: 150,
+    paddingBottom: 20,
   },
   postCard: {
     marginBottom: 8,

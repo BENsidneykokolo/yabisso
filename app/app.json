@@ -6,7 +6,7 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
-    "newArchEnabled": true,
+    "newArchEnabled": false,
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
@@ -90,7 +90,8 @@
           "bluetoothAlwaysPermission": "Autoriser Yabisso à utiliser le Bluetooth P2P pour l'inscription offline."
         }
       ],
-      "react-native-compressor"
+      "react-native-compressor",
+      "expo-video"
     ]
   }
 }

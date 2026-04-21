@@ -25,13 +25,24 @@ import * as SecureStore from 'expo-secure-store';
 import NetInfo from '@react-native-community/netinfo';
 import LobaBottomNav from '../components/LobaBottomNav';
 import * as ImagePicker from 'expo-image-picker';
-import { Audio, Video } from 'expo-av';
+import { Audio } from 'expo-av';
+import { VideoView, useVideoPlayer } from 'expo-video';
 import * as DocumentPicker from 'expo-document-picker';
 import * as Location from 'expo-location';
 import * as Contacts from 'expo-contacts';
 import { database } from '../../../lib/db';
 import withObservables from '@nozbe/with-observables';
 import { Q } from '@nozbe/watermelondb';
+
+const ViewerVideo = ({ uri, style }) => {
+  const player = useVideoPlayer({ uri }, p => { p.muted = false; p.play(); });
+  return <VideoView player={player} style={style} contentFit="contain" nativeControls />;
+};
+
+const PreviewVideo = ({ uri, style }) => {
+  const player = useVideoPlayer({ uri }, p => { p.loop = true; p.muted = false; p.play(); });
+  return <VideoView player={player} style={style} contentFit="contain" />;
+};
 
 function LobaMessagesScreen({ onBack, onNavigate, friends = [] }) {
   const [conversations, setConversations] = useState([]);
@@ -854,16 +865,7 @@ function LobaMessagesScreen({ onBack, onNavigate, friends = [] }) {
         )}
         
         {viewerContent?.type === 'video' && (
-          <Video
-            source={{ uri: viewerContent.uri }}
-            rate={1.0}
-            volume={1.0}
-            isMuted={false}
-            resizeMode="contain"
-            shouldPlay
-            useNativeControls
-            style={styles.viewerMain}
-          />
+          <ViewerVideo uri={viewerContent.uri} style={styles.viewerMain} />
         )}
       </View>
     </Modal>
@@ -890,16 +892,7 @@ function LobaMessagesScreen({ onBack, onNavigate, friends = [] }) {
 
         <View style={styles.previewMain}>
           {tempMedia?.type === 'video' ? (
-            <Video
-              source={{ uri: tempMedia.uri }}
-              rate={1.0}
-              volume={1.0}
-              isMuted={false}
-              resizeMode="contain"
-              shouldPlay
-              isLooping
-              style={styles.previewImage}
-            />
+            <PreviewVideo uri={tempMedia.uri} style={styles.previewImage} />
           ) : (
             <View style={styles.previewImageContainer}>
               <ImageBackground 

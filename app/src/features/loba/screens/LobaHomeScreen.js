@@ -16,7 +16,7 @@ import {
   Animated,
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { Video, ResizeMode } from 'expo-av';
+import { VideoView, useVideoPlayer } from 'expo-video';
 import * as SecureStore from 'expo-secure-store';
 import LobaBottomNav from '../components/LobaBottomNav';
 import withObservables from '@nozbe/with-observables';
@@ -27,6 +27,17 @@ import { useWifiDirect } from '../hooks/useWifiDirect';
 import { Q } from '@nozbe/watermelondb';
 const { width, height } = Dimensions.get('window');
 
+const VideoPlayerItem = ({ source, shouldPlay, style }) => {
+  const player = useVideoPlayer(source, p => {
+    p.loop = true;
+    p.muted = false;
+  });
+  React.useEffect(() => {
+    if (shouldPlay) player.play();
+    else player.pause();
+  }, [shouldPlay]);
+  return <VideoView player={player} style={style} contentFit="cover" />;
+};
 
 const stories = [
   { id: 1, name: 'My Story', avatar: null, isAdd: true },
@@ -206,13 +217,10 @@ function LobaHomeScreen({ onBack, onNavigate, posts = [] }) {
         </View>
       ) : index === currentVideoIndex ? (
         item.type === 'video' ? (
-          <Video
+          <VideoPlayerItem
             source={videoSource}
-            style={styles.videoBackground}
-            resizeMode={ResizeMode.COVER}
             shouldPlay={true}
-            isLooping={true}
-            isMuted={false}
+            style={styles.videoBackground}
           />
         ) : (
           <Image source={{ uri: item.video || item.localMediaPath }} style={styles.videoBackground} />
@@ -290,7 +298,7 @@ function LobaHomeScreen({ onBack, onNavigate, posts = [] }) {
 
   return (
     <View style={styles.container}>
-      <View style={{ position: 'absolute', width: width, height: height, top: 0, left: 0 }}>
+      <View style={{ position: 'absolute', width: width, height: height, top: 0, left: 0, overflow: 'hidden' }}>
       {/* Alerte GPS (Android) */}
       {!wifiState.isLocationEnabled && Platform.OS === 'android' && (
         <View style={styles.gpsWarning}>
@@ -310,7 +318,8 @@ function LobaHomeScreen({ onBack, onNavigate, posts = [] }) {
 
         <Pressable 
           style={styles.statusChip} 
-          onPress={() => setP2pLogModal(true)}
+          onPress={() => P2PAutoSync.forceRefresh()}
+          onLongPress={() => setP2pLogModal(true)}
         >
           {wifiState.connectedPeer ? (
              <MaterialCommunityIcons name="wifi-star" size={14} color="#22c55e" />
@@ -363,12 +372,21 @@ function LobaHomeScreen({ onBack, onNavigate, posts = [] }) {
           renderItem={renderVideo}
           keyExtractor={(item, index) => item.id?.toString() || index.toString()}
           pagingEnabled
+          snapToInterval={height}
+          snapToAlignment="start"
+          decelerationRate="fast"
+          disableIntervalMomentum
           vertical
           showsVerticalScrollIndicator={false}
           initialNumToRender={1}
           maxToRenderPerBatch={1}
-          windowSize={2}
+          windowSize={3}
           removeClippedSubviews={true}
+          getItemLayout={(_, index) => ({
+            length: height,
+            offset: height * index,
+            index,
+          })}
           onMomentumScrollEnd={(e) => {
             const index = Math.round(e.nativeEvent.contentOffset.y / height);
             setCurrentVideoIndex(index);

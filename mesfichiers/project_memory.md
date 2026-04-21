@@ -143,6 +143,9 @@
 - Sprint 5: Favoris - Système de favoris avec stockage SecureStore, écran Favoris fonctionnel
 - Sprint 5: Comparaison de prix - Produits match par ID/nom, navigation vers détails produit avec prix vendeur sélectionné
 - Sprint 5: Confirmation réception - Modal avec commentaire + upload jusqu'à 3 photos, signalement problème commande
+- Sprint 6 (P2P): WiFi Direct - WifiDirectService refactored (startDiscovery stop→start, isConnecting flag, deterministic MAC-based delay, removeGroup cleanup)
+- Sprint 6 (P2P): P2PAutoSync - Heartbeat avec re-init, suppression startReceiving prématuré (fix OOM itel A50), délai post-connexion 2s
+- Sprint 6 (P2P): Mécanisme Ping-Pong (swap de rôles) pour échange bidirectionnel de Loba Packs via WiFi Direct
 
 ## Decisions techniques additionnelles
 - Navigation: React Navigation (a installer)
@@ -153,3 +156,8 @@
 - Dev client requis (WatermelonDB modules natifs, Expo Go insuffisant)
 - WatermelonDB: utiliser SQLiteAdapter (import sqlite), pas makeExpoSQLiteAdapter
 - SMS fallback: react-native-get-sms-android (sendDirect) pour Android
+- WiFi Direct: react-native-wifi-p2p — unidirectionnel (Client→GO uniquement). Swap de rôles automatique via déconnexion après transfert.
+- WiFi Direct connexion: délai déterministe basé sur MAC du peer (lastByte × 50ms) pour éviter les collisions GO Negotiation
+- WiFi Direct déconnexion: removeGroup() + relance scan après 3s pour permettre le swap de rôles
+- Budget devices (itel A50): ne jamais démarrer MessageServer sans connexion active (OOM), toujours stop→start pour discovery, délais de respiration hardware (300-800ms)
+

@@ -15,7 +15,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { Video, ResizeMode } from 'expo-av';
+import { VideoView, useVideoPlayer } from 'expo-video';
 
 const { width, height } = Dimensions.get('window');
 
@@ -26,6 +26,10 @@ export default function LobaPreviewScreen({ media, onBack, onUpload }) {
   const [showFilters, setShowFilters] = useState(false);
   const [compress, setCompress] = useState(true);
   const { publishPost, isPublishing } = useLobaPublish();
+  const videoPlayer = useVideoPlayer(
+    media.type === 'video' ? { uri: media.uri } : null,
+    p => { p.loop = true; p.muted = false; p.play(); }
+  );
   
   const handleUpload = async () => {
     // 1. Déclenche la publication en arrière-plan (DB + Mesh) avec l'option compress
@@ -48,14 +52,7 @@ export default function LobaPreviewScreen({ media, onBack, onUpload }) {
   return (
     <View style={styles.container}>
       {media.type === 'video' ? (
-        <Video
-          source={{ uri: media.uri }}
-          style={styles.previewMedia}
-          resizeMode={ResizeMode.COVER}
-          shouldPlay
-          isLooping
-          isMuted={false}
-        />
+        <VideoView player={videoPlayer} style={styles.previewMedia} contentFit="cover" />
       ) : (
         <Image source={{ uri: media.uri }} style={styles.previewMedia} />
       )}
