@@ -30,6 +30,7 @@ export default function LobaPacksScreen({ onBack }) {
   const [isSyncing, setIsSyncing] = useState(false);
   const [syncStatus, setSyncStatus] = useState('');
   const [syncProgress, setSyncProgress] = useState(0);
+  const [decompressProgress, setDecompressProgress] = useState(0);
   const [p2pStatus, setP2pStatus] = useState({ role: '', ip: '' });
   const [expandLogs, setExpandLogs] = useState(false);
 
@@ -86,7 +87,7 @@ export default function LobaPacksScreen({ onBack }) {
         setSyncStatus(`📥 Réception du pack : ${progress}%`);
       } else if (status === 'complete') {
         setSyncProgress(100);
-        setSyncStatus('📦 Pack reçu ! Décompression...');
+        setSyncStatus('📦 Pack reçu !');
       }
     });
 
@@ -99,9 +100,20 @@ export default function LobaPacksScreen({ onBack }) {
         setSyncStatus(message || '📤 Envoi en cours...');
       } else if (status === 'RECEIVING') {
         setIsSyncing(true);
-        setSyncStatus(message || '📥 Réception en cours...');
-        setSyncProgress(0);
+        setSyncStatus(message || '🧬 Décompression en cours...');
+        // Simuler progression décompression
+        setDecompressProgress(0);
+        const interval = setInterval(() => {
+          setDecompressProgress(prev => {
+            if (prev >= 90) {
+              clearInterval(interval);
+              return 90;
+            }
+            return prev + 10;
+          });
+        }, 500);
       } else if (status === 'SUCCESS') {
+        setDecompressProgress(100);
         setSyncProgress(100);
         setSyncStatus('✅ Synchronisation réussie !');
         addLog('✅ Contenu traité avec succès !');
@@ -109,16 +121,19 @@ export default function LobaPacksScreen({ onBack }) {
           setIsSyncing(false);
           setSyncStatus('');
           setSyncProgress(0);
+          setDecompressProgress(0);
         }, 2000);
       } else if (status === 'ERROR') {
         addLog(`❌ Erreur: ${message}`);
         setIsSyncing(false);
         setSyncStatus('');
         setSyncProgress(0);
+        setDecompressProgress(0);
       } else if (status === 'IDLE') {
         setIsSyncing(false);
         setSyncStatus('');
         setSyncProgress(0);
+        setDecompressProgress(0);
       }
     });
 
@@ -249,9 +264,23 @@ export default function LobaPacksScreen({ onBack }) {
            <ActivityIndicator size="small" color="#fff" />
            <View style={styles.floatingProgressInfo}>
               <Text style={styles.floatingProgressText}>{syncStatus}</Text>
-              <View style={styles.miniProgressBarBg}>
-                 <View style={[styles.miniProgressBarFill, { width: `${syncProgress}%` }]} />
-              </View>
+              
+              {/* Barre de progression transfert */}
+              {syncProgress > 0 && syncProgress < 100 && (
+                <View style={styles.miniProgressBarBg}>
+                   <View style={[styles.miniProgressBarFill, { width: `${syncProgress}%` }]} />
+                </View>
+              )}
+              
+              {/* Barre de progression décompression */}
+              {decompressProgress > 0 && (
+                <View style={{ marginTop: 8 }}>
+                   <Text style={styles.decompressLabel}>🧬 Décompression: {decompressProgress}%</Text>
+                   <View style={[styles.miniProgressBarBg, { backgroundColor: 'rgba(255,255,255,0.15)' }]}>
+                      <View style={[styles.miniProgressBarFill, { width: `${decompressProgress}%`, backgroundColor: '#F59E0B' }]} />
+                   </View>
+                </View>
+              )}
            </View>
         </View>
       )}
@@ -605,6 +634,11 @@ const styles = StyleSheet.create({
     height: '100%',
     backgroundColor: '#fff',
     borderRadius: 3,
+  },
+  decompressLabel: {
+    color: '#fff',
+    fontSize: 12,
+    marginBottom: 4,
   },
   sectionTitle: {
     color: '#fff',

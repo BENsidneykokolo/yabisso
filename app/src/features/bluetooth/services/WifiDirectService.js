@@ -642,14 +642,49 @@ class WifiDirectServiceClass {
               });
             }, 800);
 
+            // Timeout de 30 secondes pour forcer la progression si le native bloque
+            const timeoutId = setTimeout(async () => {
+              if (progressInterval) clearInterval(progressInterval);
+              console.log('[WifiDirectService] Timeout réception atteint, passage forcé à 100%');
+              this._emit('onTransferProgress', { hash: meta.hash, progress: 100, status: 'complete' });
+              this._emit('onLogUpdate', ['⏱️ Timeout atteint, passage à la décompression...']);
+              if (onFileReceived) {
+                // Chercher le fichier qui a été reçu
+                try {
+                  const files = await FileSystem.readDirectoryAsync(nativeMediaDir);
+                  console.log('[WifiDirectService] Fichiers trouvés après timeout:', files);
+                  if (files.length > 0) {
+                    const receivedPath = `file://${nativeMediaDir}${files[0]}`;
+                    console.log('[WifiDirectService] Appel onFileReceived avec:', receivedPath);
+                    onFileReceived(receivedPath, meta);
+                  } else {
+                    this._emit('onLogUpdate', ['❌ Aucun fichier trouvé après timeout']);
+                  }
+                } catch (e) {
+                  console.log('[WifiDirectService] Erreur lecture dir après timeout:', e.message);
+                  this._emit('onLogUpdate', ['❌ Erreur: ' + e.message]);
+                }
+              }
+            }, 30000);
+
             try {
+              console.log('[WifiDirectService] Attente de réception du fichier...');
               const receivedPath = await WifiP2P.receiveFile(
                 nativeMediaDir,
                 meta.filename || `${meta.hash}.mp4`
               );
               
+              clearTimeout(timeoutId); // Annuler le timeout si réussi
               if (progressInterval) clearInterval(progressInterval);
               this._emit('onTransferProgress', { hash: meta.hash, progress: 100, status: 'complete' });
+
+              // Debug: Vérifier si le fichier existe réellement
+              const receivedFileInfo = await FileSystem.getInfoAsync(receivedPath);
+              console.log(`[WifiDirectService] Fichier reçu vérifier: ${receivedPath}, existe: ${receivedFileInfo.exists}, taille: ${receivedFileInfo.size}`);
+              
+              // Debug: Lister tous les fichiers dans le dossier de réception
+              const dirFiles = await FileSystem.readDirectoryAsync(nativeMediaDir);
+              console.log(`[WifiDirectService] Fichiers dans ${nativeMediaDir}: ${dirFiles.join(', ')}`);
 
               const successMsg = `📦 Envoi du pack reçu ! (${meta.hash?.substring(0,8)})`;
               console.log(`[WifiDirectService] ${successMsg}`);
@@ -657,7 +692,13 @@ class WifiDirectServiceClass {
               
               if (onFileReceived) onFileReceived(receivedPath, meta);
             } catch (err) {
+              clearTimeout(timeoutId); // Annuler le timeout en cas d'erreur aussi
               if (progressInterval) clearInterval(progressInterval);
+              
+              // Debug: Même en cas d'erreur, vérifier si un fichier est arrivé
+              const dirFiles = await FileSystem.readDirectoryAsync(nativeMediaDir);
+              console.log(`[WifiDirectService] Erreur réception, fichiers présents: ${dirFiles.join(', ')}`);
+              
               this._emit('onTransferProgress', { hash: meta.hash, progress: 0, status: 'failed' });
               const errMsg = `❌ Erreur réception: ${err?.message || 'Inconnue'}`;
               console.error(`[WifiDirectService] ${errMsg}`, err);

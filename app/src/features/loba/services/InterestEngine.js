@@ -21,7 +21,20 @@ export class InterestEngine {
   static async processPackContent(unpackDir, manifestPosts) {
      let successCount = 0;
 
-     for (const post of manifestPosts) {
+     console.log(`[InterestEngine] Debut traitement: ${manifestPosts.length} posts, dossier: ${unpackDir}`);
+
+     // Debug: Lister les fichiers dans le dossier décompressé
+     try {
+       const unpackFiles = await FileSystem.readDirectoryAsync(unpackDir);
+       console.log(`[InterestEngine] Fichiers dans unpackDir: ${unpackFiles.join(', ')}`);
+     } catch (e) {
+       console.log(`[InterestEngine] Impossible de lister unpackDir: ${e.message}`);
+     }
+
+     for (let i = 0; i < manifestPosts.length; i++) {
+         const post = manifestPosts[i];
+         console.log(`[InterestEngine] Traitement post ${i+1}/${manifestPosts.length}: ${post.hash}`);
+         
          try {
              // 1. Déduplication : Vérification si le post existe déjà
              const existingCount = await database.get('loba_posts').query(Q.where('hash', post.hash)).count();
@@ -39,7 +52,10 @@ export class InterestEngine {
 
              // 3. Sauvegarde physique du fichier (Phase 16: Normalisation sourcePath)
              const sourcePath = normalizePath(`${unpackDir}${post.filename}`);
+             console.log(`[InterestEngine] Vérification fichier: ${sourcePath}`);
+             
              const fileInfo = await FileSystem.getInfoAsync(sourcePath);
+             console.log(`[InterestEngine] Fichier existe: ${fileInfo.exists}`);
              
              if (!fileInfo.exists) {
                  console.warn(`[InterestEngine] Fichier introuvable dans le pack : ${post.filename}`);
@@ -47,7 +63,9 @@ export class InterestEngine {
              }
 
              // On utilise le LocalStorageManager pour stocker durablement et hasher/sécuriser
+             console.log(`[InterestEngine] Sauvegarde media: ${post.hash}`);
              const result = await LocalStorageManager.saveMedia(sourcePath, post.hash, post.type === 'video' ? 'mp4' : 'jpg');
+             console.log(`[InterestEngine] saveMedia result:`, result ? 'OK' : 'FAILED');
             
              if (result && result.path) {
                  const { path: savedPath, size: savedSize } = result;
@@ -78,6 +96,7 @@ export class InterestEngine {
          }
      }
      
+     console.log(`[InterestEngine] Fin traitement. ${successCount} posts sauvegardés.`);
      return successCount;
   }
 

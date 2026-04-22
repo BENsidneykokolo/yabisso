@@ -5,6 +5,12 @@ import { Q } from '@nozbe/watermelondb';
 import { InterestEngine } from './InterestEngine';
 import { WifiDirectService } from '../../bluetooth/services/WifiDirectService';
 
+// Vérification que unzip est disponible
+if (!unzip) {
+  console.error('[LobaPackService] ERREUR CRITIQUE: react-native-zip-archive n\'est pas lié !');
+  console.error('[LobaPackService] Veuillez rebuild l\'APK avec: npx expo run:android');
+}
+
 const MAX_PACK_SIZE = 50 * 1024 * 1024; // 50 MB
 const PACKS_DIR = `${FileSystem.documentDirectory}loba_packs/`;
 const TEMP_UNPACK_DIR = `${FileSystem.documentDirectory}loba_packs_temp/`;
@@ -154,10 +160,10 @@ export class LobaPackService {
     }
   }
 
-  /**
-   * Traite un pack reçu d'un autre utilisateur.
-   * @param {string} zipPath - Le chemin du ZIP reçu.
-   */
+/**
+    * Traite un pack reçu d'un autre utilisateur.
+    * @param {string} zipPath - Le chemin du ZIP reçu.
+    */
   static async unpackAndProcess(zipPath) {
     if (!zipPath) return false;
     await this.initDirectories();
@@ -168,15 +174,22 @@ export class LobaPackService {
     try {
       console.log(`[LobaPackService] Décompression de ${zipPath}...`);
       
+      // Debug: Vérifier que le zip existe
+      const zipInfo = await FileSystem.getInfoAsync(zipPath);
+      console.log(`[LobaPackService] ZIP existe: ${zipInfo.exists}, taille: ${zipInfo.size}`);
+      
       // 1. Unzip (Phase 15: Normalisation Bridge Natif)
       const normalizedZip = normalizePath(zipPath);
       const normalizedDest = normalizePath(unpackDir);
       
+      console.log('[LobaPackService] Début unzip...');
       await unzip(normalizedZip, normalizedDest);
+      console.log('[LobaPackService] Unzip terminé.');
       
       // 2. Lire le manifeste (Phase 16: Normalisation complète)
       const manifestPath = normalizePath(`${unpackDir}manifest.json`);
       const manifestInfo = await FileSystem.getInfoAsync(manifestPath);
+      console.log(`[LobaPackService] Manifest existe: ${manifestInfo.exists}`);
       
       if (!manifestInfo.exists) {
         console.error('[LobaPackService] Archive invalide: manifest.json manquant.');
@@ -194,8 +207,10 @@ export class LobaPackService {
       console.log(`[LobaPackService] Manifeste lu : ${manifestData.posts.length} posts à traiter.`);
 
       // 3. Déléguer au moteur d'intelligence (Phase 16: Normalisation unpackDir)
+      console.log('[LobaPackService] Début InterestEngine.processPackContent...');
       const normalizedUnpackDir = normalizePath(unpackDir);
       const successCount = await InterestEngine.processPackContent(normalizedUnpackDir, manifestData.posts);
+      console.log(`[LobaPackService] InterestEngine terminé: ${successCount} posts conservés.`);
       
       console.log(`[LobaPackService] Pack traité avec succès. ${successCount} nouvelles publications conservées.`);
       return true;
