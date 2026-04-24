@@ -627,80 +627,78 @@ class WifiDirectServiceClass {
             console.log(`[WifiDirectService] ${logMsg}`);
             this._emit('onLogUpdate', [logMsg]);
 
-            // Simulation de progression côté récepteur ( Phase 20 )
+            // Phase 21 OOM-Fix: Pour les gros fichiers > 10MB, on saute receiveMessage
+            // (qui lit le fichier EN ENTIER en RAM → OOM sur appareils budget)
+            // On utilise uniquement le timeout + receiveFile() pour détecter le fichier.
+            const IS_LARGE_FILE = meta.size > 10 * 1024 * 1024;
+
+            // Simulation de progression
             let simulatedProgress = 0;
-            const estimatedTimeMs = (meta.size / 1024 / 1024) * 800; // Un peu plus lent en réception
-            const step = Math.max(1, Math.floor(90 / (estimatedTimeMs / 800)));
-            
+            const baseMs = IS_LARGE_FILE ? (meta.size / 1024 / 1024) * 3000 : (meta.size / 1024 / 1024) * 800;
+            const step = Math.max(1, Math.floor(90 / (baseMs / 1000)));
+
             const progressInterval = setInterval(() => {
               simulatedProgress = Math.min(98, simulatedProgress + step);
-              this._emit('onTransferProgress', { 
-                hash: meta.hash, 
-                progress: simulatedProgress, 
+              this._emit('onTransferProgress', {
+                hash: meta.hash,
+                progress: simulatedProgress,
                 status: 'receiving',
-                size: meta.size 
+                size: meta.size
               });
-            }, 800);
+            }, 1000);
 
-            // Timeout de 30 secondes pour forcer la progression si le native bloque
+            // Phase 21: Timeout adaptatif - 2min pour gros fichiers, 30s pour petits
+            const timeoutMs = IS_LARGE_FILE ? 120000 : 30000;
             const timeoutId = setTimeout(async () => {
               if (progressInterval) clearInterval(progressInterval);
-              console.log('[WifiDirectService] Timeout réception atteint, passage forcé à 100%');
+              console.log(`[WifiDirectService] Timeout (${timeoutMs/1000}s) atteint, recherche du fichier reçu...`);
               this._emit('onTransferProgress', { hash: meta.hash, progress: 100, status: 'complete' });
-              this._emit('onLogUpdate', ['⏱️ Timeout atteint, passage à la décompression...']);
+              this._emit('onLogUpdate', ['⏱️ Timeout atteint, recherche du fichier...']);
               if (onFileReceived) {
-                // Chercher le fichier qui a été reçu
                 try {
                   const files = await FileSystem.readDirectoryAsync(nativeMediaDir);
-                  console.log('[WifiDirectService] Fichiers trouvés après timeout:', files);
+                  const zipFile = files.find(f => f.endsWith('.zip'));
                   if (files.length > 0) {
-                    const receivedPath = `file://${nativeMediaDir}${files[0]}`;
-                    console.log('[WifiDirectService] Appel onFileReceived avec:', receivedPath);
+                    const receivedPath = `file://${nativeMediaDir}${zipFile || files[0]}`;
+                    console.log('[WifiDirectService] Fichier trouvé:', receivedPath);
                     onFileReceived(receivedPath, meta);
                   } else {
                     this._emit('onLogUpdate', ['❌ Aucun fichier trouvé après timeout']);
                   }
                 } catch (e) {
-                  console.log('[WifiDirectService] Erreur lecture dir après timeout:', e.message);
                   this._emit('onLogUpdate', ['❌ Erreur: ' + e.message]);
                 }
               }
-            }, 30000);
+            }, timeoutMs);
 
             try {
-              console.log('[WifiDirectService] Attente de réception du fichier...');
+              // Phase 21 OOM-Fix: receiveFile ne passe PAS par convertStreamToString
+              // Il écrit directement le fichier sur disque → pas d'OOM
+              console.log(`[WifiDirectService] Réception fichier via receiveFile (timeout: ${timeoutMs/1000}s)...`);
               const receivedPath = await WifiP2P.receiveFile(
                 nativeMediaDir,
-                meta.filename || `${meta.hash}.mp4`
+                meta.filename || `${meta.hash}.zip`
               );
-              
-              clearTimeout(timeoutId); // Annuler le timeout si réussi
+
+              clearTimeout(timeoutId);
               if (progressInterval) clearInterval(progressInterval);
               this._emit('onTransferProgress', { hash: meta.hash, progress: 100, status: 'complete' });
 
-              // Debug: Vérifier si le fichier existe réellement
               const receivedFileInfo = await FileSystem.getInfoAsync(receivedPath);
-              console.log(`[WifiDirectService] Fichier reçu vérifier: ${receivedPath}, existe: ${receivedFileInfo.exists}, taille: ${receivedFileInfo.size}`);
-              
-              // Debug: Lister tous les fichiers dans le dossier de réception
+              console.log(`[WifiDirectService] Fichier reçu: ${receivedPath}, ${(receivedFileInfo.size/1024/1024).toFixed(1)}MB`);
+
               const dirFiles = await FileSystem.readDirectoryAsync(nativeMediaDir);
               console.log(`[WifiDirectService] Fichiers dans ${nativeMediaDir}: ${dirFiles.join(', ')}`);
 
-              const successMsg = `📦 Envoi du pack reçu ! (${meta.hash?.substring(0,8)})`;
-              console.log(`[WifiDirectService] ${successMsg}`);
-              this._emit('onLogUpdate', [successMsg, "⚙️ Traitement et décompression..."]);
-              
+              this._emit('onLogUpdate', [`📦 Reçu: ${(receivedFileInfo.size/1024/1024).toFixed(1)}MB`, "⚙️ Décompression..."]);
               if (onFileReceived) onFileReceived(receivedPath, meta);
             } catch (err) {
-              clearTimeout(timeoutId); // Annuler le timeout en cas d'erreur aussi
+              clearTimeout(timeoutId);
               if (progressInterval) clearInterval(progressInterval);
-              
-              // Debug: Même en cas d'erreur, vérifier si un fichier est arrivé
               const dirFiles = await FileSystem.readDirectoryAsync(nativeMediaDir);
-              console.log(`[WifiDirectService] Erreur réception, fichiers présents: ${dirFiles.join(', ')}`);
-              
+              console.log(`[WifiDirectService] Erreur, fichiers présents: ${dirFiles.join(', ')}`);
               this._emit('onTransferProgress', { hash: meta.hash, progress: 0, status: 'failed' });
-              const errMsg = `❌ Erreur réception: ${err?.message || 'Inconnue'}`;
+              const errMsg = `❌ Erreur: ${err?.message || 'Inconnue'}`;
               console.error(`[WifiDirectService] ${errMsg}`, err);
               this._emit('onLogUpdate', [errMsg]);
             }

@@ -22,6 +22,7 @@ import LobaBottomNav from '../components/LobaBottomNav';
 import withObservables from '@nozbe/with-observables';
 import { database } from '../../../lib/db';
 import { P2PAutoSync } from '../../bluetooth/services/P2PAutoSync';
+import { WifiDirectService } from '../../bluetooth/services/WifiDirectService';
 import { useMeshConnection } from '../../bluetooth/hooks/useMeshConnection';
 import { useWifiDirect } from '../hooks/useWifiDirect';
 import { Q } from '@nozbe/watermelondb';
@@ -86,17 +87,48 @@ function LobaHomeScreen({ onBack, onNavigate, posts = [] }) {
 
   useEffect(() => {
     P2PAutoSync.start();
-    // Popup d'autorisation demandé par l'utilisateur
     P2PAutoSync.requestWifiDirectActivation();
 
-    // S'abonner aux logs P2P pour l'UI
     const unsubLogs = P2PAutoSync.onLogUpdate((logs) => {
       setP2pLogs([...logs]);
+    });
+
+    const unsubSync = WifiDirectService.on('onSyncStatus', ({ status }) => {
+      if (status === 'SUCCESS') {
+        console.log('[LobaHomeScreen] Pack traité, rechargement du feed depuis la DB...');
+        setTimeout(async () => {
+          try {
+            const freshPosts = await database.get('loba_posts')
+              .query(Q.sortBy('created_at', Q.desc), Q.take(50))
+              .fetch();
+            setFeedVideos(freshPosts.map(p => ({
+              id: p.id,
+              username: p.username,
+              avatar: p.avatar,
+              video: p.localMediaPath || p.videoUrl || p.imageUrl,
+              type: p.videoUrl || (p.localMediaPath && p.localMediaPath.endsWith('.mp4')) ? 'video' : 'photo',
+              caption: p.content,
+              song: 'Original Sound - ' + p.username,
+              likes: p.likes,
+              comments: p.comments,
+              progress: 0,
+              liked: p.isLiked,
+              followed: false,
+              saved: false,
+              filterColor: p.filterColor,
+            })));
+            console.log(`[LobaHomeScreen] Feed rechargé: ${freshPosts.length} posts`);
+          } catch (e) {
+            console.error('[LobaHomeScreen] Erreur reload feed:', e);
+          }
+        }, 1500);
+      }
     });
 
     return () => {
       P2PAutoSync.stop();
       unsubLogs();
+      unsubSync();
     };
   }, []);
 
@@ -980,7 +1012,7 @@ const ShareOption = ({ icon, color, label, onPress }) => (
 
 const enhance = withObservables([], () => ({
   posts: database.get('loba_posts').query(
-    Q.sortBy('downloaded_at', Q.desc),
+    Q.sortBy('created_at', Q.desc),
     Q.take(50)
   ).observe(),
 }));

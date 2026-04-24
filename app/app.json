@@ -7,6 +7,11 @@
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
     "newArchEnabled": false,
+    "devClient": true,
+    "packagerOpts": {
+      "host": "192.168.1.69",
+      "port": 8081
+    },
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",

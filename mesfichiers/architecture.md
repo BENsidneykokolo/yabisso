@@ -384,3 +384,12 @@ PackSvc --> APIG
 - **Priorité de transport** : BLE Mesh pour les micro-mises à jour (prix, dispo) -> WiFi Direct pour les médias/packs -> SMS pour les tokens de sécurité.
 - **Packs** : Les YAB-Packs sont le "carburant" de l'économie offline; ils permettent aux kiosques de rester à jour et de monétiser la distribution de données.
 - **Confiance** : La validation kiosque signe la donnée, la rendant légitime pour la propagation mesh entre pairs.
+
+## Mises à jour techniques (2026-04-24)
+
+### P2P WiFi Direct — Sprint 6 (Complété)
+- **Timeout adaptatif**: 120s pour fichiers > 10MB, 30s pour petits fichiers
+- **OOM-Fix itel A50**: `receiveFile()` appelé directement (évite `convertStreamToString` qui lisait tout en RAM)
+- **Auto-refresh feed Loba**: Abonnement à `onSyncStatus === SUCCESS` → recharge la DB après décompression
+- **Support fichiers individuels**: Gère `.zip` (packs) et fichiers个体 (vidéo/image)
+- **Fichiers modifiés**: `WifiDirectService.js`, `LobaHomeScreen.js`, `LobaPackService.js`

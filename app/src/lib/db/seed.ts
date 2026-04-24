@@ -31,6 +31,19 @@ export const seedDatabase = async () => {
           product.price = p.price;
           product.category = p.category;
           product.isNew = p.is_new;
+          product.imageUrl = '';
+          product.description = '';
+          product.minPrice = '0';
+          product.stock = 0;
+          product.photosJson = '[]';
+          product.condition = 'neuf';
+          product.colorsJson = '[]';
+          product.sizesJson = '[]';
+          product.tagsJson = '[]';
+          product.sellerId = '';
+          product.sellerName = '';
+          product.isValidated = false;
+          product.productSyncStatus = 'local';
         });
       }
     });

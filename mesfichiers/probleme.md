@@ -122,13 +122,47 @@
   - Remplacement du jitter aléatoire par un **délai déterministe basé sur l'adresse MAC du peer** (`lastByte * 50ms`). Chaque téléphone voit un MAC différent → délai garanti différent.
   - Suppression de `removeGroup()` avant `connect()` (gardé uniquement dans `disconnect()`).
   - Après collision (code:0), le téléphone perdant passe en mode passif et relance le scan.
-- **Statut** : 🔄 En cours de validation
+- **Statut** : ✅ Résolu
+
+### BUG-018 — Pack reçu non affiché dans le service Loba (feed non rafraîchi + OOM itel)
+- **Date** : 2026-04-24
+- **Problème** : Le partage de pack Loba fonctionnait (transfert OK) mais le contenu reçu n'apparaissait pas dans le feed Loba. Sur itel A50 (128MB RAM), crash `OutOfMemoryError` avec `88MB allocation` dans `MessageServer.convertStreamToString()` pour un pack de 36MB.
+- **Cause** : 
+  1. **OOM**: `receiveMessage()` natif lisait le fichier EN ENTIER en mémoire pour parser le JSON. Sur appareils budget (128MB RAM total), un pack de 36MB sature le heap.
+  2. **Feed non rafraîchi**: `LobaHomeScreen` ne s'abonnait pas aux événements `onSyncStatus` pour recharger le feed après décompression. Le HOC `withObservables` ne détectait pas les changements via `posts` props.
+  3. **Timeout trop court**: 30s insuffisant pour recevoir un gros fichier via WiFi Direct sur appareil lent.
+- **Solution** : 
+  - **WifiDirectService.js**: Timeout adaptatif → 120s pour fichiers > 10MB, 30s pour les petits. `receiveFile()` appelé directement (n'écrit pas en RAM). Logs clarifiés avec tailles en MB.
+  - **LobaHomeScreen.js**: Abonnement à `onSyncStatus` avec `status === 'SUCCESS'` → recharge le feed depuis la DB (50 posts triés par date) après 1.5s.
+  - **LobaPackService.js**: Support des fichiers `.zip` (packs) ET fichiers individuels (vidéo/image). Gestion d'erreur améliorée pour unzip.
+- **Étapes** :
+  1. Le récepteur affiche "📩 Transfert entrant: pack_xxx... (36.4 MB)"
+  2. Timeout porté à 120s pour laisser le temps sur itel A50
+  3. Après réception → décompression → insertion en DB
+  4. LobaHomeScreen détecte `SUCCESS` → relit la DB → affiche les posts
+- **Fichiers modifiés** :
+  - `app/src/features/bluetooth/services/WifiDirectService.js`
+  - `app/src/features/loba/screens/LobaHomeScreen.js`
+  - `app/src/features/loba/services/LobaPackService.js`
+- **Statut** : ✅ Résolu
 
 ### BUG-016 — `disconnect()` ne relançait pas le scan
 - **Date** : 2026-04-21
 - **Problème** : Après déconnexion (swap de rôles), aucun des deux téléphones ne relançait la recherche de peers.
 - **Cause** : `disconnect()` ne faisait que couper la connexion sans relancer `startDiscovery()`. `isDiscovering` restait à `false`.
 - **Solution** : `disconnect()` utilise `removeGroup()` pour nettoyage total, puis relance automatiquement `startDiscovery(true)` après 3s.
+- **Statut** : ✅ Résolu
+
+### BUG-017 — "Le réseau n'a pas pu être joint" (timeout réseau)
+- **Date** : 2026-04-22
+- **Problème** : Erreur "Le réseau n'a pas pu être joint" lors du scan QR pour lancer l'application
+- **Cause** : L'APK EAS essayait de se connecter au serveur Metro (`192.168.1.66:8081`) qui n'était pas accessible depuis le téléphone
+- **Solution** : Build d'un APK debug local avec le JS bundle inclus via `npx expo prebuild` + `./gradlew assembleDebug`
+- **Étapes** :
+  1. `npx expo prebuild --platform android` (génère le dossier android)
+  2. `cd android && ./gradlew.bat assembleDebug` (build l'APK)
+  3. L'APK debug est dans `app/android/app/build/outputs/apk/debug/app-debug.apk`
+- **Note** : L'APK généré contient le JS bundle intégré, fonctionne sans Metro/serveur externe
 - **Statut** : ✅ Résolu
 
 ---

@@ -162,7 +162,8 @@ export class LobaPackService {
 
 /**
     * Traite un pack reçu d'un autre utilisateur.
-    * @param {string} zipPath - Le chemin du ZIP reçu.
+    * Phase 21: Gère aussi bien les .zip (packs) que les fichiers individuels.
+    * @param {string} zipPath - Le chemin du ZIP reçu ou du fichier individuel.
     */
   static async unpackAndProcess(zipPath) {
     if (!zipPath) return false;
@@ -170,56 +171,84 @@ export class LobaPackService {
 
     const timestamp = Date.now();
     const unpackDir = `${TEMP_UNPACK_DIR}unpack_${timestamp}/`;
-    
+
     try {
-      console.log(`[LobaPackService] Décompression de ${zipPath}...`);
-      
-      // Debug: Vérifier que le zip existe
-      const zipInfo = await FileSystem.getInfoAsync(zipPath);
-      console.log(`[LobaPackService] ZIP existe: ${zipInfo.exists}, taille: ${zipInfo.size}`);
-      
-      // 1. Unzip (Phase 15: Normalisation Bridge Natif)
-      const normalizedZip = normalizePath(zipPath);
-      const normalizedDest = normalizePath(unpackDir);
-      
-      console.log('[LobaPackService] Début unzip...');
-      await unzip(normalizedZip, normalizedDest);
-      console.log('[LobaPackService] Unzip terminé.');
-      
-      // 2. Lire le manifeste (Phase 16: Normalisation complète)
-      const manifestPath = normalizePath(`${unpackDir}manifest.json`);
-      const manifestInfo = await FileSystem.getInfoAsync(manifestPath);
-      console.log(`[LobaPackService] Manifest existe: ${manifestInfo.exists}`);
-      
-      if (!manifestInfo.exists) {
-        console.error('[LobaPackService] Archive invalide: manifest.json manquant.');
-        return false;
-      }
-      
-      const manifestContent = await FileSystem.readAsStringAsync(manifestPath);
-      const manifestData = JSON.parse(manifestContent);
-      
-      if (!manifestData.posts || !Array.isArray(manifestData.posts)) {
-        console.error('[LobaPackService] Manifeste invalide.');
-        return false;
-      }
+      // Phase 21: Vérifier si c'est un ZIP ou un fichier direct
+      const isZipFile = zipPath.endsWith('.zip');
 
-      console.log(`[LobaPackService] Manifeste lu : ${manifestData.posts.length} posts à traiter.`);
+      if (isZipFile) {
+        console.log(`[LobaPackService] Pack ZIP détecté: ${zipPath}`);
+        const zipInfo = await FileSystem.getInfoAsync(zipPath);
+        console.log(`[LobaPackService] ZIP existe: ${zipInfo.exists}, taille: ${zipInfo.size}`);
 
-      // 3. Déléguer au moteur d'intelligence (Phase 16: Normalisation unpackDir)
-      console.log('[LobaPackService] Début InterestEngine.processPackContent...');
-      const normalizedUnpackDir = normalizePath(unpackDir);
-      const successCount = await InterestEngine.processPackContent(normalizedUnpackDir, manifestData.posts);
-      console.log(`[LobaPackService] InterestEngine terminé: ${successCount} posts conservés.`);
-      
-      console.log(`[LobaPackService] Pack traité avec succès. ${successCount} nouvelles publications conservées.`);
-      return true;
+        const normalizedZip = normalizePath(zipPath);
+        const normalizedDest = normalizePath(unpackDir);
+
+        console.log('[LobaPackService] Décompression ZIP...');
+        try {
+          await unzip(normalizedZip, normalizedDest);
+          console.log('[LobaPackService] ZIP décompressé avec succès.');
+        } catch (unzipError) {
+          console.error('[LobaPackService] Erreur unzip:', unzipError);
+          // Phase 21: Essayer de lister le contenu du ZIP directement
+          try {
+            const files = await FileSystem.readDirectoryAsync(FileSystem.documentDirectory + 'loba_packs/');
+            console.log('[LobaPackService] Contenu du dossier packs:', files);
+          } catch (e) {}
+          return false;
+        }
+
+        const manifestPath = normalizePath(`${unpackDir}manifest.json`);
+        const manifestInfo = await FileSystem.getInfoAsync(manifestPath);
+
+        if (!manifestInfo.exists) {
+          console.error('[LobaPackService] Archive invalide: manifest.json manquant.');
+          return false;
+        }
+
+        const manifestContent = await FileSystem.readAsStringAsync(manifestPath);
+        const manifestData = JSON.parse(manifestContent);
+
+        if (!manifestData.posts || !Array.isArray(manifestData.posts)) {
+          console.error('[LobaPackService] Manifeste invalide.');
+          return false;
+        }
+
+        console.log(`[LobaPackService] Manifeste: ${manifestData.posts.length} posts à traiter.`);
+
+        const normalizedUnpackDir = normalizePath(unpackDir);
+        const successCount = await InterestEngine.processPackContent(normalizedUnpackDir, manifestData.posts);
+        console.log(`[LobaPackService] InterestEngine terminé: ${successCount} posts conservés.`);
+
+        return true;
+      } else {
+        // Phase 21: Fichier individuel (vidéo/image reçue en dehors d'un pack)
+        console.log(`[LobaPackService] Fichier individuel détecté: ${zipPath}`);
+        const fileInfo = await FileSystem.getInfoAsync(zipPath);
+        if (!fileInfo.exists) {
+          console.error('[LobaPackService] Fichier individuel introuvable.');
+          return false;
+        }
+        // Traiter comme un seul post
+        const singlePost = [{
+          hash: Date.now().toString(),
+          filename: zipPath.split('/').pop(),
+          type: zipPath.endsWith('.mp4') ? 'video' : 'image',
+          category: 'general',
+          username: 'P2P Peer',
+          content: 'Contenu reçu via WiFi Direct',
+          size: fileInfo.size,
+        }];
+
+        const successCount = await InterestEngine.processPackContent(normalizePath(FileSystem.documentDirectory), singlePost);
+        console.log(`[LobaPackService] Fichier individuel traité: ${successCount} posts conservés.`);
+        return successCount > 0;
+      }
 
     } catch (e) {
       console.error('[LobaPackService] Erreur lors du traitement de l\'archive:', e);
       return false;
     } finally {
-      // Nettoyage impératif des fichiers temporaires (zip recu et dossier dézippé)
       await FileSystem.deleteAsync(unpackDir, { idempotent: true });
       await FileSystem.deleteAsync(zipPath, { idempotent: true });
     }

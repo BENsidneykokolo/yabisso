@@ -127,6 +127,8 @@
 | Marketplace - Workflow achat complet (panier -> checkout -> commande) | Done | P1 | S4 |
 | Marketplace - Navigation produit details -> panier -> checkout | Done | P1 | S4 |
 | Marketplace - Affichage details produit (image, prix, marque, description) | Done | P1 | S4 |
+| Loba - Feed auto-refresh après réception pack P2P | Done | P1 | S6 |
+| Loba - Support fichiers individuels (hors pack ZIP) | Done | P1 | S6 |
 | Loba - Appel telephonique depuis Messages | Done | P2 | S5 |
 | Marketplace - Favoris fonctionnel (ajout/retrait, stockage SecureStore) | Done | P1 | S5 |
 | Marketplace - Favoris s'affichent dans l'ecran Favoris | Done | P1 | S5 |
@@ -194,7 +196,9 @@
 
 | Tâche | Status | Priorité | Sprint |
 |-------|--------|----------|--------|
-| WiFi Direct P2P setup | Not Started | P2 | S6 |
+| WiFi Direct P2P setup | Done | P2 | S6 |
+| WiFi Direct timeout adaptatif (120s pour gros fichiers) | Done | P2 | S6 |
+| WiFi Direct OOM-Fix (receiveFile au lieu de receiveMessage) | Done | P1 | S6 |
 | Bluetooth simple P2P (pas mesh) | Done | P2 | S7 |
 | Choisir stack BLE mesh (ble-plx vs nearby) | Done | P3 | S7 |
 | Bluetooth Mesh (multi-hop) | Not Started | P3 | Post-MVP |
