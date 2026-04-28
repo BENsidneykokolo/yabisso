@@ -6,7 +6,7 @@ import { Q } from '@nozbe/watermelondb';
 
 const LOBA_CACHE_DIR = `${FileSystem.documentDirectory}loba_media/`;
 const LOBA_THUMBS_DIR = `${FileSystem.documentDirectory}loba_thumbs/`;
-const MAX_CACHE_SIZE_BYTES = 2 * 1024 * 1024 * 1024; // 2 GB
+const MAX_CACHE_SIZE_BYTES = 10 * 1024 * 1024 * 1024; // 10 GB
 const MAX_SINGLE_FILE_BYTES = 100 * 1024 * 1024; // 100 MB max per file
 const LRU_RETENTION_DAYS = 7;
 
@@ -190,7 +190,7 @@ export const LocalStorageManager = {
       };
     } catch (e) {
       console.error('[LocalStorageManager] getStorageUsage error:', e);
-      return { totalFiles: 0, totalSizeBytes: 0, totalSizeMB: '0', maxSizeMB: '2048', percentUsed: 0 };
+      return { totalFiles: 0, totalSizeBytes: 0, totalSizeMB: '0', maxSizeMB: '10240', percentUsed: 0 };
     }
   },
 

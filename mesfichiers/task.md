@@ -119,6 +119,7 @@
 | Restaurant - Header simplifie (menu gauche, favoris droite) | Done | P2 | S4 |
 | Restaurant - Integration adresse checkout vers profil | Done | P2 | S4 |
 | Restaurant - Fix syntax errors RestaurantHomeScreen.js | Done | P2 | S4 |
+| Restaurant - Ajouter plusieurs plats (modal + images 5 max) | Done | P2 | S4 |
 | Marketplace - SellerProfileScreen (gestion produits, edit, delete) | Done | P1 | S4 |
 | Marketplace - AddProductScreen (photos, categories, validation, publish/draft) | Done | P1 | S4 |
 | Marketplace - Upload photo profil et banniere boutique | Done | P1 | S4 |
@@ -137,6 +138,14 @@
 | Marketplace - Confirmation reception commande (commentaire + photo) | Done | P1 | S5 |
 | Marketplace - Signalement probleme commande avec upload image | Done | P1 | S5 |
 | Marketplace - SellerProfile sans onglet "Avis" (mockups supprimes) | Done | P1 | S5 |
+| Restaurant - Persistence offline (useEffect + WatermelonDB) | Done | P1 | S5 |
+| Restaurant - Sync queue pour Supabase | Done | P1 | S5 |
+| Services - SellerScreen avec persistence offline | Done | P2 | S5 |
+| Services - SyncService avec sync queue | Done | P2 | S5 |
+| Validation - OfflineValidationService (creation, QR, approve/reject) | Done | P1 | S5 |
+| Validation - ProductValidationScreen (scanner, pending, confirme) | Done | P1 | P1 |
+| Validation - Integration Restaurant/Services vers validation | Done | P1 | S5 |
+| Validation - Reception via P2P (WiFi/BLE) | In Progress | P2 | S6 |
 
 ---
 

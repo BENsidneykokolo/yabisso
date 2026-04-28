@@ -15,6 +15,8 @@ import {
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import * as SecureStore from 'expo-secure-store';
 import * as ImagePicker from 'expo-image-picker';
+import RestaurantSyncService from '../services/RestaurantSyncService';
+import OfflineValidationService from '../../kiosk/services/OfflineValidationService';
 
 const categories = [
   { id: 'african', name: 'African', icon: 'food' },
@@ -43,13 +45,61 @@ export default function RestaurantSellerScreen({ onBack, onNavigate }) {
   const [showEditShop, setShowEditShop] = useState(false);
   const [editShopData, setEditShopData] = useState(shopInfo);
   const [activeTab, setActiveTab] = useState('products');
+  const [showAddProduct, setShowAddProduct] = useState(false);
+const [newProduct, setNewProduct] = useState({
+    name: '',
+    price: '',
+    description: '',
+    category: '',
+    photos: [],
+  });
 
+  // Charger les données au montage
   useEffect(() => {
     loadShopInfo();
     loadProducts();
   }, []);
 
+  // Fonction pour charger depuis WatermelonDB avec fallback SecureStore
   const loadShopInfo = async () => {
+    try {
+      // Essayer d'abord WatermelonDB
+      const localRestaurants = await RestaurantSyncService.loadRestaurants();
+      if (localRestaurants.length > 0) {
+        const restaurant = localRestaurants[0];
+        setShopInfo({
+          name: restaurant.name || '',
+          location: restaurant.location || '',
+          phone: restaurant.phone || '',
+          description: restaurant.description || '',
+          category: restaurant.category || [],
+          hours: restaurant.hours || '9h - 21h',
+          delivery: restaurant.delivery || true,
+          deliveryFee: restaurant.deliveryFee || '500',
+          minOrder: restaurant.minOrder || '1000',
+          avatar: restaurant.avatar || null,
+          banner: restaurant.banner || null,
+        });
+        setEditShopData({
+          name: restaurant.name || '',
+          location: restaurant.location || '',
+          phone: restaurant.phone || '',
+          description: restaurant.description || '',
+          category: restaurant.category || [],
+          hours: restaurant.hours || '9h - 21h',
+          delivery: restaurant.delivery || true,
+          deliveryFee: restaurant.deliveryFee || '500',
+          minOrder: restaurant.minOrder || '1000',
+          avatar: restaurant.avatar || null,
+          banner: restaurant.banner || null,
+        });
+        return;
+      }
+    } catch (e) {
+      console.log('[RestaurantSeller] Erreur load WatermelonDB, fallback SecureStore:', e);
+    }
+
+    // Fallback SecureStore
     try {
       const saved = await SecureStore.getItemAsync('restaurant_shop_info');
       if (saved) {
@@ -67,7 +117,20 @@ export default function RestaurantSellerScreen({ onBack, onNavigate }) {
     }
   };
 
+  // Fonction pour charger les produits depuis WatermelonDB avec fallback
   const loadProducts = async () => {
+    try {
+      // Essayer d'abord WatermelonDB
+      const localProducts = await RestaurantSyncService.loadProducts('local');
+      if (localProducts.length > 0) {
+        setProducts(localProducts);
+        return;
+      }
+    } catch (e) {
+      console.log('[RestaurantSeller] Erreur load produits WatermelonDB:', e);
+    }
+
+    // Fallback SecureStore
     try {
       const saved = await SecureStore.getItemAsync('restaurant_products');
       if (saved) {
@@ -79,12 +142,60 @@ export default function RestaurantSellerScreen({ onBack, onNavigate }) {
     }
   };
 
+const handleAddProduct = async () => {
+    if (!newProduct.name || !newProduct.price || !newProduct.category) {
+      Alert.alert('Erreur', 'Veuillez remplir tous les champs');
+      return;
+    }
+    const product = {
+      ...newProduct,
+      id: Date.now().toString(),
+      categoryName: newProduct.category,
+      sellerId: 'local',
+      sellerName: shopInfo.name || 'Mon Restaurant',
+    };
+    
+    // Sauvegarder dans WatermelonDB
+    try {
+      await RestaurantSyncService.saveProduct(product, 'local');
+      await RestaurantSyncService.addToSyncQueue('create_product', product);
+      
+      // Créer demande de validation
+      await OfflineValidationService.createValidationRequest('restaurant', product);
+    } catch (e) {
+      console.log('[RestaurantSeller] Erreur save WatermelonDB:', e);
+    }
+
+    // Mise à jour UI
+    const updatedProducts = [...products, product];
+    setProducts(updatedProducts);
+    
+    // Garder SecureStore pour compatibilité
+    await SecureStore.setItemAsync('restaurant_products', JSON.stringify(updatedProducts));
+    
+    setNewProduct({ name: '', price: '', description: '', category: '', photos: [] });
+    setShowAddProduct(false);
+    Alert.alert(
+      'Succès', 
+      'Plat ajouté ! En attente de validation par un kiosque pour être visible par tous.'
+    );
+  };
+
   const saveShopInfo = async () => {
     try {
+      // Sauvegarder dans WatermelonDB
+      try {
+        await RestaurantSyncService.saveRestaurant(editShopData);
+        await RestaurantSyncService.addToSyncQueue('create_restaurant', editShopData);
+      } catch (e) {
+        console.log('[RestaurantSeller] Erreur save WatermelonDB:', e);
+      }
+
+      // Garder SecureStore pour compatibilité
       await SecureStore.setItemAsync('restaurant_shop_info', JSON.stringify(editShopData));
       setShopInfo(editShopData);
       setShowEditShop(false);
-      Alert.alert('Succès', 'Informations du restaurant mises à jour');
+      Alert.alert('Succès', 'Informations sauvegardées localement !');
     } catch (e) {
       console.log('Error saving shop info:', e);
       Alert.alert('Erreur', 'Impossible de sauvegarder les informations');
@@ -120,13 +231,17 @@ export default function RestaurantSellerScreen({ onBack, onNavigate }) {
     });
 
     if (!result.canceled) {
-      const newData = { ...editShopData };
-      if (type === 'avatar') {
-        newData.avatar = result.assets[0].uri;
+      if (type === 'product') {
+        setNewProduct({...newProduct, photos: [result.assets[0].uri]});
       } else {
-        newData.banner = result.assets[0].uri;
+        const newData = { ...editShopData };
+        if (type === 'avatar') {
+          newData.avatar = result.assets[0].uri;
+        } else {
+          newData.banner = result.assets[0].uri;
+        }
+        setEditShopData(newData);
       }
-      setEditShopData(newData);
     }
   };
 
@@ -141,14 +256,31 @@ export default function RestaurantSellerScreen({ onBack, onNavigate }) {
     });
 
     if (!result.canceled) {
-      const newData = { ...editShopData };
-      if (type === 'avatar') {
-        newData.avatar = result.assets[0].uri;
+      if (type === 'product') {
+        setNewProduct({...newProduct, photos: [result.assets[0].uri]});
       } else {
-        newData.banner = result.assets[0].uri;
+        const newData = { ...editShopData };
+        if (type === 'avatar') {
+          newData.avatar = result.assets[0].uri;
+        } else {
+          newData.banner = result.assets[0].uri;
+        }
+        setEditShopData(newData);
       }
-      setEditShopData(newData);
     }
+  };
+
+  const showProductImageOptions = () => {
+    Alert.alert(
+      'Photo du plat',
+      'Choisissez comment ajouter une image',
+      [
+        { text: 'Prendre une photo', onPress: () => takePhoto('product') },
+        { text: 'Choisir dans la galerie', onPress: () => pickImage('product') },
+        { text: 'Supprimer', onPress: () => setNewProduct({...newProduct, photos: []}) },
+        { text: 'Annuler', style: 'cancel' },
+      ]
+    );
   };
 
   const showImageOptions = (type) => {
@@ -288,38 +420,34 @@ export default function RestaurantSellerScreen({ onBack, onNavigate }) {
 
             {activeTab === 'products' && (
               <View style={styles.productsSection}>
-                {products.length === 0 ? (
-                  <View style={styles.emptyProducts}>
-                    <MaterialCommunityIcons name="food-off" size={48} color="#4B5563" />
-                    <Text style={styles.emptyText}>Aucun plat ajouté</Text>
-                    <TouchableOpacity style={styles.addProductBtn}>
-                      <Ionicons name="add" size={18} color="#0E151B" />
-                      <Text style={styles.addProductBtnText}>Ajouter un plat</Text>
-                    </TouchableOpacity>
-                  </View>
-                ) : (
-                  products.map((product) => (
-                    <View key={product.id} style={styles.productItem}>
-                      <View style={styles.productItemImage}>
-                        {product.photos?.[0] ? (
-                          <Image source={{ uri: product.photos[0] }} style={styles.productImg} />
-                        ) : (
-                          <MaterialCommunityIcons name="food" size={20} color="#4B5563" />
-                        )}
-                      </View>
-                      <View style={styles.productItemInfo}>
-                        <Text style={styles.productItemName}>{product.name}</Text>
-                        <Text style={styles.productItemCategory}>{product.categoryName}</Text>
-                        <Text style={styles.productItemPrice}>{product.price} FCA</Text>
-                      </View>
-                      <View style={styles.productItemActions}>
-                        <TouchableOpacity style={styles.editBtn}>
-                          <Ionicons name="pencil" size={16} color="#94A3B8" />
-                        </TouchableOpacity>
-                      </View>
+                {products.map((product) => (
+                  <View key={product.id} style={styles.productItem}>
+                    <View style={styles.productItemImage}>
+                      {product.photos?.[0] ? (
+                        <Image source={{ uri: product.photos[0] }} style={styles.productImg} />
+                      ) : (
+                        <MaterialCommunityIcons name="food" size={20} color="#4B5563" />
+                      )}
                     </View>
-                  ))
-                )}
+                    <View style={styles.productItemInfo}>
+                      <Text style={styles.productItemName}>{product.name}</Text>
+                      <Text style={styles.productItemCategory}>{product.categoryName}</Text>
+                      <Text style={styles.productItemPrice}>{product.price} FCA</Text>
+                    </View>
+                    <View style={styles.productItemActions}>
+                      <TouchableOpacity style={styles.editBtn}>
+                        <Ionicons name="pencil" size={16} color="#94A3B8" />
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                ))}
+                <TouchableOpacity 
+                  style={styles.addProductBtn}
+                  onPress={() => setShowAddProduct(true)}
+                >
+                  <Ionicons name="add" size={18} color="#0E151B" />
+                  <Text style={styles.addProductBtnText}>Ajouter un plat</Text>
+                </TouchableOpacity>
               </View>
             )}
 
@@ -509,6 +637,118 @@ export default function RestaurantSellerScreen({ onBack, onNavigate }) {
                 <Text style={styles.saveButtonText}>
                   {isShopCreated ? 'Enregistrer' : 'Créer mon restaurant'}
                 </Text>
+              </TouchableOpacity>
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
+
+      <Modal
+        visible={showAddProduct}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setShowAddProduct(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Ajouter un plat</Text>
+              <TouchableOpacity onPress={() => setShowAddProduct(false)}>
+                <Ionicons name="close" size={24} color="#fff" />
+              </TouchableOpacity>
+            </View>
+            <ScrollView style={styles.modalBody}>
+              <Text style={styles.sectionTitle}>Photos du plat (max 5)</Text>
+              
+              <View style={styles.imageUploadRow}>
+                {newProduct.photos?.map((photo, index) => (
+                  <View key={index} style={styles.productPhotoContainer}>
+                    <Image source={{ uri: photo }} style={styles.productPhoto} />
+                    <Pressable 
+                      style={styles.removePhotoBtn}
+                      onPress={() => {
+                        const newPhotos = [...newProduct.photos];
+                        newPhotos.splice(index, 1);
+                        setNewProduct({...newProduct, photos: newPhotos});
+                      }}
+                    >
+                      <Ionicons name="close" size={14} color="#fff" />
+                    </Pressable>
+                  </View>
+                ))}
+                {(!newProduct.photos || newProduct.photos.length < 5) && (
+                  <TouchableOpacity 
+                    style={styles.addPhotoBtn}
+                    onPress={showProductImageOptions}
+                  >
+                    <Ionicons name="camera" size={24} color="#94A3B8" />
+                    <Text style={styles.addPhotoText}>{newProduct.photos?.length || 0}/5</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+
+              <View style={styles.inputGroup}>
+                <Text style={styles.inputLabel}>Nom du plat</Text>
+                <TextInput
+                  style={styles.modalInput}
+                  value={newProduct.name}
+                  onChangeText={(text) => setNewProduct({...newProduct, name: text})}
+                  placeholder="Ex: Poulet DG"
+                  placeholderTextColor="#6B7A8B"
+                />
+              </View>
+
+              <View style={styles.inputGroup}>
+                <Text style={styles.inputLabel}>Prix (FCFA)</Text>
+                <TextInput
+                  style={styles.modalInput}
+                  value={newProduct.price}
+                  onChangeText={(text) => setNewProduct({...newProduct, price: text})}
+                  placeholder="Ex: 2500"
+                  placeholderTextColor="#6B7A8B"
+                  keyboardType="numeric"
+                />
+              </View>
+
+              <View style={styles.inputGroup}>
+                <Text style={styles.inputLabel}>Catégorie</Text>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categoryPicker}>
+                  {categories.map((cat) => (
+                    <TouchableOpacity
+                      key={cat.id}
+                      style={[styles.categoryChip, newProduct.category === cat.name && styles.categoryChipActive]}
+                      onPress={() => setNewProduct({...newProduct, category: cat.name})}
+                    >
+                      <MaterialCommunityIcons 
+                        name={cat.icon} 
+                        size={18} 
+                        color={newProduct.category === cat.name ? '#0E151B' : '#94A3B8'} 
+                      />
+                      <Text style={[styles.categoryChipText, newProduct.category === cat.name && styles.categoryChipTextActive]}>
+                        {cat.name}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              </View>
+
+              <View style={styles.inputGroup}>
+                <Text style={styles.inputLabel}>Description</Text>
+                <TextInput
+                  style={[styles.modalInput, { height: 80, textAlignVertical: 'top' }]}
+                  value={newProduct.description}
+                  onChangeText={(text) => setNewProduct({...newProduct, description: text})}
+                  placeholder="Décrivez votre plat..."
+                  placeholderTextColor="#6B7A8B"
+                  multiline
+                />
+              </View>
+
+              <TouchableOpacity 
+                style={styles.saveButton}
+                onPress={handleAddProduct}
+              >
+                <Text style={styles.saveButtonText}>Ajouter le plat</Text>
               </TouchableOpacity>
             </ScrollView>
           </View>
@@ -959,6 +1199,42 @@ const styles = StyleSheet.create({
     color: '#0E151B',
     fontSize: 15,
     fontWeight: '700',
+  },
+  productPhotoContainer: {
+    position: 'relative',
+    marginRight: 8,
+  },
+  productPhoto: {
+    width: 70,
+    height: 70,
+    borderRadius: 12,
+  },
+  removePhotoBtn: {
+    position: 'absolute',
+    top: -5,
+    right: -5,
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: '#EF4444',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  addPhotoBtn: {
+    width: 70,
+    height: 70,
+    borderRadius: 12,
+    backgroundColor: 'rgba(43, 238, 121, 0.1)',
+    borderWidth: 1,
+    borderColor: 'rgba(43, 238, 121, 0.3)',
+    borderStyle: 'dashed',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  addPhotoText: {
+    color: '#94A3B8',
+    fontSize: 10,
+    marginTop: 2,
   },
   bannerImage: {
     position: 'absolute',

@@ -165,6 +165,13 @@
 - **Note** : L'APK généré contient le JS bundle intégré, fonctionne sans Metro/serveur externe
 - **Statut** : ✅ Résolu
 
+### BUG-019 — Restaurant: Bouton "Ajouter un plat" inactive
+- **Date** : 2026-04-28
+- **Problème** : Bouton "Ajouter un plat" seulement visible quand la liste est vide
+- **Cause** : Condition ternary `products.length === 0 ? ... : ...`
+- **Solution** : always show button, use modal for adding
+- **Statut** : ✅ Résolu
+
 ---
 
 ## Risques connus à surveiller

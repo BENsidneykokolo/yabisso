@@ -314,12 +314,12 @@ export const GlobalStorageService = {
   },
 
   /**
-   * Retourne la limite de stockage recommandée (2 GB).
+   * Retourne la limite de stockage recommandée (10 GB).
    */
   getStorageLimit() {
     return {
-      limitBytes: 2 * 1024 * 1024 * 1024,
-      limitFormatted: '2 GB',
+      limitBytes: 10 * 1024 * 1024 * 1024,
+      limitFormatted: '10 GB',
     };
   },
 };

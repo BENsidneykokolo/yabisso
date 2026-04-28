@@ -14,6 +14,14 @@ import BleSignupScreen from './src/features/bluetooth/screens/BleSignupScreen';
 import BleKioskScreen from './src/features/bluetooth/screens/BleKioskScreen';
 import KioskValidationScreen from './src/features/kiosk/screens/KioskValidationScreen';
 import ProductValidationKioskScreen from './src/features/kiosk/screens/ProductValidationKioskScreen';
+import KioskAdminLoginScreen from './src/features/kiosk/screens/KioskAdminLoginScreen';
+import KioskAdminDashboardScreen from './src/features/kiosk/screens/KioskAdminDashboardScreen';
+import KioskDashboardScreen from './src/features/kiosk/screens/KioskDashboardScreen';
+import KioskRechargeScreen from './src/features/kiosk/screens/KioskRechargeScreen';
+import KioskPointsScreen from './src/features/kiosk/screens/KioskPointsScreen';
+import KioskAssistanceScreen from './src/features/kiosk/screens/KioskAssistanceScreen';
+import KioskUsersScreen from './src/features/kiosk/screens/KioskUsersScreen';
+import KioskStatsScreen from './src/features/kiosk/screens/KioskStatsScreen';
 import ChatHomeScreen from './src/features/chat/screens/ChatHomeScreen';
 import ChatConversationScreen from './src/features/chat/screens/ChatConversationScreen';
 import PharmacyHomeScreen from './src/features/pharmacy/screens/PharmacyHomeScreen';
@@ -249,6 +257,62 @@ export default function App() {
       />
     );
   }
+  if (screen === 'kiosk_admin_login') {
+    content = (
+      <KioskAdminLoginScreen
+        navigation={{ navigate, goBack, replace: (s) => setScreen(s) }}
+      />
+    );
+  }
+  if (screen === 'kiosk_admin_dashboard') {
+    content = (
+      <KioskAdminDashboardScreen
+        navigation={{ navigate, goBack }}
+      />
+    );
+  }
+  if (screen === 'kiosk_dashboard') {
+    content = (
+      <KioskDashboardScreen
+        navigation={{ navigate, goBack, replace: (s) => setScreen(s) }}
+      />
+    );
+  }
+  if (screen === 'kiosk_recharge') {
+    content = (
+      <KioskRechargeScreen
+        navigation={{ navigate, goBack }}
+      />
+    );
+  }
+  if (screen === 'kiosk_points') {
+    content = (
+      <KioskPointsScreen
+        navigation={{ navigate, goBack }}
+      />
+    );
+  }
+  if (screen === 'kiosk_assistance') {
+    content = (
+      <KioskAssistanceScreen
+        navigation={{ navigate, goBack }}
+      />
+    );
+  }
+  if (screen === 'kiosk_users') {
+    content = (
+      <KioskUsersScreen
+        navigation={{ navigate, goBack }}
+      />
+    );
+  }
+  if (screen === 'kiosk_stats') {
+    content = (
+      <KioskStatsScreen
+        navigation={{ navigate, goBack }}
+      />
+    );
+  }
   if (screen === 'home') {
     content = (
       <HomeScreen
@@ -393,6 +457,7 @@ export default function App() {
         }}
         onOpenBlockedUser={() => navigate('blocked_user')}
         onNavigate={(screenName) => navigate(screenName)}
+        onOpenKioskAdmin={() => navigate('kiosk_admin_login')}
       />
     );
   }
@@ -484,6 +549,7 @@ export default function App() {
         onOpenNotifications={() => navigate('profile_notifications')}
         onOpenLogout={() => navigate('profile_logout')}
         onOpenEditProfile={() => navigate('profile_edit')}
+        onOpenKioskAdmin={() => navigate('kiosk_admin_login')}
       />
     );
   }

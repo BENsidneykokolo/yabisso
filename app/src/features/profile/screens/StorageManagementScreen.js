@@ -14,7 +14,7 @@ import {
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { GlobalStorageService } from '../../../lib/services/GlobalStorageService';
 
-const MAX_STORAGE_BYTES = 2 * 1024 * 1024 * 1024; // 2 GB
+const MAX_STORAGE_BYTES = 10 * 1024 * 1024 * 1024; // 10 GB
 
 export default function StorageManagementScreen({ onBack }) {
   const [loading, setLoading] = useState(true);
@@ -133,7 +133,7 @@ export default function StorageManagementScreen({ onBack }) {
                 <View style={styles.usageDivider} />
                 <View style={styles.usageRow}>
                   <Text style={styles.usageLabel}>Limite</Text>
-                  <Text style={styles.usageValue}>2 GB</Text>
+                  <Text style={styles.usageValue}>10 GB</Text>
                 </View>
               </View>
 
@@ -217,7 +217,7 @@ export default function StorageManagementScreen({ onBack }) {
               <MaterialCommunityIcons name="information-outline" size={18} color="#60A5FA" />
               <Text style={styles.infoText}>
                 Le nettoyage automatique (LRU) supprime les fichiers non consultés depuis 7 jours
-                lorsque le stockage dépasse 2 GB. Les favoris ne sont jamais supprimés.
+                lorsque le stockage dépasse 10 GB. Les favoris ne sont jamais supprimés.
               </Text>
             </View>
           </>
