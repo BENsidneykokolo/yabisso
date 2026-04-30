@@ -1,7 +1,7 @@
 import { database } from '../../../lib/db';
 import { Q } from '@nozbe/watermelondb';
 import { LocalStorageManager } from './LocalStorageManager';
-import * as FileSystem from 'expo-file-system';
+import * as FileSystem from 'expo-file-system/legacy';
 
 const normalizePath = (path) => {
   if (!path) return path;
@@ -37,7 +37,7 @@ export class InterestEngine {
          
          try {
              // 1. Déduplication : Vérification si le post existe déjà
-             const existingCount = await database.get('loba_posts').query(Q.where('hash', post.hash)).count();
+             const existingCount = await database.get('loba_posts').query(Q.where('hash', post.hash)).fetchCount();
              if (existingCount > 0) {
                  console.log(`[InterestEngine] Ignoré : ${post.hash} (déjà existant localement).`);
                  continue;
@@ -107,7 +107,7 @@ export class InterestEngine {
   static async _evaluateInterest(category) {
       try {
           // 1. Vérification du volume total
-          const totalPosts = await database.get('loba_posts').query().count();
+          const totalPosts = await database.get('loba_posts').query().fetchCount();
           
           // MODE APPRENTISSAGE : Pas de tri avant 10 000 vidéos
           if (totalPosts < 10000) {
@@ -119,7 +119,7 @@ export class InterestEngine {
           const categoryLikes = await database.get('loba_posts').query(
               Q.where('category', category),
               Q.where('is_liked', true)
-          ).count();
+          ).fetchCount();
           
           if (categoryLikes > 0) return true;
 

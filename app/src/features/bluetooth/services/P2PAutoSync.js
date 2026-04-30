@@ -90,21 +90,27 @@ class P2PAutoSyncClass {
 
       WifiDirectService.on('onConnectionChange', async ({ connected, info }) => {
         if (connected) {
-          this._log('📶 Connexion P2P établie. Attente de la stabilisation IP (2s)...');
+          this._log('📶 Connexion P2P établie. Attente de la stabilisation GO (5s)...');
           setTimeout(() => {
             if (WifiDirectService.connectedPeer) {
-                this._log('🚀 Lancement du cycle de synchronisation P2P...');
+              if (!WifiDirectService.isGroupOwner) {
+                // CLIENT: lance le cycle d'envoi (buildPack + sendFile)
+                this._log('🚀 Rôle CLIENT — Lancement du cycle d\'envoi P2P...');
                 this._p2pSyncCycle();
-                
-                WifiDirectService.startReceiving(async (filePath, metadata) => {
-                  await this._handleReceivedFile(filePath, metadata, 'WIFI_DIRECT');
-                });
+                // Note: Le CLIENT n'a PAS besoin de startReceiving
+                // Le GO reçoit automatiquement via subscribeOnConnectionInfoUpdates → globalFileHandler
+              } else {
+                // GO: est déjà en mode réception (démarré dans subscribeOnConnectionInfoUpdates)
+                this._log('📡 Rôle GROUP OWNER — Mode réception actif, en attente de pack du client...');
+              }
             }
-          }, 2000);
+          }, 5000);
+
         } else {
           WifiDirectService.stopReceiving();
         }
       });
+
     } catch (e) {
       console.warn('[P2PAutoSync] WiFi Direct init error:', e.message);
     }
@@ -247,12 +253,14 @@ class P2PAutoSyncClass {
                WifiDirectService._emit('onSyncStatus', { status: 'IDLE' });
            }
          }
-      } else {
-          const pendingUploads = await this._getPendingUploads();
-          for (const post of pendingUploads) {
-            await this._propagateToPeers(post, bestP2P);
-          }
-      }
+       } else {
+           // Rail BLE Mesh ou autre: pas de transfert de gros packs
+           // _propagateToPeers gère uniquement les petits payloads via BLE
+           const pendingUploads = await this._getPendingUploads();
+           for (const post of pendingUploads) {
+             await this._propagateToPeers(post, bestP2P);
+           }
+       }
 
       await LocalStorageManager.applyLRUPolicy();
       this.stats.lastSyncAt = Date.now();
@@ -341,6 +349,41 @@ class P2PAutoSyncClass {
       await post.update(p => { p.isPropagating = false; });
     });
     this.stats.totalSyncedP2P++;
+  }
+
+  /**
+   * Propage un post individuel vers les peers via BLE Mesh (petits payloads < 5MB).
+   * Pour les gros fichiers, utiliser le flux WiFi Direct via _p2pSyncCycle.
+   */
+  async _propagateToPeers(post, rail) {
+    try {
+      if (!post || !post.localMediaPath) {
+        await this._markAsPropagated(post);
+        return;
+      }
+
+      if (rail === RAIL_TYPES.BLE_MESH) {
+        // BLE Mesh: uniquement les petits payloads (métadonnées, pas les fichiers lourds)
+        const payload = {
+          hash: post.hash,
+          type: post.videoUrl ? 'video' : 'image',
+          category: post.category || 'general',
+          username: post.username || 'Anonymous',
+          content: post.content || '',
+          timestamp: post.downloadedAt || Date.now(),
+        };
+        const result = await MeshSyncService.broadcast('LOBA_POST_META', payload);
+        if (result?.success) {
+          this._log(`📡 Métadonnées propagées via BLE: ${post.hash?.substring(0, 8)}`);
+          await this._markAsPropagated(post);
+        }
+      } else {
+        // Autres rails: marquer comme propagé sans envoi (sera géré au prochain cycle WiFi Direct)
+        this._log(`ℹ️ Rail ${rail} non supporté pour propagation directe. Attente WiFi Direct.`);
+      }
+    } catch (e) {
+      this._log(`❌ Erreur propagation: ${e.message}`);
+    }
   }
 
   async publishLocal(params) {

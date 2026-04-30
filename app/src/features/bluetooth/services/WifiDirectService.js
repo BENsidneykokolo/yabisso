@@ -36,7 +36,8 @@ class WifiDirectServiceClass {
     this.isConnecting = false;
     this.isLocationEnabled = true;
     this._receiveMessages = false;
-    this._lastSendAttempt = 0;
+    this.isConnected = false;       // FIX: was undefined, broke setGlobalFileHandler check
+    this._isSending = false;         // FIX: replaces time-based anti-spam
     this._lastConnectAttempt = 0; 
     this.globalFileHandler = null; // Phase 13: Handler global pour P2PAutoSync
     this.listeners = {
@@ -146,7 +147,14 @@ class WifiDirectServiceClass {
           this.isGroupOwner = !!info.isGroupOwner;
           this.groupOwnerAddress = addr;
           this.isConnecting = false;
-          
+
+          // FIX RACE CONDITION: Si le device était GO brièvement et est maintenant CLIENT,
+          // arrêter le receiver natif qui tourne encore (sinon le port 8988 est occupé par le mauvais device)
+          if (!this.isGroupOwner && this._receiveMessages) {
+            console.log('[WifiDirectService] FIX: Rôle CLIENT détecté après GO transitoire — arrêt receiver.');
+            this.stopReceiving();
+          }
+
           const statusSuffix = this.isGroupOwner ? '(Portail Ouvert)' : '(Connecté au Portail)';
           console.log(`[WifiDirectService] État P2P: GO=${this.isGroupOwner}, Addr=${this.groupOwnerAddress} ${statusSuffix}`);
           
@@ -448,12 +456,12 @@ class WifiDirectServiceClass {
       return false;
     }
 
-    // Anti-spam: limiter les tentatives d'envoi (minimum 10s entre chaque)
-    const now = Date.now();
-    if (now - this._lastSendAttempt < 10000) {
-      return false; // Silencieux, on ne spamme pas les logs
+    // Anti-spam: un seul envoi à la fois (remplace l'ancien cooldown 10s qui bloquait après swap de rôles)
+    if (this._isSending) {
+      console.warn('[WifiDirectService] Envoi déjà en cours, requête ignorée.');
+      return false;
     }
-    this._lastSendAttempt = now;
+    this._isSending = true;
 
     // VERIFICATION DU ROLE CRITIQUE:
     // react-native-wifi-p2p sendMessage() envoie TOUJOURS vers 192.168.49.1:8988 (le Group Owner).
@@ -462,13 +470,13 @@ class WifiDirectServiceClass {
     try {
       const info = await WifiP2P.getConnectionInfo();
       if (info && info.isGroupOwner) {
-        // Le GO ne peut PAS envoyer via sendMessage — c'est une limitation de l'API WiFi P2P.
-        // Le GO écoute via receiveMessage/receiveFile. Le client envoie.
-        console.log('[WifiDirectService] Ce device est le Group Owner — impossible d\'envoyer via sendMessage (API P2P limitation). Attente de réception depuis un client.');
+        console.log('[WifiDirectService] Ce device est le Group Owner — impossible d\'envoyer (API P2P limitation).');
+        this._isSending = false; // FIX: libérer le flag avant de retourner
         return false;
       }
       if (info && !info.groupFormed) {
         console.warn('[WifiDirectService] Groupe non formé. Annulation de l\'envoi.');
+        this._isSending = false;
         return false;
       }
     } catch (err) {
@@ -506,12 +514,27 @@ class WifiDirectServiceClass {
         timestamp: Date.now(),
       });
       
-      try {
-        await WifiP2P.sendMessage(metaPayload);
-      } catch (msgErr) {
-        console.warn('[WifiDirectService] Échec sendMessage natif:', msgErr.message);
-        return false;
+      // Envoyer les métadonnées en premier avec retry sur ECONNREFUSED
+      // (le GO peut ne pas avoir démarré son MessageServer encore)
+      let sendMsgOk = false;
+      for (let attempt = 0; attempt < 3; attempt++) {
+        try {
+          await WifiP2P.sendMessage(metaPayload);
+          sendMsgOk = true;
+          break;
+        } catch (msgErr) {
+          const errMsg = msgErr?.message || '';
+          if ((errMsg.includes('ECONNREFUSED') || errMsg.includes('isConnected failed')) && attempt < 2) {
+            const waitSec = (attempt + 1) * 4;
+            console.warn(`[WifiDirectService] GO pas encore prêt (ECONNREFUSED), attente ${waitSec}s (tentative ${attempt + 1}/3)...`);
+            await new Promise(r => setTimeout(r, waitSec * 1000));
+          } else {
+            console.warn('[WifiDirectService] Échec sendMessage natif:', errMsg);
+            return false;
+          }
+        }
       }
+      if (!sendMsgOk) return false;
 
       let progressInterval = null;
       if (filePath) {
@@ -532,7 +555,7 @@ class WifiDirectServiceClass {
           });
         }, 500);
 
-        await new Promise(resolve => setTimeout(resolve, 800));
+        await new Promise(resolve => setTimeout(resolve, 3000)); // FIX: laisser 3s au GO pour démarrer receiveFile()
         try {
           await WifiP2P.sendFile(nativePath);
           if (progressInterval) clearInterval(progressInterval);
@@ -553,6 +576,8 @@ class WifiDirectServiceClass {
       const errorMsg = e?.message || (typeof e === 'string' ? e : 'Unknown error');
       this._emit('onTransferProgress', { hash: metadata.hash || 'ping', progress: 0, status: 'failed', error: errorMsg });
       return false;
+    } finally {
+      this._isSending = false; // FIX: toujours libérer le flag
     }
   }
 
@@ -579,6 +604,11 @@ class WifiDirectServiceClass {
       return;
     }
 
+    if (this._isMessageLoopRunning) {
+      console.warn('[WifiDirectService] startReceiving ignoré: la boucle tourne déjà.');
+      return;
+    }
+
     try {
       // S'assurer que le dossier existe avant de recevoir
       const mediaDir = `${FileSystem.documentDirectory}loba_media/`;
@@ -602,6 +632,9 @@ class WifiDirectServiceClass {
    */
   stopReceiving() {
     this._receiveMessages = false;
+    try {
+      WifiP2P.stopReceivingMessage();
+    } catch (_) {}
     console.log('[WifiDirectService] Réception arrêtée.');
   }
 
@@ -610,6 +643,7 @@ class WifiDirectServiceClass {
    * WifiP2P.receiveMessage() retourne une Promise qui résout une fois avec le message.
    */
   async _messageLoop(nativeMediaDir, onFileReceived) {
+    this._isMessageLoopRunning = true;
     while (this._receiveMessages && this.initialized) {
       try {
         const message = await WifiP2P.receiveMessage({});
@@ -627,80 +661,89 @@ class WifiDirectServiceClass {
             console.log(`[WifiDirectService] ${logMsg}`);
             this._emit('onLogUpdate', [logMsg]);
 
-            // Phase 21 OOM-Fix: Pour les gros fichiers > 10MB, on saute receiveMessage
-            // (qui lit le fichier EN ENTIER en RAM → OOM sur appareils budget)
-            // On utilise uniquement le timeout + receiveFile() pour détecter le fichier.
-            const IS_LARGE_FILE = meta.size > 10 * 1024 * 1024;
+            const nativeFilename = meta.filename || `${meta.hash}.zip`;
+            const expectedUri = `file://${nativeMediaDir}${nativeFilename}`;
+            let fileHandled = false;
 
-            // Simulation de progression
+            // --- Progress simulation ---
             let simulatedProgress = 0;
-            const baseMs = IS_LARGE_FILE ? (meta.size / 1024 / 1024) * 3000 : (meta.size / 1024 / 1024) * 800;
-            const step = Math.max(1, Math.floor(90 / (baseMs / 1000)));
-
             const progressInterval = setInterval(() => {
-              simulatedProgress = Math.min(98, simulatedProgress + step);
-              this._emit('onTransferProgress', {
-                hash: meta.hash,
-                progress: simulatedProgress,
-                status: 'receiving',
-                size: meta.size
-              });
-            }, 1000);
+              simulatedProgress = Math.min(95, simulatedProgress + 2);
+              this._emit('onTransferProgress', { hash: meta.hash, progress: simulatedProgress, status: 'receiving', size: meta.size });
+            }, 2000);
 
-            // Phase 21: Timeout adaptatif - 2min pour gros fichiers, 30s pour petits
-            const timeoutMs = IS_LARGE_FILE ? 120000 : 30000;
-            const timeoutId = setTimeout(async () => {
-              if (progressInterval) clearInterval(progressInterval);
-              console.log(`[WifiDirectService] Timeout (${timeoutMs/1000}s) atteint, recherche du fichier reçu...`);
+            // --- Handler unique (anti-double-appel) ---
+            const handleFile = async (path) => {
+              if (fileHandled) return;
+              fileHandled = true;
+              clearInterval(progressInterval);
+              clearInterval(pollInterval);
+              clearTimeout(timeoutId);
               this._emit('onTransferProgress', { hash: meta.hash, progress: 100, status: 'complete' });
-              this._emit('onLogUpdate', ['⏱️ Timeout atteint, recherche du fichier...']);
-              if (onFileReceived) {
-                try {
-                  const files = await FileSystem.readDirectoryAsync(nativeMediaDir);
-                  const zipFile = files.find(f => f.endsWith('.zip'));
-                  if (files.length > 0) {
-                    const receivedPath = `file://${nativeMediaDir}${zipFile || files[0]}`;
-                    console.log('[WifiDirectService] Fichier trouvé:', receivedPath);
-                    onFileReceived(receivedPath, meta);
+              this._emit('onLogUpdate', [`📦 Fichier prêt! Décompression en cours...`]);
+              if (onFileReceived) onFileReceived(path, meta);
+            };
+
+            // --- POLL toutes les 3s: dès que le fichier est à 98% reçu, on traite ---
+            // (receiveFile() ne résout pas toujours la Promise sur Android)
+            let pollInterval = setInterval(async () => {
+              try {
+                const info = await FileSystem.getInfoAsync(expectedUri);
+                if (info.exists && info.size > 0) {
+                  const sizePct = meta.size > 0 ? (info.size / meta.size) : 1;
+                  if (sizePct >= 0.95) {
+                    console.log(`[WifiDirectService] ✅ Fichier complet détecté par poll: ${(info.size/1024/1024).toFixed(1)}MB`);
+                    this._emit('onLogUpdate', [`✅ Réception complète: ${(info.size/1024/1024).toFixed(1)}MB`]);
+                    await handleFile(expectedUri);
                   } else {
-                    this._emit('onLogUpdate', ['❌ Aucun fichier trouvé après timeout']);
+                    this._emit('onLogUpdate', [`⏳ ${(info.size/1024/1024).toFixed(1)}/${(meta.size/1024/1024).toFixed(1)}MB reçus...`]);
                   }
-                } catch (e) {
-                  this._emit('onLogUpdate', ['❌ Erreur: ' + e.message]);
                 }
+              } catch (_) {}
+            }, 3000);
+
+            // --- FALLBACK: timeout après 120s si le poll n'a pas trouvé ---
+            const timeoutId = setTimeout(async () => {
+              if (fileHandled) return;
+              console.log('[WifiDirectService] Timeout 120s — recherche forcée...');
+              try {
+                const mediaDirUri = `file://${nativeMediaDir}`;
+                const files = await FileSystem.readDirectoryAsync(mediaDirUri);
+                console.log('[WifiDirectService] Fichiers dans loba_media:', files);
+                const targetFile = files.find(f => f === nativeFilename)
+                  || files.find(f => f.endsWith('.zip'))
+                  || (files.length > 0 ? files[files.length - 1] : null);
+                if (targetFile) {
+                  await handleFile(`file://${nativeMediaDir}${targetFile}`);
+                } else {
+                  clearInterval(progressInterval);
+                  clearInterval(pollInterval);
+                  this._emit('onTransferProgress', { hash: meta.hash, progress: 0, status: 'failed' });
+                  this._emit('onLogUpdate', ['❌ Timeout: aucun fichier trouvé dans loba_media']);
+                }
+              } catch (e) {
+                this._emit('onLogUpdate', ['❌ Erreur timeout: ' + e.message]);
               }
-            }, timeoutMs);
+            }, 120000);
 
+            // --- receiveFile() en arrière-plan (peut ou ne peut pas résoudre) ---
             try {
-              // Phase 21 OOM-Fix: receiveFile ne passe PAS par convertStreamToString
-              // Il écrit directement le fichier sur disque → pas d'OOM
-              console.log(`[WifiDirectService] Réception fichier via receiveFile (timeout: ${timeoutMs/1000}s)...`);
-              const receivedPath = await WifiP2P.receiveFile(
-                nativeMediaDir,
-                meta.filename || `${meta.hash}.zip`
-              );
-
-              clearTimeout(timeoutId);
-              if (progressInterval) clearInterval(progressInterval);
-              this._emit('onTransferProgress', { hash: meta.hash, progress: 100, status: 'complete' });
-
-              const receivedFileInfo = await FileSystem.getInfoAsync(receivedPath);
-              console.log(`[WifiDirectService] Fichier reçu: ${receivedPath}, ${(receivedFileInfo.size/1024/1024).toFixed(1)}MB`);
-
-              const dirFiles = await FileSystem.readDirectoryAsync(nativeMediaDir);
-              console.log(`[WifiDirectService] Fichiers dans ${nativeMediaDir}: ${dirFiles.join(', ')}`);
-
-              this._emit('onLogUpdate', [`📦 Reçu: ${(receivedFileInfo.size/1024/1024).toFixed(1)}MB`, "⚙️ Décompression..."]);
-              if (onFileReceived) onFileReceived(receivedPath, meta);
+              console.log('[WifiDirectService] receiveFile() démarré en arrière-plan...');
+              
+              // Wrap native receiveFile with a 60s timeout to prevent infinite blocking
+              // if FileServerAsyncTask natively fails to bind to port 8988.
+              const rawPath = await Promise.race([
+                WifiP2P.receiveFile(nativeMediaDir, nativeFilename),
+                new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout receiveFile natif (60s)")), 60000))
+              ]);
+              
+              const receivedPath = (rawPath && !rawPath.startsWith('file://')) ? `file://${rawPath}` : rawPath;
+              console.log('[WifiDirectService] receiveFile() résolu:', receivedPath);
+              await handleFile(receivedPath);
             } catch (err) {
-              clearTimeout(timeoutId);
-              if (progressInterval) clearInterval(progressInterval);
-              const dirFiles = await FileSystem.readDirectoryAsync(nativeMediaDir);
-              console.log(`[WifiDirectService] Erreur, fichiers présents: ${dirFiles.join(', ')}`);
-              this._emit('onTransferProgress', { hash: meta.hash, progress: 0, status: 'failed' });
-              const errMsg = `❌ Erreur: ${err?.message || 'Inconnue'}`;
-              console.error(`[WifiDirectService] ${errMsg}`, err);
-              this._emit('onLogUpdate', [errMsg]);
+              if (!fileHandled) {
+                this._emit('onLogUpdate', [`⚠️ receiveFile err: ${err?.message || '?'} — polling actif`]);
+              }
             }
           }
         } catch (parseErr) {
@@ -713,6 +756,7 @@ class WifiDirectServiceClass {
       }
     }
     this._receiveMessages = false;
+    this._isMessageLoopRunning = false;
   }
 
   /**
@@ -737,9 +781,11 @@ class WifiDirectServiceClass {
     }
     // Réinitialiser l'état de connexion
     this.connectedPeer = null;
+    this.isConnected = false;
     this.isGroupOwner = false;
     this.groupOwnerAddress = null;
     this._receiveMessages = false;
+    this._isSending = false; // FIX: libérer le flag d'envoi à la déconnexion
     NetworkRailDetector.setWifiDirectAvailable(false);
     console.log('[WifiDirectService] État réinitialisé.');
 
