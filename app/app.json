@@ -9,7 +9,7 @@
     "newArchEnabled": false,
     "devClient": true,
     "packagerOpts": {
-      "host": "192.168.1.69",
+      "hostType": "lan",
       "port": 8081
     },
     "splash": {

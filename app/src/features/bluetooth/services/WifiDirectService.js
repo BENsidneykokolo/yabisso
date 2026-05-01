@@ -156,7 +156,7 @@ class WifiDirectServiceClass {
           }
 
           const statusSuffix = this.isGroupOwner ? '(Portail Ouvert)' : '(Connecté au Portail)';
-          console.log(`[WifiDirectService] État P2P: GO=${this.isGroupOwner}, Addr=${this.groupOwnerAddress} ${statusSuffix}`);
+          console.log(`[WifiDirectService] ✅ CONNEXION ÉTABLIE: GO=${this.isGroupOwner}, Addr=${this.groupOwnerAddress} ${statusSuffix}`);
           
           NetworkRailDetector.setWifiDirectAvailable(true);
 
@@ -172,10 +172,17 @@ class WifiDirectServiceClass {
              this.startReceiving(this.globalFileHandler);
           }
         } else {
+          const wasConnected = this.isConnected;
           this.connectedPeer = null;
           this.isGroupOwner = false;
           this.groupOwnerAddress = null;
           this.isConnecting = false;
+          this.isConnected = false;
+          
+          if (wasConnected) {
+            console.log('[WifiDirectService] ❌ CONNEXION PERDUE (ou déconnexion volontaire).');
+          }
+          
           NetworkRailDetector.setWifiDirectAvailable(false);
           this._emit('onConnectionChange', { connected: false });
         }
@@ -380,8 +387,28 @@ class WifiDirectServiceClass {
     this.isConnecting = true;
 
     try {
-      // Phase 8 : On ne force plus stopDiscovery() ici. 
-      // La commande connect() s'en charge nativement et évite les conflits d'état.
+      this._lastConnectAttempt = Date.now();
+      const macAddr = device.deviceAddress || '';
+      
+      // STRATÉGIE ANTI-COLLISION DETERMINISTE:
+      // On calcule un délai basé sur le dernier octet de la MAC.
+      // Cela évite que les deux appareils lancent connect() exactement en même temps.
+      if (retryCount === 0 && macAddr.includes(':')) {
+        const parts = macAddr.split(':');
+        const lastByte = parseInt(parts[parts.length - 1], 16) || 0;
+        const delay = (lastByte % 15) * 100; // Délai entre 0 et 1500ms
+        console.log(`[WifiDirectService] Anti-collision: Attente de ${delay}ms (MAC: ${macAddr})...`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+        
+        // Vérifier si l'autre nous a déjà connecté pendant l'attente
+        if (this.connectedPeer || !this.isConnecting) {
+          console.log('[WifiDirectService] Connexion déjà établie par le peer pendant le délai.');
+          this.isConnecting = false;
+          return true;
+        }
+      }
+
+      console.log(`[WifiDirectService] Tentative de connexion (Retry ${retryCount}) à MAC: ${macAddr}...`);
       
       // Nettoyage matériel SEULEMENT si c'est un retry
       if (retryCount > 0) {
@@ -390,22 +417,24 @@ class WifiDirectServiceClass {
         await new Promise(resolve => setTimeout(resolve, 2000));
       }
 
-      this._lastConnectAttempt = Date.now();
-      const macAddr = device.deviceAddress || '';
-      console.log(`[WifiDirectService] Tentative de connexion (Retry ${retryCount}) à MAC: ${macAddr}...`);
-      
       // Lancer la connexion via le module natif
-      // Utilisation du connect() standard, car forcer le groupOwnerIntent à 0 
-      // peut crasher le driver natif si le peer distant a déjà créé son groupe (createGroup)
-      console.log(`[WifiDirectService] Appel de WifiP2P.connect...`);
-      await WifiP2P.connect(macAddr);
+      // On force le groupOwnerIntent à 0 pour GARANTIR que l'appelant devient le Client (GC).
+      console.log(`[WifiDirectService] Appel de WifiP2P.connectWithConfig (Intent=0)...`);
+      if (WifiP2P.connectWithConfig) {
+        await WifiP2P.connectWithConfig({ deviceAddress: macAddr, groupOwnerIntent: 0 });
+      } else {
+        await WifiP2P.connect(macAddr);
+      }
       
       console.log('[WifiDirectService] ✅ Commande de connexion acceptée par le matériel. En attente...');
+      // Note: isConnecting sera mis à false par l'event listener onConnectionChange
       return true;
 
     } catch (e) {
+      this.isConnecting = false; // REINIT FLAG SUR ERREUR
       const errCode = e?.code;
       const errMsg = e?.message || '';
+
       console.warn(`[WifiDirectService] ❌ Erreur connexion (Code: ${errCode}):`, errMsg);
 
       // Autoriser jusqu'à 2 retries (Total: 3 tentatives)
@@ -677,72 +706,32 @@ class WifiDirectServiceClass {
               if (fileHandled) return;
               fileHandled = true;
               clearInterval(progressInterval);
-              clearInterval(pollInterval);
-              clearTimeout(timeoutId);
               this._emit('onTransferProgress', { hash: meta.hash, progress: 100, status: 'complete' });
               this._emit('onLogUpdate', [`📦 Fichier prêt! Décompression en cours...`]);
               if (onFileReceived) onFileReceived(path, meta);
             };
 
-            // --- POLL toutes les 3s: dès que le fichier est à 98% reçu, on traite ---
-            // (receiveFile() ne résout pas toujours la Promise sur Android)
-            let pollInterval = setInterval(async () => {
-              try {
-                const info = await FileSystem.getInfoAsync(expectedUri);
-                if (info.exists && info.size > 0) {
-                  const sizePct = meta.size > 0 ? (info.size / meta.size) : 1;
-                  if (sizePct >= 0.95) {
-                    console.log(`[WifiDirectService] ✅ Fichier complet détecté par poll: ${(info.size/1024/1024).toFixed(1)}MB`);
-                    this._emit('onLogUpdate', [`✅ Réception complète: ${(info.size/1024/1024).toFixed(1)}MB`]);
-                    await handleFile(expectedUri);
-                  } else {
-                    this._emit('onLogUpdate', [`⏳ ${(info.size/1024/1024).toFixed(1)}/${(meta.size/1024/1024).toFixed(1)}MB reçus...`]);
-                  }
-                }
-              } catch (_) {}
-            }, 3000);
-
-            // --- FALLBACK: timeout après 120s si le poll n'a pas trouvé ---
-            const timeoutId = setTimeout(async () => {
-              if (fileHandled) return;
-              console.log('[WifiDirectService] Timeout 120s — recherche forcée...');
-              try {
-                const mediaDirUri = `file://${nativeMediaDir}`;
-                const files = await FileSystem.readDirectoryAsync(mediaDirUri);
-                console.log('[WifiDirectService] Fichiers dans loba_media:', files);
-                const targetFile = files.find(f => f === nativeFilename)
-                  || files.find(f => f.endsWith('.zip'))
-                  || (files.length > 0 ? files[files.length - 1] : null);
-                if (targetFile) {
-                  await handleFile(`file://${nativeMediaDir}${targetFile}`);
-                } else {
-                  clearInterval(progressInterval);
-                  clearInterval(pollInterval);
-                  this._emit('onTransferProgress', { hash: meta.hash, progress: 0, status: 'failed' });
-                  this._emit('onLogUpdate', ['❌ Timeout: aucun fichier trouvé dans loba_media']);
-                }
-              } catch (e) {
-                this._emit('onLogUpdate', ['❌ Erreur timeout: ' + e.message]);
-              }
-            }, 120000);
-
-            // --- receiveFile() en arrière-plan (peut ou ne peut pas résoudre) ---
+            // --- Attente de la réception du fichier ---
+            // On se fie EXCLUSIVEMENT à la résolution de receiveFile pour s'assurer
+            // que le fichier ZIP est écrit à 100%. Un "poll" prématuré corrompt le ZIP.
             try {
               console.log('[WifiDirectService] receiveFile() démarré en arrière-plan...');
               
-              // Wrap native receiveFile with a 60s timeout to prevent infinite blocking
-              // if FileServerAsyncTask natively fails to bind to port 8988.
+              // Timeout étendu à 300s (5 min) pour les appareils lents (ex: Itel A50)
               const rawPath = await Promise.race([
                 WifiP2P.receiveFile(nativeMediaDir, nativeFilename),
-                new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout receiveFile natif (60s)")), 60000))
+                new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout receiveFile natif (300s)")), 300000))
               ]);
               
               const receivedPath = (rawPath && !rawPath.startsWith('file://')) ? `file://${rawPath}` : rawPath;
               console.log('[WifiDirectService] receiveFile() résolu:', receivedPath);
               await handleFile(receivedPath);
             } catch (err) {
+              clearInterval(progressInterval);
               if (!fileHandled) {
-                this._emit('onLogUpdate', [`⚠️ receiveFile err: ${err?.message || '?'} — polling actif`]);
+                fileHandled = true;
+                this._emit('onLogUpdate', [`❌ Transfert échoué ou trop long: ${err?.message || '?'}`]);
+                this._emit('onTransferProgress', { hash: meta.hash, progress: 0, status: 'failed' });
               }
             }
           }

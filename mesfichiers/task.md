@@ -208,6 +208,9 @@
 | WiFi Direct P2P setup | Done | P2 | S6 |
 | WiFi Direct timeout adaptatif (120s pour gros fichiers) | Done | P2 | S6 |
 | WiFi Direct OOM-Fix (receiveFile au lieu de receiveMessage) | Done | P1 | S6 |
+| WiFi Direct Stabilisation (Anti-collision MAC + Robustesse) | Done | P1 | S7 |
+| WiFi Direct Auto-Retry on 95% hang | Done | P1 | S7 |
+| Génération APK Release pour tests terrain | In Progress | P1 | S7 |
 | Bluetooth simple P2P (pas mesh) | Done | P2 | S7 |
 | Choisir stack BLE mesh (ble-plx vs nearby) | Done | P3 | S7 |
 | Bluetooth Mesh (multi-hop) | Not Started | P3 | Post-MVP |

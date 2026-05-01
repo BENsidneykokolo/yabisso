@@ -146,6 +146,7 @@
 - Sprint 6 (P2P): WiFi Direct - WifiDirectService refactored (startDiscovery stop→start, isConnecting flag, deterministic MAC-based delay, removeGroup cleanup)
 - Sprint 6 (P2P): P2PAutoSync - Heartbeat avec re-init, suppression startReceiving prématuré (fix OOM itel A50), délai post-connexion 2s
 - Sprint 6 (P2P): Mécanisme Ping-Pong (swap de rôles) pour échange bidirectionnel de Loba Packs via WiFi Direct
+- Sprint 7 (Stabilisation): Correction crash RNZipArchive (suppression polling), Buffer Turbo Mode (64KB), Fix EAS Build (EASIgnore patterns), Correction WatermelonDB .fetchCount()
 
 ## Decisions techniques additionnelles
 - Navigation: React Navigation (a installer)

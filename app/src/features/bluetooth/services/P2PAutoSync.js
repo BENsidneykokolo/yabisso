@@ -91,6 +91,7 @@ class P2PAutoSyncClass {
       WifiDirectService.on('onConnectionChange', async ({ connected, info }) => {
         if (connected) {
           this._log('📶 Connexion P2P établie. Attente de la stabilisation GO (5s)...');
+          this._sessionSent = false;
           setTimeout(() => {
             if (WifiDirectService.connectedPeer) {
               if (!WifiDirectService.isGroupOwner) {
@@ -228,27 +229,46 @@ class P2PAutoSyncClass {
            WifiDirectService._emit('onSyncStatus', { status: 'WAITING_FOR_CLIENT' });
          } else {
            this._goLoggedOnce = false;
+           if (this._sessionSent && !category) {
+              return;
+           }
            this._log(`📦 Création du Pack ${category || 'Général'} en cours (Max 50MB)...`);
            WifiDirectService._emit('onSyncStatus', { status: 'PACKING' });
            
            const packPath = await LobaPackService.buildPack(category);
-           if (packPath) {
-               this._log(`📤 Envoi du Pack ${category || 'Général'} via WiFi Direct...`);
-               WifiDirectService._emit('onSyncStatus', { status: 'SENDING' });
-               const sent = await WifiDirectService.sendFile(packPath, {
-                  hash: `pack_${Date.now()}`,
-                  type: 'LOBA_PACK',
-                  category: category || 'bundle'
-               });
-               if (sent) {
-                  this._log(`✅ Succès: Pack ${category || 'Général'} envoyé !`);
-                  WifiDirectService._emit('onSyncStatus', { status: 'SUCCESS' });
-                  setTimeout(() => WifiDirectService.disconnect(), 3000);
-               } else {
-                  this._log('⚠️ Échec de l\'envoi du Loba Pack.');
-                  WifiDirectService._emit('onSyncStatus', { status: 'ERROR', message: 'Échec envoi' });
-               }
-           } else {
+            if (packPath) {
+                this._log(`📤 Envoi du Pack ${category || 'Général'} via WiFi Direct...`);
+                WifiDirectService._emit('onSyncStatus', { status: 'SENDING' });
+                
+                let sent = await WifiDirectService.sendFile(packPath, {
+                   hash: `pack_${Date.now()}`,
+                   type: 'LOBA_PACK',
+                   category: category || 'bundle'
+                });
+
+                // RETRY LOGIQUE: Si échec (souvent dû à un socket non prêt), on attend 5s et on réessaie une fois.
+                if (!sent) {
+                   this._log('⚠️ Premier essai échoué. Tentative de secours dans 5s...');
+                   await new Promise(r => setTimeout(r, 5000));
+                   sent = await WifiDirectService.sendFile(packPath, {
+                      hash: `pack_retry_${Date.now()}`,
+                      type: 'LOBA_PACK',
+                      category: category || 'bundle'
+                   });
+                }
+
+                if (sent) {
+                   this._sessionSent = true;
+                   this._log(`✅ Succès: Pack ${category || 'Général'} envoyé !`);
+                   WifiDirectService._emit('onSyncStatus', { status: 'SUCCESS' });
+                } else {
+                   this._log('❌ Échec critique de l\'envoi du Loba Pack après retry.');
+                   WifiDirectService._emit('onSyncStatus', { status: 'ERROR', message: 'Échec envoi définitif' });
+                   
+                   // Si échec définitif, on force une déconnexion pour réinitialiser le hardware
+                   setTimeout(() => WifiDirectService.disconnect(), 2000);
+                }
+            } else {
                this._log('ℹ️ Rien de nouveau à envoyer dans le Pack.');
                WifiDirectService._emit('onSyncStatus', { status: 'IDLE' });
            }

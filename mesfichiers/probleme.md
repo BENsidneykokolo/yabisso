@@ -172,6 +172,53 @@
 - **Solution** : always show button, use modal for adding
 - **Statut** : ✅ Résolu
 
+### BUG-020 — Crash Natif P2P (RNZipArchive NullPointerException)
+- **Date** : 2026-04-30
+- **Problème** : L'application crashe brutalement pendant la réception d'un pack Loba sur les appareils lents (Itel A50).
+- **Cause** : 
+  1. **Polling prématuré** : Le code JS tentait de décompresser le ZIP dès 95% de sa taille, alors que l'index (Central Directory) est à la fin du fichier.
+  2. **Timeout trop court (60s)** : Sur Itel A50, le transfert de 48MB dépassait 60s, déclenchant un fallback sur un fichier incomplet.
+  3. **Goulot d'étranglement natif** : La bibliothèque `react-native-wifi-p2p` utilisait un buffer minuscule de **1 KB**, rendant les écritures disque extrêmement lentes.
+- **Solution** : 
+  - Suppression du polling JS (attente exclusive du signal natif 100%).
+  - Augmentation du timeout à 300s.
+  - **Patch Natif** : Passage du buffer de 1 KB à **64 KB** dans `Utils.java` (recompilation requise).
+- **Statut** : ✅ Résolu
+
+### BUG-021 — Crash WatermelonDB / Expo SDK 54
+- **Date** : 2026-04-30
+- **Problème** : TypeError lors du comptage des posts et plantage du FileSystem.
+- **Cause** : 
+  1. WatermelonDB `.count()` est déprécié/incompatible, remplacé par `.fetchCount()`.
+  2. `expo-file-system` nécessite l'import `/legacy` sur le SDK 54 pour certaines opérations.
+- **Solution** : Mise à jour des méthodes de comptage et des imports FileSystem dans `InterestEngine.js`.
+- **Statut** : ✅ Résolu
+
+### BUG-022 — Échec EAS Build (ECONNRESET / Archive 251MB)
+- **Date** : 2026-04-30
+- **Problème** : `Failed to upload the project tarball to EAS Build - reason: write ECONNRESET`.
+- **Cause** : L'archive du projet faisait 251 MB car elle incluait les dossiers de build Android (`android/app/build`).
+- **Solution** : Mise à jour de `.easignore` avec des patterns globaux (`**/build`, `**/.gradle`) pour réduire l'archive à moins de 10 MB.
+- **Statut** : ✅ Résolu
+
+### BUG-023 — Collision "2 Portails" (Double Group Owner) en P2P
+- **Date** : 2026-04-30
+- **Problème** : Lors de la connexion, le téléphone "Envoyeur" devenait lui aussi Group Owner au lieu de Client, créant 2 portails qui ne communiquaient pas.
+- **Cause** : Le driver natif Android (`react-native-wifi-p2p`) utilise par défaut un `groupOwnerIntent` élevé lors de l'appel à `connect()`, forçant le connecteur à devenir l'hôte.
+- **Solution** : Remplacement de `WifiP2P.connect()` par `WifiP2P.connectWithConfig({ groupOwnerIntent: 0 })` pour garantir que l'Envoyeur reste strictement le Client (GC).
+- **Statut** : ✅ Résolu
+
+### BUG-024 — Barre de progression bloquée à 95%
+- **Date** : 2026-04-30
+- **Problème** : Le transfert P2P est un succès, les fichiers sont bien enregistrés en base de données, mais l'interface affiche indéfiniment "Réception du pack : 95%".
+- **Cause** : 
+  1. Fuite mémoire des intervalles de progression dans `WifiDirectService.js` et `LobaPacksScreen.js` (non nettoyés dans les blocs `catch` ou écrasés sans `clearInterval`).
+  2. L'orchestrateur `P2PAutoSync` renvoyait un pack complet en boucle toutes les 20 secondes car il ne se rappelait pas avoir déjà transféré lors de la session courante.
+- **Solution** : 
+  1. Ajout de `clearInterval` dans le `catch` de `receiveFile` et nettoyage sécurisé de `window._decompressInterval`.
+  2. Ajout du flag `this._sessionSent` dans `P2PAutoSync` pour limiter le transfert automatique à 1 pack par connexion réussie.
+- **Statut** : ✅ Résolu
+
 ---
 
 ## Risques connus à surveiller

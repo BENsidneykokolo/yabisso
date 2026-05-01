@@ -101,18 +101,17 @@ export default function LobaPacksScreen({ onBack }) {
       } else if (status === 'RECEIVING') {
         setIsSyncing(true);
         setSyncStatus(message || '🧬 Décompression en cours...');
-        // Simuler progression décompression
         setDecompressProgress(0);
-        const interval = setInterval(() => {
+        // On attache l'intervalle à un identifiant dans la window ou une réf (simplifié: via état local)
+        if (window._decompressInterval) clearInterval(window._decompressInterval);
+        window._decompressInterval = setInterval(() => {
           setDecompressProgress(prev => {
-            if (prev >= 90) {
-              clearInterval(interval);
-              return 90;
-            }
+            if (prev >= 90) return 90;
             return prev + 10;
           });
         }, 500);
       } else if (status === 'SUCCESS') {
+        if (window._decompressInterval) clearInterval(window._decompressInterval);
         setDecompressProgress(100);
         setSyncProgress(100);
         setSyncStatus('✅ Synchronisation réussie !');
@@ -124,12 +123,14 @@ export default function LobaPacksScreen({ onBack }) {
           setDecompressProgress(0);
         }, 2000);
       } else if (status === 'ERROR') {
+        if (window._decompressInterval) clearInterval(window._decompressInterval);
         addLog(`❌ Erreur: ${message}`);
         setIsSyncing(false);
         setSyncStatus('');
         setSyncProgress(0);
         setDecompressProgress(0);
       } else if (status === 'IDLE') {
+        if (window._decompressInterval) clearInterval(window._decompressInterval);
         setIsSyncing(false);
         setSyncStatus('');
         setSyncProgress(0);
