@@ -59,11 +59,11 @@ export const LocalStorageManager = {
   /**
    * Enregistre un média sur le disque permanent.
    * @param {string} tempUri - Chemin temporaire du fichier
-   * @param {string} hash - Hash SHA-256 du fichier
+   * @param {string} hashOrPath - Hash ou Chemin relatif (ex: 'loba/video/feed/file_hash')
    * @param {string} ext - Extension (mp4, jpg, etc.)
-   * @returns {string|null} Chemin final ou null en cas d'erreur
+   * @returns {Object|null} { path, size } ou null
    */
-  async saveMedia(tempUri, hash, ext = 'mp4') {
+  async saveMedia(tempUri, hashOrPath, ext = 'mp4') {
     try {
       await this.ensureDirs();
 
@@ -74,21 +74,37 @@ export const LocalStorageManager = {
         return null;
       }
 
+      // Gestion des sous-dossiers (si hashOrPath contient des '/')
+      let finalDest;
+      if (hashOrPath.includes('/')) {
+        // C'est un chemin relatif complet
+        const fullPath = `${FileSystem.documentDirectory}${hashOrPath}.${ext}`;
+        const dirPath = fullPath.substring(0, fullPath.lastIndexOf('/'));
+        
+        const dirInfo = await FileSystem.getInfoAsync(dirPath);
+        if (!dirInfo.exists) {
+          await FileSystem.makeDirectoryAsync(dirPath, { intermediates: true });
+        }
+        finalDest = fullPath;
+      } else {
+        // C've est juste un hash (comportement par défaut)
+        finalDest = `${LOBA_CACHE_DIR}${hashOrPath}.${ext}`;
+      }
+
       // Déduplication: vérifier si le fichier existe déjà
-      const dest = `${LOBA_CACHE_DIR}${hash}.${ext}`;
-      const existingInfo = await FileSystem.getInfoAsync(dest);
+      const existingInfo = await FileSystem.getInfoAsync(finalDest);
       if (existingInfo.exists) {
-        console.log(`[LocalStorageManager] Fichier déjà en cache: ${hash}`);
-        return dest;
+        console.log(`[LocalStorageManager] Fichier déjà en cache: ${hashOrPath}`);
+        return { path: finalDest, size: fileInfo.size };
       }
 
       await FileSystem.moveAsync({
         from: tempUri,
-        to: dest
+        to: finalDest
       });
 
-      console.log(`[LocalStorageManager] Média sauvegardé: ${hash}.${ext} (${(fileInfo.size / 1024).toFixed(1)} KB)`);
-      return { path: dest, size: fileInfo.size };
+      console.log(`[LocalStorageManager] Média sauvegardé dans ${finalDest} (${(fileInfo.size / 1024).toFixed(1)} KB)`);
+      return { path: finalDest, size: fileInfo.size };
     } catch (e) {
       console.error('[LocalStorageManager] Erreur sauvegarde:', e);
       return null;

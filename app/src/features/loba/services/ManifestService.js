@@ -1,6 +1,7 @@
 // app/src/features/loba/services/ManifestService.js
 import { database } from '../../../lib/db';
 import { Q } from '@nozbe/watermelondb';
+import * as FileSystem from 'expo-file-system/legacy';
 
 /**
  * ManifestService
@@ -34,15 +35,25 @@ export const ManifestService = {
       return {
         user_id: 'local_user', // À remplacer par l'ID réel
         timestamp: Date.now(),
-        media: posts.map(p => ({
-          hash: p.hash,
-          size: p.size,
-          category: p.category,
-          type: p.videoUrl ? 'video' : 'image',
-          username: p.username,
-          avatar: p.avatar,
-          content: p.content
-        })),
+        media: posts.map(p => {
+          // Extraire le chemin relatif par rapport à documentDirectory
+          const fullPath = p.localMediaPath || '';
+          const docDir = `${FileSystem.documentDirectory}`;
+          const relativePath = fullPath.startsWith(docDir) 
+            ? fullPath.replace(docDir, '') 
+            : fullPath.split('/').slice(-3).join('/'); // Fallback si format différent
+
+          return {
+            hash: p.hash,
+            size: p.size,
+            category: p.category,
+            type: p.videoUrl ? 'video' : 'image',
+            username: p.username,
+            avatar: p.avatar,
+            content: p.content,
+            path: relativePath // Nouveau: chemin relatif pour préserver l'arborescence
+          };
+        }),
         interests: interestMap
       };
     } catch (e) {
@@ -73,7 +84,10 @@ export const ManifestService = {
       // 2. Filtre pour ne garder que le Delta (ce qu'on n'a pas)
       const delta = remoteMedia.filter(m => !localHashes.has(m.hash));
 
-      return delta;
+      // LIMITATION : Max 20 médias par session de connexion
+      const limitedDelta = delta.slice(0, 20);
+
+      return limitedDelta;
     } catch (e) {
       console.error('[ManifestService] Erreur calcul Delta:', e);
       return [];

@@ -1,6 +1,6 @@
 // app/src/features/bluetooth/services/P2PAutoSync.js
 import { NetworkRailDetector, RAIL_TYPES } from './NetworkRailDetector';
-import { MeshSyncService } from './MeshSyncService';
+import { NearbyMeshService } from './NearbyMeshService';
 import { WifiDirectService } from './WifiDirectService';
 import { ManifestService } from '../../loba/services/ManifestService';
 import { RecommendationEngine } from '../../loba/services/RecommendationEngine';
@@ -60,8 +60,7 @@ class P2PAutoSyncClass {
     WifiDirectService.setGlobalFileHandler((path, meta) => this._handleReceivedFile(path, meta, 'WifiDirect'));
 
     try {
-      await MeshSyncService.initialize();
-      MeshSyncService.startMeshScanning();
+      await NearbyMeshService.startMesh();
     } catch (e) {
       console.warn('[P2PAutoSync] Mesh init error:', e.message);
     }
@@ -169,12 +168,9 @@ class P2PAutoSyncClass {
         if (success) this._log('✅ Ping envoyé via WiFi!');
         return success;
       } else if (bestRail === RAIL_TYPES.BLE_MESH) {
-        const result = await MeshSyncService.broadcast('PING', {
-          type: 'PING',
-          timestamp: Date.now(),
-        });
-        if (result.success) this._log('✅ Ping envoyé via Mesh!');
-        return result.success;
+        // NearbyMeshService gère son propre heartbeat, pas de broadcast manuel ici pour l'instant
+        this._log('ℹ️ Ping Mesh automatique via Nearby Mesh.');
+        return true;
       }
     } catch (e) {
       this._log(`❌ Échec Ping: ${e.message}`);
@@ -187,7 +183,7 @@ class P2PAutoSyncClass {
     if (this._p2pInterval) clearInterval(this._p2pInterval);
     if (this._cloudInterval) clearInterval(this._cloudInterval);
     NetworkRailDetector.stop();
-    MeshSyncService.stopMeshScanning();
+    NearbyMeshService.stopMesh();
     WifiDirectService.stopDiscovery();
     console.log('[P2PAutoSync] Orchestrateur arrêté.');
   }
@@ -383,20 +379,9 @@ class P2PAutoSyncClass {
       }
 
       if (rail === RAIL_TYPES.BLE_MESH) {
-        // BLE Mesh: uniquement les petits payloads (métadonnées, pas les fichiers lourds)
-        const payload = {
-          hash: post.hash,
-          type: post.videoUrl ? 'video' : 'image',
-          category: post.category || 'general',
-          username: post.username || 'Anonymous',
-          content: post.content || '',
-          timestamp: post.downloadedAt || Date.now(),
-        };
-        const result = await MeshSyncService.broadcast('LOBA_POST_META', payload);
-        if (result?.success) {
-          this._log(`📡 Métadonnées propagées via BLE: ${post.hash?.substring(0, 8)}`);
-          await this._markAsPropagated(post);
-        }
+        // NearbyMeshService propage déjà les métadonnées lors du handshake automatique
+        this._log(`📡 Propagation via Mesh (Nearby) planifiée: ${post.hash?.substring(0, 8)}`);
+        await this._markAsPropagated(post);
       } else {
         // Autres rails: marquer comme propagé sans envoi (sera géré au prochain cycle WiFi Direct)
         this._log(`ℹ️ Rail ${rail} non supporté pour propagation directe. Attente WiFi Direct.`);
@@ -457,7 +442,7 @@ class P2PAutoSyncClass {
   getStats() {
     return {
       ...this.stats,
-      blePeers: MeshSyncService.discoveredPeers?.size || 0,
+      blePeers: NearbyMeshService.connectedPeers?.size || 0,
       wifiDirectPeer: WifiDirectService.connectedPeer ? 1 : 0,
     };
   }

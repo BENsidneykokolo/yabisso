@@ -95,6 +95,13 @@
           "bluetoothAlwaysPermission": "Autoriser Yabisso à utiliser le Bluetooth P2P pour l'inscription offline."
         }
       ],
+      [
+        "expo-nearby-connections",
+        {
+          "bonjourServicesName": "yabisso-mesh",
+          "localNetworkUsagePermissionText": "Yabisso utilise le réseau local pour synchroniser les contenus Loba à proximité."
+        }
+      ],
       "react-native-compressor",
       "expo-video"
     ]

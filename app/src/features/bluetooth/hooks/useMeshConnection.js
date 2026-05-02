@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { meshConnectionState, MeshConnectionEvents } from '../services/MeshSyncService';
+import { meshConnectionState, MeshConnectionEvents } from '../services/NearbyMeshService';
 
 /**
  * Hook global pour écouter l'état de la connexion Mesh en temps réel.

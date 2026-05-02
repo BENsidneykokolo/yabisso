@@ -15,6 +15,7 @@ import { CameraView, useCameraPermissions } from 'expo-camera';
 import { database } from '../../../lib/db';
 import { Q } from '@nozbe/watermelondb';
 import { UniversalValidationService, VALIDATION_TYPES } from '../services/UniversalValidationService';
+import { NearbyMeshService } from '../../bluetooth/services/NearbyMeshService';
 
 const C = {
   bg:         '#0A0C10',
@@ -68,11 +69,18 @@ export default function ProductValidationKioskScreen({ navigation }) {
         ])
       ).start();
 
-      // Propagation RÉELLE via MeshSyncService
+      // Propagation RÉELLE via NearbyMeshService (qui supporte désormais le broadcast)
       const startPropagation = async () => {
         try {
           const validatedPayload = await UniversalValidationService.signValidation(scannedEntity, 'KIOSK_MAIN_01');
-          await MeshSyncService.broadcast(validatedPayload.type, validatedPayload, validatedPayload.image_url);
+          
+          // On passe par NearbyMeshService pour notifier les voisins du nouveau contenu validé
+          // Note: NearbyMeshService.sendText est utilisé pour les petits payloads de métadonnées
+          // On broadcast à tous les peers connectés
+          for (const peerId of NearbyMeshService.connectedPeers) {
+            await NearbyMeshService._syncHandshake(peerId); // Force un refresh du manifeste incluant le nouveau produit
+          }
+          
           setStep(STEP.SUCCESS);
         } catch (e) {
           setErrorMsg('Erreur propagation : ' + e.message);
