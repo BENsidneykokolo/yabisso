@@ -17,6 +17,8 @@ import {
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import * as SecureStore from 'expo-secure-store';
 import { useCart } from '../context/CartContext';
+import { NearbyMeshService } from '../../bluetooth/services/NearbyMeshService';
+import { VALIDATION_TYPES } from '../../kiosk/services/UniversalValidationService';
 
 const { width, height } = Dimensions.get('window');
 
@@ -158,6 +160,36 @@ export default function ProductDetailsScreen({ onBack, onNavigate, product }) {
       console.log('Error saving review:', e);
       Alert.alert('Erreur', 'Impossible d\'enregistrer votre avis.');
     }
+  };
+
+  const handleRequestValidation = async () => {
+    Alert.alert(
+      'Validation Kiosque',
+      'Voulez-vous envoyer une demande de validation pour ce produit au Kiosque à proximité ?',
+      [
+        { text: 'Annuler', style: 'cancel' },
+        { 
+          text: 'Envoyer la demande', 
+          onPress: async () => {
+            const success = await NearbyMeshService.sendValidationRequest({
+              id: productData.id,
+              name: productData.name,
+              price: productData.price,
+              category: productData.category,
+              sellerName: productData.sellerName || productData.seller?.name,
+              sellerId: productData.sellerId || productData.seller?.id,
+              description: productData.description,
+              type: VALIDATION_TYPES.MARKETPLACE_PRODUCT,
+            });
+            if (success) {
+              Alert.alert('✅ Envoyé', 'Votre demande est en cours. Veuillez patienter près du Kiosque.');
+            } else {
+              Alert.alert('❌ Échec', 'Aucun Kiosque détecté. Assurez-vous d\'être à moins de 10m d\'un Kiosque actif.');
+            }
+          }
+        }
+      ]
+    );
   };
 
   const handleSuggestedProductPress = (suggestedProduct) => {
@@ -360,7 +392,22 @@ export default function ProductDetailsScreen({ onBack, onNavigate, product }) {
         <View style={styles.productInfo}>
           <Text style={styles.productBrand}>{productData.brand || 'Ma Boutique'}</Text>
           <View style={styles.titleRow}>
-            <Text style={styles.productName}>{productData.name}</Text>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.productName}>{productData.name}</Text>
+              <View style={styles.validationRow}>
+                {productData.isValidated ? (
+                  <View style={styles.validatedBadge}>
+                    <MaterialCommunityIcons name="shield-check" size={12} color="#2BEE79" />
+                    <Text style={styles.validatedText}>Validé par Kiosque</Text>
+                  </View>
+                ) : (
+                  <TouchableOpacity style={styles.requestValidationBtn} onPress={handleRequestValidation}>
+                    <MaterialCommunityIcons name="shield-alert" size={12} color="#FFD166" />
+                    <Text style={styles.requestValidationText}>Demander Validation</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+            </View>
             <View style={styles.priceContainer}>
               {negotiatedPrice ? (
                 <>

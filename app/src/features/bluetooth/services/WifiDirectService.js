@@ -52,6 +52,13 @@ class WifiDirectServiceClass {
   }
 
   /**
+   * Phase 13: Définit le handler global pour le traitement des fichiers reçus.
+   */
+  setGlobalFileHandler(handler) {
+    this.globalFileHandler = handler;
+  }
+
+  /**
    * Initialise le service WiFi P2P.
    * Doit être appelé une fois au démarrage.
    */

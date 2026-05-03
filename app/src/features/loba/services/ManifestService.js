@@ -1,7 +1,7 @@
 // app/src/features/loba/services/ManifestService.js
 import { database } from '../../../lib/db';
 import { Q } from '@nozbe/watermelondb';
-import * as FileSystem from 'expo-file-system/legacy';
+import * as FileSystem from 'expo-file-system';
 
 /**
  * ManifestService
@@ -15,7 +15,20 @@ export const ManifestService = {
    */
   async generateManifest() {
     try {
-      const posts = await database.get('loba_posts')
+      if (!database) {
+        console.warn('[ManifestService] Base de données non initialisée.');
+        return null;
+      }
+
+      const lobaCollection = database.get('loba_posts');
+      const interestCollection = database.get('user_interests');
+
+      if (!lobaCollection || !interestCollection) {
+        console.warn('[ManifestService] Collections non trouvées.');
+        return null;
+      }
+
+      const posts = await lobaCollection
         .query(
           Q.where('hash', Q.notEq(null)),
           Q.sortBy('created_at', Q.desc),
@@ -23,7 +36,7 @@ export const ManifestService = {
         )
         .fetch();
 
-      const interests = await database.get('user_interests')
+      const interests = await interestCollection
         .query(Q.where('service', 'loba'))
         .fetch();
 

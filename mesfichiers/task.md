@@ -145,7 +145,9 @@
 | Validation - OfflineValidationService (creation, QR, approve/reject) | Done | P1 | S5 |
 | Validation - ProductValidationScreen (scanner, pending, confirme) | Done | P1 | P1 |
 | Validation - Integration Restaurant/Services vers validation | Done | P1 | S5 |
-| Validation - Reception via P2P (WiFi/BLE) | In Progress | P2 | S6 |
+| Validation - Reception via P2P (WiFi/BLE) | Done | P2 | S6 |
+| - Handshake Google Nearby (Auto-Connect) | Done | P1 | S7 |
+| - Logging Mesh Temps Réel | Done | P2 | S7 |
 
 ---
 

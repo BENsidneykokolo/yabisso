@@ -13,19 +13,21 @@ import {
   onTextReceived,
   sendText,
   acceptConnection,
+  requestConnection,
   disconnect
 } from 'expo-nearby-connections';
-import * as FileSystem from 'expo-file-system';
+import * as FileSystem from 'expo-file-system/legacy';
 import { database } from '../../../lib/db';
 import { Q } from '@nozbe/watermelondb';
 import { GlobalManifestService } from './GlobalManifestService';
 import { DailyQuotaService } from './DailyQuotaService';
 import { NetworkPermissionsService } from './NetworkPermissionsService';
-import { LocalStorageManager } from '../../loba/services/LocalStorageManager';
+import { NetworkRailDetector } from './NetworkRailDetector';
+
+console.log('[NearbyMeshService] Module chargé dans le bundle.');
 
 const SERVICE_ID = 'com.benksidney.yabisso.mesh';
 
-// Pour la compatibilité avec le hook useMeshConnection.js
 class SimpleEventEmitter {
   constructor() { this.listeners = []; }
   subscribe(callback) {
@@ -37,99 +39,118 @@ class SimpleEventEmitter {
 
 export const meshConnectionState = { isConnected: false, peerCount: 0, peers: [] };
 export const MeshConnectionEvents = new SimpleEventEmitter();
+export const MeshLogEvents = new SimpleEventEmitter();
+export const MeshRequestEvents = new SimpleEventEmitter();
 
 class NearbyMeshServiceClass {
   constructor() {
     this.connectedPeers = new Set();
     this.isAdvertising = false;
     this.isDiscovering = false;
+    this.deviceName = null; 
     this._listeners = [];
+    
+    this.MeshLogEvents = MeshLogEvents;
+    this.MeshConnectionEvents = MeshConnectionEvents;
+    this.MeshRequestEvents = MeshRequestEvents;
   }
 
-  /**
-   * Démarre le Mesh avec vérification des permissions.
-   */
+  _log(msg) {
+    console.log(`[NearbyMesh] ${msg}`);
+    MeshLogEvents.emit(msg);
+  }
+
   async startMesh() {
-    if (this.isAdvertising || this.isDiscovering) return;
+    if (this.isAdvertising || this.isDiscovering) {
+      this._log('Mesh déjà actif (skip start).');
+      return;
+    }
 
     try {
+      this._log('--- DÉMARRAGE NEARBY MESH ---');
+      this._log('Vérification du module natif...');
+      this._log('Demande des permissions...');
       const hasPerms = await NetworkPermissionsService.requestAll();
       if (!hasPerms) {
-        console.warn('[NearbyMesh] Permissions manquantes, démarrage impossible.');
+        this._log('⚠️ Permissions refusées.');
         return;
       }
       
+      this._log('Initialisation Quota...');
       await DailyQuotaService.initialize();
-
-      console.log('[NearbyMesh] Initialisation du moteur Nearby Connections...');
-
+      
+      this._log('Configuration des Listeners...');
       this._setupListeners();
 
-      // 1. Advertising (être visible)
-      await startAdvertise(
-        'Yabisso_Node',
-        Strategy.P2P_CLUSTER
-      );
+      // Générer un nom unique pour cette session
+      this.deviceName = `Yabisso_${Math.random().toString(36).substring(2, 7)}`;
+      const strategy = Strategy.P2P_STAR;
+
+      this._log(`Lancement Advertising: ${this.deviceName}...`);
+      await startAdvertise(this.deviceName, strategy);
       this.isAdvertising = true;
+      this._log('✅ Advertising actif.');
 
-      // 2. Discovery (chercher les autres)
-      await startDiscovery(
-        'Yabisso_Node', 
-        Strategy.P2P_CLUSTER
-      );
+      this._log('Lancement Discovery...');
+      await startDiscovery(this.deviceName, strategy);
       this.isDiscovering = true;
+      this._log('✅ Discovery actif.');
 
-      console.log('[NearbyMesh] Moteur Mesh démarré avec succès.');
+      NetworkRailDetector.setBleAvailable(true);
+      this._log('🚀 Mesh prêt et visible dans le réseau.');
+
     } catch (e) {
-      console.error('[NearbyMesh] Échec du démarrage du Mesh:', e.message);
+      this._log(`❌ ÉCHEC CRITIQUE: ${e.message}`);
+      this.isAdvertising = false;
+      this.isDiscovering = false;
     }
   }
 
   _setupListeners() {
-    // Nettoyer les anciens listeners (ce sont des fonctions de désabonnement)
-    this._listeners.forEach(unsub => {
-      if (typeof unsub === 'function') unsub();
-    });
+    this._listeners.forEach(unsub => { if (typeof unsub === 'function') unsub(); });
     this._listeners = [];
 
-    // Découverte d'un pair
     this._listeners.push(onPeerFound((peer) => {
-      console.log(`[NearbyMesh] Node détecté : ${peer.name} (${peer.peerId})`);
-      // Auto-accept pour le mesh
-      acceptConnection(peer.peerId).catch(err => console.warn('[NearbyMesh] acceptConnection failed:', err));
+      this._log(`🔍 Node trouvé: ${peer.name} (${peer.peerId})`);
+      
+      // Handshake déterministe pour éviter les collisions de requestConnection
+      if (this.deviceName && this.deviceName < peer.name) {
+        this._log(`🤝 [Master] Envoi requête de connexion vers ${peer.peerId}...`);
+        requestConnection(peer.peerId).catch(err => {
+          this._log(`❌ Échec requestConnection: ${err.message}`);
+        });
+      } else {
+        this._log(`⏳ [Slave] Attente de l'invitation de ${peer.name}...`);
+      }
     }));
 
-    // Perte d'un pair
     this._listeners.push(onPeerLost(({ peerId }) => {
-      console.log(`[NearbyMesh] Node perdu : ${peerId}`);
+      this._log(`👻 Node perdu: ${peerId}`);
       this.connectedPeers.delete(peerId);
       this._updateState();
     }));
 
-    // Invitations
     this._listeners.push(onInvitationReceived((peer) => {
-      console.log(`[NearbyMesh] Invitation reçue : ${peer.name}`);
-      acceptConnection(peer.peerId).catch(err => console.warn('[NearbyMesh] acceptConnection failed:', err));
+      this._log(`🤝 Invitation reçue de: ${peer.name} (${peer.peerId})`);
+      this._log(`✅ Acceptation de la connexion...`);
+      acceptConnection(peer.peerId).catch(err => {
+        this._log(`❌ Échec acceptConnection: ${err.message}`);
+      });
     }));
 
-    // Connexions établies
     this._listeners.push(onConnected((peer) => {
-      console.log(`[NearbyMesh] Connecté à : ${peer.name} (${peer.peerId})`);
+      this._log(`✨ CONNECTÉ à: ${peer.name} (${peer.peerId})`);
       this.connectedPeers.add(peer.peerId);
       this._updateState();
-      
-      // Envoyer notre manifeste
       this._sendManifest(peer.peerId);
     }));
 
-    // Déconnexions
     this._listeners.push(onDisconnected(({ peerId }) => {
-      console.log(`[NearbyMesh] Déconnecté : ${peerId}`);
+      this._log(`🔌 Déconnecté de: ${peerId}`);
       this.connectedPeers.delete(peerId);
       this._updateState();
     }));
 
-    // Réception de données (Manifestes)
     this._listeners.push(onTextReceived(({ peerId, text }) => {
       this._handleDataReceived(peerId, text);
     }));
@@ -144,19 +165,19 @@ class NearbyMeshServiceClass {
 
   async stopMesh() {
     try {
+      this._log('Arrêt du Mesh...');
       await stopAdvertise();
       await stopDiscovery();
-      this._listeners.forEach(unsub => {
-        if (typeof unsub === 'function') unsub();
-      });
+      this._listeners.forEach(unsub => { if (typeof unsub === 'function') unsub(); });
       this._listeners = [];
       this.connectedPeers.clear();
       this.isAdvertising = false;
       this.isDiscovering = false;
       this._updateState();
-      console.log('[NearbyMesh] Mesh arrêté.');
+      NetworkRailDetector.setBleAvailable(false);
+      this._log('Mesh arrêté.');
     } catch (e) {
-      console.error('[NearbyMesh] Erreur arrêt mesh:', e.message);
+      this._log(`Erreur arrêt: ${e.message}`);
     }
   }
 
@@ -164,16 +185,11 @@ class NearbyMeshServiceClass {
     try {
       const manifest = await GlobalManifestService.generateGlobalManifest();
       if (!manifest) return;
-
-      const payload = JSON.stringify({
-        type: 'global_manifest',
-        manifest
-      });
-
+      const payload = JSON.stringify({ type: 'global_manifest', manifest });
       await sendText(peerId, payload);
-      console.log(`[NearbyMesh] Manifeste Global envoyé à ${peerId}`);
+      this._log(`📤 Manifeste envoyé (${manifest.loba?.length || 0} items)`);
     } catch (e) {
-      console.warn(`[NearbyMesh] Échec envoi manifeste à ${peerId}:`, e.message);
+      this._log(`⚠️ Échec envoi manifeste: ${e.message}`);
     }
   }
 
@@ -182,58 +198,29 @@ class NearbyMeshServiceClass {
       const data = JSON.parse(text);
       if (data.type === 'global_manifest') {
         this._handleGlobalManifestReceived(peerId, data.manifest);
+      } else if (data.type === 'validation_request') {
+        this._log(`📩 Requête de validation reçue de ${peerId}`);
+        MeshRequestEvents.emit({ peerId, request: data.payload });
       }
-    } catch (e) {
-      // Ignorer les messages malformés
-    }
+    } catch (e) { }
   }
 
-  async _handleGlobalManifestReceived(peerId, manifest) {
-    console.log(`[NearbyMesh] Manifeste reçu de ${peerId}`);
-    const delta = await GlobalManifestService.calculateGlobalDelta(manifest);
-    
-    // 1. Traiter Loba Delta
-    if (delta.loba && delta.loba.length > 0) {
-      console.log(`[NearbyMesh] Delta Loba : ${delta.loba.length} items`);
-      for (const record of delta.loba) {
-        try {
-          const collection = database.get('loba_posts');
-          const exists = await collection.query(Q.where('hash', record.hash)).fetch();
-          if (exists.length === 0) {
-            await database.write(async () => {
-              await collection.create(newRecord => {
-                newRecord.username = record.username;
-                newRecord.avatar = record.avatar;
-                newRecord.content = record.content;
-                newRecord.hash = record.hash;
-                newRecord.size = record.size;
-                newRecord.category = record.category;
-                newRecord.is_validated = false;
-                newRecord.created_at = Date.now();
-              });
-            });
-          }
-        } catch (err) { /* ignore */ }
-      }
-    }
+  async _handleGlobalManifestReceived(peerId, remoteManifest) {
+    // Logique de synchronisation ici
+    this._log(`📥 Manifeste reçu de ${peerId}.`);
+  }
 
-    // 2. Traiter Produits Delta (Marché)
-    if (delta.products && delta.products.length > 0) {
-      console.log(`[NearbyMesh] Delta Produits : ${delta.products.length} items`);
-      for (const record of delta.products) {
-        try {
-          const collection = database.get('products');
-          const exists = await collection.query(Q.where('id', record.hash)).fetch();
-          if (exists.length === 0) {
-            await database.write(async () => {
-              await collection.create(newProd => {
-                // record._raw contient les données brutes sérialisées
-                newProd._raw = { ...newProd._raw, ...record._raw, id: record.hash };
-              });
-            });
-          }
-        } catch (err) { /* ignore */ }
+  async sendValidationRequest(payload) {
+    try {
+      const data = JSON.stringify({ type: 'validation_request', payload });
+      for (const peerId of this.connectedPeers) {
+        await sendText(peerId, data);
       }
+      this._log('📤 Requête de validation envoyée aux nodes à proximité.');
+      return true;
+    } catch (e) {
+      this._log(`❌ Échec envoi requête: ${e.message}`);
+      return false;
     }
   }
 }

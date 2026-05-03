@@ -13,6 +13,9 @@ export const VALIDATION_TYPES = {
   SERVICE_BOOKING:     'service_booking',
   REAL_ESTATE:         'real_estate_listing',
   TRANSPORT_TICKET:    'transport_ticket',
+  POINTS_RECHARGE:     'points_recharge',
+  PACKS_RECHARGE:      'packs_recharge',
+  USER_MANAGEMENT:     'user_management',
 };
 
 export const UniversalValidationService = {

@@ -15,6 +15,7 @@ import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import * as SecureStore from 'expo-secure-store';
 import OfflineValidationService from '../services/OfflineValidationService';
 import { VALIDATION_STATUS, SERVICE_TYPES } from '../services/OfflineValidationService';
+import { MeshRequestEvents, NearbyMeshService } from '../../bluetooth/services/NearbyMeshService';
 
 const SERVICE_LABELS = {
   marketplace: 'Marché',
@@ -35,6 +36,7 @@ const SERVICE_ICONS = {
 function KioskAdminDashboardScreen({ navigation }) {
   const [activeTab, setActiveTab] = useState('pending');
   const [pendingValidations, setPendingValidations] = useState([]);
+  const [nearbyRequests, setNearbyRequests] = useState([]);
   const [validatedItems, setValidatedItems] = useState([]);
   const [rejectedItems, setRejectedItems] = useState([]);
   const [selectedItem, setSelectedItem] = useState(null);
@@ -47,6 +49,17 @@ function KioskAdminDashboardScreen({ navigation }) {
 
   useEffect(() => {
     loadValidations();
+    
+    // Écouter les requêtes Nearby Mesh
+    const sub = MeshRequestEvents.addListener((data) => {
+      setNearbyRequests(prev => [
+        { ...data.request, peerId: data.peerId, isNearby: true, timestamp: Date.now() },
+        ...prev
+      ]);
+      Alert.alert('🔔 Nouvelle requête', `Requête de validation reçue via Bluetooth de ${data.peerId}`);
+    });
+
+    return () => sub.remove();
   }, []);
 
   const loadValidations = async () => {
@@ -135,6 +148,55 @@ function KioskAdminDashboardScreen({ navigation }) {
     }
   };
 
+  const renderItem = (item, index) => (
+    <Pressable 
+      key={index} 
+      style={styles.itemCard}
+      onPress={() => {
+        setSelectedItem(item);
+        setShowDetailModal(true);
+      }}
+    >
+      <View style={styles.itemIcon}>
+        <MaterialCommunityIcons 
+          name={SERVICE_ICONS[item.serviceType] || 'help-circle'} 
+          size={24} 
+          color="#2BEE79" 
+        />
+      </View>
+      <View style={styles.itemInfo}>
+        <Text style={styles.itemName}>{item.data?.name || item.name}</Text>
+        <Text style={styles.itemType}>
+          {SERVICE_LABELS[item.serviceType] || item.serviceType}
+        </Text>
+        <Text style={styles.itemPrice}>{item.data?.price || item.price} FCAF</Text>
+        <Text style={styles.itemSeller}>
+          Vendeur: {item.data?.sellerName || item.sellerName || 'Inconnu'}
+        </Text>
+        {item.isNearby && (
+          <View style={styles.nearbyBadge}>
+            <Ionicons name="bluetooth" size={10} color="#60A5FA" />
+            <Text style={styles.nearbyBadgeText}>Nearby</Text>
+          </View>
+        )}
+      </View>
+      <View style={styles.itemActions}>
+        <TouchableOpacity 
+          style={styles.approveBtn}
+          onPress={() => handleApprove(item)}
+        >
+          <Ionicons name="checkmark" size={20} color="#000" />
+        </TouchableOpacity>
+        <TouchableOpacity 
+          style={styles.rejectBtn}
+          onPress={() => handleReject(item)}
+        >
+          <Ionicons name="close" size={20} color="#fff" />
+        </TouchableOpacity>
+      </View>
+    </Pressable>
+  );
+
   return (
     <SafeAreaView style={styles.container}>
       {/* Header */}
@@ -174,7 +236,15 @@ function KioskAdminDashboardScreen({ navigation }) {
           onPress={() => setActiveTab('pending')}
         >
           <Text style={[styles.tabText, activeTab === 'pending' && styles.tabTextActive]}>
-            En attente ({pendingValidations.length})
+            Attente ({pendingValidations.length})
+          </Text>
+        </Pressable>
+        <Pressable 
+          style={[styles.tab, activeTab === 'nearby' && styles.tabActive]} 
+          onPress={() => setActiveTab('nearby')}
+        >
+          <Text style={[styles.tabText, activeTab === 'nearby' && styles.tabTextActive]}>
+            Nearby ({nearbyRequests.length})
           </Text>
         </Pressable>
         <Pressable 
@@ -204,48 +274,19 @@ function KioskAdminDashboardScreen({ navigation }) {
               <Text style={styles.emptyText}>Aucune validation en attente</Text>
             </View>
           ) : (
-            pendingValidations.map((item, index) => (
-              <Pressable 
-                key={index} 
-                style={styles.itemCard}
-                onPress={() => {
-                  setSelectedItem(item);
-                  setShowDetailModal(true);
-                }}
-              >
-                <View style={styles.itemIcon}>
-                  <MaterialCommunityIcons 
-                    name={SERVICE_ICONS[item.serviceType] || 'help-circle'} 
-                    size={24} 
-                    color="#2BEE79" 
-                  />
-                </View>
-                <View style={styles.itemInfo}>
-                  <Text style={styles.itemName}>{item.data?.name || item.name}</Text>
-                  <Text style={styles.itemType}>
-                    {SERVICE_LABELS[item.serviceType] || item.serviceType}
-                  </Text>
-                  <Text style={styles.itemPrice}>{item.data?.price || item.price} FCAF</Text>
-                  <Text style={styles.itemSeller}>
-                    Vendeur: {item.data?.sellerName || item.sellerName || 'Inconnu'}
-                  </Text>
-                </View>
-                <View style={styles.itemActions}>
-                  <TouchableOpacity 
-                    style={styles.approveBtn}
-                    onPress={() => handleApprove(item)}
-                  >
-                    <Ionicons name="checkmark" size={20} color="#000" />
-                  </TouchableOpacity>
-                  <TouchableOpacity 
-                    style={styles.rejectBtn}
-                    onPress={() => handleReject(item)}
-                  >
-                    <Ionicons name="close" size={20} color="#fff" />
-                  </TouchableOpacity>
-                </View>
-              </Pressable>
-            ))
+            pendingValidations.map((item, index) => renderItem(item, index))
+          )
+        )}
+
+        {activeTab === 'nearby' && (
+          nearbyRequests.length === 0 ? (
+            <View style={styles.emptyState}>
+              <MaterialCommunityIcons name="broadcast" size={60} color="#666" />
+              <Text style={styles.emptyText}>Aucune requête Nearby détectée</Text>
+              <Text style={styles.emptySubtext}>Les demandes envoyées par Bluetooth apparaissent ici.</Text>
+            </View>
+          ) : (
+            nearbyRequests.map((item, index) => renderItem(item, index))
           )
         )}
 
@@ -263,6 +304,15 @@ function KioskAdminDashboardScreen({ navigation }) {
           </View>
         )}
       </ScrollView>
+
+      {/* Floating Scan Button */}
+      <TouchableOpacity 
+        style={styles.fab}
+        onPress={() => navigation.navigate('kiosk_product_validation')}
+      >
+        <MaterialCommunityIcons name="qrcode-scan" size={28} color="#000" />
+        <Text style={styles.fabText}>Scanner QR</Text>
+      </TouchableOpacity>
 
       {/* Detail Modal */}
       <Modal visible={showDetailModal} animationType="slide" transparent>
@@ -389,6 +439,51 @@ const styles = StyleSheet.create({
   modalRejectText: { color: '#fff', fontSize: 16, fontWeight: 'bold', marginLeft: 8 },
   modalApproveBtn: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: '#2BEE79', padding: 14, borderRadius: 12 },
   modalApproveText: { color: '#000', fontSize: 16, fontWeight: 'bold', marginLeft: 8 },
+  fab: {
+    position: 'absolute',
+    bottom: 30,
+    right: 20,
+    backgroundColor: '#2BEE79',
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 15,
+    borderRadius: 30,
+    elevation: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+  },
+  fabText: {
+    color: '#000',
+    fontWeight: 'bold',
+    marginLeft: 10,
+    fontSize: 16,
+  },
+  nearbyBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(96, 165, 250, 0.1)',
+    alignSelf: 'flex-start',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+    marginTop: 4,
+  },
+  nearbyBadgeText: {
+    color: '#60A5FA',
+    fontSize: 10,
+    fontWeight: 'bold',
+    marginLeft: 2,
+  },
+  emptySubtext: {
+    color: '#666',
+    fontSize: 14,
+    marginTop: 8,
+    textAlign: 'center',
+    paddingHorizontal: 40,
+  },
 });
 
 export default KioskAdminDashboardScreen;

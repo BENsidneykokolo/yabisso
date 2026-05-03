@@ -92,6 +92,9 @@ function LobaHomeScreen({ onBack, onNavigate, posts = [] }) {
     const unsubLogs = P2PAutoSync.onLogUpdate((logs) => {
       setP2pLogs([...logs]);
     });
+    
+    // Charger les logs initiaux immédiatement
+    setP2pLogs([...P2PAutoSync.stats.logs]);
 
     const unsubSync = WifiDirectService.on('onSyncStatus', ({ status }) => {
       if (status === 'SUCCESS') {

@@ -49,6 +49,7 @@ class P2PAutoSyncClass {
     this._running = true;
 
     console.log('[P2PAutoSync] Démarrage de l\'orchestrateur Multi-Rail...');
+    this._log('🚀 Orchestrateur démarré (Mode Cloud Saver).');
 
     NetworkRailDetector.start();
     NetworkRailDetector.onRailChange((rails) => {
@@ -59,11 +60,15 @@ class P2PAutoSyncClass {
     // Phase 13: Brancher le récepteur global
     WifiDirectService.setGlobalFileHandler((path, meta) => this._handleReceivedFile(path, meta, 'WifiDirect'));
 
-    try {
-      await NearbyMeshService.startMesh();
-    } catch (e) {
-      console.warn('[P2PAutoSync] Mesh init error:', e.message);
-    }
+    NearbyMeshService.MeshLogEvents.subscribe((msg) => {
+      this._log(`[MESH] ${msg}`);
+    });
+
+    // NE PAS AWAIT: On lance le Mesh en arrière-plan pour ne pas bloquer le WiFi Direct
+    // surtout sur les appareils lents (Itel A50)
+    NearbyMeshService.startMesh().catch(e => {
+      this._log(`[MESH] ❌ Crash initialisation: ${e.message}`);
+    });
 
     try {
       if (WifiDirectService.getState().isAvailable) {
@@ -117,7 +122,6 @@ class P2PAutoSyncClass {
 
     this._p2pInterval = setInterval(() => this._p2pSyncCycle(), P2P_SYNC_INTERVAL_MS);
     this._p2pSyncCycle();
-    this._log('🚀 Orchestrateur démarré (Mode Cloud Saver).');
   }
 
   /**
