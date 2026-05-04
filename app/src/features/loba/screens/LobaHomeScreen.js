@@ -23,6 +23,7 @@ import withObservables from '@nozbe/with-observables';
 import { database } from '../../../lib/db';
 import { P2PAutoSync } from '../../bluetooth/services/P2PAutoSync';
 import { WifiDirectService } from '../../bluetooth/services/WifiDirectService';
+import { MeshContentUpdateEvents } from '../../bluetooth/services/NearbyMeshService';
 import { useMeshConnection } from '../../bluetooth/hooks/useMeshConnection';
 import { useWifiDirect } from '../hooks/useWifiDirect';
 import { Q } from '@nozbe/watermelondb';
@@ -56,24 +57,42 @@ function LobaHomeScreen({ onBack, onNavigate, posts = [] }) {
   const [isCommentsModalVisible, setIsCommentsModalVisible] = useState(false);
   const [selectedVideo, setSelectedVideo] = useState(null);
 
+  // Helper pour obtenir une URL media valide
+  const getValidMediaUri = (post) => {
+    if (post.localMediaPath && typeof post.localMediaPath === 'string' && post.localMediaPath.length > 0) {
+      return post.localMediaPath;
+    }
+    if (post.videoUrl && typeof post.videoUrl === 'string' && post.videoUrl.length > 0) {
+      return post.videoUrl;
+    }
+    if (post.imageUrl && typeof post.imageUrl === 'string' && post.imageUrl.length > 0) {
+      return post.imageUrl;
+    }
+    return null;
+  };
+
   // Merge DB posts with initial mock videos
   const getDisplayPosts = () => [
-    ...posts.map(p => ({
-      id: p.id,
-      username: p.username,
-      avatar: p.avatar,
-      video: p.localMediaPath || p.videoUrl || p.imageUrl,
-      type: p.videoUrl || (p.localMediaPath && p.localMediaPath.endsWith('.mp4')) ? 'video' : 'photo',
-      caption: p.content,
-      song: 'Original Sound - ' + p.username,
-      likes: p.likes,
-      comments: p.comments,
-      progress: 0,
-      liked: p.isLiked,
-      followed: false,
-      saved: false,
-      filterColor: p.filterColor,
-    }))
+    ...posts.map(p => {
+      const mediaUri = getValidMediaUri(p);
+      return {
+        id: p.id,
+        username: p.username,
+        avatar: p.avatar,
+        video: mediaUri,
+        hasMedia: !!mediaUri,
+        type: p.videoUrl || (p.localMediaPath && p.localMediaPath.endsWith('.mp4')) ? 'video' : 'photo',
+        caption: p.content,
+        song: 'Original Sound - ' + p.username,
+        likes: p.likes,
+        comments: p.comments,
+        progress: 0,
+        liked: p.isLiked,
+        followed: false,
+        saved: false,
+        filterColor: p.filterColor,
+      };
+    })
   ];
 
   const meshState = useMeshConnection();
@@ -91,6 +110,36 @@ function LobaHomeScreen({ onBack, onNavigate, posts = [] }) {
 
     const unsubLogs = P2PAutoSync.onLogUpdate((logs) => {
       setP2pLogs([...logs]);
+    });
+    
+    const unsubContent = MeshContentUpdateEvents.subscribe(({ count, source }) => {
+      console.log(`[LobaHomeScreen] Nouveau contenu reçu de ${source}: ${count} posts`);
+      setTimeout(async () => {
+        try {
+          const freshPosts = await database.get('loba_posts')
+            .query(Q.sortBy('created_at', Q.desc), Q.take(50))
+            .fetch();
+          setFeedVideos(freshPosts.map(p => ({
+            id: p.id,
+            username: p.username,
+            avatar: p.avatar,
+            video: p.localMediaPath || p.videoUrl || p.imageUrl,
+            type: p.videoUrl || (p.localMediaPath && p.localMediaPath.endsWith('.mp4')) ? 'video' : 'photo',
+            caption: p.content,
+            song: 'Original Sound - ' + p.username,
+            likes: p.likes,
+            comments: p.comments,
+            progress: 0,
+            liked: p.isLiked,
+            followed: false,
+            saved: false,
+            filterColor: p.filterColor,
+          })));
+          console.log(`[LobaHomeScreen] Feed mis à jour: ${freshPosts.length} posts`);
+        } catch (e) {
+          console.error('[LobaHomeScreen] Erreur mise à jour feed:', e);
+        }
+      }, 500);
     });
     
     // Charger les logs initiaux immédiatement
@@ -132,6 +181,7 @@ function LobaHomeScreen({ onBack, onNavigate, posts = [] }) {
       P2PAutoSync.stop();
       unsubLogs();
       unsubSync();
+      unsubContent();
     };
   }, []);
 
@@ -258,18 +308,31 @@ function LobaHomeScreen({ onBack, onNavigate, posts = [] }) {
             style={styles.videoBackground}
           />
         ) : (
-          <Image source={{ uri: item.video || item.localMediaPath }} style={styles.videoBackground} />
+          item.hasMedia ? (
+            <Image source={{ uri: item.video }} style={styles.videoBackground} />
+          ) : (
+            <View style={[styles.videoBackground, { backgroundColor: '#1a1a1a' }]} />
+          )
         )
       ) : (
-        /* Pour les voisins ou posts éloignés : Image fixe uniquement pour préserver la RAM */
-        <Image source={{ uri: item.video || item.localMediaPath }} style={[styles.videoBackground, { opacity: 0.6 }]} />
+        item.hasMedia ? (
+          <Image source={{ uri: item.video }} style={[styles.videoBackground, { opacity: 0.6 }]} />
+        ) : (
+          <View style={[styles.videoBackground, { backgroundColor: '#1a1a1a', opacity: 0.6 }]} />
+        )
       )}
       <View style={[styles.filterOverlay, { backgroundColor: item.filterColor || 'transparent' }]} />
       <View style={styles.videoGradient} />
 
       <View style={styles.rightActions}>
         <View style={styles.avatarContainer}>
-          <Image source={{ uri: item.avatar }} style={styles.avatar} />
+          {item.avatar ? (
+            <Image source={{ uri: item.avatar }} style={styles.avatar} />
+          ) : (
+            <View style={[styles.avatar, { backgroundColor: '#444', alignItems: 'center', justifyContent: 'center' }]}>
+              <Text style={{ color: '#fff', fontSize: 16 }}>{item.username?.charAt(0)?.toUpperCase() || '?'}</Text>
+            </View>
+          )}
           <Pressable
             style={[styles.followBadge, item.followed && styles.followBadgeActive]}
             onPress={() => handleFollow(item.id)}
@@ -307,7 +370,13 @@ function LobaHomeScreen({ onBack, onNavigate, posts = [] }) {
 
         <View style={styles.musicDisc}>
           <View style={styles.musicDiscInner}>
-            <Image source={{ uri: item.avatar }} style={styles.musicImage} />
+            {item.avatar ? (
+              <Image source={{ uri: item.avatar }} style={styles.musicImage} />
+            ) : (
+              <View style={[styles.musicImage, { backgroundColor: '#333', alignItems: 'center', justifyContent: 'center' }]}>
+                <MaterialCommunityIcons name="music" size={20} color="#666" />
+              </View>
+            )}
           </View>
         </View>
       </View>
@@ -528,7 +597,13 @@ function LobaHomeScreen({ onBack, onNavigate, posts = [] }) {
             </ScrollView>
 
             <View style={styles.commentInputContainer}>
-              <Image source={{ uri: selectedVideo?.avatar }} style={styles.userAvatarSmall} />
+              {selectedVideo?.avatar ? (
+                <Image source={{ uri: selectedVideo.avatar }} style={styles.userAvatarSmall} />
+              ) : (
+                <View style={[styles.userAvatarSmall, { backgroundColor: '#444', alignItems: 'center', justifyContent: 'center' }]}>
+                  <Text style={{ color: '#fff', fontSize: 12 }}>{selectedVideo?.username?.charAt(0)?.toUpperCase() || '?'}</Text>
+                </View>
+              )}
               <View style={styles.commentInput}>
                 <Text style={styles.commentPlaceholder}>Ajouter un commentaire...</Text>
               </View>

@@ -347,8 +347,73 @@ function verifyHash(data: Buffer, expectedHash: string): boolean {
 
 ---
 
+---
+
+## Implémentation actuelle (Mai 2026)
+
+### Services existants
+
+```typescript
+// Structure des fichiers
+app/src/features/bluetooth/services/
+├── NearbyMeshService.js      // Découverte + manifestes via expo-nearby-connections
+├── WifiDirectService.js      // Transfert de fichiers via WiFi Direct
+├── P2PAutoSync.js           // Orchestrateur Multi-Rail
+├── GlobalManifestService.js // Agrégation des données (Loba + Marché)
+├── NetworkRailDetector.js   // Détection des rails disponibles
+└── DailyQuotaService.js      // Gestion du quota journalier
+```
+
+### Fonctionnement implémenté
+
+1. **Nearby Mesh** (expo-nearby-connections)
+   - Découverte automatique des appareils à proximité
+   - Échange de manifestes (liste des posts avec hash, chemin, type)
+   - Détection des deltas (posts manquants)
+   - Transfert des métadonnées uniquement (texte JSON)
+   - **NE peut PAS transférer les fichiers** - limitation de l'API
+
+2. **WiFi Direct** 
+   - Transfert des vrais fichiers (vidéos, images)
+   - Déclenchement automatique quand delta détecté via Mesh
+   - Pack ZIP avec manifest pour les gros transferts
+   - Réception et décompression automatique
+
+3. **Flux de sync**
+   ```
+   Nearby Mesh découvre appareils
+          ↓
+   Échange manifestes (78 + 46 items)
+          ↓
+   Détection deltas (3 posts manquants)
+          ↓
+   Déclenchement WiFi Direct pour fichiers
+          ↓
+   Transfert fichiers + création posts en base
+          ↓
+   UI se met à jour automatiquement
+   ```
+
+### Fichiers clés modifiés
+
+- `NearbyMeshService.js` - Gestion connexion, manifestes, delta, trigger WiFi
+- `P2PAutoSync.js` - Cycle P2P, gestion fichiers reçus
+- `GlobalManifestService.js` - Calcul delta entre manifestes
+- `LobaHomeScreen.js` - Subscription aux events pour refresh UI
+
+### Points importants
+
+- `expo-nearby-connections` supporte ONLY text (pas de fichiers)
+- Les fichiers doivent être transférés via WiFi Direct
+- Le cycle P2P vérifie le rail actif: WiFi Direct > BLE_Mesh > Internet
+- UI se met à jour via `MeshContentUpdateEvents` emit
+
+---
+
 ## Prochaines étapes suggérées
 
 1. **BTMeshTransport** — protocole de chunking + relay TTL complet
 2. **ManifestExchange** — handshake protocol (qui initie, format des messages BLE)
 3. **ContentSyncService** — intégration au feed LOBA (déclencheur discovery → queue → save → refresh UI)
+4. **Optimisation connexion** - Améliorer le handshake Master/Slave pour éviter les collisions
+5. **Transfert automatique** - Quand delta détecté, automatiquement connecter via WiFi Direct

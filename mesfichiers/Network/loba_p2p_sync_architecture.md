@@ -189,6 +189,83 @@ Pour éviter de saturer le stockage de l'appareil :
 ## Cycle de vie d'un post
 
 ```
+
+---
+
+## Implementation Réelle (Mai 2026)
+
+### Services implémentés
+
+| Service | Fichier | Statut |
+|---------|----------|--------|
+| ManifestService | `app/src/features/loba/services/ManifestService.js` | ✅ Fonctionne |
+| GlobalManifestService | `app/src/features/bluetooth/services/GlobalManifestService.js` | ✅ Fonctionne |
+| P2PAutoSync | `app/src/features/bluetooth/services/P2PAutoSync.js` | ✅ Fonctionne |
+| NearbyMeshService | `app/src/features/bluetooth/services/NearbyMeshService.js` | ✅ Fonctionne |
+| NetworkRailDetector | `app/src/features/bluetooth/services/NetworkRailDetector.js` | ✅ Fonctionne |
+| WifiDirectService | `app/src/features/bluetooth/services/WifiDirectService.js` | ✅ Fonctionne |
+
+### Flux actuel de sync automatique
+
+```
+1. P2PAutoSync.start() lancé au démarrage
+2. Nearby Mesh découvre les appareils (Advertising + Discovery)
+3. Connexion établie avec peers découverts
+4. Échange de manifestes (78 items, 46 items)
+5. Détection des deltas (3 posts manquants)
+6. Déclenchement WiFi Direct pour transfert fichiers
+7. Transfert des packs ZIP via WiFi Direct
+8. Décompression et sauvegarde en base
+9. UI mise à jour automatiquement via events
+```
+
+### Important: Nearby vs WiFi Direct
+
+- **Nearby Mesh** (expo-nearby-connections)
+  - Découverte automatique ✅
+  - Transfert de manifestes/métadonnées ✅
+  - Transfert de fichiers ❌ (API ne supporte que texte)
+  
+- **WiFi Direct**
+  - Transfert de fichiers (vidéos, images) ✅
+  - Déclenché automatiquement quand delta détecté ✅
+
+### Code clé ajouté récemment
+
+```javascript
+// Dans NearbyMeshService.js - Trigger WiFi Direct quand delta détecté
+async _handleGlobalManifestReceived(peerId, remoteManifest) {
+  const delta = await GlobalManifestService.calculateGlobalDelta(remoteManifest);
+  if (delta.loba && delta.loba.length > 0) {
+    this._triggerWifiDirectTransfer(delta.loba.map(p => p.hash));
+  }
+}
+
+// Dans LobaHomeScreen.js - Subscription aux events pour refresh UI
+const unsubContent = MeshContentUpdateEvents.subscribe(({ count, source }) => {
+  // Recharge les posts depuis la DB et met à jour l'UI
+  setFeedVideos(freshPosts.map(...));
+});
+```
+
+### Métadonnées échangées
+
+```json
+{
+  "type": "content_metadata",
+  "posts": [
+    {
+      "hash": "abc123",
+      "username": "user1",
+      "content": "caption",
+      "category": "general",
+      "type": "video",
+      "relativePath": "loba_media/abc123.mp4"
+    }
+  ]
+}
+```
+
 Post découvert (via réseau ou peer)
   ↓
 ManifestService → déduplication (déjà présent ? → skip)

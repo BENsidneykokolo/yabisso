@@ -41,6 +41,7 @@ export const meshConnectionState = { isConnected: false, peerCount: 0, peers: []
 export const MeshConnectionEvents = new SimpleEventEmitter();
 export const MeshLogEvents = new SimpleEventEmitter();
 export const MeshRequestEvents = new SimpleEventEmitter();
+export const MeshContentUpdateEvents = new SimpleEventEmitter();
 
 class NearbyMeshServiceClass {
   constructor() {
@@ -49,10 +50,19 @@ class NearbyMeshServiceClass {
     this.isDiscovering = false;
     this.deviceName = null; 
     this._listeners = [];
+    this._pendingConnections = new Map();
+    this._connectionMutex = false;
+    this._isRunning = false;
+    this._isStarting = false;
+    this._failedPeers = new Set();
+    this._discoveredNodes = new Map();
+    this._currentRole = null;
+    this._pendingMasterTimeouts = [];
     
     this.MeshLogEvents = MeshLogEvents;
     this.MeshConnectionEvents = MeshConnectionEvents;
     this.MeshRequestEvents = MeshRequestEvents;
+    this.MeshContentUpdateEvents = MeshContentUpdateEvents;
   }
 
   _log(msg) {

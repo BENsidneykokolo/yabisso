@@ -96,7 +96,7 @@ const STORAGE_CATEGORIES = [
   {
     key: 'chat',
     label: 'Chat & Messages',
-    icon: 'chatbubble-ellipses-outline',
+    icon: 'chatbubbles-outline',
     color: '#2BEE79',
     dir: `${BASE_DIR}chat_cache/`,
     clearable: true,

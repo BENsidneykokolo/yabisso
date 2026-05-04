@@ -99,7 +99,7 @@ export const ALL_SERVICES = [
     key: 'chat',
     labelFr: 'Messages',
     labelEn: 'Chat',
-    icon: 'chatbubble-ellipses-outline',
+    icon: 'chatbubbles-outline',
     color: '#2BEE79',
     isBase: true,
   },

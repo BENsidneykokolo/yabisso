@@ -1,0 +1,672 @@
+// app/src/features/bluetooth/services/NearbyMeshService.js
+import { 
+  startAdvertise, 
+  stopAdvertise, 
+  startDiscovery, 
+  stopDiscovery, 
+  Strategy, 
+  onPeerFound, 
+  onPeerLost,
+  onInvitationReceived,
+  onConnected,
+  onDisconnected,
+  onTextReceived,
+  sendText,
+  acceptConnection,
+  requestConnection,
+  disconnect
+} from 'expo-nearby-connections';
+import * as FileSystem from 'expo-file-system/legacy';
+import { database } from '../../../lib/db';
+import { Q } from '@nozbe/watermelondb';
+import { GlobalManifestService } from './GlobalManifestService';
+import { DailyQuotaService } from './DailyQuotaService';
+import { NetworkPermissionsService } from './NetworkPermissionsService';
+import { NetworkRailDetector } from './NetworkRailDetector';
+import { WifiDirectService } from './WifiDirectService';
+import { P2PAutoSync } from './P2PAutoSync';
+
+console.log('[NearbyMeshService] Module chargé dans le bundle.');
+
+const SERVICE_ID = 'com.benksidney.yabisso.mesh';
+
+class SimpleEventEmitter {
+  constructor() { this.listeners = []; }
+  subscribe(callback) {
+    this.listeners.push(callback);
+    return () => { this.listeners = this.listeners.filter(cb => cb !== callback); };
+  }
+  emit(data) { this.listeners.forEach(cb => cb(data)); }
+}
+
+export const meshConnectionState = { isConnected: false, peerCount: 0, peers: [] };
+export const MeshConnectionEvents = new SimpleEventEmitter();
+export const MeshLogEvents = new SimpleEventEmitter();
+export const MeshRequestEvents = new SimpleEventEmitter();
+export const MeshContentUpdateEvents = new SimpleEventEmitter();
+
+class NearbyMeshServiceClass {
+  constructor() {
+    this.connectedPeers = new Set();
+    this.isAdvertising = false;
+    this.isDiscovering = false;
+    this.deviceName = null; 
+    this._listeners = [];
+    this._pendingConnections = new Map();
+    this._connectionMutex = false;
+    this._isRunning = false;
+    this._isStarting = false;
+    this._failedPeers = new Set();
+    this._discoveredNodes = new Map(); // Track active nodes
+    this._currentRole = null; // 'master' | 'slave' | null
+    this._pendingMasterTimeouts = []; // Pour annuler les tentatives Master
+    
+    this.MeshLogEvents = MeshLogEvents;
+    this.MeshConnectionEvents = MeshConnectionEvents;
+    this.MeshRequestEvents = MeshRequestEvents;
+    this.MeshContentUpdateEvents = MeshContentUpdateEvents;
+  }
+
+  static _instance = null;
+  
+  static getInstance() {
+    if (!NearbyMeshServiceClass._instance) {
+      NearbyMeshServiceClass._instance = new NearbyMeshServiceClass();
+    }
+    return NearbyMeshServiceClass._instance;
+  }
+
+  isActive() {
+    return this._isRunning || this._isStarting;
+  }
+
+  hasFailedRecently(peerId) {
+    return this._failedPeers.has(peerId);
+  }
+
+  addFailedPeer(peerId) {
+    this._failedPeers.add(peerId);
+    this._log(`🚫 Peer ${peerId} ajouté à la blacklist pour 2 min`);
+    setTimeout(() => {
+      this._failedPeers.delete(peerId);
+      this._log(`✅ Peer ${peerId} retiré de la blacklist`);
+    }, 120000);
+  }
+
+  _log(msg) {
+    console.log(`[NearbyMesh] ${msg}`);
+    MeshLogEvents.emit(msg);
+  }
+
+  async startMesh() {
+    // Guard against double instance
+    if (this._isStarting) {
+      this._log('⏳ Démarrage en cours, skip...');
+      return;
+    }
+    if (this._isRunning) {
+      this._log('Mesh déjà actif (skip start).');
+      return;
+    }
+
+    this._isStarting = true;
+    
+    try {
+      this._log('--- DÉMARRAGE NEARBY MESH ---');
+      this._log('Vérification du module natif...');
+      this._log('Demande des permissions...');
+      const hasPerms = await NetworkPermissionsService.requestAll();
+      if (!hasPerms) {
+        this._log('⚠️ Permissions refusées.');
+        return;
+      }
+      
+      this._log('Initialisation Quota...');
+      await DailyQuotaService.initialize();
+      
+      this._log('Configuration des Listeners...');
+      this._setupListeners();
+
+      // Générer un nom unique pour cette session
+      this.deviceName = `Yabisso_${Math.random().toString(36).substring(2, 7)}`;
+      const strategy = Strategy.P2P_STAR;
+
+      this._log(`Lancement Advertising: ${this.deviceName}...`);
+      await startAdvertise(this.deviceName, strategy);
+      this.isAdvertising = true;
+      this._isRunning = true;
+      this._isStarting = false;
+      this._log('✅ Advertising actif.');
+
+      this._log('Lancement Discovery...');
+      await startDiscovery(this.deviceName, strategy);
+      this.isDiscovering = true;
+      this._log('✅ Discovery actif.');
+
+      NetworkRailDetector.setBleAvailable(true);
+      this._log('🚀 Mesh prêt et visible dans le réseau.');
+
+    } catch (e) {
+      this._log(`❌ ÉCHEC CRITIQUE: ${e.message}`);
+      this.isAdvertising = false;
+      this.isDiscovering = false;
+      this._isRunning = false;
+      this._isStarting = false;
+    }
+  }
+
+  _setupListeners() {
+    this._listeners.forEach(unsub => { if (typeof unsub === 'function') unsub(); });
+    this._listeners = [];
+
+// ==== PEER FOUND ====
+    this._listeners.push(onPeerFound((peer) => {
+      this._log(`🔍 Node trouvé: ${peer.name} (${peer.peerId})`);
+      this._discoveredNodes.set(peer.peerId, { name: peer.name, foundAt: Date.now() });
+      
+      // Skip if peer is blacklisted
+      if (this.hasFailedRecently(peer.peerId)) {
+        this._log(`🚫 Peer ${peer.peerId} en blacklist, ignoré.`);
+        return;
+      }
+      
+      // Skip if already connected
+      if (this.connectedPeers.has(peer.peerId)) {
+        this._log(`⏭️ Peer ${peer.peerId} déjà connecté, ignoré.`);
+        return;
+      }
+      
+      // Skip si pas de nom pour comparaison
+      if (!this.deviceName || !peer.name) {
+        this._log(`⚠️ Nom manquant pour comparaison`);
+        return;
+      }
+      
+      // Comparaison alphabétique pour décider Master/Slave
+      // Le plus petit alphabétiquement devient Master
+      const shouldBeMaster = this.deviceName.toLowerCase() < peer.name.toLowerCase();
+      
+      if (!shouldBeMaster) {
+        this._log(`⏭️ [Slave] J'attends l'invitation de ${peer.name}...`);
+        this._currentRole = 'slave';
+        return;
+      }
+      
+      // MUTEX: Si déjà en mode Master avec un autre peer, skip
+      if (this._currentRole === 'master') {
+        this._log(`⏭️ already in Master mode, skip`);
+        return;
+      }
+      
+      // Deviens Master et initie la connexion
+      this._log(`🔗 Deviens Master pour ${peer.name}...`);
+      this._currentRole = 'master';
+      this._attemptConnection(peer.peerId, 0);
+    }));
+
+    // ==== INVITATION RECEIVED (on deviens Slave) ====
+    this._listeners.push(onInvitationReceived((peer) => {
+      this._log(`🤝 Invitation reçue de: ${peer.name} (${peer.peerId})`);
+      
+      // Annuler tous les timeouts Master en attente
+      this._cancelPendingMasterConnections();
+      
+      this._log(`🔗 Deviens Slave, j'accepte l'invitation de ${peer.name}...`);
+      this._currentRole = 'slave';
+      this._acceptInvitationWithRetry(peer.peerId, 0);
+    }));
+
+this._getDeviceId = () => {
+      return `device_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    };
+    
+    this._cancelPendingMasterConnections = () => {
+      this._pendingMasterTimeouts.forEach(timeoutId => clearTimeout(timeoutId));
+      this._pendingMasterTimeouts = [];
+      this._currentRole = null;
+      this._log(`🔗 Annulé tous les timeouts Master`);
+    };
+
+    this._attemptConnection = (peerId, attempt) => {
+      // Vérifier AVANT chaque tentative (pas seulement la première)
+      if (!this._discoveredNodes.has(peerId)) {
+        this._log(`⏭️ Skip tentative ${attempt + 1} — ${peerId} déjà perdu`);
+        this._currentRole = null;
+        return;
+      }
+      
+      if (attempt >= 3) {
+        this._log(`❌ Échec après 3 tentatives pour ${peerId}`);
+        this._pendingConnections.delete(peerId);
+        this._discoveredNodes.delete(peerId);
+        this.addFailedPeer(peerId);
+        this._currentRole = null;
+        return;
+      }
+      this._log(`🤝 [Master] Tentative ${attempt + 1}/3 vers ${peerId}...`);
+      requestConnection(peerId).then(() => {
+        this._log(`✅ Connexion demandée à ${peerId}`);
+      }).catch(err => {
+        this._log(`⚠️ Tentative ${attempt + 1} échouée: ${err.message}. Retry dans 3s...`);
+        setTimeout(() => this._attemptConnection(peerId, attempt + 1), 3000);
+      });
+    };
+
+    this._listeners.push(onPeerLost(({ peerId }) => {
+      this._log(`👻 Node perdu: ${peerId}`);
+      this.connectedPeers.delete(peerId);
+      this._updateState();
+    }));
+
+    this._listeners.push(onInvitationReceived((peer) => {
+      this._log(`🤝 Invitation reçue de: ${peer.name} (${peer.peerId})`);
+      // Annuler toute tentative de connexion en cours vers ce peer
+      this._pendingConnections.delete(peer.peerId);
+      this._acceptInvitationWithRetry(peer.peerId, 0);
+    }));
+
+    this._acceptInvitationWithRetry = (peerId, attempt) => {
+      if (attempt >= 3) {
+        this._log(`❌ Échec acceptation après 3 tentatives pour ${peerId}`);
+        return;
+      }
+      this._log(`✅ Acceptation tentative ${attempt + 1}/3...`);
+      acceptConnection(peerId).then(() => {
+        this._log(`✅ Invitation acceptée pour ${peerId}`);
+      }).catch(err => {
+        this._log(`⚠️ Échec acceptation tentative ${attempt + 1}: ${err.message}. Retry dans 2s...`);
+        setTimeout(() => this._acceptInvitationWithRetry(peerId, attempt + 1), 2000);
+      });
+    };
+
+    this._listeners.push(onConnected((peer) => {
+      this._log(`✨ CONNECTÉ à: ${peer.name} (${peer.peerId})`);
+      this.connectedPeers.add(peer.peerId);
+      this._updateState();
+      this._sendManifest(peer.peerId);
+    }));
+
+    this._listeners.push(onDisconnected(({ peerId }) => {
+      this._log(`🔌 Déconnecté de: ${peerId}`);
+      this.connectedPeers.delete(peerId);
+      this._updateState();
+    }));
+
+    this._listeners.push(onTextReceived(({ peerId, text }) => {
+      this._handleDataReceived(peerId, text);
+    }));
+  }
+
+  _updateState() {
+    meshConnectionState.isConnected = this.connectedPeers.size > 0;
+    meshConnectionState.peerCount = this.connectedPeers.size;
+    meshConnectionState.peers = Array.from(this.connectedPeers);
+    MeshConnectionEvents.emit({ ...meshConnectionState });
+  }
+
+  async stopMesh() {
+    try {
+      this._log('Arrêt du Mesh...');
+      await stopAdvertise();
+      await stopDiscovery();
+      this._listeners.forEach(unsub => { if (typeof unsub === 'function') unsub(); });
+      this._listeners = [];
+      this.connectedPeers.clear();
+      this.isAdvertising = false;
+      this.isDiscovering = false;
+      this._updateState();
+      NetworkRailDetector.setBleAvailable(false);
+      this._log('Mesh arrêté.');
+    } catch (e) {
+      this._log(`Erreur arrêt: ${e.message}`);
+    }
+  }
+
+  async _sendManifest(peerId) {
+    try {
+      const manifest = await GlobalManifestService.generateGlobalManifest();
+      if (!manifest) return;
+      const payload = JSON.stringify({ type: 'global_manifest', manifest });
+      await sendText(peerId, payload);
+      this._log(`📤 Manifeste envoyé (${manifest.loba?.length || 0} items)`);
+    } catch (e) {
+      this._log(`⚠️ Échec envoi manifeste: ${e.message}`);
+    }
+  }
+
+  async _handleDataReceived(peerId, text) {
+    try {
+      const data = JSON.parse(text);
+      if (data.type === 'global_manifest') {
+        this._handleGlobalManifestReceived(peerId, data.manifest);
+      } else if (data.type === 'content_request') {
+        this._handleContentRequest(peerId, data.requestedHashes);
+      } else if (data.type === 'content_response') {
+        this._handleContentResponse(peerId, data.posts);
+      } else if (data.type === 'content_metadata') {
+        this._handleContentMetadata(peerId, data.posts);
+      } else if (data.type === 'validation_request') {
+        this._log(`📩 Requête de validation reçue de ${peerId}`);
+        MeshRequestEvents.emit({ peerId, request: data.payload });
+      }
+    } catch (e) { }
+  }
+
+  async _handleGlobalManifestReceived(peerId, remoteManifest) {
+    try {
+      this._log(`📥 Manifeste reçu de ${peerId}.`);
+      
+      const delta = await GlobalManifestService.calculateGlobalDelta(remoteManifest);
+      
+      if (delta.loba && delta.loba.length > 0) {
+        this._log(`📥 Delta détecté: ${delta.loba.length} posts Loba manquants`);
+        
+        const requestPayload = JSON.stringify({ 
+          type: 'content_request', 
+          requestedHashes: delta.loba.map(p => p.hash)
+        });
+        await sendText(peerId, requestPayload);
+        this._log(`📤 Demande de ${delta.loba.length} posts manquants...`);
+        
+        MeshContentUpdateEvents.emit({ pendingCount: delta.loba.length, source: peerId });
+        
+        // Trigger cycle P2P pour transfert WiFi Direct
+        this._log(`📡 Trigger sync P2P pour transfert fichiers...`);
+        P2PAutoSync.triggerSync();
+      }
+      
+      if (delta.products && delta.products.length > 0) {
+        this._log(`📥 Delta détecté: ${delta.products.length} produits manquants`);
+      }
+      
+    } catch (e) {
+      this._log(`❌ Erreur traitement manifeste: ${e.message}`);
+    }
+  }
+
+  async _triggerWifiDirectTransfer(hashes) {
+    try {
+      this._log(`📡 Déclenchement transfert WiFi Direct pour ${hashes.length} fichiers...`);
+      
+      const state = WifiDirectService.getState();
+      if (!state.initialized) {
+        await WifiDirectService.initialize();
+      }
+      
+      await WifiDirectService.startDiscovery(true);
+      this._log(`🔍 Recherche peers WiFi Direct...`);
+      
+      let attempts = 0;
+      const maxAttempts = 6;
+      
+      const checkPeers = async () => {
+        attempts++;
+        const peers = WifiDirectService.availablePeers || [];
+        
+        if (peers.length > 0) {
+          this._log(`📡 ${peers.length} peers WiFi Direct trouvés, connexion...`);
+          try {
+            await WifiDirectService.connectToPeer(peers[0]);
+            this._log(`✅ Connexion WiFi Direct initiée`);
+          } catch (e) {
+            this._log(`⚠️ Échec connexion: ${e.message}`);
+          }
+        } else if (attempts < maxAttempts) {
+          this._log(`⏳ Attempt ${attempts}/${maxAttempts} - Pas de peers, retry dans 3s...`);
+          setTimeout(checkPeers, 3000);
+        } else {
+          this._log(`⚠️ Aucun peer WiFi Direct après ${maxAttempts} tentatives.`);
+        }
+      };
+      
+      setTimeout(checkPeers, 3000);
+      
+    } catch (e) {
+      this._log(`❌ Erreur trigger WiFi Direct: ${e.message}`);
+    }
+  }
+
+  async _handleContentRequest(peerId, requestedHashes) {
+    try {
+      this._log(`📩 Demande de contenu reçue de ${peerId}`);
+      
+      const posts = await database.get('loba_posts')
+        .query(Q.where('hash', Q.oneOf(requestedHashes)))
+        .fetch();
+      
+      if (posts.length === 0) {
+        this._log(`⚠️ Aucun post trouvé pour les hash demandés`);
+        return;
+      }
+      
+      this._log(`📦 Préparation de ${posts.length} posts pour ${peerId}...`);
+      
+      const metadataList = [];
+      const filesToSend = [];
+      
+      for (const post of posts) {
+        const localPath = post.localMediaPath || '';
+        const relativePath = localPath.replace(FileSystem.documentDirectory, '');
+        
+        // Vérifier si le fichier existe localement
+        let hasFile = false;
+        if (localPath) {
+          try {
+            const fileInfo = await FileSystem.getInfoAsync(localPath);
+            hasFile = fileInfo.exists;
+            if (hasFile) {
+              filesToSend.push({
+                hash: post.hash,
+                localPath: localPath,
+                mimeType: post.videoUrl ? 'video/mp4' : 'image/jpeg'
+              });
+              this._log(`📎 Fichier trouvé: ${relativePath} - sera transféré`);
+            }
+          } catch (e) {
+            this._log(`⚠️ Erreur vérification fichier: ${e.message}`);
+          }
+        }
+        
+        const meta = {
+          hash: post.hash,
+          username: post.username || 'Unknown',
+          avatar: post.avatar,
+          content: post.content || '',
+          category: post.category || 'general',
+          likes: post.likes || 0,
+          type: post.videoUrl ? 'video' : 'image',
+          relativePath: relativePath,
+          hasFile: hasFile
+        };
+        metadataList.push(meta);
+        
+        this._log(`📤 Métadonnées prêtes pour: ${post.hash} (${relativePath || 'sans fichier'})`);
+      }
+      
+      // 1. Envoyer les métadonnées d'abord
+      const contentData = JSON.stringify({
+        type: 'content_metadata',
+        posts: metadataList,
+        hasFiles: filesToSend.length > 0
+      });
+      await sendText(peerId, contentData);
+      this._log(`✅ ${posts.length} posts (métadonnées) envoyés à ${peerId}`);
+      
+      // 2. Si des fichiers existent, les envoyer via WiFi Direct (plus rapide pour gros fichiers)
+      if (filesToSend.length > 0 && this.connectedPeers.has(peerId)) {
+        this._log(`📤 Déclenchement transfert WiFi Direct pour ${filesToSend.length} fichiers...`);
+        
+        // Trigger WiFi Direct pour transfert de fichiers
+        if (typeof P2PAutoSync !== 'undefined') {
+          P2PAutoSync.triggerSync();
+        }
+      }
+      
+    } catch (e) {
+      this._log(`❌ Erreur envoi contenu: ${e.message}`);
+    }
+  }
+
+  async _handleFileReceived(peerId, filePath, fileName, mimeType, size, isLastChunk) {
+    try {
+      this._log(`📥 Fichier reçu: ${fileName} (${(size / 1024).toFixed(1)} KB)`);
+      
+      const destDir = `${FileSystem.documentDirectory}${fileName}`.split('/').slice(0, -1).join('/') + '/';
+      const destPath = `${FileSystem.documentDirectory}${fileName}`;
+      
+      const dirInfo = await FileSystem.getInfoAsync(destDir);
+      if (!dirInfo.exists) {
+        await FileSystem.makeDirectoryAsync(destDir, { intermediates: true });
+      }
+      
+      await FileSystem.moveAsync({ from: filePath, to: destPath });
+      this._log(`💾 Fichier sauvegardé: ${destPath}`);
+      
+      const hash = fileName.split('/').pop().split('.')[0];
+      if (this._receivedFilesCache.has(hash)) {
+        const post = this._receivedFilesCache.get(hash);
+        this._receivedFilesCache.delete(hash);
+        
+        const relativePath = fileName;
+        
+        await database.write(async () => {
+          await database.get('loba_posts').create(newPost => {
+            newPost.hash = post.hash;
+            newPost.username = post.username;
+            newPost.avatar = post.avatar;
+            newPost.content = post.content;
+            newPost.category = post.category || 'general';
+            newPost.likes = post.likes || 0;
+            newPost.comments = 0;
+            newPost.isLiked = false;
+            newPost.isPropagating = false;
+            newPost.downloadedAt = Date.now();
+            newPost.createdAt = Date.now();
+            newPost.imageUrl = post.type === 'image' ? destPath : null;
+            newPost.videoUrl = post.type === 'video' ? destPath : null;
+            newPost.localMediaPath = destPath;
+          });
+        });
+        
+        this._log(`✅ Post créé avec fichier: ${post.hash} (${relativePath})`);
+        MeshContentUpdateEvents.emit({ count: 1, source: peerId });
+      }
+      
+    } catch (e) {
+      this._log(`❌ Erreur réception fichier: ${e.message}`);
+    }
+  }
+
+  async _handleContentResponse(peerId, posts) {
+    try {
+      if (!posts || posts.length === 0) return;
+      
+      this._log(`📥 Réponse de contenu reçue de ${peerId}: ${posts.length} posts`);
+      
+      let savedCount = 0;
+      for (const post of posts) {
+        const existing = await database.get('loba_posts')
+          .query(Q.where('hash', post.hash))
+          .fetch();
+        
+        if (existing.length > 0) continue;
+        
+        await database.write(async () => {
+          await database.get('loba_posts').create(newPost => {
+            newPost.hash = post.hash;
+            newPost.username = post.username;
+            newPost.avatar = post.avatar;
+            newPost.content = post.content;
+            newPost.category = post.category || 'general';
+            newPost.likes = post.likes || 0;
+            newPost.comments = 0;
+            newPost.isLiked = false;
+            newPost.isPropagating = false;
+            newPost.downloadedAt = Date.now();
+            newPost.imageUrl = post.type === 'image' ? post.localMediaPath : null;
+            newPost.videoUrl = post.type === 'video' ? post.localMediaPath : null;
+            newPost.localMediaPath = post.localMediaPath;
+          });
+        });
+        savedCount++;
+      }
+      
+      this._log(`✅ ${savedCount} posts sauvegardés en base!`);
+      MeshContentUpdateEvents.emit({ count: savedCount, source: peerId });
+      
+    } catch (e) {
+      this._log(`❌ Erreur traitement réponse: ${e.message}`);
+    }
+  }
+
+  _receivedFilesCache = new Map();
+
+  async _handleContentMetadata(peerId, posts) {
+    try {
+      this._log(`📥 Métadonnées reçues de ${peerId}: ${posts.length} posts`);
+      
+      for (const post of posts) {
+        const existing = await database.get('loba_posts')
+          .query(Q.where('hash', post.hash))
+          .fetch();
+        
+        if (existing.length > 0) continue;
+        
+        let localMediaPath = null;
+        if (post.hasFile && post.relativePath) {
+          localMediaPath = `${FileSystem.documentDirectory}${post.relativePath}`;
+          
+          const fileInfo = await FileSystem.getInfoAsync(localMediaPath);
+          if (!fileInfo.exists) {
+            this._log(`⚠️ Fichier manquant: ${post.relativePath}, attente...`);
+            this._receivedFilesCache.set(post.hash, post);
+            continue;
+          }
+        }
+        
+        await database.write(async () => {
+          await database.get('loba_posts').create(newPost => {
+            newPost.hash = post.hash;
+            newPost.username = post.username;
+            newPost.avatar = post.avatar;
+            newPost.content = post.content;
+            newPost.category = post.category || 'general';
+            newPost.likes = post.likes || 0;
+            newPost.comments = 0;
+            newPost.isLiked = false;
+            newPost.isPropagating = false;
+            newPost.downloadedAt = Date.now();
+            newPost.createdAt = Date.now();
+            newPost.imageUrl = post.type === 'image' ? localMediaPath : null;
+            newPost.videoUrl = post.type === 'video' ? localMediaPath : null;
+            newPost.localMediaPath = localMediaPath;
+          });
+        });
+        
+        this._log(`✅ Post sauvegardé: ${post.hash} (${post.relativePath || 'sans fichier'})`);
+      }
+      
+      this._log(`✅ ${posts.length} posts traités depuis ${peerId}`);
+      MeshContentUpdateEvents.emit({ count: posts.length, source: peerId });
+      
+    } catch (e) {
+      this._log(`❌ Erreur traitement métadonnées: ${e.message}`);
+    }
+  }
+
+  async sendValidationRequest(payload) {
+    try {
+      const data = JSON.stringify({ type: 'validation_request', payload });
+      for (const peerId of this.connectedPeers) {
+        await sendText(peerId, data);
+      }
+      this._log('📤 Requête de validation envoyée aux nodes à proximité.');
+      return true;
+    } catch (e) {
+      this._log(`❌ Échec envoi requête: ${e.message}`);
+      return false;
+    }
+  }
+}
+
+export const NearbyMeshService = NearbyMeshServiceClass.getInstance();

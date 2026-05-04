@@ -20,12 +20,21 @@ export const ManifestService = {
         return null;
       }
 
-      const lobaCollection = database.get('loba_posts');
-      const interestCollection = database.get('user_interests');
+      let lobaCollection, interestCollection;
+      try {
+        lobaCollection = database.get('loba_posts');
+      } catch (e) {
+        console.warn('[ManifestService] Collection loba_posts non trouvée:', e.message);
+      }
+      try {
+        interestCollection = database.get('user_interests');
+      } catch (e) {
+        console.warn('[ManifestService] Collection user_interests non trouvée:', e.message);
+      }
 
-      if (!lobaCollection || !interestCollection) {
-        console.warn('[ManifestService] Collections non trouvées.');
-        return null;
+      if (!lobaCollection) {
+        console.warn('[ManifestService] loba_posts non disponible.');
+        return { user_id: 'local_user', timestamp: Date.now(), media: [], interests: {} };
       }
 
       const posts = await lobaCollection
@@ -36,9 +45,16 @@ export const ManifestService = {
         )
         .fetch();
 
-      const interests = await interestCollection
-        .query(Q.where('service', 'loba'))
-        .fetch();
+      let interests = [];
+      if (interestCollection) {
+        try {
+          interests = await interestCollection
+            .query(Q.where('service', 'loba'))
+            .fetch();
+        } catch (e) {
+          console.warn('[ManifestService] Erreur user_interests:', e.message);
+        }
+      }
 
       const interestMap = {};
       interests.forEach(i => {

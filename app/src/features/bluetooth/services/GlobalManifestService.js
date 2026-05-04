@@ -16,21 +16,26 @@ export const GlobalManifestService = {
       const lobaManifest = await ManifestService.generateManifest();
 
       // 2. Récupérer les Produits (Marché) validés
-      const products = await database.get('products')
-        .query(
-          Q.where('is_validated', true),
-          Q.sortBy('updated_at', Q.desc),
-          Q.take(50) // Limite pour ne pas saturer
-        ).fetch();
-
-      // TODO: Ajouter restaurants, hotels, etc. de la même manière.
-      // Pour l'instant, on se concentre sur les produits (Marché).
+      let products = [];
+      try {
+        const productsCollection = database.get('products');
+        if (productsCollection) {
+          products = await productsCollection
+            .query(
+              Q.where('is_validated', true),
+              Q.sortBy('updated_at', Q.desc),
+              Q.take(50)
+            ).fetch();
+        }
+      } catch (e) {
+        console.warn('[GlobalManifest] Erreur récupération produits:', e.message);
+      }
 
       return {
         timestamp: Date.now(),
-        loba: lobaManifest.media,
+        loba: lobaManifest?.media || [],
         products: products.map(p => ({
-          _raw: p._raw, // Sérialisation WatermelonDB brute pour injection directe
+          _raw: p._raw,
           hash: p.id,
           seller_id: p.sellerId,
         }))

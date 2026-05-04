@@ -89,13 +89,7 @@ class P2PAutoSyncClass {
           return;
         }
         const macSuffix = peer.deviceAddress ? peer.deviceAddress.split(':').pop() : '??';
-        // AUTO-CONNECT au lieu de "Attente d'action manuelle"
-        this._log(`📡 Peer trouvé: ${peer.deviceName || 'Inconnu'} (${macSuffix}). Connexion auto...`);
-        try {
-          await WifiDirectService.connectToPeer(peer);
-        } catch (e) {
-          this._log(`⚠️ Échec auto-connexion: ${e.message}`);
-        }
+        this._log(`📡 Peer trouvé: ${peer.deviceName || 'Inconnu'} (${macSuffix}). Attente d'action manuelle.`);
       });
 
       WifiDirectService.on('onConnectionChange', async ({ connected, info }) => {
@@ -198,71 +192,175 @@ class P2PAutoSyncClass {
     console.log('[P2PAutoSync] Orchestrateur arrêté.');
   }
 
-  async _p2pSyncCycle(category = null) {
+async _p2pSyncCycle(category = null) {
     if (!this._running || this._syncingP2P) return;
     this._syncingP2P = true;
 
     try {
       const bestP2P = NetworkRailDetector.getBestRail(true);
       
-      if (bestP2P === RAIL_TYPES.OFFLINE) {
-        const state = WifiDirectService.getState();
+      const state = WifiDirectService.getState();
+      
+      if (bestP2P === RAIL_TYPES.OFFLINE || bestP2P === RAIL_TYPES.BLE_MESH) {
         if (state.isAvailable && !state.initialized) {
           await WifiDirectService.initialize();
-          await WifiDirectService.startDiscovery();
-        } else if (!state.isDiscovering && !WifiDirectService.isConnecting) {
+        }
+        
+        if (!state.isDiscovering) {
           await WifiDirectService.startDiscovery(true);
         }
         
-        // === AUTO-RETRY WIFI DIRECT ===
         const availablePeers = WifiDirectService.availablePeers || [];
         if (availablePeers.length > 0 && !WifiDirectService.connectedPeer && !WifiDirectService.isConnecting) {
-          this._log(`📡 ${availablePeers.length} peers WiFi Direct dispo, connexion auto...`);
+          this._log(`📡 ${availablePeers.length} peers WiFi Direct disponibles, connexion automatique...`);
           try {
             await WifiDirectService.connectToPeer(availablePeers[0]);
           } catch (e) {
             this._log(`⚠️ Échec connexion auto: ${e.message}`);
+            // Retry automatique après 3s
             setTimeout(async () => {
               if (!WifiDirectService.connectedPeer && WifiDirectService.availablePeers?.length > 0) {
-                this._log(`📡 Retry connexion auto...`);
-                await WifiDirectService.connectToPeer(WifiDirectService.availablePeers[0]);
+                this._log(`📡 Retry connexion automatique...`);
+                try {
+                  await WifiDirectService.connectToPeer(WifiDirectService.availablePeers[0]);
+                } catch (e2) {
+                  this._log(`⚠️ Échec retry: ${e2.message}`);
+                }
               }
             }, 3000);
           }
         } else if (availablePeers.length === 0) {
-          this._log(`🔄 Relancement discovery...`);
+          // Pas de peers - relancer discovery plus agressivement
+          this._log(`🔄 Relancement discovery WiFi Direct...`);
           await WifiDirectService.startDiscovery(true);
         }
       }
 
-      if (bestP2P === RAIL_TYPES.OFFLINE || bestP2P === RAIL_TYPES.INTERNET) {
+      if (bestP2P === RAIL_TYPES.OFFLINE && !WifiDirectService.connectedPeer) {
         return;
       }
 
-      this._log(`🔄 Cycle P2P via ${bestP2P}...`);
+      const activeP2P = WifiDirectService.connectedPeer ? RAIL_TYPES.WIFI_DIRECT : bestP2P;
+      this._log(`🔄 Cycle P2P via ${activeP2P}...`);
 
-      if (bestP2P === RAIL_TYPES.WIFI_DIRECT && WifiDirectService.connectedPeer) {
+      if (activeP2P === RAIL_TYPES.WIFI_DIRECT && WifiDirectService.connectedPeer) {
          if (!WifiDirectService.groupOwnerAddress) {
            this._log('⚠️ Connecté mais IP non résolue. Attente du Framework...');
            return;
          }
 
-         if (WifiDirectService.isGroupOwner) {
-           if (!this._goLoggedOnce) {
-             this._log('📡 Ce device est le Group Owner — mode réception actif. En attente de packs des clients...');
-             this._goLoggedOnce = true;
-           }
-           WifiDirectService._emit('onSyncStatus', { status: 'WAITING_FOR_CLIENT' });
-         } else {
-           this._goLoggedOnce = false;
-           if (this._sessionSent && !category) {
-              return;
-           }
-           this._log(`📦 Création du Pack ${category || 'Général'} en cours (Max 50MB)...`);
-           WifiDirectService._emit('onSyncStatus', { status: 'PACKING' });
-           
-           const packPath = await LobaPackService.buildPack(category);
-            if (packPath) {
+} else {
+          this._log('📡 Ce device est le Group Owner — mode réception actif, en attente de packs des clients...');
+          this._goLoggedOnce = true;
+        }
+        WifiDirectService._emit('onSyncStatus', { status: 'WAITING_FOR_CLIENT' });
+      } else {
+        // === Client: Envoyeur ===
+        this._goLoggedOnce = false;
+        if (this._sessionSent && !category) {
+           return;
+        }
+        
+        // Si pas de catégorie = transfert individuel
+        if (!category) {
+          this._log(`📤 Transfert de fichiers individuels via WiFi Direct...`);
+          try {
+            const posts = await this._getUnsyncedPosts();
+            if (posts.length > 0) {
+              this._log(`📦 ${posts.length} fichiers à synchroniser...`);
+              for (const post of posts.slice(0, 10)) {
+                if (post.localMediaPath) {
+                  const sent = await WifiDirectService.sendFile(post.localMediaPath, {
+                    hash: post.hash,
+                    type: post.videoUrl ? 'VIDEO' : 'IMAGE',
+                    username: post.username,
+                    content: post.content
+                  });
+                  if (sent) {
+                    this._log(`✅ Fichier envoyé: ${post.hash}`);
+                  }
+                }
+              }
+              this._sessionSent = true;
+              this._log(`✅ Transfert individuel terminé !`);
+              WifiDirectService._emit('onSyncStatus', { status: 'SUCCESS' });
+            } else {
+              this._log(`📭 Aucun nouveau contenu à synchroniser`);
+            }
+          } catch (e) {
+            this._log(`⚠️ Erreur transfert: ${e.message}`);
+          }
+        } else {
+          // Création de pack
+          this._log(`📦 Création du Pack ${category || 'Général'} en cours...`);
+          WifiDirectService._emit('onSyncStatus', { status: 'PACKING' });
+          
+          const packPath = await LobaPackService.buildPack(category);
+          if (packPath) {
+            this._log(`📤 Envoi du Pack via WiFi Direct...`);
+            WifiDirectService._emit('onSyncStatus', { status: 'SENDING' });
+            
+            let sent = await WifiDirectService.sendFile(packPath, {
+               hash: `pack_${Date.now()}`,
+               type: 'LOBA_PACK',
+               category: category || 'bundle'
+            });
+
+            if (sent) {
+              this._sessionSent = true;
+              this._log(`✅ Pack envoyé !`);
+              WifiDirectService._emit('onSyncStatus', { status: 'SUCCESS' });
+            } else {
+              this._log('❌ Échec envoi pack');
+              WifiDirectService._emit('onSyncStatus', { status: 'ERROR' });
+              setTimeout(() => WifiDirectService.disconnect(), 2000);
+            }
+          } else {
+            this._log('ℹ️ Rien de nouveau à envoyer');
+            WifiDirectService._emit('onSyncStatus', { status: 'IDLE' });
+          }
+        }
+      }
+    } else {
+            // === Envoi de CONTENU INDIVIDUEL (pas de pack) ===
+            // Si категоur undefined → on envoie les fichiers individuels manquants
+            if (!category && !this._sessionSent) {
+              this._log(`📤 Transfert de fichiers individuels via WiFi Direct...`);
+              try {
+                const posts = await this._getUnsyncedPosts();
+                if (posts.length > 0) {
+                  this._log(`📦 ${posts.length} fichiers à synchroniser...`);
+                  for (const post of posts.slice(0, 10)) { // Max 10 fichiers
+                    if (post.localMediaPath) {
+                      const sent = await WifiDirectService.sendFile(post.localMediaPath, {
+                        hash: post.hash,
+                        type: post.videoUrl ? 'VIDEO' : 'IMAGE',
+                        username: post.username,
+                        content: post.content
+                      });
+                      if (sent) {
+                        this._log(`✅ Fichier envoyé: ${post.hash}`);
+                      }
+                    }
+                  }
+                  this._sessionSent = this._log(`✅ Transfert individuel terminé !`);
+                  WifiDirectService._emit('onSyncStatus', { status: 'SUCCESS' });
+                } else {
+                  this._log(`📭 Aucun nouveau contenu à synchroniser`);
+                }
+              } catch (e) {
+                this._log(`⚠️ Erreur transfert: ${e.message}`);
+              }
+            } else {
+              this._goLoggedOnce = false;
+              if (this._sessionSent && !category) {
+                 return;
+              }
+              this._log(`📦 Création du Pack ${category || 'Général'} en cours (Max 50MB)...`);
+              WifiDirectService._emit('onSyncStatus', { status: 'PACKING' });
+              
+              const packPath = await LobaPackService.buildPack(category);
+              if (packPath) {
                 this._log(`📤 Envoi du Pack ${category || 'Général'} via WiFi Direct...`);
                 WifiDirectService._emit('onSyncStatus', { status: 'SENDING' });
                 
@@ -289,24 +387,24 @@ class P2PAutoSyncClass {
                    WifiDirectService._emit('onSyncStatus', { status: 'SUCCESS' });
                 } else {
                    this._log('❌ Échec critique de l\'envoi du Loba Pack après retry.');
-                   WifiDirectService._emit('onSyncStatus', { status: 'ERROR', message: 'Échec envoi définitif' });
-                   
-                   // Si échec définitif, on force une déconnexion pour réinitialiser le hardware
-                   setTimeout(() => WifiDirectService.disconnect(), 2000);
-                }
-            } else {
-               this._log('ℹ️ Rien de nouveau à envoyer dans le Pack.');
+WifiDirectService._emit('onSyncStatus', { status: 'ERROR', message: 'Échec envoi définitif' });
+                    
+                    setTimeout(() => WifiDirectService.disconnect(), 2000);
+                 }
+               }
+             }
+} else {
+               this._log('ℹ️ Rien de nouveau à envoyer');
                WifiDirectService._emit('onSyncStatus', { status: 'IDLE' });
-           }
-         }
-       } else {
-           // Rail BLE Mesh ou autre: pas de transfert de gros packs
-           // _propagateToPeers gère uniquement les petits payloads via BLE
-           const pendingUploads = await this._getPendingUploads();
-           for (const post of pendingUploads) {
-             await this._propagateToPeers(post, bestP2P);
-           }
-       }
+            }
+          }
+        } else {
+          // Rail BLE Mesh ou autre: pas de transfert de gros packs
+          const pendingUploads = await this._getPendingUploads();
+          for (const post of pendingUploads) {
+            await this._propagateToPeers(post, bestP2P);
+          }
+        }
 
       await LocalStorageManager.applyLRUPolicy();
       this.stats.lastSyncAt = Date.now();

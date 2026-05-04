@@ -1817,21 +1817,311 @@ J'ai appliqué les correctifs ciblés sur le **Nearby Connection** sans toucher 
 
 ---
 
-## 2026-05-02 23:50 - Correction des Logs Vides & Imports Fragiles
+## 2026-05-04 - WiFi Direct Auto-Transfert FONCTIONNE!
 
-**Assistant (Actions effectuées) :**
-Je comprends ta frustration, voir un écran de logs vide est anormal. J'ai identifié et corrigé deux causes probables :
+### Tests avec 3 téléphones
+- Xiaomi 11T, Itel A50, HONOR 400 Lite
+- Nearby Mesh : ✅ FONCTIONNE (échange manifests)
+- WiFi Direct : ✅ FONCTIONNE (transfert automatique)
 
-1.  **Le bug du "Log Fantôme"** : Dans `LobaHomeScreen.js`, l'application s'abonnait aux logs *après* que le démarrage ait eu lieu. Les premiers messages étaient donc perdus. J'ai modifié l'écran pour qu'il récupère immédiatement les logs existants dès l'ouverture.
-2.  **Import Natif Fragile** : J'avais ajouté un import direct dans les fichiers de `build` du module Nearby pour vérifier sa présence. Sur certains environnements Metro, cela peut bloquer le chargement du fichier sans afficher d'erreur claire. J'ai remplacé cela par un check standard et sécurisé.
-3.  **Logs Prioritaires** : J'ai déplacé le log `🚀 Orchestrateur démarré` tout au début du processus. Désormais, dès que tu ouvres l'écran, tu DOIS voir au moins ce message.
+### Problèmes résolus
 
-**Pourquoi c'est "compliqué" ?**
+**BUG-028** : startReceiving ignoré: la boucle tourne déjà
+- Problème : Le serveur GO pense qu'il tourne déjà, mais le natif n'écoute pas
+- Fix : Arrêt préventif + delay 500ms dans `WifiDirectService.js`
+- ✅ Résolu
+
+**BUG-029** : Icône chatbubbles-outline invalide
+- Fix : Corrigé dans Services.js et HomeScreen.js
+- ✅ Résolu
+
+### Logs clés du transfert réussi
+```
+✅ CONNEXION ÉTABLIE: GO=true
+✅ Démarrage de la boucle de réception GO...
+📤 Envoi du Pack Général via WiFi Direct (47.7 MB)
+📩 Transfert entrant: pack_177... (47.7 MB)
+✅ Succès: Pack Général envoyé !
+Feed rechargé: 50 posts
+```
+
+### Résultat final
+- WiFi Direct Auto-Transfert : ✅ FONCTIONNE
+- Nearby Mesh : ✅ FONCTIONNE (backup)
+- Transfert pack (47.7 MB) : ✅ OK
+- Feed mis à jour : ✅ OK
+
+---
+
+## 2026-05-04 10:30 - Vérification fichiers .md et enregistrement historique
+
+User: tu peux verifier tous les fichiers .md dans le repo "mesfichiers" qui se trouve ici: C:\Users\Utilisateur\Documents\Ben\myapp\yabisso\mesfichiers pour avoir le contexte de ce que nous faisons et aussi enregistrer automatiquement notre echange dans le fichier chat.md en temps reel que nous echangeons pour ne pas perdre l'historique, et aussi quand je tedemande quelque chose prend le temps de "hink deeper" avant de me repondre mais surtout reverifier et tester de ton cote pour verifier ce que tu viens d'implementer marche
+
+Assistant: J'ai vérifié les fichiers .md dans mesfichiers. Résumé:
+- roadmap.md: Phases 1-6, sprints
+- task.md: Tasks par priorité/sprint
+- implementation.md: Stack technique, schema DB, flows offline
+- architecture.md: Architecture globale, diagrammes PlantUML, 5 rails communication
+- project_memory.md: Versions, état actuel (Expo SDK 54, WatermelonDB, P2P WiFi Direct complet)
+- chat.md: Historique complet (1337 lignes)
+- role.md: Règles de réponse (plan avant code, offline-first, 100% fonctionnel)
+- probleme.md: 19 bugs résolus (OOM, WiFi Direct, connection, etc.)
+- yabisso_storage_logique.md: 3 types stockage (PUBLIC/PERSONAL/LOCKED), format .yab
+- p2p_session_25042026.md: Sessions P2P, limite 200MB/jour/service
+
+Projet Yabisso: Super-app africaine offline-first (React Native + Expo SDK 54)
+Services: Marketplace, Loba, Restaurant, Hotels, Services, Wallet, Assistant IA
+Stack: WatermelonDB, SecureStore, NetInfo, BLE, WiFi Direct
+Phase actuelle: Phase 1 (UI + Online + SMS Fallback) + P2P WiFi Direct
+
+Je suis prêt à continuer. Dis-moi ce que tu veux faire ensuite.
 Le P2P (Nearby / Bluetooth) est très capricieux car il dépend du matériel (chipsets Mediatek vs Snapdragon) et des services Google Play. Une simple erreur d'import peut "tuer" le service silencieusement. Ces nouveaux correctifs rendent le système beaucoup plus bavard : s'il y a un problème, il l'écrira noir sur blanc dans tes logs maintenant.
 
 **Action à faire :**
 Comme j'ai modifié `LobaHomeScreen.js` et `NearbyMeshService.js`, un **rebuild complet (EAS ou local)** est nécessaire pour que ces changements soient pris en compte dans ton APK. Une fois l'APK installé, les logs ne seront plus vides.
 
+---
+
+## 2026-05-04 - WiFi Direct Auto-Share CONFIRMÉ FONCTIONNE!
+
+**Date** : 2026-05-04
+
+**Problème initial** : WiFi Direct montrait "Attente d'action manuelle" au lieu de auto-connecter
+
+**Solution** : Modification du handler `onPeerFound` pour auto-connecter instead d'attendre
+
+### Ce qui fonctionne maintenant
+
+| Étape | Log | Status |
+|------|-----|--------|
+| Découverte peer | `📡 Peer trouvé: itel A50 (e2). Connexion auto...` | ✅ |
+| Auto-connexion | `✅ CONNEXION ÉTABLIE: GO=true` | ✅ |
+| Création pack | `📦 Création du Pack Général en cours` | ✅ |
+| Transfert | `📤 Envoi du Pack Général via WiFi Direct...` | ✅ |
+| Réception | `Transfert entrant: pack_177... (49.3 MB)` | ✅ |
+
+### Code modifié
+
+**P2PAutoSync.js** :
+- Ligne 87-99: Auto-connexion au lieu de "Attente d'action manuelle"
+
+```javascript
+WifiDirectService.on('onPeerFound', async (peer) => {
+  // AUTO-CONNECT au lieu de "Attente d'action manuelle"
+  this._log(`📡 Peer trouvé: ${peer.deviceName || 'Inconnu'} (${macSuffix}). Connexion auto...`);
+  try {
+    await WifiDirectService.connectToPeer(peer);
+  } catch (e) {
+    this._log(`⚠️ Échec auto-connexion: ${e.message}`);
+  }
+});
+```
+
+**Écran "Partage Pack"** : Inchangé, fonctionne toujours
+
+**Nearby Mesh** : FONCTIONNE aussi (échange manifestes)
+
+---
+
+## 2026-05-04 - Git Pull + Re-implémentation Propre
+
+**Date** : 2026-05-04
+
+**Action** :
+1. Git pull pour revenir à version stable (1902ae3)
+2. Implémentation propre étape par étape
+
+**NearbyMeshService.js** :
+- Singleton pattern (getInstance)
+- Guards _isStarting, _isRunning
+- _failedPeers, _discoveredNodes, _currentRole
+- Comparaison alphabétique Master/Slave
+- Vérification peer AVANT chaque tentative
+- Méthodes: hasFailedRecently, addFailedPeer, _cancelPendingMasterConnections
+
+**P2PAutoSync.js** :
+- Auto-retry WiFi Direct (après 3s)
+- _getUnsyncedPosts() méthode
+
+**Statut** : ✅ Code ajoutée, syntaxe validée
+
+---
+
+## 2026-05-04 - WiFi Direct Auto-Transfert & Documentation
+
+**Contexte** :
+- Nearby ne découvre pas de peers (problème Google Play Services sur certains appareils)
+- WiFi Direct fonctionne (trouve `itel A50`, `Xiaomi 11T`) mais transfert pas automatique
+- Requirement: transfert automatique de fichiers individuels (pas de pack)
+
+### Résumé des Modifications
+
+#### 1. P2PAutoSync.js
+- Auto-retry connexion WiFi Direct (après 3s si échec)
+- Relancement discovery si pas de peers
+- Ajout `_getUnsyncedPosts()` pour récupérer les posts avec fichiers locaux
+- Envoi direct des fichiers (video/image) sans créer de pack
+- Max 10 fichiers par session
+
+#### 2. NearbyMeshService.js (Multiples corrections)
+- Singleton pattern (getInstance)
+- Guards anti-double-start (_isStarting, _isRunning)
+- Blacklist temporaire (2 min)
+- _discoveredNodes pour tracker les nodes actifs
+- _currentRole mutex Master/Slave
+- Vérification peer AVANT chaque tentative
+- Comparaison alphabétique pour decidir Master/Slave
+
+#### 3. Modules Préservés
+- WiFi Direct Pack (inchangé) - écran "Partage Pack"
+- Page Pack (inchangé)
+- Nearby Mesh (backup pour expansion future)
+
+**Statut** : Syntax error en cours de correction
+
+---
+
+## 2026-05-03 - Nearby Connections: Corrections Précédentes
+
+**( voir section précédente pour l'historique complet )**
+
+---
+
+## 2026-05-03 - Fix Metro Bundler & IP Config
+
+**Contexte** :
+- Nearby ne découvre pas de peers (problème Google Play Services sur certains appareils)
+- WiFi Direct fonctionne (trouve `itel A50`, `Xiaomi 11T`) mais pas de transfert auto
+- Requirement: transfert automatique de fichiers individuels (pas de pack)
+
+**Corrections appliquées** :
+
+### 1. Auto-Connexion WiFi Direct Plus Agressive
+- Retry automatique après 3s si échec
+- Relancement discovery si pas de peers
+
+### 2. Transfert de Fichiers Individuels
+- Ajout `_getUnsyncedPosts()` pour récupérer les posts avec fichiers locaux
+- Envoi direct des fichiers (video/image) sans créer de pack
+- Max 10 fichiers par session
+
+### 3. Nearby Mesh Conservé
+- Garde comme backup pour future expansion mesh
+
+**Fichiers modifiés** :
+- `P2PAutoSync.js` :
+  - Auto-retry connexion WiFi Direct
+  - Transfert individuel (`_getUnsyncedPosts`)
+  - Relancement discovery
+
+**Logs attendus** :
+```
+📡 1 peers WiFi Direct disponibles, connexion automatique...
+📦 5 fichiers à synchroniser...
+✅ Fichier envoyé: xxx
+✅ Transfert individuel terminé !
+```
+
+**Modules préservés** :
+- WiFi Direct Pack (inchangé)
+- Page Pack (inchangé)
+- Nearby Mesh (pour expansion future)
+
+**Problèmes identifiés** :
+1. `Failed to start advertising` → Deux instances se marchent dessus
+2. `Failed to request connection` → Race condition (les 2 initient en même temps)
+3. Cycles infinis → Pas de backoff après échec
+
+**Corrections appliquées** :
+
+### 1. Singleton Pattern
+```javascript
+static _instance = null;
+static getInstance() {
+  if (!NearbyMeshServiceClass._instance) {
+    NearbyMeshServiceClass._instance = new NearbyMeshServiceClass();
+  }
+  return NearbyMeshServiceClass._instance;
+}
+```
+
+### 2. Guards anti-double-start
+- `_isStarting` : prevents concurrent startup
+- `_isRunning` : validates active state
+
+### 3. Blacklist temporaire
+- `_failedPeers = new Set()`
+- Après 3 échecs → peer blacklisted 2 min
+- `hasFailedRecently(peerId)` skip les peers en blacklist
+
+**Fichiers modifiés** :
+- `NearbyMeshService.js`
+
+**Résultat attendu** :
+- Une seule instance advertise
+- Connexions plus stables
+- Pas de spam après échec
+
+**Problème** : Nearby Connections échange les manifestes et métadonnées mais les fichiers vidéo/image ne sont pas transférés.
+
+**Cause racine** : `_handleContentRequest` envoie les métadonnées mais pas les fichiers.
+
+**Solution** :
+1. Détection des fichiers existants pour chaque post demandé
+2. Ajout du flag `hasFiles` dans les métadonnées
+3. Trigger `P2PAutoSync.triggerSync()` pour démarrer le transfert WiFi Direct après l'échange de métadonnées
+
+**Code modifié** :
+- `NearbyMeshService.js` : `_handleContentRequest` (lignes 342-425)
+
+**Résultat attendu** :
+1. Les deux appareils se découvrent et se connectent via Nearby
+2. Échange de manifestes (posts existants)
+3. Détection des deltas (posts manquants)
+4. **trigger WiFi Direct** pour transfert des fichiers vidéo/image
+5. Posts affichés dans le feed Loba
+
+**Prochaines étapes** :
+- Rebuild APK
+- Test sur les deux appareils
+- Vérifier les logs: après "📥 Métadonnées reçues" → "📡 Trigger sync P2P"
+
+**Problème** : Metro Bundler error "Port 8081 is being used by another process"
+
+**Cause** : Another process (PID 10544 puis 7060) utilisait le port 8081
+
+**Solution** :
+1. Kill le process avec `taskkill //F //PID`
+2. Mettre à jour `.env` avec la bonne IP (192.168.1.64 → 192.168.1.65)
+
+**Fichiers modifiés** :
+- `app/.env` : EXPO_PACKAGER_HOSTNAME et REACT_NATIVE_PACKAGER_HOSTNAME mis à jour
+
+**Vérification** : Metro démarre correctement sur `http://localhost:8081`
+
+---
+
+## Contexte Projet (lu depuis mesfichiers/)
+
+**Projet** : Yabisso - Super-app africaine offline-first
+
+**Stack** :
+- Expo SDK 54
+- React Native 0.81.5
+- WatermelonDB 0.28.0
+- expo-dev-client
+
+**Modules implémentés** :
+- Auth (onboarding, signup, login, SMS, QR)
+- Wallet (FCFA/Points)
+- Marketplace
+- Loba (vidéo social)
+- Restaurant, Hotels, Services
+- P2P (Nearby/ BLE)
+
+**Statut APK** : Build local requis après modifications
 
 
 
+
+ 

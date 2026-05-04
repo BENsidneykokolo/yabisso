@@ -632,16 +632,17 @@ class WifiDirectServiceClass {
   }
 
   async startReceiving(onFileReceived) {
-    if (!this.initialized || this._receiveMessages) return;
+    // FIX: Forcer le redémarrage si la boucle pense tourner mais n'est pas active
+    // Arrêter proprement avant de redémarrer
+    if (this._isMessageLoopRunning || this._receiveMessages) {
+      console.log('[WifiDirectService] Arrêt préventif de la boucle précédente...');
+      this.stopReceiving();
+      await new Promise(resolve => setTimeout(resolve, 500));
+    }
 
     // GARDE CRITIQUE: ne pas démarrer le serveur TCP sans connexion active
     if (!this.connectedPeer) {
       console.warn('[WifiDirectService] startReceiving ignoré: aucun peer connecté.');
-      return;
-    }
-
-    if (this._isMessageLoopRunning) {
-      console.warn('[WifiDirectService] startReceiving ignoré: la boucle tourne déjà.');
       return;
     }
 
@@ -656,10 +657,13 @@ class WifiDirectServiceClass {
       }
 
       this._receiveMessages = true;
-      console.log('[WifiDirectService] Démarrage de la boucle de réception...');
+      this._isMessageLoopRunning = true;
+      console.log('[WifiDirectService] ✅ Démarrage de la boucle de réception GO...');
       this._messageLoop(nativeMediaDir, onFileReceived);
     } catch (e) {
       console.error('[WifiDirectService] startReceiving error:', e);
+      this._receiveMessages = false;
+      this._isMessageLoopRunning = false;
     }
   }
 

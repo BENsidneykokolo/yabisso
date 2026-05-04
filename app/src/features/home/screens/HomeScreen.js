@@ -100,7 +100,7 @@ export default function HomeScreen({
             </Text>
           </View>
           <View style={[styles.statusChip, styles.statusSms]}>
-            <Ionicons name="chatbubble-ellipses" size={14} color="#64748B" />
+            <Ionicons name="chatbubbles" size={14} color="#64748B" />
             <Text style={styles.statusTextMuted}>
               {isExpanded ? 'MODE SMS' : 'MODE SMS'}
             </Text>

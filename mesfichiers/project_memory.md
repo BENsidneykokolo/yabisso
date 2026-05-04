@@ -147,6 +147,13 @@
 - Sprint 6 (P2P): P2PAutoSync - Heartbeat avec re-init, suppression startReceiving prématuré (fix OOM itel A50), délai post-connexion 2s
 - Sprint 6 (P2P): Mécanisme Ping-Pong (swap de rôles) pour échange bidirectionnel de Loba Packs via WiFi Direct
 - Sprint 7 (Stabilisation): Correction crash RNZipArchive (suppression polling), Buffer Turbo Mode (64KB), Fix EAS Build (EASIgnore patterns), Correction WatermelonDB .fetchCount()
+- Sprint 8 (Nearby + Auto Sync):
+  - Nearby Mesh (expo-nearby-connections): Découverte automatique, échange manifestes, détection deltas
+  - WiFi Direct: Transfert automatique des fichiers quand delta détecté
+  - Fix display: Images/vidéos null (ajout helper getValidMediaUri, fallback UI avec initiales)
+  - Fix connexions: Handshake Master/Slave avec délai aléatoire et retry (évite collisions)
+  - Cycle P2P: 20s automatique pour sync continue
+  - UI update: Subscription MeshContentUpdateEvents pour refresh automatique du feed
 
 ## Decisions techniques additionnelles
 - Navigation: React Navigation (a installer)

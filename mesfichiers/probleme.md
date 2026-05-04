@@ -219,6 +219,45 @@
   2. Ajout du flag `this._sessionSent` dans `P2PAutoSync` pour limiter le transfert automatique à 1 pack par connexion réussie.
 - **Statut** : ✅ Résolu
 
+### BUG-025 — Nearby Connections: Pas de découverte de peers
+- **Date** : 2026-05-03
+- **Problème** : Nearby Connections reste actif mais ne découvre jamais de peers (`🔍 Node trouvé` jamais affiché)
+- **Cause** : Problème Google Play Services sur certains appareils (Itel A50, etc.) - API Nearby ne détecte pas les autres appareils
+- **Solution** : WiFi Direct utilisé comme rail P2P principal, Nearby gardé comme backup
+- **Statut** : 🔄 En cours (Nearby = backup, WiFi Direct = principal)
+
+### BUG-027 — WiFi Direct: "Attente d'action manuelle" au lieu de auto-connexion
+- **Date** : 2026-05-04
+- **Problème** : WiFi Direct découvrait les peers mais attendait une action manuelle au lieu de connecter automatiquement
+- **Solution** : Modifier handler onPeerFound pour auto-connecter
+- **Statut** : ✅ Résolu (2026-05-04)
+
+### BUG-028 — WiFi Direct: "startReceiving ignoré: la boucle tourne déjà"
+- **Date** : 2026-05-04
+- **Problème** : Le serveur TCP GO pensait qu'il tournait déjà alors que non. 导致 `ECONNREFUSED` sur l'envoi de pack
+- **Cause** : Flag `_isMessageLoopRunning` et `_receiveMessages` mal synchronisés
+- **Solution** : Ajout d'un arrêt préventif avec delay 500ms avant de démarrer la boucle de réception
+- **Fichiers modifiés** : `WifiDirectService.js` (startReceiving)
+- **Statut** : ✅ Résolu (2026-05-04)
+
+### BUG-029 — Icône invalide "chatbubbles-outline"
+- **Date** : 2026-05-04
+- **Problème** : Warning "chatbubbles-outline is not a valid icon name for family material-community"
+- **Solution** : Remplacé par 'chatbubbles-outline' avec le bon nom Ionicons
+- **Statut** : ✅ Résolu (2026-05-04)
+
+### BUG-026 — P2PAutoSync.js Syntax Error
+- **Date** : 2026-05-04
+- **Problème** : Erreur de syntaxe JavaScript (accolades mal placées)
+- **Cause** : Multiples edits successifs ont cassé l'indentation
+- **Solution** : Git pull + re-implémentation propre
+- **Statut** : ✅ Résolu
+- **Date** : 2026-05-04
+- **Problème** : Erreur de syntaxe JavaScript autour des lignes 390-410 (accolades mal placées après modifications)
+- **Cause** : Multiples edits successifs ont cassé l'indentation et les accolades
+- **Solution** : Git pull + re-implémentation propre
+- **Statut** : ✅ Résolu (2026-05-04)
+
 ---
 
 ## Risques connus à surveiller
