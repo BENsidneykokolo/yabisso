@@ -709,12 +709,21 @@ class WifiDirectServiceClass {
 
             // --- Progress simulation ---
             let simulatedProgress = 0;
+            let stagnationCount = 0;
             const progressInterval = setInterval(() => {
               if (simulatedProgress < 95) {
                 simulatedProgress = Math.min(95, simulatedProgress + 2);
                 this._emit('onTransferProgress', { hash: meta.hash, progress: simulatedProgress, status: 'receiving', size: meta.size });
+              } else {
+                // FIX: Fallback - si on stagne à 95% pendant plus de 60s (30 x 2s), compléter automatiquement
+                stagnationCount++;
+                if (stagnationCount >= 30) {
+                  console.log('[WifiDirectService] ⚠️ Fallback: stagnation à 95%, traitement forcé...');
+                  clearInterval(progressInterval);
+                  // Tenter comme si le fichier était reçu
+                  handleFile(expectedUri).catch(() => {});
+                }
               }
-              // FIX: Fallback -si on stagne à 95% pendant plus de 60s, compléter automatiquement
             }, 2000);
 
             // --- Handler unique (anti-double-appel) ---

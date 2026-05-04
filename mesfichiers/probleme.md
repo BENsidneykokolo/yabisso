@@ -237,8 +237,14 @@
 - **Problème** : Le serveur TCP GO pensait qu'il tournait déjà alors que non. 导致 `ECONNREFUSED` sur l'envoi de pack
 - **Cause** : Flag `_isMessageLoopRunning` et `_receiveMessages` mal synchronisés
 - **Solution** : Ajout d'un arrêt préventif avec delay 500ms avant de démarrer la boucle de réception
-- **Fichiers modifiés** : `WifiDirectService.js` (startReceiving)
 - **Statut** : ✅ Résolu (2026-05-04)
+
+### BUG-030 — WiFi Direct: Progression bloquée à 95%
+- **Date** : 2026-05-04
+- **Problème** : La barre de progression reste bloquée à 95%, le transfert ne complète pas
+- **Cause** : Callback de fin échoue silencieusement, progression simule jusqu'à 95% seulement
+- **Solution** : Fallback robuste + try/catch pour forcer completion à 100%
+- **Statut** : 🔄 En cours (2026-05-04)
 
 ### BUG-029 — Icône invalide "chatbubbles-outline"
 - **Date** : 2026-05-04

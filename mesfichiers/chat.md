@@ -1817,7 +1817,64 @@ J'ai appliqué les correctifs ciblés sur le **Nearby Connection** sans toucher 
 
 ---
 
-## 2026-05-04 - WiFi Direct Auto-Transfert FONCTIONNE!
+## 2026-05-04 - Session: WiFi Direct Timing + Progrès 95%
+
+### Tests avec 3 téléphones (Xiaomi 11T, Itel A50, HONOR 400 Lite)
+
+### Problèmes identifiés
+
+**BUG-030** : Progression bloquée à 95%
+- La barre de progression reste à 95%, ne complète pas à 100%
+- Cause : Callback échoue silencieusement
+
+### Fix appliqués (en cours)
+
+1. **Timing GO/Client**
+   - Délai retry: 4s,8s → 8s,16s
+   - Attente sendFile: 3s → 6s
+
+2. **Progression 95%**
+   - Fallback robuste pour forcer completion à 100%
+   - try/catch sur le callback
+
+### Resultat
+- WiFi Direct Auto-Transfert : fonctionne (par auto-sync)
+- Loba Packs Screen manuel : encore en cours (95%)
+
+### Statut
+- Auto-sync : ✅ FONCTIONNE
+- Manuel : 🔄 En cours
+
+---
+
+## 2026-05-04 - Soir: Fix Timing + Problème 95%
+
+### Tests avec 3 téléphones
+- Transfert auto-sync : ✅ FONCTIONNE (47.7 MB)
+- Loba Packs Screen manuel : ❌ Bloqué à 95%
+
+### Fix appliqués
+
+1. **Timing GO/Client**
+   - Délai retry: 4s,8s → 8s,16s
+   - Attente sendFile: 3s → 6s
+   - Commit: 9332747
+
+2. **Progression 95%**
+   - Fallback robuste pour completion à 100%
+   - try/catch callback
+   - Commit: 7a044f5
+
+### Statut (2026-05-04 soir)
+- Auto-sync (P2PAutoSync) : ✅ FONCTIONNE
+- Manuel (LobaPacksScreen): 🔄 En cours
+
+### Problème restant
+- L'écran manuel "Partage Pack P2P" bloque à 95%
+- Cause: Timing insuffisant + callback可能 échoue silencieusement
+
+### TODO demain
+- Tester les fixes avec rebuild AP
 
 ### Tests avec 3 téléphones
 - Xiaomi 11T, Itel A50, HONOR 400 Lite
