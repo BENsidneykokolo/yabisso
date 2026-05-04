@@ -552,6 +552,7 @@ class WifiDirectServiceClass {
       
       // Envoyer les métadonnées en premier avec retry sur ECONNREFUSED
       // (le GO peut ne pas avoir démarré son MessageServer encore)
+      // FIX: Délais augmentés pour laisser plus de temps au GO de démarrer
       let sendMsgOk = false;
       for (let attempt = 0; attempt < 3; attempt++) {
         try {
@@ -561,7 +562,8 @@ class WifiDirectServiceClass {
         } catch (msgErr) {
           const errMsg = msgErr?.message || '';
           if ((errMsg.includes('ECONNREFUSED') || errMsg.includes('isConnected failed')) && attempt < 2) {
-            const waitSec = (attempt + 1) * 4;
+            // FIX: Délais augmentés: 8s, 16s (au lieu de 4s, 8s)
+            const waitSec = (attempt + 1) * 8;
             console.warn(`[WifiDirectService] GO pas encore prêt (ECONNREFUSED), attente ${waitSec}s (tentative ${attempt + 1}/3)...`);
             await new Promise(r => setTimeout(r, waitSec * 1000));
           } else {
@@ -591,7 +593,7 @@ class WifiDirectServiceClass {
           });
         }, 500);
 
-        await new Promise(resolve => setTimeout(resolve, 3000)); // FIX: laisser 3s au GO pour démarrer receiveFile()
+        await new Promise(resolve => setTimeout(resolve, 6000)); // FIX: laisser 6s au GO pour démarrer receiveFile()
         try {
           await WifiP2P.sendFile(nativePath);
           if (progressInterval) clearInterval(progressInterval);
