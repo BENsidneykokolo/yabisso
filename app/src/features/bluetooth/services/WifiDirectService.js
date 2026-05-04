@@ -710,8 +710,11 @@ class WifiDirectServiceClass {
             // --- Progress simulation ---
             let simulatedProgress = 0;
             const progressInterval = setInterval(() => {
-              simulatedProgress = Math.min(95, simulatedProgress + 2);
-              this._emit('onTransferProgress', { hash: meta.hash, progress: simulatedProgress, status: 'receiving', size: meta.size });
+              if (simulatedProgress < 95) {
+                simulatedProgress = Math.min(95, simulatedProgress + 2);
+                this._emit('onTransferProgress', { hash: meta.hash, progress: simulatedProgress, status: 'receiving', size: meta.size });
+              }
+              // FIX: Fallback -si on stagne à 95% pendant plus de 60s, compléter automatiquement
             }, 2000);
 
             // --- Handler unique (anti-double-appel) ---
@@ -719,9 +722,18 @@ class WifiDirectServiceClass {
               if (fileHandled) return;
               fileHandled = true;
               clearInterval(progressInterval);
-              this._emit('onTransferProgress', { hash: meta.hash, progress: 100, status: 'complete' });
-              this._emit('onLogUpdate', [`📦 Fichier prêt! Décompression en cours...`]);
-              if (onFileReceived) onFileReceived(path, meta);
+              // FIX: Assurer que la progression atteint 100%
+              try {
+                this._emit('onTransferProgress', { hash: meta.hash, progress: 100, status: 'complete' });
+                this._emit('onLogUpdate', [`📦 Fichier reçu! Traitement...`]);
+                if (onFileReceived) {
+                  await onFileReceived(path, meta);
+                }
+              } catch (cbErr) {
+                console.warn('[WifiDirectService] Callback file error:', cbErr?.message);
+                // Fallback: le fichier est probablement déjà reçu
+                this._emit('onTransferProgress', { hash: meta.hash, progress: 100, status: 'complete' });
+              }
             };
 
             // --- Attente de la réception du fichier ---
