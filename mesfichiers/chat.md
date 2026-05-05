@@ -925,20 +925,22 @@ Pour tester :
 - Va sur Marché → Product List → bouton comparaison dans le header
 - Va sur Profil → "Statut Marketplace" dans les paramètres
 
+## 2026-05-05 - Sessions recentes
+
+User: tu peux verifier tous les fichiers .md dans le repo "mesfichiers" qui se trouve ici: C:\Users\Utilisateur\Documents\Ben\myapp\yabisso\mesfichiers pour avoir le contexte de ce que nous faisons et aussi enregistrer automatiquement notre echange dans le fichier chat.md en temps reel que nous echangeons pour ne pas perdre l'historique, et aussi quand je tedemande quelque chose prend le temps de "hink deeper" avant de me repondre mais surtout reverifier et tester de ton cote pour verifier ce que tu viens d'implementer marche, et aussi a partir de maintenant quand je te demande de faire une sauvegarde git et gitub, tu dois verifier la version precedente pour connue le numero de version que tu va mettre alors exemple: v:0.0.1, donc le prochain sera v:0.0.2 et quand ça va arriver à v:0.0.9 on passera a v:0.1.0 ainsi de suite
+
+Assistant: 
+- Verification complete des 19 fichiers .md dans mesfichiers
+- Resume du projet: Super-app offline-first africana (Marche, Loba, Hotels, Restaurants, Wallet, Transport)
+- Stack: React Native + Expo SDK 54 + WatermelonDB
+- Services implementes: Auth, Dashboard, Wallet, Marketplace, Restaurants, Hotels, Loba, Assistant IA
+- Chat mis a jour avec cette session
+
 ---
 
-## 2026-03-06 - Sessions recentes
+## 2026-03-06 - Sessions precedentes
 
-User: super, maintenant je veux que tu build le service: restaurant, hotel, services et appartement
-
-Assistant: [A cree les ecrans suivants]
-- Restaurant: RestaurantHomeScreen, RestaurantDetailsScreen, FoodItemDetailsScreen, FoodCheckoutScreen
-- Hotels: HotelHomeScreen
-- Services: ServicesHomeScreen
-- Immobilier: RealEstateHomeScreen
-- Integre dans App.js et connecte au HomeScreen
-
-User: super, maintenant je veux que tu build l'ecran "boutique" a ce design: [reference UI]
+User: super, on continu, build l'ecran "boutique" a ce design: [reference UI]
 
 Assistant: [A restaure l'ancien design de MarketplaceHomeScreen avec categories, deals, produits]
 
