@@ -246,6 +246,16 @@
 - **Solution** : Fallback robuste + try/catch pour forcer completion à 100%
 - **Statut** : 🔄 En cours (2026-05-04)
 
+### BUG-031 — OOM Receiver + P2P Infinite Cycling
+- **Date** : 2026-05-05
+- **Problème 1** : OutOfMemoryError lors de la réception d'un pack de 48MB. Le native MessageServer.convertStreamToString() lit tout le fichier en RAM.
+- **Problème 2** : Après un partage manuel, le cycle P2P continue indéfiniment (log "🔄 Cycle P2P via wifi_direct..." en boucle)
+- **Cause 1** : La lib react-native-wifi-p2p utilise convertStreamToString() qui alloue 48MB en RAM
+- **Cause 2** : Pas de flag pour détecter un trigger manuel vs cycle automatique
+- **Solution 1** : Réduction pack de 50MB à 25MB dans LobaPackService.js
+- **Solution 2** : Ajout flag _manualTrigger + timeout 30s dans P2PAutoSync.js
+- **Statut** : ✅ Résolu (2026-05-05)
+
 ### BUG-029 — Icône invalide "chatbubbles-outline"
 - **Date** : 2026-05-04
 - **Problème** : Warning "chatbubbles-outline is not a valid icon name for family material-community"
