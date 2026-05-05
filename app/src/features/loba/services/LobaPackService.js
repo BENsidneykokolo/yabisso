@@ -11,7 +11,7 @@ if (!unzip) {
   console.error('[LobaPackService] Veuillez rebuild l\'APK avec: npx expo run:android');
 }
 
-const MAX_PACK_SIZE = 50 * 1024 * 1024; // 50 MB
+const MAX_PACK_SIZE = 25 * 1024 * 1024; // 25 MB (limité pour éviter OOM sur appareils faibles)
 const PACKS_DIR = `${FileSystem.documentDirectory}loba_packs/`;
 const TEMP_UNPACK_DIR = `${FileSystem.documentDirectory}loba_packs_temp/`;
 

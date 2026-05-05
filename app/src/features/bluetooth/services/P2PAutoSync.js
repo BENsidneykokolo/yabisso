@@ -23,6 +23,8 @@ class P2PAutoSyncClass {
     this._running = false;
     this._syncingP2P = false;
     this._syncingCloud = false;
+    this._manualTrigger = false; // Flag pour éviter le cycling infini après un trigger manuel
+    this._lastManualSync = 0; // Timestamp du dernier trigger manuel
     this.stats = {
       totalSyncedP2P: 0,
       totalSyncedCloud: 0,
@@ -159,8 +161,13 @@ class P2PAutoSyncClass {
        this._log('ℹ️ Orchestrateur non démarré. Démarrage automatique...');
        await this.start();
     }
+    this._manualTrigger = true;
+    this._lastManualSync = Date.now();
     this._log(`⚡ Synchronisation ${category ? category : 'manuelle'} déclenchée...`);
     await this._p2pSyncCycle(category);
+    setTimeout(() => {
+      this._manualTrigger = false;
+    }, 30000);
   }
 
   async sendTestPing() {
@@ -253,11 +260,16 @@ class P2PAutoSyncClass {
              this._goLoggedOnce = true;
            }
            WifiDirectService._emit('onSyncStatus', { status: 'WAITING_FOR_CLIENT' });
-         } else {
-           this._goLoggedOnce = false;
-           if (this._sessionSent && !category) {
+} else {
+            this._goLoggedOnce = false;
+            // Éviter le cycling infini après un trigger manuel: si _manualTrigger=true, on skip le cycle auto pendant 30s
+            if (this._manualTrigger && this._sessionSent) {
+              this._log('⏳ Cycle ignoré (trigger manuel récent)');
               return;
-           }
+            }
+            if (this._sessionSent && !category) {
+               return;
+            }
            this._log(`📦 Création du Pack ${category || 'Général'} en cours (Max 50MB)...`);
            WifiDirectService._emit('onSyncStatus', { status: 'PACKING' });
            

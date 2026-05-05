@@ -36,6 +36,7 @@ class WifiDirectServiceClass {
     this.isConnecting = false;
     this.isLocationEnabled = true;
     this._receiveMessages = false;
+    this._ackListenerActive = false; // Pour l'attente d'ACK
     this.isConnected = false;       // FIX: was undefined, broke setGlobalFileHandler check
     this._isSending = false;         // FIX: replaces time-based anti-spam
     this._lastConnectAttempt = 0; 
@@ -607,6 +608,25 @@ class WifiDirectServiceClass {
         console.log('[WifiDirectService] Ping envoyé avec succès.');
       }
 
+      // TEMPORAIREMENT DÉSACTIVÉ: Le handshake ACK cause des crashes quand la connexion est perdue après l'envoi
+      // Le transfert fonctionne sans ce handshake - on gardera juste le suivi de progression
+      /*
+      if (metadata.type !== 'PING') {
+        console.log('[WifiDirectService] En attente ACK du receiver...');
+        let ackReceived = false;
+        try {
+          ackReceived = await this._waitForACK(metadata.hash, 60000);
+        } catch (ackErr) {
+          console.warn('[WifiDirectService] Timeout attente ACK:', ackErr?.message);
+        }
+        if (ackReceived) {
+          console.log('[WifiDirectService] ✅ ACK reçu du receiver!');
+        } else {
+          console.warn('[WifiDirectService] ⚠️ ACK non reçu, transfert considéré comme terminé côté sender');
+        }
+      }
+      */
+
       this._emit('onTransferProgress', { hash: metadata.hash || 'ping', progress: 100, status: 'complete' });
       return true;
     } catch (e) {
@@ -617,6 +637,74 @@ class WifiDirectServiceClass {
     } finally {
       this._isSending = false; // FIX: toujours libérer le flag
     }
+  }
+
+  /**
+   * Attend un ACK du receiver après l'envoi d'un fichier.
+   * Envoie des polls périodiques au receiver pour vérifier le statut.
+   * @param {string} expectedHash - Le hash du fichier attendu
+   * @param {number} timeoutMs - Timeout en millisecondes
+   */
+  async _waitForACK(expectedHash, timeoutMs = 60000) {
+    const { WifiP2P } = require('react-native-wifi-p2p');
+    const pollInterval = 5000; // Poll toutes les 5s
+    const maxPolls = Math.floor(timeoutMs / pollInterval);
+    
+    console.log('[WifiDirectService] Début attente ACK pour', expectedHash);
+    
+    // Démarrer une boucle de réception temporaire pour capter les STATUS_RESPONSE
+    this._ackListenerActive = true;
+    let ackResolved = false;
+    
+    const ackCheckLoop = async () => {
+      while (this._ackListenerActive && !ackResolved) {
+        try {
+          const message = await WifiP2P.receiveMessage({});
+          if (message) {
+            try {
+              const resp = JSON.parse(message);
+              if (resp.action === 'STATUS_RESPONSE' && resp.hash === expectedHash) {
+                console.log('[WifiDirectService] ✅ Status Response reçu:', resp.status);
+                ackResolved = true;
+                this._ackListenerActive = false;
+                return true;
+              }
+            } catch (_) {}
+          }
+        } catch (e) {
+          // receiveMessage timeout ou erreur - continuer
+        }
+        await new Promise(r => setTimeout(r, 1000));
+      }
+      return ackResolved;
+    };
+    
+    // Lancer la boucle d'écoute en parallèle avec les polls
+    const listenPromise = ackCheckLoop();
+    
+    for (let attempt = 0; attempt < maxPolls && !ackResolved; attempt++) {
+      // Envoyer un message de status request au GO
+      try {
+        const statusRequest = JSON.stringify({
+          action: 'STATUS_REQUEST',
+          hash: expectedHash,
+          timestamp: Date.now(),
+        });
+        await WifiP2P.sendMessage(statusRequest);
+        console.log('[WifiDirectService] Status request envoyé (attempt', attempt + 1, '/', maxPolls, ')');
+      } catch (reqErr) {
+        console.warn('[WifiDirectService] Status request échoué:', reqErr?.message);
+      }
+      
+      // Attendre avant le prochain poll
+      await new Promise(resolve => setTimeout(resolve, pollInterval));
+    }
+    
+    // Arrêter la boucle d'écoute
+    this._ackListenerActive = false;
+    
+    console.log('[WifiDirectService] Timeout ACK atteint');
+    return false;
   }
 
   /**
@@ -698,6 +786,22 @@ class WifiDirectServiceClass {
             this._emit('onLogUpdate', [`⭐ REÇU PING de ${meta.username || 'Inconnu'}!`]);
           }
 
+          // Répondre aux requests de status du sender
+          if (meta.action === 'STATUS_REQUEST') {
+            const statusResponse = JSON.stringify({
+              action: 'STATUS_RESPONSE',
+              hash: meta.hash,
+              status: this._receiveMessages ? 'receiving' : 'idle',
+              timestamp: Date.now(),
+            });
+            try {
+              await WifiP2P.sendMessage(statusResponse);
+              console.log('[WifiDirectService] Status response envoyé pour', meta.hash);
+            } catch (statusErr) {
+              console.warn('[WifiDirectService] Échec status response:', statusErr?.message);
+            }
+          }
+
           if (meta.action === 'FILE_TRANSFER') {
             const logMsg = `📩 Transfert entrant: ${meta.hash?.substring(0,8)}... (${(meta.size / 1024 / 1024).toFixed(1)} MB)`;
             console.log(`[WifiDirectService] ${logMsg}`);
@@ -715,13 +819,12 @@ class WifiDirectServiceClass {
                 simulatedProgress = Math.min(95, simulatedProgress + 2);
                 this._emit('onTransferProgress', { hash: meta.hash, progress: simulatedProgress, status: 'receiving', size: meta.size });
               } else {
-                // FIX: Fallback - si on stagne à 95% pendant plus de 60s (30 x 2s), compléter automatiquement
+                // FIX: Fallback DÉSACTIVÉ - Le receiveFile() natif gère seul la complétion
+                // Le fallback prématuré causait un crash car le fichier n'était pas encore complet
                 stagnationCount++;
                 if (stagnationCount >= 30) {
-                  console.log('[WifiDirectService] ⚠️ Fallback: stagnation à 95%, traitement forcé...');
-                  clearInterval(progressInterval);
-                  // Tenter comme si le fichier était reçu
-                  handleFile(expectedUri).catch(() => {});
+                  console.log('[WifiDirectService] ⚠️ Stagnation à 95% - On attend le receiveFile natif...');
+                  // Ne PAS appeler handleFile ici - attendre receiveFile()
                 }
               }
             }, 2000);
@@ -735,6 +838,21 @@ class WifiDirectServiceClass {
               try {
                 this._emit('onTransferProgress', { hash: meta.hash, progress: 100, status: 'complete' });
                 this._emit('onLogUpdate', [`📦 Fichier reçu! Traitement...`]);
+                
+                // Envoi ACK au sender pour signaler la fin de réception
+                try {
+                  const ackPayload = JSON.stringify({
+                    action: 'TRANSFER_COMPLETE',
+                    hash: meta.hash,
+                    filename: meta.filename,
+                    timestamp: Date.now(),
+                  });
+                  await WifiP2P.sendMessage(ackPayload);
+                  console.log('[WifiDirectService] ✅ ACK envoyé au sender:', meta.hash);
+                } catch (ackErr) {
+                  console.warn('[WifiDirectService] Échec envoi ACK:', ackErr?.message);
+                }
+                
                 if (onFileReceived) {
                   await onFileReceived(path, meta);
                 }
