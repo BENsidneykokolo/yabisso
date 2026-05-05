@@ -1,5 +1,44 @@
 # YABISSO AI CHAT HISTORY
 
+## Fichiers de Documentation P2P Créés (2026-05-05)
+
+### 1. wifi_direct_p2p_manualshare_partagepackp2p.md
+- **Emplacement** : `mesfichiers/wifi_direct_p2p_manualshare_partagepackp2p.md`
+- **Description** : Code complet de l'écran "Partage Packs (P2P)" pour le transfert manuel de packs Loba via WiFi Direct
+- **Écran source** : `app/src/features/loba/screens/LobaPacksScreen.js`
+- **Contenu** :
+  - Mode "Recevoir" (ouvre le portail WiFi Direct)
+  - Mode "Envoyer" (cherche un ami et transfère les packs)
+  - Liste des packs disponibles
+  - Logs P2P en temps réel
+  - Gestion de la progression (envoi/réception)
+- **Statut** : ✅ FONCTIONNEL - Ce code est utilisé pour les transferts manuels de packs P2P
+
+### 2. loba_nearby_wifi_direct_auto_scan.md
+- **Emplacement** : `mesfichiers/loba_nearby_wifi_direct_auto_scan.md`
+- **Description** : Code de l'écran "Accueil Loba" avec scan automatique WiFi Direct et Nearby Mesh
+- **Écrans sources** :
+  - `app/src/features/loba/screens/LobaHomeScreen.js`
+  - `app/src/features/bluetooth/services/WifiDirectService.js`
+  - `app/src/features/bluetooth/services/P2PAutoSync.js`
+  - `app/src/features/bluetooth/services/NearbyMeshService.js`
+- **Contenu** :
+  - Feed vidéo Loba avec auto-refresh
+  - Démarrage automatique P2PAutoSync au montage
+  - WiFi Direct automatique (discovery + connexion)
+  - Nearby Mesh pour la découverte locale
+  - Status du mesh/WiFi en temps réel
+  - Modal de logs P2P (long press sur le status chip)
+- **Statut** : ✅ FONCTIONNEL - Ce code gère l'accueil Loba avec sync automatique
+
+### Notes
+- Les 2 codes fonctionnent et sont stables sur la version v1.0.1
+- Le code de "Partage Packs" est pour les transferts manuels
+- Le code de "Accueil Loba" est pour la syncrisation automatique au démarrage
+- Les 2 fichiers .md sont dans le dossier `mesfichiers/` pour référence
+
+---
+
 ## APK Build
 - **Chemin** : `app/android/app/build/outputs/apk/debug/app-debug.apk`
 - **Taille** : ~249 MB
