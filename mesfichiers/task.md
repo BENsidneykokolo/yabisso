@@ -214,7 +214,14 @@
 | WiFi Direct Auto-Retry on 95% hang | Done | P1 | S7 |
 | WiFi Direct Master-Wait & Slave-Silent (v1.0.10) | Done | P1 | S7 |
 | WiFi Direct Hardware Score v1.0.15 (RAM × 10) | Done | P1 | S7 |
-| Génération APK Release pour tests terrain | In Progress | P1 | S7 |
+| WiFi Direct Score Comparison Fix v1.0.16 (parseInt) | Done | P1 | S7 |
+| WiFi Direct Master Creates Group v1.0.17 | Done | P1 | S7 |
+| WiFi Direct deviceName Fix v1.0.18 | Done | P1 | S7 |
+| WiFi Direct Auto-Connexion (étape 1) | Testing | P1 | S7 |
+| WiFi Direct Transfert Auto (étape 2) | Not Started | P1 | S7 |
+| WiFi Direct Delta Trigger (étape 3) | Not Started | P1 | S7 |
+| WiFi Direct Test Terrain (étape 4) | Not Started | P1 | S7 |
+| Génération APK Release pour tests terrain | Not Started | P1 | S7 |
 | Bluetooth simple P2P (Google Nearby Connect) | Done | P2 | S7 |
 | Choisir stack BLE mesh (ble-plx vs nearby) | Done | P3 | S7 |
 | Bluetooth Mesh (multi-hop) | Not Started | P3 | Post-MVP |
