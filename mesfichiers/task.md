@@ -213,6 +213,7 @@
 | WiFi Direct Stabilisation (Anti-collision MAC + Master/Slave v1.0.10) | Done | P1 | S7 |
 | WiFi Direct Auto-Retry on 95% hang | Done | P1 | S7 |
 | WiFi Direct Master-Wait & Slave-Silent (v1.0.10) | Done | P1 | S7 |
+| WiFi Direct Hardware Score v1.0.15 (RAM × 10) | Done | P1 | S7 |
 | Génération APK Release pour tests terrain | In Progress | P1 | S7 |
 | Bluetooth simple P2P (Google Nearby Connect) | Done | P2 | S7 |
 | Choisir stack BLE mesh (ble-plx vs nearby) | Done | P3 | S7 |
