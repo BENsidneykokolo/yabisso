@@ -1,14 +1,24 @@
-node_modules
-.expo
-dist
-android/build
-android/app/build
-ios/build
-bin
-**/build
-**/.gradle
-**/.kotlin
-*.log
+# Ignorer les dossiers de build natifs
+android/
+ios/
+
+# Ignorer les dépendances
+node_modules/
+
+# Ignorer les dossiers de cache
+.expo/
+.next/
+dist/
+build/
+
+# Ignorer les fichiers médias lourds (loba_media, etc)
+*.mp4
+*.zip
 *.apk
-*.aab
-.git
+*.tar.gz
+app/src/assets/videos/*
+
+# Ignorer les logs et dossiers temporaires
+*.log
+.DS_Store
+.env.local

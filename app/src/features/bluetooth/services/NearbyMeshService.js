@@ -140,8 +140,12 @@ class NearbyMeshServiceClass {
     this._listeners.push(onPeerFound((peer) => {
       this._log(`🔍 Node trouvé: ${peer.name} (${peer.peerId})`);
       
-      // Handshake déterministe pour éviter les collisions de requestConnection
-      if (this.deviceName && this.deviceName < peer.name) {
+      // V1.0.16: Extraire le score numérique pour comparaison propre
+      const myScore = parseInt(this.deviceName?.split('_')[0] || '0', 10);
+      const peerScore = parseInt(peer.name?.split('_')[0] || '0', 10);
+      
+      // Master = score le plus élevé
+      if (myScore > peerScore) {
         this._log(`🤝 [Master] Envoi requête de connexion vers ${peer.peerId}...`);
         
         // Anti-spam: ne pas reconnecter si échec récent (< 30s)

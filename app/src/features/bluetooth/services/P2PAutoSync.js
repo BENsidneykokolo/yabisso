@@ -98,9 +98,12 @@ class P2PAutoSyncClass {
         const myName = (WifiDirectService.deviceName || 'Yabisso_Unknown').toLowerCase();
         const peerName = (peer.deviceName || 'Unknown').toLowerCase();
 
-        // V1.0.13: On inverse. Le nom le plus élevé (Yabisso/Xiaomi) devient MASTER.
-        // C'est plus stable car les téléphones budget (itel) sont meilleurs en SLAVE.
-        if (myName > peerName) {
+        // V1.0.16: Extraire le score numérique pour comparaison propre
+        const myScore = parseInt(myName.split('_')[0] || '0', 10);
+        const peerScore = parseInt(peerName.split('_')[0] || '0', 10);
+
+        // Master = score le plus élevé
+        if (myScore > peerScore) {
           this._log(`🤝 [Master] Invitation vers ${peerName} dans 1.5s...`);
           setTimeout(async () => {
             if (!WifiDirectService.connectedPeer && !WifiDirectService.isConnecting && this._running) {
@@ -250,7 +253,11 @@ class P2PAutoSyncClass {
             const myName = (WifiDirectService.deviceName || 'Yabisso_Unknown').toLowerCase();
             const peerName = (peer.deviceName || 'Unknown').toLowerCase();
 
-            if (myName > peerName) {
+            // V1.0.16: Extraire le score numérique pour comparaison propre
+            const myScore = parseInt(myName.split('_')[0] || '0', 10);
+            const peerScore = parseInt(peerName.split('_')[0] || '0', 10);
+
+            if (myScore > peerScore) {
                this._log(`🔄 Cycle Master: Relance invitation vers ${peerName}...`);
                await WifiDirectService.connectToPeer(peer);
             }
