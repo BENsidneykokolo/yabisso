@@ -44,6 +44,8 @@ class WifiDirectServiceClass {
     this.globalFileHandler = null; // Phase 13: Handler global pour P2PAutoSync
     // V1.0.15: Score calculé à la demande, pas dans le constructeur
     this.capabilityScore = null;
+    // V1.0.18: Nom basé sur score - disponible immédiatement
+    this._cachedDeviceName = this._buildDeviceName();
     this.listeners = {
       onPeerFound: [],
       onPeerLost: [],
@@ -54,6 +56,25 @@ class WifiDirectServiceClass {
       onLogUpdate: [],
     };
     this._nativeLock = false;
+  }
+
+  // V1.0.18: Build device name immediately with score
+  _buildDeviceName() {
+    try {
+      // V1.0.18: Score can be called anytime - expo-device doesn't need init
+      const totalMemoryGB = (Device.totalMemory || 0) / (1024 * 1024 * 1024);
+      const score = Math.round(totalMemoryGB * 10);
+      const randomId = Math.random().toString(36).substring(4);
+      return `${score}_Device_${randomId}`;
+    } catch (e) {
+      return `50_Device_${Math.random().toString(36).substring(4)}`;
+    }
+  }
+
+  // V1.0.18: Get device name - uses cache if available
+  getDeviceName() {
+    return this.deviceName || this._cachedDeviceName || this._buildDeviceName();
+  }
     this.deviceName = null;
   }
 
@@ -401,9 +422,9 @@ class WifiDirectServiceClass {
       // On laisse plus de temps à la puce WiFi (500ms)
       await new Promise(r => setTimeout(r, 500));
 
-      // 2. NÉGOCIATION DE RÔLE DÉTERMINISTE basé sur Score (V1.0.16)
+      // 2. NÉGOCIATION DE RÔLE DÉTERMINISTE basé sur Score (V1.0.18)
       // Extraire les scores numériques pour comparaison coherente
-      const myScore = parseInt(this.deviceName?.split('_')[0] || '0', 10);
+      const myScore = parseInt(this.getDeviceName()?.split('_')[0] || '0', 10);
       const peerScore = parseInt(device.deviceName?.split('_')[0] || '0', 10);
       let intent = 0;
 

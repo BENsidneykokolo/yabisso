@@ -250,7 +250,7 @@ class P2PAutoSyncClass {
           const availablePeers = WifiDirectService.availablePeers || [];
 if (availablePeers.length > 0) {
             const peer = availablePeers[0];
-            const myName = (WifiDirectService.deviceName || 'Yabisso_Unknown').toLowerCase();
+            const myName = (WifiDirectService.getDeviceName() || 'Yabisso_Unknown').toLowerCase();
             const peerName = (peer.deviceName || 'Unknown').toLowerCase();
 
             // V1.0.16: Extraire le score numérique pour comparaison propre
