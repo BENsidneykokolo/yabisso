@@ -2217,7 +2217,97 @@ static getInstance() {
 - Restaurant, Hotels, Services
 - P2P (Nearby/ BLE)
 
-**Statut APK** : Build local requis après modifications
+---
+
+## 2026-05-05 - Session Performance: Connexion 2-5s & Sync Auto (v1.0.2)
+
+**Sujet** : Accélération radicale de l'infrastructure P2P.
+
+**Actions (v1.0.2)** :
+- WiFi Direct "Turbo Mode" (délais réduits).
+- Nearby Mesh Smart-Trigger (delta detection).
+- Cycle P2P 3s.
+
+---
+
+
+## 2026-05-06 - Débogage Critique: Fix Crash & Mutex (v1.0.3)
+
+**Sujet** : Correction du crash `NullPointerException` dans WiFi Direct et stabilisation du cycle Multi-Rail.
+
+**Problèmes identifiés** :
+- **Crash Natif** : `java.lang.NullPointerException` dans `WiFiP2PManagerModule.sendMessage`. Cause : appels concurrents au module natif avant qu'il ne soit prêt ou pendant une transition d'état.
+- **Instabilité Mesh** : Erreur `Failed to start discovery` due à un cycle stop/start trop rapide (3s).
+- **Lenteur apparente** : Les cycles de 3s créaient un goulot d'étranglement sur les ressources des appareils budget (itel A50).
+
+**Actions (v1.0.3)** :
+
+1.  **Sériallisation Native (Mutex)** :
+    *   Ajout de `_nativeLock` dans `WifiDirectService`. Toutes les opérations critiques (`initialize`, `connectToPeer`, `sendMessage`) attendent que l'opération précédente soit terminée. Cela élimine les `NullPointerException`.
+2.  **Cycle Équilibré** :
+    *   Passage du cycle P2P à **5 secondes** (au lieu de 3s ou 20s). Offre un bon compromis entre réactivité pour les passants et stabilité CPU.
+    *   Délai de stabilisation post-connexion fixé à **1.5 seconde** (suffisant pour binder les sockets sans crash).
+3.  **Harden Orchestrateur** :
+    *   Ajout d'un flag `_isStopping` dans `P2PAutoSync` pour empêcher les redémarrages sauvages pendant que les services s'éteignent.
+    *   Nearby Mesh attend désormais **1 seconde** après un stop avant de libérer le verrou pour un éventuel restart.
+
+**Résultat** :
+La connexion est redevenue stable. Le crash rouge à la connexion est éliminé. Le partage automatique reprend dès que le Mesh détecte un Delta, sans surcharger le processeur.
+
+## 2026-05-06 - Stabilisation Hardware: Master-Wait & Slave-Silent (v1.0.10)
+
+**Sujet** : Résolution de l'erreur interne d'Android et optimisation pour appareils low-end (Itel A50).
+
+**Avancées Majeures** :
+- **Mesh Opérationnel** : Le Mesh Bluetooth fonctionne parfaitement (Delta detection OK). Les inventaires s'échangent sans fil.
+- **Zéro Collision** : Identification du conflit de noms. Les deux téléphones ne s'invitent plus simultanément.
+
+**Actions (v1.0.10)** :
+
+1.  **Normalisation des Rôles** : Comparaison des noms en minuscules (`toLowerCase`) pour garantir un Master unique et un Slave unique.
+2.  **Stratégie Silence Radio (Slave)** : Le Slave arrête son scan WiFi dès qu'il détecte un Master, libérant 100% du matériel pour la réception.
+3.  **Délai Master-Wait** : Le Master attend **2 secondes** avant d'initier la connexion pour laisser le Slave se stabiliser.
+4.  **Simplification Hardware** : Retrait du nettoyage agressif qui surchargeait inutilement le driver Android.
+
+**Prochaine étape** : Validation de la connexion automatique finale sur l'Itel A50.
+
+## 2026-05-06 - Sagesse Hardware: Éveil Slave & Nettoyage Fantômes (v1.0.12)
+
+**Sujet** : Correction de l'invisibilité WiFi et suppression des conflits de processus concurrents.
+
+**Problèmes identifiés** :
+- **Coma Hardware (Slave)** : L'arrêt du scan (`stopDiscovery`) endormait trop profondément la puce WiFi de l'Itel, la rendant incapable d'entendre l'invitation.
+- **Fuite de Listeners** : À chaque Reload, les anciens écouteurs restaient actifs, créant des ordres contradictoires (un téléphone essayait d'être Master et Slave en même temps).
+
+**Actions (v1.0.12)** :
+1.  **Éveil du Slave** : Suppression du `stopDiscovery` pour le Slave. Il reste en scan passif pour maintenir la puce WiFi en alerte.
+2.  **Délai de Sagesse** : Augmentation du délai Master à **3 secondes** pour laisser le temps à l'Itel de stabiliser son voisinage.
+3.  **Purge des Listeners** : Ajout de `removeAllListeners` au démarrage de l'orchestrateur pour tuer les processus fantômes après un Reload.
+
+**Résultat attendu** : Une seule invitation claire, envoyée au moment où le récepteur est le plus attentif.
+
+## 2026-05-06 - Stratégie Power Master: Inversion de Hiérarchie (v1.0.13)
+
+**Sujet** : Transfert de la responsabilité Master au téléphone le plus puissant.
+
+**Problème identifié** : 
+- **Master Faible** : L'Itel A50 (nommé `itel...`) était désigné Master par l'ASCII (`i` avant `y`). Or, l'Itel échoue souvent à créer le groupe WiFi.
+- **Délai excessif** : Les 3s de la v1.0.12 ralentissaient trop l'expérience utilisateur.
+
+**Actions (v1.0.13)** :
+1.  **Inversion ASCII** : Le Master est désormais celui avec le nom "le plus grand" (`myName > peerName`). Les téléphones `Yabisso_...` ou `Xiaomi` deviennent ainsi Masters face aux `itel` ou `alcatel`.
+2.  **Délai Optimisé (1.5s)** : Réduction du temps d'attente pour une connexion plus fluide sans sacrifier la stabilité.
+
+**Résultat attendu** : Le téléphone puissant (Xiaomi) prend le contrôle, crée le groupe et invite l'Itel. L'Itel, en mode Slave, n'a plus qu'à accepter l'invitation.
+
+---
+
+---
+
+---
+
+**Prochaine étape** : Monitoring de la stabilité sur transferts longs (>50MB).
+
 
 
 

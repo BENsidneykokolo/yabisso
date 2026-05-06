@@ -10,21 +10,22 @@ import { LobaPackService } from '../../loba/services/LobaPackService';
 import { database } from '../../../lib/db';
 import { Q } from '@nozbe/watermelondb';
 
-const P2P_SYNC_INTERVAL_MS = 20000; // 20 secondes pour P2P
-const CLOUD_SYNC_INTERVAL_MS = 60000; // 60 secondes pour Cloud Fallback
+const P2P_SYNC_INTERVAL_MS = 2000; // 2 secondes pour une réactivité maximale ("Passing by")
+const CLOUD_SYNC_INTERVAL_MS = 60000; 
 
 /**
- * P2PAutoSync — L'Orchestrateur Central (V2 - Cloud Saver)
+ * P2PAutoSync — L'Orchestrateur Central (V3 - Ultra-Fast & Parallel)
  */
 class P2PAutoSyncClass {
   constructor() {
     this._p2pInterval = null;
     this._cloudInterval = null;
     this._running = false;
+    this._isStopping = false; 
     this._syncingP2P = false;
     this._syncingCloud = false;
-    this._manualTrigger = false; // Flag pour éviter le cycling infini après un trigger manuel
-    this._lastManualSync = 0; // Timestamp du dernier trigger manuel
+    this._manualTrigger = false; 
+    this._lastManualSync = 0; 
     this.stats = {
       totalSyncedP2P: 0,
       totalSyncedCloud: 0,
@@ -51,73 +52,85 @@ class P2PAutoSyncClass {
     this._running = true;
 
     console.log('[P2PAutoSync] Démarrage de l\'orchestrateur Multi-Rail...');
-    this._log('🚀 Orchestrateur démarré (Mode Cloud Saver).');
+    this._log('🚀 Orchestrateur démarré (ULTRA-FAST MODE).');
 
     NetworkRailDetector.start();
     NetworkRailDetector.onRailChange((rails) => {
       this.stats.activeRails = rails;
-      console.log(`[P2PAutoSync] Rails actifs: ${rails.join(', ')}`);
     });
 
-    // Phase 13: Brancher le récepteur global
     WifiDirectService.setGlobalFileHandler((path, meta) => this._handleReceivedFile(path, meta, 'WifiDirect'));
 
     NearbyMeshService.MeshLogEvents.subscribe((msg) => {
       this._log(`[MESH] ${msg}`);
     });
 
-    // NE PAS AWAIT: On lance le Mesh en arrière-plan pour ne pas bloquer le WiFi Direct
-    // surtout sur les appareils lents (Itel A50)
-    NearbyMeshService.startMesh().catch(e => {
-      this._log(`[MESH] ❌ Crash initialisation: ${e.message}`);
-    });
+    // PARALLÉLISME PROGRESSIF: On laisse WiFi Direct s'initialiser d'abord (plus critique)
+    // puis on lance le Mesh après 5 secondes pour éviter les collisions hardware.
+    setTimeout(() => {
+      if (this._running) {
+        NearbyMeshService.startMesh().catch(e => {
+          this._log(`[MESH] ❌ Crash initialisation: ${e.message}`);
+        });
+      }
+    }, 5000);
 
     try {
-      if (WifiDirectService.getState().isAvailable) {
-        const initOk = await WifiDirectService.initialize();
-        if (initOk) {
-          await WifiDirectService.startDiscovery();
-        } else {
-          console.warn('[P2PAutoSync] WiFi Direct init échouée au démarrage, retry dans 5s...');
-          setTimeout(async () => {
-            const ok = await WifiDirectService.initialize();
-            if (ok) await WifiDirectService.startDiscovery();
-          }, 5000);
-        }
+      // WiFi Direct Discovery doit TOUJOURS tourner en tâche de fond
+      const state = WifiDirectService.getState();
+      if (state.isAvailable) {
+        await WifiDirectService.initialize();
+        await WifiDirectService.startDiscovery(true);
       }
       
+      this._log('🚀 Orchestrateur démarré (ULTRA-FAST MODE).');
+      
+      // FIX V1.0.11: Nettoyage impératif pour éviter les fuites de listeners au Reload
+      WifiDirectService.removeAllListeners('onPeerFound');
+      WifiDirectService.removeAllListeners('onConnectionChange');
+
+      // 1. Ecouteur de peers WiFi Direct
       WifiDirectService.on('onPeerFound', async (peer) => {
         if (WifiDirectService.connectedPeer || WifiDirectService.isConnecting || !this._running) {
           return;
         }
-        const macSuffix = peer.deviceAddress ? peer.deviceAddress.split(':').pop() : '??';
-        // AUTO-CONNECT au lieu de "Attente d'action manuelle"
-        this._log(`📡 Peer trouvé: ${peer.deviceName || 'Inconnu'} (${macSuffix}). Connexion auto...`);
-        try {
-          await WifiDirectService.connectToPeer(peer);
-        } catch (e) {
-          this._log(`⚠️ Échec auto-connexion: ${e.message}`);
+
+        const myName = (WifiDirectService.deviceName || 'Yabisso_Unknown').toLowerCase();
+        const peerName = (peer.deviceName || 'Unknown').toLowerCase();
+
+        // V1.0.13: On inverse. Le nom le plus élevé (Yabisso/Xiaomi) devient MASTER.
+        // C'est plus stable car les téléphones budget (itel) sont meilleurs en SLAVE.
+        if (myName > peerName) {
+          this._log(`🤝 [Master] Invitation vers ${peerName} dans 1.5s...`);
+          setTimeout(async () => {
+            if (!WifiDirectService.connectedPeer && !WifiDirectService.isConnecting && this._running) {
+              try {
+                await WifiDirectService.connectToPeer(peer);
+              } catch (e) {
+                this._log(`⚠️ Échec Master-Connect: ${e.message}`);
+              }
+            }
+          }, 1500);
+        } else {
+          this._log(`⏳ [Slave] Master ${peerName} détecté. En attente d'invitation...`);
         }
       });
 
       WifiDirectService.on('onConnectionChange', async ({ connected, info }) => {
-        if (connected) {
-          this._log('📶 Connexion P2P établie. Attente de la stabilisation GO (5s)...');
+        if (connected && this._running) {
+          this._log('📶 WiFi Direct CONNECTÉ ! Handshake final (1s)...');
           this._sessionSent = false;
+          
           setTimeout(() => {
-            if (WifiDirectService.connectedPeer) {
+            if (WifiDirectService.connectedPeer && this._running) {
               if (!WifiDirectService.isGroupOwner) {
-                // CLIENT: lance le cycle d'envoi (buildPack + sendFile)
-                this._log('🚀 Rôle CLIENT — Lancement du cycle d\'envoi P2P...');
+                this._log('🚀 Envoi immédiat du Pack Loba...');
                 this._p2pSyncCycle();
-                // Note: Le CLIENT n'a PAS besoin de startReceiving
-                // Le GO reçoit automatiquement via subscribeOnConnectionInfoUpdates → globalFileHandler
               } else {
-                // GO: est déjà en mode réception (démarré dans subscribeOnConnectionInfoUpdates)
-                this._log('📡 Rôle GROUP OWNER — Mode réception actif, en attente de pack du client...');
+                this._log('📡 Mode Réception — Prêt à recevoir des Packs.');
               }
             }
-          }, 5000);
+          }, 1000);
 
         } else {
           WifiDirectService.stopReceiving();
@@ -128,6 +141,7 @@ class P2PAutoSyncClass {
       console.warn('[P2PAutoSync] WiFi Direct init error:', e.message);
     }
 
+    if (this._p2pInterval) clearInterval(this._p2pInterval);
     this._p2pInterval = setInterval(() => this._p2pSyncCycle(), P2P_SYNC_INTERVAL_MS);
     this._p2pSyncCycle();
   }
@@ -195,14 +209,22 @@ class P2PAutoSyncClass {
     return false;
   }
 
-  stop() {
+  async stop() {
     this._running = false;
     if (this._p2pInterval) clearInterval(this._p2pInterval);
     if (this._cloudInterval) clearInterval(this._cloudInterval);
-    NetworkRailDetector.stop();
-    NearbyMeshService.stopMesh();
-    WifiDirectService.stopDiscovery();
-    console.log('[P2PAutoSync] Orchestrateur arrêté.');
+    this._p2pInterval = null;
+    this._cloudInterval = null;
+
+    try {
+      NetworkRailDetector.stop();
+      await NearbyMeshService.stopMesh();
+      await WifiDirectService.stopDiscovery();
+    } catch (e) {
+      console.warn('[P2PAutoSync] Erreur arrêt:', e.message);
+    }
+    
+    this._log('🛑 Orchestrateur arrêté.');
   }
 
   async _p2pSyncCycle(category = null) {
@@ -210,39 +232,36 @@ class P2PAutoSyncClass {
     this._syncingP2P = true;
 
     try {
-      const bestP2P = NetworkRailDetector.getBestRail(true);
-      
-      if (bestP2P === RAIL_TYPES.OFFLINE) {
-        const state = WifiDirectService.getState();
-        if (state.isAvailable && !state.initialized) {
+      // 1. GESTION LIEN WIFI DIRECT (Toujours s'assurer qu'on scanne ou qu'on est connecté)
+      const state = WifiDirectService.getState();
+      if (state.isAvailable) {
+        if (!state.initialized) {
           await WifiDirectService.initialize();
-          await WifiDirectService.startDiscovery();
-        } else if (!state.isDiscovering && !WifiDirectService.isConnecting) {
-          await WifiDirectService.startDiscovery(true);
         }
         
-        // === AUTO-RETRY WIFI DIRECT ===
-        const availablePeers = WifiDirectService.availablePeers || [];
-        if (availablePeers.length > 0 && !WifiDirectService.connectedPeer && !WifiDirectService.isConnecting) {
-          this._log(`📡 ${availablePeers.length} peers WiFi Direct dispo, connexion auto...`);
-          try {
-            await WifiDirectService.connectToPeer(availablePeers[0]);
-          } catch (e) {
-            this._log(`⚠️ Échec connexion auto: ${e.message}`);
-            setTimeout(async () => {
-              if (!WifiDirectService.connectedPeer && WifiDirectService.availablePeers?.length > 0) {
-                this._log(`📡 Retry connexion auto...`);
-                await WifiDirectService.connectToPeer(WifiDirectService.availablePeers[0]);
-              }
-            }, 3000);
+        if (!WifiDirectService.connectedPeer && !WifiDirectService.isConnecting) {
+          if (!state.isDiscovering) {
+             await WifiDirectService.startDiscovery(true);
           }
-        } else if (availablePeers.length === 0) {
-          this._log(`🔄 Relancement discovery...`);
-          await WifiDirectService.startDiscovery(true);
+          
+          const availablePeers = WifiDirectService.availablePeers || [];
+          if (availablePeers.length > 0) {
+            const peer = availablePeers[0];
+            const myName = (WifiDirectService.deviceName || 'Yabisso_Unknown').toLowerCase();
+            const peerName = (peer.deviceName || 'Unknown').toLowerCase();
+
+            if (myName > peerName) {
+               this._log(`🔄 Cycle Master: Relance invitation vers ${peerName}...`);
+               await WifiDirectService.connectToPeer(peer);
+            }
+          }
         }
       }
 
+      // 2. LOGIQUE DE TRANSFERT
+      const bestP2P = NetworkRailDetector.getBestRail(true);
       if (bestP2P === RAIL_TYPES.OFFLINE || bestP2P === RAIL_TYPES.INTERNET) {
+        this._syncingP2P = false;
         return;
       }
 

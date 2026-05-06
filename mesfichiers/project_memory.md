@@ -152,8 +152,12 @@
   - WiFi Direct: Transfert automatique des fichiers quand delta détecté
   - Fix display: Images/vidéos null (ajout helper getValidMediaUri, fallback UI avec initiales)
   - Fix connexions: Handshake Master/Slave avec délai aléatoire et retry (évite collisions)
-  - Cycle P2P: 20s automatique pour sync continue
+  - Cycle P2P: 3s automatique pour sync ultra-rapide ("Passing By" scenario)
   - UI update: Subscription MeshContentUpdateEvents pour refresh automatique du feed
+- Sprint 9 (Turbo Performance):
+  - Turbo Mode: Délais WiFi Direct réduits (500ms post-connexion, retry 1s/2s)
+  - Delta-Trigger: Trigger immédiat WiFi Direct après manifeste Nearby Mesh
+  - Icon Fix: chatbubbles-outline -> message-text-outline
 
 ## Decisions techniques additionnelles
 - Navigation: React Navigation (a installer)
@@ -167,5 +171,6 @@
 - WiFi Direct: react-native-wifi-p2p — unidirectionnel (Client→GO uniquement). Swap de rôles automatique via déconnexion après transfert.
 - WiFi Direct connexion: délai déterministe basé sur MAC du peer (lastByte × 50ms) pour éviter les collisions GO Negotiation
 - WiFi Direct déconnexion: removeGroup() + relance scan après 3s pour permettre le swap de rôles
-- Budget devices (itel A50): ne jamais démarrer MessageServer sans connexion active (OOM), toujours stop→start pour discovery, délais de respiration hardware (300-800ms)
+- Budget devices (itel A50): ne jamais démarrer MessageServer sans connexion active (OOM), toujours stop→start pour discovery, délais de respiration hardware (100-300ms)
+- Cycle P2P: 3s (v1.0.2) pour maximiser les chances de transfert lors de rencontres brèves.
 

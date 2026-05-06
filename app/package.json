@@ -1,6 +1,6 @@
 {
   "name": "app",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "main": "index.js",
   "scripts": {
     "start": "expo start",
@@ -26,6 +26,7 @@
     "expo-contacts": "~15.0.11",
     "expo-crypto": "~15.0.8",
     "expo-dev-client": "^6.0.20",
+    "expo-device": "^55.0.16",
     "expo-document-picker": "~14.0.8",
     "expo-file-system": "~19.0.6",
     "expo-image-picker": "~17.0.10",

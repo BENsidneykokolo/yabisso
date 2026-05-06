@@ -17,6 +17,7 @@ import {
   disconnect
 } from 'expo-nearby-connections';
 import * as FileSystem from 'expo-file-system/legacy';
+import * as Device from 'expo-device';
 import { database } from '../../../lib/db';
 import { Q } from '@nozbe/watermelondb';
 import { GlobalManifestService } from './GlobalManifestService';
@@ -70,11 +71,21 @@ class NearbyMeshServiceClass {
     MeshLogEvents.emit(msg);
   }
 
+  // V1.0.15: Score basé sur la VRAIE RAM (1GB = 10 points)
+  _getPowerScore() {
+    try {
+      const totalMemoryGB = (Device.totalMemory || 0) / (1024 * 1024 * 1024);
+      return Math.round(totalMemoryGB * 10);
+    } catch (e) {}
+    return 50;
+  }
+
   async startMesh() {
-    if (this.isAdvertising || this.isDiscovering) {
-      this._log('Mesh déjà actif (skip start).');
+    if (this.isAdvertising || this.isDiscovering || this._isStarting) {
+      this._log('Mesh déjà actif ou en démarrage (skip start).');
       return;
     }
+    this._isStarting = true;
 
     try {
       this._log('--- DÉMARRAGE NEARBY MESH ---');
@@ -92,8 +103,12 @@ class NearbyMeshServiceClass {
       this._log('Configuration des Listeners...');
       this._setupListeners();
 
-      // Générer un nom unique pour cette session
-      this.deviceName = `Yabisso_${Math.random().toString(36).substring(2, 7)}`;
+      // V1.0.14: On utilise le nom cohérent (avec Score) défini dans WifiDirectService
+      const { WifiDirectService } = require('./WifiDirectService');
+      // V1.0.15: Utilise le vrai score hardware directement
+      const powerScore = this._getPowerScore();
+      this.deviceName = WifiDirectService.deviceName || `${powerScore}_Yabisso_${Math.random().toString(36).substring(7)}`;
+      
       const strategy = Strategy.P2P_STAR;
 
       this._log(`Lancement Advertising: ${this.deviceName}...`);
@@ -108,11 +123,13 @@ class NearbyMeshServiceClass {
 
       NetworkRailDetector.setBleAvailable(true);
       this._log('🚀 Mesh prêt et visible dans le réseau.');
+      this._isStarting = false;
 
     } catch (e) {
       this._log(`❌ ÉCHEC CRITIQUE: ${e.message}`);
       this.isAdvertising = false;
       this.isDiscovering = false;
+      this._isStarting = false;
     }
   }
 
@@ -126,8 +143,14 @@ class NearbyMeshServiceClass {
       // Handshake déterministe pour éviter les collisions de requestConnection
       if (this.deviceName && this.deviceName < peer.name) {
         this._log(`🤝 [Master] Envoi requête de connexion vers ${peer.peerId}...`);
+        
+        // Anti-spam: ne pas reconnecter si échec récent (< 30s)
+        if (this._failedPeers.has(peer.peerId)) return;
+
         requestConnection(peer.peerId).catch(err => {
-          this._log(`❌ Échec requestConnection: ${err.message}`);
+          this._log(`❌ Échec requestConnection vers ${peer.peerId}: ${err.message}`);
+          this._failedPeers.add(peer.peerId);
+          setTimeout(() => this._failedPeers.delete(peer.peerId), 30000);
         });
       } else {
         this._log(`⏳ [Slave] Attente de l'invitation de ${peer.name}...`);
@@ -174,10 +197,15 @@ class NearbyMeshServiceClass {
   }
 
   async stopMesh() {
+    if (this._isStopping) return;
+    this._isStopping = true;
     try {
       this._log('Arrêt du Mesh...');
       await stopAdvertise();
       await stopDiscovery();
+      // Petit délai pour laisser le Bluetooth se libérer
+      await new Promise(r => setTimeout(r, 1000));
+      
       this._listeners.forEach(unsub => { if (typeof unsub === 'function') unsub(); });
       this._listeners = [];
       this.connectedPeers.clear();
@@ -188,6 +216,8 @@ class NearbyMeshServiceClass {
       this._log('Mesh arrêté.');
     } catch (e) {
       this._log(`Erreur arrêt: ${e.message}`);
+    } finally {
+      this._isStopping = false;
     }
   }
 
@@ -216,8 +246,26 @@ class NearbyMeshServiceClass {
   }
 
   async _handleGlobalManifestReceived(peerId, remoteManifest) {
-    // Logique de synchronisation ici
-    this._log(`📥 Manifeste reçu de ${peerId}.`);
+    if (!remoteManifest) return;
+    this._log(`📥 Manifeste reçu de ${peerId}. Analyse des deltas...`);
+    
+    try {
+      const delta = await GlobalManifestService.calculateGlobalDelta(remoteManifest);
+      const lobaCount = delta.loba?.length || 0;
+      const productCount = delta.products?.length || 0;
+      
+      if (lobaCount > 0 || productCount > 0) {
+        this._log(`✨ Delta détecté: ${lobaCount} vidéos, ${productCount} produits. Activation WiFi Direct...`);
+        
+        // On importe dynamiquement pour éviter les circular dependencies
+        const { P2PAutoSync } = require('./P2PAutoSync');
+        P2PAutoSync.triggerSync();
+      } else {
+        this._log('✅ Déjà à jour avec ce node.');
+      }
+    } catch (e) {
+      this._log(`⚠️ Erreur analyse delta: ${e.message}`);
+    }
   }
 
   async sendValidationRequest(payload) {
