@@ -248,7 +248,7 @@ class P2PAutoSyncClass {
           }
           
           const availablePeers = WifiDirectService.availablePeers || [];
-          if (availablePeers.length > 0) {
+if (availablePeers.length > 0) {
             const peer = availablePeers[0];
             const myName = (WifiDirectService.deviceName || 'Yabisso_Unknown').toLowerCase();
             const peerName = (peer.deviceName || 'Unknown').toLowerCase();
@@ -258,10 +258,18 @@ class P2PAutoSyncClass {
             const peerScore = parseInt(peerName.split('_')[0] || '0', 10);
 
             if (myScore > peerScore) {
+               // V1.0.16: Le Master DOIT créer le groupe d'abord
+               if (!WifiDirectService.isGroupOwner && !WifiDirectService.connectedPeer) {
+                 this._log(`🔧 Création du groupe WiFi Direct (Master)...`);
+                 await WifiDirectService.createGroup();
+               }
                this._log(`🔄 Cycle Master: Relance invitation vers ${peerName}...`);
                await WifiDirectService.connectToPeer(peer);
+            } else {
+               // V1.0.16: Slave - attendre que le Master crée le groupe
+               this._log(`⏳ En attente du groupe WiFi du Master (${peerScore})...`);
             }
-          }
+           }
         }
       }
 

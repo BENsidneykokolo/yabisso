@@ -401,17 +401,18 @@ class WifiDirectServiceClass {
       // On laisse plus de temps à la puce WiFi (500ms)
       await new Promise(r => setTimeout(r, 500));
 
-      // 2. NÉGOCIATION DE RÔLE DÉTERMINISTE (V1.0.13: Inversé pour favoriser Yabisso/Xiaomi)
-      const myName = (this.deviceName || 'Yabisso_Unknown').toLowerCase();
-      const peerName = (device.deviceName || 'Unknown').toLowerCase();
+      // 2. NÉGOCIATION DE RÔLE DÉTERMINISTE basé sur Score (V1.0.16)
+      // Extraire les scores numériques pour comparaison coherente
+      const myScore = parseInt(this.deviceName?.split('_')[0] || '0', 10);
+      const peerScore = parseInt(device.deviceName?.split('_')[0] || '0', 10);
       let intent = 0;
 
-      if (myName > peerName) {
+      if (myScore > peerScore) {
         intent = 15; // MASTER
-        console.log(`[WifiDirectService] Rôle: MASTER (Intent=15) [${myName} > ${peerName}]`);
+        console.log(`[WifiDirectService] Rôle: MASTER (Intent=15) [Score ${myScore} > ${peerScore}]`);
       } else {
         intent = 0;  // SLAVE
-        console.log(`[WifiDirectService] Rôle: SLAVE (Intent=0) [${myName} <= ${peerName}]`);
+        console.log(`[WifiDirectService] Rôle: SLAVE (Intent=0) [Score ${myScore} <= ${peerScore}]`);
       }
 
       console.log(`[WifiDirectService] ⚡ APPEL NATIF CONNECT à ${macAddr} (Intent=${intent})...`);
