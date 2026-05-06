@@ -42,6 +42,7 @@ class WifiDirectServiceClass {
     this._isSending = false;         // FIX: replaces time-based anti-spam
     this._lastConnectAttempt = 0;
     this.globalFileHandler = null; // Phase 13: Handler global pour P2PAutoSync
+    this.deviceName = null; // V1.0.18
     // V1.0.15: Score calculé à la demande, pas dans le constructeur
     this.capabilityScore = null;
     // V1.0.18: Nom basé sur score - disponible immédiatement
@@ -74,8 +75,6 @@ class WifiDirectServiceClass {
   // V1.0.18: Get device name - uses cache if available
   getDeviceName() {
     return this.deviceName || this._cachedDeviceName || this._buildDeviceName();
-  }
-    this.deviceName = null;
   }
 
   /**
