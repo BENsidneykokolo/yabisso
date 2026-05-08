@@ -1,6 +1,7 @@
 import React from 'react';
-import { Pressable, SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, SafeAreaView, ScrollView, StyleSheet, Text, View, Switch } from 'react-native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { useTheme } from '../../../lib/ThemeContext';
 
 const items = [
   { key: 'account', label: 'Compte', icon: 'account-circle' },
@@ -11,26 +12,40 @@ const items = [
 ];
 
 export default function HomeSettingsScreen({ onBack }) {
+  const { isDark, theme, toggleTheme } = useTheme();
+
   return (
-    <SafeAreaView style={styles.root}>
+    <SafeAreaView style={[styles.root, { backgroundColor: theme.background }]}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.headerRow}>
           <Pressable style={styles.backButton} onPress={onBack}>
             <Ionicons name="chevron-back" size={22} color="#E6EDF3" />
           </Pressable>
-          <Text style={styles.headerTitle}>Parametres</Text>
+          <Text style={[styles.headerTitle, { color: theme.text }]}>Parametres</Text>
           <View style={styles.headerSpacer} />
         </View>
 
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>Preferences</Text>
+        <View style={[styles.card, { backgroundColor: theme.secondary, borderColor: theme.border }]}>
+          <Text style={[styles.cardTitle, { color: theme.text }]}>Preferences</Text>
+          <View style={[styles.row, { borderTopColor: theme.border }]}>
+            <View style={[styles.rowIcon, { backgroundColor: theme.surface }]}>
+              <MaterialCommunityIcons name="theme-light-dark" size={18} color={theme.text} />
+            </View>
+            <Text style={[styles.rowLabel, { color: theme.text }]}>Mode sombre</Text>
+            <Switch
+              value={isDark}
+              onValueChange={toggleTheme}
+              trackColor={{ false: '#767577', true: '#3B82F6' }}
+              thumbColor={isDark ? '#F8FAFC' : '#F4F4F5'}
+            />
+          </View>
           {items.map((item) => (
-            <View key={item.key} style={styles.row}>
-              <View style={styles.rowIcon}>
-                <MaterialCommunityIcons name={item.icon} size={18} color="#0E151B" />
+            <View key={item.key} style={[styles.row, { borderTopColor: theme.border }]}>
+              <View style={[styles.rowIcon, { backgroundColor: theme.surface }]}>
+                <MaterialCommunityIcons name={item.icon} size={18} color={theme.text} />
               </View>
-              <Text style={styles.rowLabel}>{item.label}</Text>
-              <Ionicons name="chevron-forward" size={18} color="#94A3B8" />
+              <Text style={[styles.rowLabel, { color: theme.text }]}>{item.label}</Text>
+              <Ionicons name="chevron-forward" size={18} color={theme.textSecondary} />
             </View>
           ))}
         </View>

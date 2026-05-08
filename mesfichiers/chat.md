@@ -2300,16 +2300,60 @@ La connexion est redevenue stable. Le crash rouge à la connexion est éliminé.
 
 **Résultat attendu** : Le téléphone puissant (Xiaomi) prend le contrôle, crée le groupe et invite l'Itel. L'Itel, en mode Slave, n'a plus qu'à accepter l'invitation.
 
----
+
+## Session du 09 Mai 2026 - Initialisation & Contextualisation
+
+**User**: bonsoir
+
+**Assistant**: Bonsoir ! Ravi de vous retrouver. J'ai vu que vous aviez ouvert votre fichier `task.md`. Nous en étions à la **Phase 5 (P2P Transports)**, plus précisément sur la stabilisation du **WiFi Direct (v1.0.18)** et l'**Auto-Connexion (étape 1)** qui était en cours de test. Souhaitez-vous continuer sur cette partie (automatisation du transfert/connexion) ou y a-t-il un autre sujet sur lequel vous voulez avancer ce soir ? Je vois que vous êtes déjà positionné dans le dossier `app`. Dites-moi par quoi on commence !
+
+**User**: tu peux verifier tous les fichiers .md dans le repo "mesfichiers" qui se trouve ici: C:\Users\Utilisateur\Documents\Ben\myapp\yabisso\mesfichiers pour avoir le contexte de ce que nous faisons et aussi enregistrer automatiquement notre echange dans le fichier chat.md en temps reel que nous echangeons pour ne pas perdre l'historique, et aussi quand je tedemande quelque chose prend le temps de "hink deeper" avant de me repondre mais surtout reverifier et tester de ton cote pour verifier ce que tu viens d'implementer marche, et aussi a partir de maintenant quand je te demande de faire une sauvegarde git et gitub, tu dois verifier la version precedente pour connaitre le numero de version que tu va mettre alors exemple: v:0.0.1, donc le prochain sera v:0.0.2 et quand ça va arriver à v:0.0.9 on passera a v:0.1.0 ainsi de suite
+
+**Assistant**: J'ai analysé l'intégralité des fichiers `.md` dans `mesfichiers` pour m'imprégner du contexte global :
+- **Architecture** : Rail de communication P2P (Nearby Mesh + WiFi Direct).
+- **Storage** : Logique de tiroirs (Public/Shareable, Personal/Sync, Locked/Local).
+- **Task** : Phase 5 en cours (Stabilisation WiFi Direct v1.0.18, Auto-connexion en test).
+- **Versioning** : La règle d'incrémentation (max 9 par segment) est notée. La dernière version mentionnée étant v1.0.18 (qui dérogeait à la règle), nous passerons à une version cohérente lors du prochain backup.
+
+Je suis maintenant prêt à "Think Deeper" pour chaque implémentation et à maintenir ce `chat.md` à jour.
 
 ---
 
+**User**: j'ai cet erreur fix le : PS C:\Users\Utilisateur\Documents\Ben\myapp\yabisso\app> npx expo start --dev-client ... Unable to resolve "../../../../lib/ThemeContext" from "src\features\home\screens\HomeSettingsScreen.js"
+
+**Assistant**: 
+📋 **Analyse & Correction — Erreur d'importation ThemeContext**
+- **Problème** : Le fichier `HomeSettingsScreen.js` tentait d'importer `ThemeContext` avec un chemin relatif erroné (4 niveaux de profondeur au lieu de 3).
+- **Cause** : Le fichier est situé dans `src/features/home/screens/`, donc `../../../lib/ThemeContext` pointe correctement vers `src/lib/ThemeContext.js`.
+- **Action** : Correction du chemin d'importation dans `app/src/features/home/screens/HomeSettingsScreen.js`.
+- **Vérification** : J'ai vérifié `App.js` et les autres fichiers, seul celui-ci présentait cette erreur. Le `ThemeProvider` est bien présent à la racine de l'application.
+
+L'erreur de bundling devrait maintenant être résolue.
+
 ---
 
-**Prochaine étape** : Monitoring de la stabilité sur transferts longs (>50MB).
+**User**: Analyse approfondie du partage automatique P2P qui ne fonctionne pas (les 2 appareils se voient via Nearby Mesh, échangent les manifestes, détectent les deltas, mais le transfert WiFi Direct ne se déclenche jamais). Les logs montrent un cycle infini de "Cycle P2P via ble_mesh" + "LRU: pas de nettoyage requis".
 
+**Assistant**:
+📋 **Analyse Approfondie — 3 Bugs Critiques Identifiés**
 
+### BUG #1 — DEADLOCK: Les 2 appareils pensent être Slaves
+- **Cause racine** : `parseInt("itel a50")` retourne `NaN`, et `73 > NaN` = `false` en JavaScript.
+- Le `|| '0'` dans le code original était appliqué sur `split()` (pas sur `parseInt`), donc NaN n'était jamais rattrapé.
+- **Les 2 appareils se déclaraient Slaves et attendaient que l'autre les invite → Deadlock total.**
+- **Fix V2.0** : Utiliser `parseInt(x, 10) || 0` + logique de seuil (score >= 40 = Master quand le peer a un nom Android brut).
 
+### BUG #2 — Propriété `availablePeers` inexistante
+- `WifiDirectService.availablePeers` n'existe pas — la propriété s'appelle `WifiDirectService.peers`.
+- Le cycle `_p2pSyncCycle` obtenait toujours un tableau vide et ne pouvait jamais retenter la connexion.
+- **Fix V2.0** : Remplacé par `WifiDirectService.peers`.
 
+### BUG #3 — Cycle toutes les 2 secondes = flood
+- `P2P_SYNC_INTERVAL_MS = 2000` causait des centaines de logs "Cycle P2P via ble_mesh" par minute.
+- **Fix V2.0** : Intervalle passé à 5s + early return silencieux quand BLE idle + logs uniquement pour WiFi Direct.
 
- 
+### Fichiers Modifiés
+1. **P2PAutoSync.js** — Réécriture complète de la logique de connexion (V2.0)
+2. **WifiDirectService.js** — Fix NaN dans `connectToPeer()` (V2.0)
+
+---

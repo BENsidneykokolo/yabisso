@@ -412,36 +412,35 @@ class WifiDirectServiceClass {
       this._lastConnectAttempt = Date.now();
       const macAddr = device.deviceAddress || '';
 
-      // 1. NETTOYAGE MODÉRÉ DU HARDWARE (v1.0.7)
-      // On évite removeGroup() car il provoque souvent des "Internal Error" s'il n'y a pas de groupe.
-      console.log(`[WifiDirectService] 🧹 Nettoyage léger avant connexion à ${macAddr}...`);
-      try { await WifiP2P.stopDiscoveringPeers(); } catch (_) { }
-      try { await WifiP2P.cancelConnect(); } catch (_) { }
-
-      // On laisse plus de temps à la puce WiFi (500ms)
+      // V2.5: Suppression du nettoyage agressif (removeGroup/stopDiscovery)
+      // Sur les téléphones bas de gamme (Itel), enchaîner ces commandes sature
+      // le HAL WiFi et cause l'Internal Error sur le connect() qui suit.
+      console.log(`[WifiDirectService] Préparation connexion à ${macAddr}...`);
       await new Promise(r => setTimeout(r, 500));
 
-      // 2. NÉGOCIATION DE RÔLE DÉTERMINISTE basé sur Score (V1.0.18)
-      // Extraire les scores numériques pour comparaison coherente
-      const myScore = parseInt(this.getDeviceName()?.split('_')[0] || '0', 10);
-      const peerScore = parseInt(device.deviceName?.split('_')[0] || '0', 10);
-      let intent = 0;
+      // 2. NÉGOCIATION DE RÔLE DÉTERMINISTE basé sur Score (V2.3)
+      const myScore = parseInt(this.getDeviceName()?.split('_')[0], 10) || 0;
+      const peerScore = parseInt(device.deviceName?.split('_')[0], 10) || 0;
+      const iAmMaster = peerScore > 0 ? myScore > peerScore : myScore >= 40;
 
-      if (myScore > peerScore) {
-        intent = 15; // MASTER
-        console.log(`[WifiDirectService] Rôle: MASTER (Intent=15) [Score ${myScore} > ${peerScore}]`);
+      if (iAmMaster) {
+        console.log(`[WifiDirectService] Rôle: MASTER [Score ${myScore} > ${peerScore || '?'}]`);
+        // V2.3: Le Master crée le groupe physiquement AVANT d'inviter le Slave
+        if (!this.isGroupOwner) {
+           console.log('[WifiDirectService] 🔧 Master crée le groupe explicitement...');
+           try { await WifiP2P.createGroup(); } catch (e) { console.warn('createGroup ignoré:', e.message); }
+           await new Promise(r => setTimeout(r, 1000)); // Laisser le groupe se former
+        }
       } else {
-        intent = 0;  // SLAVE
-        console.log(`[WifiDirectService] Rôle: SLAVE (Intent=0) [Score ${myScore} <= ${peerScore}]`);
+        console.log(`[WifiDirectService] Rôle: SLAVE [Score ${myScore} <= ${peerScore || '?'}]`);
       }
 
-      console.log(`[WifiDirectService] ⚡ APPEL NATIF CONNECT à ${macAddr} (Intent=${intent})...`);
+      console.log(`[WifiDirectService] ⚡ APPEL NATIF CONNECT à ${macAddr} ...`);
 
-      if (WifiP2P.connectWithConfig) {
-        await WifiP2P.connectWithConfig({ deviceAddress: macAddr, groupOwnerIntent: intent });
-      } else {
-        await WifiP2P.connect(macAddr);
-      }
+      // V2.3: connectWithConfig est instable (cause "Internal Error" sur Itel/Xiaomi).
+      // On utilise le connect() classique. Comme le Master a déjà créé le groupe,
+      // l'OS comprendra automatiquement qui est le GO.
+      await WifiP2P.connect(macAddr);
 
       console.log('[WifiDirectService] ✅ Commande CONNECT envoyée. En attente du lien...');
 

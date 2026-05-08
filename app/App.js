@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { View } from 'react-native';
 import { DatabaseProvider } from '@nozbe/watermelondb/react';
 import { database } from './src/lib/db';
+import { ThemeProvider } from './src/lib/ThemeContext';
 import WelcomeScreen from './src/features/onboarding/screens/WelcomeScreen';
 import LanguageScreen from './src/features/onboarding/screens/LanguageScreen';
 import SignupScreen from './src/features/auth/screens/SignupScreen';
@@ -1127,6 +1128,7 @@ export default function App() {
     screen !== 'home';
 
   return (
+    <ThemeProvider>
     <DatabaseProvider database={database}>
       <CartProvider>
         <OrderProvider>
@@ -1171,7 +1173,8 @@ export default function App() {
           </RestaurantOrdersProvider>
           </RestaurantCartProvider>
         </OrderProvider>
-      </CartProvider>
-    </DatabaseProvider>
-  );
+</CartProvider>
+      </DatabaseProvider>
+    </ThemeProvider>
+    );
 }
