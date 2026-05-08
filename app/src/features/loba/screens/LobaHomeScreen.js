@@ -29,8 +29,10 @@ import { useWifiDirect } from '../hooks/useWifiDirect';
 import { Q } from '@nozbe/watermelondb';
 const { width, height } = Dimensions.get('window');
 
-const VideoPlayerItem = ({ source, shouldPlay, style }) => {
-  const player = useVideoPlayer(source, p => {
+const VideoPlayerItem = ({ uri, shouldPlay, style }) => {
+  // V2.6 FIX: Passer une primitive (string uri) évite la recréation de l'objet {uri: ...} 
+  // à chaque render, ce qui causait le crash "player already released".
+  const player = useVideoPlayer(uri, p => {
     p.loop = true;
     p.muted = false;
   });
@@ -278,11 +280,10 @@ function LobaHomeScreen({ onBack, onNavigate, posts = [] }) {
   };
 
   const renderVideo = ({ item, index }) => {
-    // Logique de source prioritaire : Local (Mesh) > Cloud (Internet)
     const hasLocalMedia = item.localMediaPath || item.video || item.videoUrl;
-    const videoSource = item.localMediaPath 
-      ? { uri: item.localMediaPath } 
-      : (item.videoUrl ? { uri: item.videoUrl } : { uri: item.video });
+    const videoUri = item.localMediaPath 
+      ? item.localMediaPath 
+      : (item.videoUrl ? item.videoUrl : item.video);
 
     const isCloseToVisible = Math.abs(index - currentVideoIndex) <= 1;
     
@@ -303,7 +304,7 @@ function LobaHomeScreen({ onBack, onNavigate, posts = [] }) {
       ) : index === currentVideoIndex ? (
         item.type === 'video' ? (
           <VideoPlayerItem
-            source={videoSource}
+            uri={videoUri}
             shouldPlay={true}
             style={styles.videoBackground}
           />

@@ -858,19 +858,10 @@ class WifiDirectServiceClass {
                 this._emit('onTransferProgress', { hash: meta.hash, progress: 100, status: 'complete' });
                 this._emit('onLogUpdate', [`📦 Fichier reçu! Traitement...`]);
 
-                // Envoi ACK au sender pour signaler la fin de réception
-                try {
-                  const ackPayload = JSON.stringify({
-                    action: 'TRANSFER_COMPLETE',
-                    hash: meta.hash,
-                    filename: meta.filename,
-                    timestamp: Date.now(),
-                  });
-                  await WifiP2P.sendMessage(ackPayload);
-                  console.log('[WifiDirectService] ✅ ACK envoyé au sender:', meta.hash);
-                } catch (ackErr) {
-                  console.warn('[WifiDirectService] Échec envoi ACK:', ackErr?.message);
-                }
+                // V2.6: DÉSACTIVATION DE L'ENVOI D'ACK PAR LE GROUP OWNER
+                // Dans react-native-wifi-p2p, le GO n'a pas de groupOwnerAddress,
+                // appeler sendMessage depuis le GO provoque un crash natif NullPointerException.
+                // Le sender sait que c'est fini car son sendFile() natif se résout.
 
                 if (onFileReceived) {
                   await onFileReceived(path, meta);
