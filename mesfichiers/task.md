@@ -238,3 +238,8 @@
 | Offline Chat | Done | P2 | S3 |
 | KMS & key rotation | Not Started | P1 | S12 |
 | Pilot deployment (1 city) | Not Started | P2 | S12 |
+| Stabilisation P2P WiFi Direct (V2.6) | Done | P1 | S6 |
+| - Fix hardware collision (Nearby Mesh Pause) | Done | P1 | S6 |
+| - Fix Internal Error (Role-based initialization) | Done | P1 | S6 |
+| - Fix native crash (sendMessage GO NPE) | Done | P1 | S6 |
+| - Fix UI crash (expo-video released player) | Done | P1 | S6 |

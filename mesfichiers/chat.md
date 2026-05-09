@@ -2357,3 +2357,36 @@ L'erreur de bundling devrait maintenant être résolue.
 2. **WifiDirectService.js** — Fix NaN dans `connectToPeer()` (V2.0)
 
 ---
+ 
+ ## Session du 09 Mai 2026 - Stabilisation P2P WiFi Direct (V2.6)
+ 
+ **Date** : 09 Mai 2026
+ 
+ **Action** : Stabilisation finale de l'infrastructure P2P entre Android (Itel A50 & Xiaomi 11T).
+ 
+ ### Problèmes Résolus
+ 
+ 1. **Collisions Hardware (WiFi Direct / Mesh)** :
+    - Le matériel WiFi d'Android (surtout sur bas de gamme) ne peut pas gérer `Nearby Mesh` et `WiFi Direct` simultanément lors d'une connexion.
+    - **Solution** : Ajout d'une mise en pause forcée de `Nearby Mesh` (Advertising/Discovery) avant d'initier ou de rejoindre un groupe WiFi Direct.
+ 
+ 2. **Erreurs Internes (Busy / Internal Error)** :
+    - L'utilisation de `connectWithConfig` et le nettoyage agressif (`stopDiscovery`, `removeGroup`) saturaient le HAL WiFi.
+    - **Solution** : Retour à une séquence déterministe :
+        - Master crée le groupe (`createGroup`).
+        - Slave se connecte (`connect`) après un délai de 3s.
+        - Suppression du nettoyage agressif pré-connexion.
+ 
+ 3. **Crash Natif (NullPointerException)** :
+    - Le Group Owner (Xiaomi) crashait lors de l'envoi d'un ACK via `sendMessage()` car cette méthode est réservée aux clients (Slave) dans la librairie native.
+    - **Solution** : Désactivation de l'ACK post-transfert côté Group Owner. Le succès du transfert est déjà garanti par la résolution de `sendFile()`.
+ 
+ 4. **Crash UI (expo-video)** :
+    - Le feed Loba crashait avec l'erreur `player already released` lors du rafraîchissement des posts reçus.
+    - **Solution** : Stabilisation des props `useVideoPlayer` dans `LobaHomeScreen.js` en utilisant des strings URI stables au lieu d'objets inline.
+ 
+ **Statut** : ✅ Synchronisation automatique opérationnelle, transferts de 20MB+ fluides, aucun crash identifié.
+ 
+ **Version proposée** : v:0.0.3 (suivant la logique 9->10 et le restart de versioning).
+ 
+ ---
