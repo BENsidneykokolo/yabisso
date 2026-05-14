@@ -107,7 +107,12 @@ function KioskUsersScreen({ navigation }) {
           <Ionicons name="arrow-back" size={24} color="#fff" />
         </Pressable>
         <Text style={styles.headerTitle}>Gestion Users</Text>
-        <View style={{ width: 40 }} />
+        <Pressable 
+          style={styles.headerQRButton}
+          onPress={() => navigation.navigate('kiosk_qr', { qrType: 'user' })}
+        >
+          <MaterialCommunityIcons name="qrcode-scan" size={24} color="#A78BFA" />
+        </Pressable>
       </View>
 
       {/* Tabs */}
@@ -197,7 +202,7 @@ function KioskUsersScreen({ navigation }) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#1a1a2e' },
-  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 16, paddingTop: 8, backgroundColor: '#16213e' },
+  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 16, paddingTop: 50, backgroundColor: '#16213e' },
   backButton: { padding: 8 },
   headerTitle: { color: '#fff', fontSize: 18, fontWeight: 'bold' },
   tabs: { flexDirection: 'row', margin: 16, backgroundColor: '#16213e', borderRadius: 12, padding: 4 },
@@ -217,6 +222,7 @@ const styles = StyleSheet.create({
   userActions: { flexDirection: 'column', gap: 8 },
   acceptButton: { width: 40, height: 40, borderRadius: 20, backgroundColor: '#2BEE79', justifyContent: 'center', alignItems: 'center' },
   rejectButton: { width: 40, height: 40, borderRadius: 20, backgroundColor: '#FF4444', justifyContent: 'center', alignItems: 'center' },
+  headerQRButton: { padding: 8 },
 });
 
 export default KioskUsersScreen;

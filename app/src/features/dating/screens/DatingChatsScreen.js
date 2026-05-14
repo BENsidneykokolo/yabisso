@@ -41,13 +41,13 @@ const MOCK_CHATS = [
   },
 ];
 
-function DatingChatsScreen({ navigation, onBack, onNavigate }) {
+function DatingChats({ navigation, onBack, onNavigate }) {
   const [chats] = useState(MOCK_CHATS);
 
   const renderChat = ({ item }) => (
     <TouchableOpacity
       style={styles.chatItem}
-      onPress={() => onNavigate && onNavigate('DatingChat', { profile: item })}
+      onPress={() => onNavigate && onNavigate('dating_chat', { profile: item })}
     >
       <View style={styles.avatarContainer}>
         <Image source={{ uri: item.avatar }} style={styles.avatar} />
@@ -224,4 +224,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default DatingChatsScreen;
+export default DatingChats;

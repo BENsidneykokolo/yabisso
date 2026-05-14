@@ -81,7 +81,7 @@ export default function HotelReservationScreen({ onBack, onNavigate, route }) {
 
         {/* Hotel & Room Info */}
         <View style={styles.hotelCard}>
-          <Image source={{ uri: roomData.image }} style={hotelImage = { width: '100%', height: 140, borderRadius: 12 }} />
+          <Image source={{ uri: roomData.image }} style={{ width: '100%', height: 140, borderRadius: 12 }} />
           <View style={styles.hotelInfo}>
             <Text style={styles.hotelName}>{hotelData.name}</Text>
             <View style={styles.hotelLocation}>

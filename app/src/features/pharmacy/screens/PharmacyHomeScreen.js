@@ -27,9 +27,17 @@ const mockProducts = [
   { id: '6', name: 'Zinc + Magnésium', category: 'vitamines', price: '3,200 XAF', stock: true, icon: 'pill', color: '#F97316' },
 ];
 
+const bottomNavItems = [
+  { label: 'Accueil', icon: 'home' },
+  { label: 'Panier', icon: 'cart-outline' },
+  { label: 'Ordres', icon: 'clipboard-list-outline' },
+  { label: 'Profil', icon: 'account-outline' },
+];
+
 export default function PharmacyHomeScreen({ onBack, onNavigate }) {
   const [activeCategory, setActiveCategory] = useState('all');
   const [search, setSearch] = useState('');
+  const [activeTab, setActiveTab] = useState('Accueil');
 
   const filtered = mockProducts.filter(p => {
     const matchCat = activeCategory === 'all' || p.category === activeCategory;
@@ -44,69 +52,116 @@ export default function PharmacyHomeScreen({ onBack, onNavigate }) {
           <Ionicons name="chevron-back" size={22} color="#E6EDF3" />
         </Pressable>
         <Text style={styles.headerTitle}>Pharmacie</Text>
-        <Pressable style={styles.headerAction}>
+        <Pressable style={styles.headerAction} onPress={() => onNavigate?.('pharmacy_cart')}>
           <MaterialCommunityIcons name="cart-outline" size={22} color="#EF4444" />
         </Pressable>
       </View>
 
-      <View style={styles.heroBanner}>
-        <MaterialCommunityIcons name="pill" size={40} color="rgba(255,255,255,0.15)" style={styles.heroIcon} />
-        <Text style={styles.heroTitle}>Pharmacie en ligne</Text>
-        <Text style={styles.heroSubtitle}>Médicaments, vitamines & soins livrés chez vous</Text>
-        <View style={styles.heroChip}>
-          <MaterialCommunityIcons name="truck-fast-outline" size={13} color="#EF4444" />
-          <Text style={styles.heroChipText}>Livraison rapide disponible</Text>
+      <ScrollView showsVerticalScrollIndicator={false}>
+        <View style={styles.heroBanner}>
+          <MaterialCommunityIcons name="pill" size={40} color="rgba(255,255,255,0.15)" style={styles.heroIcon} />
+          <Text style={styles.heroTitle}>Pharmacie en ligne</Text>
+          <Text style={styles.heroSubtitle}>Médicaments, vitamines & soins livrés chez vous</Text>
+          <View style={styles.heroChip}>
+            <MaterialCommunityIcons name="truck-fast-outline" size={13} color="#EF4444" />
+            <Text style={styles.heroChipText}>Livraison rapide disponible</Text>
+          </View>
         </View>
-      </View>
 
-      <View style={styles.searchContainer}>
-        <Ionicons name="search" size={16} color="#64748B" />
-        <TextInput
-          style={styles.searchInput}
-          placeholder="Rechercher un médicament..."
-          placeholderTextColor="#64748B"
-          value={search}
-          onChangeText={setSearch}
-        />
-      </View>
+        <View style={styles.searchContainer}>
+          <Ionicons name="search" size={16} color="#64748B" />
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Rechercher un médicament..."
+            placeholderTextColor="#64748B"
+            value={search}
+            onChangeText={setSearch}
+          />
+        </View>
 
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categoriesRow} contentContainerStyle={{ paddingHorizontal: 20, gap: 8 }}>
-        {categories.map(cat => (
-          <Pressable
-            key={cat.key}
-            style={[styles.categoryChip, activeCategory === cat.key && styles.categoryChipActive]}
-            onPress={() => setActiveCategory(cat.key)}
-          >
-            <Text style={[styles.categoryChipText, activeCategory === cat.key && styles.categoryChipTextActive]}>
-              {cat.label}
-            </Text>
-          </Pressable>
-        ))}
+        <Pressable style={styles.gardeBanner} onPress={() => onNavigate?.('pharmacy_on_duty')}>
+          <View style={styles.gardeBannerLeft}>
+            <View style={styles.gardeIcon}>
+              <MaterialCommunityIcons name="hospital-building" size={22} color="#fff" />
+            </View>
+            <View>
+              <Text style={styles.gardeTitle}>Pharmacies de garde</Text>
+              <Text style={styles.gardeSubtitle}>Pharmacies ouvertes 24h/24</Text>
+            </View>
+          </View>
+          <MaterialCommunityIcons name="chevron-right" size={22} color="rgba(255,255,255,0.5)" />
+        </Pressable>
+
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categoriesRow} contentContainerStyle={{ paddingHorizontal: 20, gap: 8 }}>
+          {categories.map(cat => (
+            <Pressable
+              key={cat.key}
+              style={[styles.categoryChip, activeCategory === cat.key && styles.categoryChipActive]}
+              onPress={() => setActiveCategory(cat.key)}
+            >
+              <Text style={[styles.categoryChipText, activeCategory === cat.key && styles.categoryChipTextActive]}>
+                {cat.label}
+              </Text>
+            </Pressable>
+          ))}
+        </ScrollView>
+
+        <View style={styles.scrollContent}>
+          <View style={styles.productsGrid}>
+            {filtered.map(product => (
+              <Pressable
+                key={product.id}
+                style={({ pressed }) => [styles.productCard, pressed && styles.productCardPressed]}
+                onPress={() => onNavigate?.('pharmacy_details', { product })}
+              >
+                <View style={[styles.productIconContainer, { backgroundColor: product.color + '20' }]}>
+                  <MaterialCommunityIcons name={product.icon} size={28} color={product.color} />
+                </View>
+                <Text style={styles.productName} numberOfLines={2}>{product.name}</Text>
+                <Text style={styles.productPrice}>{product.price}</Text>
+                <View style={[styles.stockBadge, !product.stock && styles.stockBadgeOut]}>
+                  <Text style={[styles.stockText, !product.stock && styles.stockTextOut]}>
+                    {product.stock ? 'En stock' : 'Rupture'}
+                  </Text>
+                </View>
+                {product.stock && (
+                  <Pressable style={styles.addButton} onPress={() => onNavigate?.('pharmacy_cart')}>
+                    <Text style={styles.addButtonText}>Ajouter</Text>
+                  </Pressable>
+                )}
+              </Pressable>
+            ))}
+          </View>
+        </View>
+
+        <View style={{ height: 80 }} />
       </ScrollView>
 
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        <View style={styles.productsGrid}>
-          {filtered.map(product => (
-            <Pressable key={product.id} style={({ pressed }) => [styles.productCard, pressed && styles.productCardPressed]}>
-              <View style={[styles.productIconContainer, { backgroundColor: product.color + '20' }]}>
-                <MaterialCommunityIcons name={product.icon} size={28} color={product.color} />
+      <View style={styles.bottomNavWrapper}>
+        <View style={styles.bottomNav}>
+          {bottomNavItems.map((item) => (
+            <Pressable
+              key={item.label}
+              style={styles.navItem}
+              onPress={() => {
+                setActiveTab(item.label);
+                if (item.label === 'Panier') onNavigate?.('pharmacy_cart');
+                else if (item.label === 'Ordres') onNavigate?.('pharmacy_order');
+                else if (item.label === 'Profil') onNavigate?.('pharmacy_profile');
+              }}
+            >
+              <View style={[styles.navIconContainer, activeTab === item.label && styles.navIconActive]}>
+                <MaterialCommunityIcons
+                  name={item.icon}
+                  size={22}
+                  color={activeTab === item.label ? '#0E151B' : '#CBD5F5'}
+                />
               </View>
-              <Text style={styles.productName} numberOfLines={2}>{product.name}</Text>
-              <Text style={styles.productPrice}>{product.price}</Text>
-              <View style={[styles.stockBadge, !product.stock && styles.stockBadgeOut]}>
-                <Text style={[styles.stockText, !product.stock && styles.stockTextOut]}>
-                  {product.stock ? 'En stock' : 'Rupture'}
-                </Text>
-              </View>
-              {product.stock && (
-                <Pressable style={styles.addButton}>
-                  <Text style={styles.addButtonText}>Ajouter</Text>
-                </Pressable>
-              )}
+              <Text style={[styles.navLabel, activeTab === item.label && styles.navLabelActive]}>{item.label}</Text>
             </Pressable>
           ))}
         </View>
-      </ScrollView>
+      </View>
     </SafeAreaView>
   );
 }
@@ -151,6 +206,20 @@ const styles = StyleSheet.create({
     borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)',
   },
   searchInput: { flex: 1, color: '#F8FAFC', marginLeft: 8, fontSize: 14 },
+  gardeBanner: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    marginHorizontal: 20, marginBottom: 12,
+    backgroundColor: '#22c55e',
+    borderRadius: 14, padding: 14,
+  },
+  gardeBannerLeft: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  gardeIcon: {
+    width: 40, height: 40, borderRadius: 12,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    alignItems: 'center', justifyContent: 'center',
+  },
+  gardeTitle: { color: '#fff', fontSize: 15, fontWeight: '700' },
+  gardeSubtitle: { color: 'rgba(255,255,255,0.85)', fontSize: 12, marginTop: 2 },
   categoriesRow: { marginBottom: 16 },
   categoryChip: {
     paddingHorizontal: 16, paddingVertical: 8,
@@ -160,7 +229,7 @@ const styles = StyleSheet.create({
   categoryChipActive: { backgroundColor: '#EF4444', borderColor: '#EF4444' },
   categoryChipText: { color: '#94A3B8', fontSize: 13, fontWeight: '600' },
   categoryChipTextActive: { color: '#fff' },
-  scrollContent: { paddingHorizontal: 16, paddingBottom: 40 },
+  scrollContent: { paddingHorizontal: 16, paddingBottom: 20 },
   productsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
   productCard: {
     width: '47%',
@@ -191,4 +260,23 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   addButtonText: { color: '#fff', fontSize: 13, fontWeight: '700' },
+  bottomNavWrapper: {
+    position: 'absolute', left: 0, right: 0, bottom: 0,
+    paddingHorizontal: 16, paddingBottom: 24,
+  },
+  bottomNav: {
+    backgroundColor: 'rgba(15, 21, 30, 0.98)',
+    borderRadius: 24, paddingVertical: 10, paddingHorizontal: 12,
+    flexDirection: 'row', justifyContent: 'space-between',
+    borderWidth: 1, borderColor: 'rgba(255, 255, 255, 0.08)',
+  },
+  navItem: { alignItems: 'center', flex: 1 },
+  navIconContainer: {
+    width: 32, height: 32, borderRadius: 16,
+    alignItems: 'center', justifyContent: 'center',
+    marginBottom: 4,
+  },
+  navIconActive: { backgroundColor: '#EF4444' },
+  navLabel: { color: '#6B7280', fontSize: 10 },
+  navLabelActive: { color: '#EF4444' },
 });

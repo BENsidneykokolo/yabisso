@@ -33,6 +33,9 @@ const STORAGE_TYPES = {
       { key: 'musique', label: 'Musique', dir: 'musique/', dbTable: 'tracks' },
       { key: 'pharmacie', label: 'Pharmacie', dir: 'pharmacie/', dbTable: 'medicaments' },
       { key: 'streaming', label: 'Streaming', dir: 'streaming/', dbTable: 'videos' },
+      { key: 'swap', label: 'Swap', dir: 'swap/', dbTable: 'swap_items' },
+      { key: 'flight', label: 'Vols', dir: 'vols/', dbTable: 'flight_offers' },
+      { key: 'services', label: 'Services', dir: 'services/', dbTable: 'generic_services' },
     ],
   },
   // Type 2: Personal - sync to cloud, not shareable
@@ -42,6 +45,9 @@ const STORAGE_TYPES = {
       { key: 'meshchat', label: 'Chat', dir: 'meshchat/', dbTable: 'conversations' },
       { key: 'rencontres', label: 'Rencontres', dir: 'rencontres/', dbTable: 'dating_profiles' },
       { key: 'reservations', label: 'Réservations', dir: 'reservations/', dbTable: 'reservations' },
+      { key: 'betting', label: 'Paris Sportifs', dir: 'betting/', dbTable: 'betting_bets' },
+      { key: 'notebook', label: 'Notes', dir: 'notes/', dbTable: 'notebook_notes' },
+      { key: 'delivery', label: 'Livraison', dir: 'livraison/', dbTable: 'delivery_orders' },
     ],
   },
   // Type 3: Locked - local only, never leaves device

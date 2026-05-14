@@ -80,6 +80,7 @@ export class InterestEngine {
                         newPost.content = post.content;
                         newPost.isPropagating = false; 
                         newPost.category = post.category || 'general';
+                        newPost.userId = post.userId || 'anonymous';
                         newPost.size = savedSize || post.size || 0;
                         newPost.imageUrl = post.type === 'image' ? savedPath : null;
                         newPost.videoUrl = post.type === 'video' ? savedPath : null;

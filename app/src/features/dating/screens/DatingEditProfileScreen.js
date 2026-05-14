@@ -29,7 +29,7 @@ const AVAILABLE_INTERESTS = [
   { emoji: '🏃', label: 'Sport' },
 ];
 
-function DatingEditProfileScreen({ navigation, onBack, onNavigate }) {
+function DatingEditProfile({ navigation, onBack, onNavigate }) {
   const [photos, setPhotos] = useState([
     'https://lh3.googleusercontent.com/aida-public/AB6AXuBbxuhQ3_UNh-OWWq_eUQsjzYKiOhZtzxRBsj_bhhTpVVjAh5NjjVZy0kdopGxCSjALw3OfPJj1OJaKPY4cuHUxcesZ3D_ItgxI5UvSeEmAWwLbben964XjPAJ39-taLuZ0EJNq6jHcq2tFxPxqJiDcMrNZ4FZSgbngFzcflneoHJAWNQbVHk6UMH1c_2jxQ1fZ5GjnVgtW0fctGhGdMjRRwEKu8mocK97xIZa49kf-dj9MfQhNnGkDKTvdpbbSzoOAEU1yqyGK',
     'https://lh3.googleusercontent.com/aida-public/AB6AXuCDdF4GJr5TL-LLyFiIwcuNKyfSfSLTOJFz20rubwFJksgaersHVsbPj2oBZoXdCAwekh6OAcjRVnTos8Gy5XmPBjAwvHIBnRA40SMyyFusIlcbfIGVwfelWSTqbfJUW3IIb1GslydDBQY8ewNZHmuJquSX9qxlpLBWX71TnuPXu9Bqb45WkkAW8B1FzSybQ1hMiNz0B-BQvzRMsXt6APM8n8EvXvzgg5G_zt_UnMT8hUEuNxvyF8mmGRgKJ11-AvJxI2YvSm-Z',
@@ -577,4 +577,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default DatingEditProfileScreen;
+export default DatingEditProfile;

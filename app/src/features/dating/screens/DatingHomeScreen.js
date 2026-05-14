@@ -113,7 +113,7 @@ const INTEREST_ICONS = {
   'Reading': 'menu_book',
 };
 
-function DatingHomeScreen({ navigation, onBack, onNavigate }) {
+function DatingHome({ navigation, onBack, onNavigate }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [profiles, setProfiles] = useState(MOCK_PROFILES);
   const [likedProfiles, setLikedProfiles] = useState([]);
@@ -190,7 +190,7 @@ function DatingHomeScreen({ navigation, onBack, onNavigate }) {
 
   const handleProfilePress = (profile) => {
     if (onNavigate) {
-      onNavigate('DatingProfile', { profile });
+      onNavigate('dating_profile', { profile });
     }
   };
 
@@ -223,8 +223,8 @@ function DatingHomeScreen({ navigation, onBack, onNavigate }) {
         <Pressable style={styles.headerButton} onPress={onBack}>
           <MaterialCommunityIcons name="arrow-left" size={24} color="#fff" />
         </Pressable>
-        <Text style={styles.headerTitle}>Yabisso Dating</Text>
-        <Pressable style={styles.headerButton} onPress={() => handleNavigate('DatingFilters')}>
+        <Text style={styles.headerTitle}>Rencontres Yabisso</Text>
+        <Pressable style={styles.headerButton} onPress={() => handleNavigate('dating_filters')}>
           <MaterialCommunityIcons name="tune" size={24} color="#fff" />
           <View style={styles.filterDot} />
         </Pressable>
@@ -321,15 +321,15 @@ function DatingHomeScreen({ navigation, onBack, onNavigate }) {
       </View>
 
       <View style={styles.bottomNav}>
-        <Pressable style={styles.navItem} onPress={() => handleNavigate('DatingHome')}>
+        <Pressable style={styles.navItem} onPress={() => handleNavigate('dating_home')}>
           <MaterialCommunityIcons name="card-text" size={26} color="#2BEE79" />
           <Text style={[styles.navLabel, styles.navLabelActive]}>Explorer</Text>
         </Pressable>
-        <Pressable style={styles.navItem} onPress={() => handleNavigate('DatingLikes')}>
+        <Pressable style={styles.navItem} onPress={() => handleNavigate('dating_likes')}>
           <MaterialCommunityIcons name="star" size={26} color="#9ca3af" />
           <Text style={styles.navLabel}>J'aime</Text>
         </Pressable>
-        <Pressable style={styles.navItem} onPress={() => handleNavigate('DatingChats')}>
+        <Pressable style={styles.navItem} onPress={() => handleNavigate('dating_chats')}>
           <View style={styles.navIconContainer}>
             <MaterialCommunityIcons name="chat" size={26} color="#9ca3af" />
             {matches.length > 0 && (
@@ -340,7 +340,7 @@ function DatingHomeScreen({ navigation, onBack, onNavigate }) {
           </View>
           <Text style={styles.navLabel}>Discussions</Text>
         </Pressable>
-        <Pressable style={styles.navItem} onPress={() => handleNavigate('DatingEditProfile')}>
+        <Pressable style={styles.navItem} onPress={() => handleNavigate('dating_edit_profile')}>
           <MaterialCommunityIcons name="account" size={26} color="#9ca3af" />
           <Text style={styles.navLabel}>Profil</Text>
         </Pressable>
@@ -358,7 +358,7 @@ function DatingHomeScreen({ navigation, onBack, onNavigate }) {
             <View style={styles.matchButtons}>
               <Pressable style={styles.matchSendButton} onPress={() => {
                 setShowMatchModal(false);
-                handleNavigate('DatingChat', { profile: matchedProfile });
+                handleNavigate('dating_chat', { profile: matchedProfile });
               }}>
                 <Text style={styles.matchSendButtonText}>Envoyer un message</Text>
               </Pressable>
@@ -739,4 +739,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default DatingHomeScreen;
+export default DatingHome;

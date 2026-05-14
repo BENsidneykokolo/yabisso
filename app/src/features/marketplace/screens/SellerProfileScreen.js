@@ -20,7 +20,7 @@ import withObservables from '@nozbe/with-observables';
 import { database } from '../../../lib/db';
 import { Q } from '@nozbe/watermelondb';
 
-function SellerProfileScreen({ products = [], onBack, onOpenAddProduct, onEditProduct, onContact }) {
+function SellerProfileScreen({ products = [], onBack, onOpenAddProduct, onEditProduct, onContact, onOpenDashboard }) {
   const [shopInfo, setShopInfo] = useState({
     name: 'Ma Boutique',
     location: 'Centre-ville',
@@ -280,9 +280,14 @@ function SellerProfileScreen({ products = [], onBack, onOpenAddProduct, onEditPr
             <Ionicons name="chevron-back" size={22} color="#E6EDF3" />
           </Pressable>
           <Text style={styles.headerTitle}>Profil vendeur</Text>
-          <Pressable style={styles.iconButton} onPress={() => setShowEditShop(true)}>
-            <Ionicons name="settings-outline" size={18} color="#E6EDF3" />
-          </Pressable>
+          <View style={{ flexDirection: 'row', gap: 8 }}>
+            <Pressable style={styles.iconButton} onPress={onOpenDashboard}>
+              <MaterialCommunityIcons name="view-dashboard-outline" size={18} color="#2BEE79" />
+            </Pressable>
+            <Pressable style={styles.iconButton} onPress={() => setShowEditShop(true)}>
+              <Ionicons name="settings-outline" size={18} color="#E6EDF3" />
+            </Pressable>
+          </View>
         </View>
 
         <View style={styles.coverCard}>
@@ -897,7 +902,8 @@ const styles = StyleSheet.create({
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.7)',
-    justifyContent: 'flex-end',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   modalContent: {
     backgroundColor: '#1a2633',
@@ -1054,6 +1060,26 @@ const styles = StyleSheet.create({
     backgroundColor: '#2BEE79',
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  qrModalContent: {
+    backgroundColor: '#1a2632',
+    borderRadius: 20,
+    padding: 20,
+    width: '80%',
+    maxWidth: 350,
+    alignItems: 'center',
+  },
+  qrContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 20,
+  },
+  qrWrapper: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 20,
+    backgroundColor: '#1a2632',
+    borderRadius: 16,
   },
 });
 

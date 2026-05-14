@@ -51,13 +51,13 @@ const MOCK_LIKES = [
   },
 ];
 
-function DatingLikesScreen({ navigation, onBack, onNavigate }) {
+function DatingLikes({ navigation, onBack, onNavigate }) {
   const [likes] = useState(MOCK_LIKES);
 
   const renderLike = ({ item }) => (
     <TouchableOpacity
       style={styles.likeCard}
-      onPress={() => onNavigate && onNavigate('DatingProfile', { profile: item })}
+      onPress={() => onNavigate && onNavigate('dating_profile', { profile: item })}
     >
       <View style={styles.likeImageContainer}>
         <Image source={{ uri: item.photos[0] }} style={styles.likeImage} />
@@ -83,7 +83,7 @@ function DatingLikesScreen({ navigation, onBack, onNavigate }) {
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.likeActionButton, styles.likeActionButtonPrimary]}
-          onPress={() => onNavigate && onNavigate('DatingChat', { profile: item })}
+          onPress={() => onNavigate && onNavigate('dating_chat', { profile: item })}
         >
           <MaterialCommunityIcons name="heart" size={20} color="#fff" />
         </TouchableOpacity>
@@ -236,4 +236,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default DatingLikesScreen;
+export default DatingLikes;

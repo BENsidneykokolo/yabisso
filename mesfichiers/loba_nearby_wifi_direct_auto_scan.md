@@ -1,6 +1,6 @@
 # Loba - Nearby WiFi Direct Auto Scan (Code Fonctionnel)
 
-Ce fichier contient le code de l'écran "Accueil Loba" avec le WiFi Direct et Nearby Mesh automatique qui fonctionne.
+Ce fichier contient le code de l'écran "Accueil Loba" avec le WiFi Direct et Nearby Mesh automatique qui fonctionne, incluant les corrections pour le Swap de Rôle, la gestion des collisions et la reprise de connexion (Ping Pong).
 
 ## Fichiers Sources
 - `app/src/features/loba/screens/LobaHomeScreen.js` - Écran principal
@@ -42,6 +42,8 @@ import { MeshContentUpdateEvents } from '../../bluetooth/services/NearbyMeshServ
 import { useMeshConnection } from '../../bluetooth/hooks/useMeshConnection';
 import { useWifiDirect } from '../hooks/useWifiDirect';
 import { Q } from '@nozbe/watermelondb';
+
+const { width, height } = Dimensions.get('window');
 
 function LobaHomeScreen({ onBack, onNavigate, posts = [] }) {
   const [activeTab, setActiveTab] = useState('For You');
@@ -97,7 +99,7 @@ function LobaHomeScreen({ onBack, onNavigate, posts = [] }) {
   const [feedVideos, setFeedVideos] = useState(getDisplayPosts());
 
   useEffect(() => {
-    // Phase 14: Démarrage automatique du P2P Auto Sync
+    // Démarrage automatique du P2P Auto Sync
     P2PAutoSync.start();
     P2PAutoSync.requestWifiDirectActivation();
 
@@ -128,7 +130,6 @@ function LobaHomeScreen({ onBack, onNavigate, posts = [] }) {
             saved: false,
             filterColor: p.filterColor,
           })));
-          console.log(`[LobaHomeScreen] Feed mis à jour: ${freshPosts.length} posts`);
         } catch (e) {
           console.error('[LobaHomeScreen] Erreur mise à jour feed:', e);
         }
@@ -162,7 +163,6 @@ function LobaHomeScreen({ onBack, onNavigate, posts = [] }) {
               saved: false,
               filterColor: p.filterColor,
             })));
-            console.log(`[LobaHomeScreen] Feed rechargé: ${freshPosts.length} posts`);
           } catch (e) {
             console.error('[LobaHomeScreen] Erreur reload feed:', e);
           }
@@ -182,7 +182,7 @@ function LobaHomeScreen({ onBack, onNavigate, posts = [] }) {
 
   return (
     <View style={styles.container}>
-      {/* GPS Warning */}
+      {/* Alerte GPS (Android) */}
       {!wifiState.isLocationEnabled && Platform.OS === 'android' && (
         <View style={styles.gpsWarning}>
           <MaterialCommunityIcons name="map-marker-off" size={16} color="#fff" />
@@ -190,7 +190,7 @@ function LobaHomeScreen({ onBack, onNavigate, posts = [] }) {
         </View>
       )}
       
-      {/* Header Status */}
+      {/* Header Statut & Actions */}
       <View style={styles.header}>
         <Pressable 
           style={styles.refreshBtn} 
@@ -225,43 +225,27 @@ function LobaHomeScreen({ onBack, onNavigate, posts = [] }) {
         </Pressable>
       </View>
  
-      {/* Mesh Status Overlay */}
+      {/* Mesh Status Text Overlay (Discret) */}
       {meshState.isConnected && !wifiState.connectedPeer && (
         <View style={styles.meshOverlay}>
           <Text style={styles.meshOverlayText}>Diffusion locale (Mesh) active ✨</Text>
         </View>
       )}
 
-      {/* Feed Video */}
-      {feedVideos.length === 0 ? (
-        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#101922' }}>
-          <MaterialCommunityIcons name="image-off-outline" size={64} color="rgba(255,255,255,0.1)" />
-          <Text style={{ color: 'rgba(255,255,255,0.4)', marginTop: 16, fontSize: 16 }}>Aucune publication pour le moment</Text>
+      {/* Propagation Status Bar (Background Mesh) */}
+      {posts.some(p => p.isPropagating) && (
+        <View style={styles.propagationBar}>
+          <MaterialCommunityIcons name="broadcast" size={18} color="#A855F7" />
+          <Text style={styles.propagationText}>Diffusion locale en cours (Mesh)...</Text>
+          <View style={styles.propagationLoader}>
+             <Animated.View style={[styles.propagationFill, { width: '60%' }]} /> 
+          </View>
         </View>
-      ) : (
-        <FlatList
-          data={feedVideos}
-          renderItem={renderVideo}
-          keyExtractor={(item, index) => item.id?.toString() || index.toString()}
-          pagingEnabled
-          snapToInterval={height}
-          snapToAlignment="start"
-          decelerationRate="fast"
-          disableIntervalMomentum
-          vertical
-          showsVerticalScrollIndicator={false}
-          initialNumToRender={1}
-          maxToRenderPerBatch={1}
-          windowSize={3}
-          removeClippedSubviews={true}
-          onMomentumScrollEnd={(e) => {
-            const index = Math.round(e.nativeEvent.contentOffset.y / height);
-            setCurrentVideoIndex(index);
-          }}
-        />
       )}
 
-      {/* P2P Logs Modal */}
+      {/* Feed Video / Flatlist Render... */}
+
+      {/* P2P Log Modal */}
       <Modal
         visible={p2pLogModal}
         transparent
@@ -303,7 +287,7 @@ function LobaHomeScreen({ onBack, onNavigate, posts = [] }) {
         </View>
       </Modal>
 
-      {/* Bottom Navigation */}
+      {/* Floating Bottom Navigation */}
       <LobaBottomNav activeTab="home" onNavigate={(tab) => {
         if (tab === 'home') onNavigate?.('loba_home');
         else if (tab === 'friends') onNavigate?.('loba_friends');
@@ -432,7 +416,7 @@ export function useMeshConnection() {
 ### NearbyMeshService.js
 - `start()` - Démarre le mesh
 - `stop()` - Arrête le mesh
-- `discoverPeers()` - Découve les peers
+- `discoverPeers()` - Découvre les peers
 - Events: `onPeerFound`, `onPeerLost`, `onStatusChange`
 
 ### P2PAutoSync.js
@@ -447,6 +431,7 @@ export function useMeshConnection() {
 
 ## Notes
 - Le code intègre automatiquement le WiFi Direct et le Mesh Nearby
-- Auto-démarrage au montage de l'écran
+- Auto-démarrage au montage de l'écran avec `P2PAutoSync.start()`
 - Logs disponibles via modal (long press sur le status chip)
-- Refresh via le bouton refresh dans le header
+- Le Swap de Rôles Bi-Directionnel est implémenté et gère la file d'attente des envois.
+- Refresh et reconnexion automatique en cas d'échec de liaison.

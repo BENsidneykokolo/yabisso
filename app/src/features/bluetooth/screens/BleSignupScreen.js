@@ -167,7 +167,7 @@ export default function BleSignupScreen({ navigation, route }) {
 
   const handleSuccess = useCallback(() => {
     // Naviguer vers l'écran de succès / Home
-    navigation?.navigate('Home', { verified: true, token: lastPayload?.verification_token });
+    navigation?.navigate('home', { verified: true, token: lastPayload?.verification_token });
   }, [navigation, lastPayload]);
 
   const isIdle    = bleState === BLE_STATE.IDLE;
@@ -258,7 +258,7 @@ export default function BleSignupScreen({ navigation, route }) {
               <TouchableOpacity style={s.btnRetry} onPress={() => { reset(); handleStart(); }}>
                 <Text style={s.btnRetryText}>Réessayer</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={s.btnSecondary} onPress={() => navigation?.navigate('QrSignup')}>
+              <TouchableOpacity style={s.btnSecondary} onPress={() => navigation?.navigate('signup_qr')}>
                 <Text style={s.btnSecondaryText}>Utiliser le QR Code à la place</Text>
               </TouchableOpacity>
             </View>
@@ -284,7 +284,7 @@ export default function BleSignupScreen({ navigation, route }) {
                 <Text style={s.btnPrimaryText}>Démarrer la connexion BLE</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity style={s.btnLink} onPress={() => navigation?.navigate('QrSignup')}>
+              <TouchableOpacity style={s.btnLink} onPress={() => navigation?.navigate('signup_qr')}>
                 <Text style={s.btnLinkText}>Préfère utiliser le QR Code →</Text>
               </TouchableOpacity>
             </View>

@@ -20,6 +20,7 @@ export default class LobaPost extends Model {
   @field('filter_color') filterColor!: string | null;
   @field('is_propagating') isPropagating!: boolean
   @field('downloaded_at') downloadedAt!: number | null;
+  @text('user_id') userId!: string;
 
   @readonly @date('created_at') createdAt!: Date;
   @readonly @date('updated_at') updatedAt!: Date;

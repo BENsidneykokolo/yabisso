@@ -45,6 +45,7 @@
 - Pages: Assistant IA (Entièrement réécrit: clavier, layout stable, menu, 6 outils), Profil + sous-pages
 - **Loba (Vidéo)** : LobaHomeScreen, LobaFeedScreen, LobaRecordScreen, LobaProfileScreen, LobaStoriesScreen, LobaForYouScreen, LobaFollowingScreen (Implémenté)
 - **Restaurant** : RestaurantHomeScreen, RestaurantDetailsScreen, FoodItemDetailsScreen, FoodCheckoutScreen, RestaurantOrdersScreen, RestaurantTrackingScreen, RestaurantSellerScreen (Implémenté)
+- **Restaurant Seller Dashboard (Uber Eats)** : RestaurantSellerDashboard, RestaurantSellerOrdersScreen, RestaurantSellerOrderDetailScreen, RestaurantSellerAssignCourierScreen, RestaurantSellerNotificationsScreen, RestaurantSellerContext (Implémenté) - Résolution bug database null avec getDatabase() fallback SecureStore
  - **Hotels** : HotelHomeScreen, HotelSearchScreen, HotelDetailsScreen, HotelRoomDetailsScreen, HotelBookingScreen, HotelPaymentScreen, HotelReservationScreen, HotelMyBookingsScreen, HotelFavoritesScreen, HotelProfileScreen (Implémenté)
 - **Services** : ServicesHomeScreen (UI Base Implémenté)
 - **Immobilier** : RealEstateHomeScreen (UI Base Implémenté)

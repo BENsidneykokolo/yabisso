@@ -57,14 +57,10 @@
 - Profil - Support: `app/src/features/profile/screens/SupportScreen.js`
 - Profil - Deconnexion: `app/src/features/profile/screens/LogoutScreen.js`
 - Profil - Edit Profile: `app/src/features/profile/screens/EditProfileScreen.js`
-- Profil - Notifications: `app/src/features/profile/screens/NotificationsScreen.js`
-- Profil - Langue: `app/src/features/profile/screens/LanguageSettingsScreen.js`
-- Profil - Support: `app/src/features/profile/screens/SupportScreen.js`
-- Profil - Deconnexion: `app/src/features/profile/screens/LogoutScreen.js`
 - Marketplace - Home: `app/src/features/marketplace/screens/MarketplaceHomeScreen.js`
 - Marketplace - Product List: `app/src/features/marketplace/screens/ProductListScreen.js`
 - Marketplace - Category Page: `app/src/features/marketplace/screens/CategoryPageScreen.js`
-- Marketplace - Product Details: `app/src/features/marketplace/screens/ProductDetailsScreen.js` (+ bouton comparer si plusieurs vendeurs)
+- Marketplace - Product Details: `app/src/features/marketplace/screens/ProductDetailsScreen.js`
 - Marketplace - Cart: `app/src/features/marketplace/screens/CartScreen.js`
 - Marketplace - Checkout: `app/src/features/marketplace/screens/CheckoutScreen.js`
 - Marketplace - Order Status: `app/src/features/marketplace/screens/OrderStatusScreen.js`
@@ -78,9 +74,11 @@
 - Marketplace - Favoris: `app/src/features/marketplace/screens/MarketplaceFavoritesScreen.js`
 - Marketplace - Historique: `app/src/features/marketplace/screens/MarketplaceHistoryScreen.js`
 - Marketplace - Parametres: `app/src/features/marketplace/screens/MarketplaceSettingsScreen.js`
+- Marketplace - Seller Contact: `app/src/features/marketplace/screens/SellerContactScreen.js`
+- Marketplace - Cart Context: `app/src/features/marketplace/context/CartContext.js`
 - Loba - For You (Pour Toi): `app/src/features/loba/screens/LobaForYouScreen.js`
 - Loba - Following (Abonnements): `app/src/features/loba/screens/LobaFollowingScreen.js`
-- Loba - Messages: `app/src/features/loba/screens/LobaMessagesScreen.js` (+ appel téléphonique)
+- Loba - Messages: `app/src/features/loba/screens/LobaMessagesScreen.js`
 - Loba - Friends: `app/src/features/loba/screens/LobaFriendsScreen.js`
 - Loba - Create: `app/src/features/loba/screens/LobaCreateScreen.js`
 - Loba - Record: `app/src/features/loba/screens/LobaRecordScreen.js`
@@ -92,29 +90,85 @@
 - Restaurant - Checkout: `app/src/features/restaurant/screens/FoodCheckoutScreen.js`
 - Restaurant - Orders: `app/src/features/restaurant/screens/RestaurantOrdersScreen.js`
 - Restaurant - Tracking: `app/src/features/restaurant/screens/RestaurantTrackingScreen.js`
-- Restaurant - Seller (Vendre): `app/src/features/restaurant/screens/RestaurantSellerScreen.js`
-- Marketplace - Seller Contact: `app/src/features/marketplace/screens/SellerContactScreen.js`
- - Hotels - Home: `app/src/features/hotel/screens/HotelHomeScreen.js`
- - Hotels - Search: `app/src/features/hotel/screens/HotelSearchScreen.js`
- - Hotels - Details: `app/src/features/hotel/screens/HotelDetailsScreen.js`
- - Hotels - Room Details: `app/src/features/hotel/screens/HotelRoomDetailsScreen.js`
- - Hotels - Booking: `app/src/features/hotel/screens/HotelBookingScreen.js`
- - Hotels - Payment: `app/src/features/hotel/screens/HotelPaymentScreen.js`
- - Hotels - Reservation: `app/src/features/hotel/screens/HotelReservationScreen.js`
- - Hotels - My Bookings: `app/src/features/hotel/screens/HotelMyBookingsScreen.js`
- - Hotels - Favorites: `app/src/features/hotel/screens/HotelFavoritesScreen.js`
- - Hotels - Profile: `app/src/features/hotel/screens/HotelProfileScreen.js`
- - Services - Home: `app/src/features/services/screens/ServicesHomeScreen.js`
-- Immobilier - Home: `app/src/features/real_estate/screens/RealEstateHomeScreen.js`
-- Marketplace - Cart Context: `app/src/features/marketplace/context/CartContext.js`
+- Restaurant - Seller: `app/src/features/restaurant/screens/RestaurantSellerScreen.js`
+- Restaurant - Seller Dashboard: `app/src/features/restaurant/screens/RestaurantSellerDashboard.js`
+- Restaurant - Seller Orders: `app/src/features/restaurant/screens/RestaurantSellerOrdersScreen.js`
+- Restaurant - Seller Order Detail: `app/src/features/restaurant/screens/RestaurantSellerOrderDetailScreen.js`
+- Restaurant - Seller Assign Courier: `app/src/features/restaurant/screens/RestaurantSellerAssignCourierScreen.js`
+- Restaurant - Seller Notifications: `app/src/features/restaurant/screens/RestaurantSellerNotificationsScreen.js`
+- Restaurant - Favoris: `app/src/features/restaurant/screens/RestaurantFavoritesScreen.js`
 - FloatingNav: `app/src/components/FloatingNav.js`
 
 ---
 
-## Features UI
-- Search bar: Style dashboard avec popups Voice/Camera
-- Bottom nav: Couleur bleue (#3B82F6) comme dashboard
-- Navigation: Boutique/Catégories/Chatbot/Nouveauté/Commande
+## Services — S14 (Complets)
+
+| Écran | Fichier | Status |
+|-------|---------|--------|
+| Services - Home | `app/src/features/services/screens/ServicesHomeScreen.js` | ✅ |
+| Services - Details | `app/src/features/services/screens/ServiceDetailsScreen.js` | ✅ NOUVEAU |
+| Services - Booking | `app/src/features/services/screens/ServiceBookingScreen.js` | ✅ NOUVEAU |
+| Services - Checkout | `app/src/features/services/screens/ServiceCheckoutScreen.js` | ✅ NOUVEAU |
+| Services - Orders | `app/src/features/services/screens/ServicesOrdersScreen.js` | ✅ NOUVEAU |
+| Services - Favoris | `app/src/features/services/screens/ServicesFavoritesScreen.js` | ✅ NOUVEAU |
+| Services - Notifications | `app/src/features/services/screens/ServicesNotificationsScreen.js` | ✅ NOUVEAU |
+| Services - Profil | `app/src/features/services/screens/ServicesProfileScreen.js` | ✅ NOUVEAU |
+| Services - Providers | `app/src/features/services/screens/ServicesProvidersScreen.js` | ✅ NOUVEAU |
+| Services - Seller | `app/src/features/services/screens/ServicesSellerScreen.js` | ✅ |
+
+---
+
+## Pharmacie — S14 (Complets)
+
+| Écran | Fichier | Status |
+|-------|---------|--------|
+| Pharmacie - Home | `app/src/features/pharmacy/screens/PharmacyHomeScreen.js` | ✅ MODIFIÉ |
+| Pharmacie - Details | `app/src/features/pharmacy/screens/PharmacyDetailsScreen.js` | ✅ NOUVEAU |
+| Pharmacie - Cart | `app/src/features/pharmacy/screens/PharmacyCartScreen.js` | ✅ NOUVEAU |
+| Pharmacie - Checkout | `app/src/features/pharmacy/screens/PharmacyCheckoutScreen.js` | ✅ NOUVEAU |
+| Pharmacie - Order | `app/src/features/pharmacy/screens/PharmacyOrderScreen.js` | ✅ NOUVEAU |
+
+---
+
+## Appartements — S14 (Complets)
+
+| Écran | Fichier | Status |
+|-------|---------|--------|
+| Appartements - Home | `app/src/features/real_estate/screens/RealEstateHomeScreen.js` | ✅ MODIFIÉ |
+| Appartements - Details | `app/src/features/real_estate/screens/ApartmentDetailsScreen.js` | ✅ NOUVEAU |
+| Appartements - Booking | `app/src/features/real_estate/screens/ApartmentBookingScreen.js` | ✅ NOUVEAU |
+| Appartements - Payment | `app/src/features/real_estate/screens/ApartmentPaymentScreen.js` | ✅ NOUVEAU |
+| Appartements - Favoris | `app/src/features/real_estate/screens/ApartmentFavoritesScreen.js` | ✅ NOUVEAU |
+| Appartements - Search | `app/src/features/real_estate/screens/ApartmentSearchScreen.js` | ✅ NOUVEAU |
+
+---
+
+## Assistant IA — S14 (Complets)
+
+| Écran | Fichier | Status |
+|-------|---------|--------|
+| AI - Assistant | `app/src/features/ai/screens/AssistantScreen.js` | ✅ |
+| AI - History | `app/src/features/ai/screens/AssistantHistoryScreen.js` | ✅ NOUVEAU |
+| AI - Settings | `app/src/features/ai/screens/AssistantSettingsScreen.js` | ✅ NOUVEAU |
+
+---
+
+## Hotels — S14 (Complets)
+
+| Écran | Fichier | Status |
+|-------|---------|--------|
+| Hotels - Home | `app/src/features/hotel/screens/HotelHomeScreen.js` | ✅ |
+| Hotels - Search | `app/src/features/hotel/screens/HotelSearchScreen.js` | ✅ |
+| Hotels - Details | `app/src/features/hotel/screens/HotelDetailsScreen.js` | ✅ |
+| Hotels - Room Details | `app/src/features/hotel/screens/HotelRoomDetailsScreen.js` | ✅ |
+| Hotels - Booking | `app/src/features/hotel/screens/HotelBookingScreen.js` | ✅ |
+| Hotels - Payment | `app/src/features/hotel/screens/HotelPaymentScreen.js` | ✅ |
+| Hotels - Reservation | `app/src/features/hotel/screens/HotelReservationScreen.js` | ✅ |
+| Hotels - My Bookings | `app/src/features/hotel/screens/HotelMyBookingsScreen.js` | ✅ |
+| Hotels - Favoris | `app/src/features/hotel/screens/HotelFavoritesScreen.js` | ✅ |
+| Hotels - Profile | `app/src/features/hotel/screens/HotelProfileScreen.js` | ✅ |
+| Hotels - Notifications | `app/src/features/hotel/screens/HotelNotificationsScreen.js` | ✅ NOUVEAU |
+| Hotels - History | `app/src/features/hotel/screens/HotelHistoryScreen.js` | ✅ NOUVEAU |
 
 ---
 

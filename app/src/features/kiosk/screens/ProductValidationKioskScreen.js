@@ -287,6 +287,19 @@ export default function ProductValidationKioskScreen({ navigation }) {
     </View>
   );
 
+  const renderError = () => (
+    <View style={s.centeredBlock}>
+      <View style={[s.successCircle, { backgroundColor: '#FF4444' }]}>
+        <Ionicons name="close" size={54} color="#fff" />
+      </View>
+      <Text style={s.successTitle}>Erreur</Text>
+      <Text style={s.successMsg}>Une erreur s'est produite lors de la validation. Veuillez réessayer.</Text>
+      <TouchableOpacity style={s.btnBigScan} onPress={reset}>
+        <Text style={s.btnBigScanText}>Réessayer</Text>
+      </TouchableOpacity>
+    </View>
+  );
+
   const _getIcon = (type) => {
     switch(type) {
       case VALIDATION_TYPES.HOTEL_ROOM: return 'bed-outline';

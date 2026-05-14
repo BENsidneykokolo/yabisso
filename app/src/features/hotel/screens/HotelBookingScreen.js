@@ -66,7 +66,7 @@ export default function HotelBookingScreen({ onBack, onNavigate, route }) {
 
         {/* Room Summary */}
         <View style={styles.roomSummary}>
-          <Image source={{ uri: roomData.image }} style={summaryImage = { width: 80, height: 80, borderRadius: 12 }} />
+          <Image source={{ uri: roomData.image }} style={{ width: 80, height: 80, borderRadius: 12 }} />
           <View style={styles.summaryInfo}>
             <Text style={styles.summaryName}>{roomData.name}</Text>
             <Text style={styles.summaryHotel}>{hotelData.name}</Text>

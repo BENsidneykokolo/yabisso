@@ -44,7 +44,7 @@ const popularDestinations = [
 
 export default function HotelHomeScreen({ onBack, onNavigate }) {
   const [searchText, setSearchText] = useState('');
-  const [activeTab, setActiveTab] = useState('Accueil');
+  const [hotelActiveTab, setHotelActiveTab] = useState('Accueil');
   const [showVoiceModal, setShowVoiceModal] = useState(false);
   const [showCameraModal, setShowCameraModal] = useState(false);
   const [searchResults, setSearchResults] = useState([]);
@@ -180,7 +180,9 @@ export default function HotelHomeScreen({ onBack, onNavigate }) {
             <View style={styles.section}>
               <View style={styles.sectionHeader}>
                 <Text style={styles.sectionTitle}>Hôtels en vedette</Text>
-                <Text style={styles.seeAll}>Voir tout</Text>
+                <Pressable onPress={() => onNavigate?.('hotel_search')}>
+                  <Text style={styles.seeAll}>Voir tout</Text>
+                </Pressable>
               </View>
               {featuredHotels.map((hotel) => (
                 <Pressable 
@@ -315,7 +317,7 @@ export default function HotelHomeScreen({ onBack, onNavigate }) {
       <SafeAreaView style={styles.bottomNavWrapper}>
         <View style={styles.bottomNav}>
           {bottomNavItems.map((item) => {
-            const isActive = activeTab === item.label;
+            const isActive = hotelActiveTab === item.label;
             return (
               <Pressable
                 key={item.label}
@@ -324,7 +326,7 @@ export default function HotelHomeScreen({ onBack, onNavigate }) {
                   pressed && styles.navItemPressed,
                 ]}
                 onPress={() => {
-                  setActiveTab(item.label);
+                  setHotelActiveTab(item.label);
                   if (item.label === 'Accueil') {
                     // Already on home
                   } else if (item.label === 'Réservations') {
@@ -395,34 +397,6 @@ const styles = StyleSheet.create({
     height: 44,
     borderRadius: 22,
     backgroundColor: '#1c2630',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  searchContainer: {
-    flexDirection: 'row',
-    paddingHorizontal: 16,
-    gap: 8,
-  },
-  searchRow: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#1c2630',
-    borderRadius: 12,
-    paddingHorizontal: 12,
-    height: 48,
-  },
-  searchInput: {
-    flex: 1,
-    marginLeft: 8,
-    fontSize: 15,
-    color: '#fff',
-  },
-  filterBtn: {
-    width: 48,
-    height: 48,
-    borderRadius: 12,
-    backgroundColor: '#137fec',
     alignItems: 'center',
     justifyContent: 'center',
   },

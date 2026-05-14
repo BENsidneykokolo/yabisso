@@ -8,6 +8,7 @@ import {
   View,
 } from 'react-native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { useTheme } from '../../../lib/ThemeContext';
 
 const quickStats = [
   { label: 'Points', value: '1 240' },
@@ -31,6 +32,7 @@ export default function ProfileScreen({
   onOpenKioskAdmin,
 }) {
   const [activeTab, setActiveTab] = useState('Compte');
+  const { isDark, theme, toggleTheme } = useTheme();
 
   const navItems = [
     { label: 'Accueil', icon: 'home', key: 'home' },
@@ -116,6 +118,16 @@ export default function ProfileScreen({
         <View style={styles.sectionRow}>
           <Text style={styles.sectionTitle}>Parametres</Text>
         </View>
+
+        <Pressable style={styles.settingRow} onPress={toggleTheme}>
+          <View style={[styles.settingIcon, { backgroundColor: 'rgba(139, 92, 246, 0.2)' }]}>
+            <Ionicons name={isDark ? 'moon' : 'sunny'} size={20} color="#8B5CF6" />
+          </View>
+          <Text style={styles.settingLabel}>Mode sombre</Text>
+          <View style={[styles.toggleTrack, isDark && styles.toggleTrackActive]}>
+            <View style={[styles.toggleThumb, isDark && styles.toggleThumbActive]} />
+          </View>
+        </Pressable>
 
         <Pressable style={styles.settingRow} onPress={onOpenBlockedUser}>
           <View style={[styles.settingIcon, { backgroundColor: 'rgba(245, 158, 11, 0.2)' }]}>
@@ -442,6 +454,27 @@ const styles = StyleSheet.create({
     color: '#F8FAFC',
     fontSize: 13,
     fontWeight: '600',
+  },
+  toggleTrack: {
+    width: 46,
+    height: 26,
+    borderRadius: 13,
+    backgroundColor: 'rgba(148, 163, 184, 0.25)',
+    padding: 3,
+    alignItems: 'flex-start',
+  },
+  toggleTrackActive: {
+    backgroundColor: 'rgba(43, 238, 121, 0.35)',
+    alignItems: 'flex-end',
+  },
+  toggleThumb: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: '#F8FAFC',
+  },
+  toggleThumbActive: {
+    backgroundColor: '#2BEE79',
   },
   bottomNavWrapper: {
     position: 'absolute',

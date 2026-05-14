@@ -159,6 +159,12 @@ class NearbyMeshServiceClass {
       } else {
         this._log(`⏳ [Slave] Attente de l'invitation de ${peer.name}...`);
       }
+      
+      // 🚀 Déclencher aussi le WiFi Direct dès qu'un node est détecté
+      // Cela permet le transfert même si Nearby Mesh ne parvient pas à se connecter
+      this._log(`🚀 Déclenchement WiFi Direct pour transfert P2P...`);
+      const { P2PAutoSync } = require('./P2PAutoSync');
+      P2PAutoSync.triggerSync(null, true);
     }));
 
     this._listeners.push(onPeerLost(({ peerId }) => {
@@ -263,7 +269,7 @@ class NearbyMeshServiceClass {
         
         // On importe dynamiquement pour éviter les circular dependencies
         const { P2PAutoSync } = require('./P2PAutoSync');
-        P2PAutoSync.triggerSync();
+        P2PAutoSync.triggerSync(null, true); // force=true pour ignorer le cooldown
       } else {
         this._log('✅ Déjà à jour avec ce node.');
       }

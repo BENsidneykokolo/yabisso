@@ -268,11 +268,18 @@
 - **Cause** : Multiples edits successifs ont cassé l'indentation
 - **Solution** : Git pull + re-implémentation propre
 - **Statut** : ✅ Résolu
-- **Date** : 2026-05-04
-- **Problème** : Erreur de syntaxe JavaScript autour des lignes 390-410 (accolades mal placées après modifications)
-- **Cause** : Multiples edits successifs ont cassé l'indentation et les accolades
-- **Solution** : Git pull + re-implémentation propre
-- **Statut** : ✅ Résolu (2026-05-04)
+
+### BUG-032 — RestaurantSync loadRestaurants crash
+- **Date** : 2026-05-11
+- **Problème** : `[RestaurantSync] Erreur loadRestaurants` - `[TypeError: Cannot read property 'query' of null]`
+- **Cause** : Le module `database` était importé AVANT que le DatabaseProvider ne l'initialise. L'import statique `import { database }` retourne `null` au démarrage de l'app.
+- **Solution** : 
+  1. Créé fonction `getDatabase()` avec try/catch
+  2. Renommé import `database as _database`
+  3. Toutes les fonctions utilisent `getDatabase()` maintenant
+  4. Si `getDatabase()` retourne null → fallback SecureStore automatique
+- **Fichiers modifiés** : `app/src/features/restaurant/services/RestaurantSyncService.js`
+- **Statut** : ✅ Résolu (2026-05-11)
 
 ---
 
@@ -290,6 +297,61 @@
 | BLE mesh multi-hop complexe | 🟡 Modéré | Reporter après MVP, Bluetooth simple d'abord |
 | Pas de vrai mesh open source (type Bridgefy) | 🟡 Modéré | Mesh custom requis, reporte en Phase 3 |
 | Metro Windows: ESM/chemins cassés | 🟢 Faible | Patch loadConfig si besoin |
+
+---
+
+## Bugs Session 2026-05-11 (Kiosque QR)
+
+### BUG-KIOSK-001 — MeshRequestEvents.addListener is not a function
+- **Date** : 2026-05-11
+- **Problème** : `ERROR [TypeError: _bluetoothServicesNearbyMeshServ(...)ce.MeshRequestEvents.addListener is not a function (it is undefined)]`
+- **Cause** : La méthode s'appelle `subscribe()` pas `addListener` dans SimpleEventEmitter
+- **Solution** : Remplacé `addListener()` par `subscribe()` et `sub.remove()` par `sub()`
+- **Fichier** : `app/src/features/kiosk/screens/KioskAdminDashboardScreen.js`
+- **Statut** : ✅ Résolu
+
+### BUG-KIOSK-002 — route.params undefined
+- **Date** : 2026-05-11
+- **Problème** : `ERROR [ReferenceError: Property 'params' doesn't exist]`
+- **Cause** : `route.params` était undefined car la route n'envoyait pas les params correctement
+- **Solution** : Changé `params?.qrType` en `screenParams?.qrType` dans App.js, et utilisé `route?.params || {}` dans KioskQRScreen
+- **Fichier** : `app/App.js`, `app/src/features/kiosk/screens/KioskQRScreen.js`
+- **Statut** : ✅ Résolu
+
+### BUG-KIOSK-003 — SafeAreaView deprecated
+- **Date** : 2026-05-11
+- **Problème** : Warning "SafeAreaView has been deprecated and will be removed in a future release"
+- **Solution** : Remplacé SafeAreaView par View avec paddingTop: 50
+- **Fichier** : `app/src/features/kiosk/screens/KioskQRScreen.js`
+- **Statut** : ✅ Résolu
+
+### BUG-KIOSK-004 — renderError doesn't exist
+- **Date** : 2026-05-11
+- **Problème** : `ERROR [ReferenceError: Property 'renderError' doesn't exist]`
+- **Cause** : La fonction renderError() était utilisée mais non définie dans ProductValidationKioskScreen.js
+- **Solution** : Ajouté la fonction renderError() avec un message d'erreur et un bouton réessayer
+- **Fichier** : `app/src/features/kiosk/screens/ProductValidationKioskScreen.js`
+- **Statut** : ✅ Résolu
+
+### BUG-KIOSK-005 — QR scan fonctionne sur Itel mais pas Xiaomi
+- **Date** : 2026-05-11
+- **Problème** : Le bouton "Simuler un scan" ne réagit pas sur Xiaomi
+- **Cause** : Probablement problème hardware ou Expo sur Xiaomi
+- **Solution** : Ajouté popup de confirmation + logs de debugging pour mieux diagnostiquer
+- **Fichier** : `app/src/features/kiosk/screens/KioskQRScreen.js`
+- **Statut** : 🔄 En cours - Scan fonctionne mais validation en test
+
+### BUG-KIOSK-006 — Validation produit ne fonctionne pas
+- **Date** : 2026-05-11
+- **Problème** : Après scan et approbation, la validation ne s'enregistre pas
+- **Cause** : Erreur "Cannot read property 'query' of null" sur la base de données
+- **Solution** : 
+  1. Créé entrée dans sync_queue avec vérification
+  2. Tentative de mise à jour du produit avec try/catch
+  3. Ajouté vérification finale que la validation est enregistrée
+  4. Messages de confirmation détaillés
+- **Fichier** : `app/src/features/kiosk/screens/KioskQRScreen.js`
+- **Statut** : 🔄 En cours - En test avec Xiaomi
 
 ---
 

@@ -15,7 +15,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 const { width } = Dimensions.get('window');
 
-function DatingProfileScreen({ navigation, route, onBack, onNavigate }) {
+function DatingProfile({ navigation, route, onBack, onNavigate }) {
   const profile = route?.params?.profile || {
     id: '1',
     name: 'Amara',
@@ -51,7 +51,7 @@ function DatingProfileScreen({ navigation, route, onBack, onNavigate }) {
 
   const handleSendMessage = () => {
     if (onNavigate) {
-      onNavigate('DatingChat', { profile });
+      onNavigate('dating_chat', { profile });
     }
   };
 
@@ -449,4 +449,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default DatingProfileScreen;
+export default DatingProfile;

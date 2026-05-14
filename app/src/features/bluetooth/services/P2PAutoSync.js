@@ -10,11 +10,12 @@ import { LobaPackService } from '../../loba/services/LobaPackService';
 import { database } from '../../../lib/db';
 import { Q } from '@nozbe/watermelondb';
 
-const P2P_SYNC_INTERVAL_MS = 5000; // V2.0: 5s au lieu de 2s — réduit le flood de logs
+const P2P_SYNC_INTERVAL_MS = 3000; 
 const CLOUD_SYNC_INTERVAL_MS = 60000; 
+const DISCONNECT_COOLDOWN_MS = 5000; 
 
 /**
- * P2PAutoSync — L'Orchestrateur Central (V2.0 - Fix NaN + Deadlock)
+ * P2PAutoSync — L'Orchestrateur Central (V2.6 - Deep Fix Handshake)
  */
 class P2PAutoSyncClass {
   constructor() {
@@ -26,7 +27,11 @@ class P2PAutoSyncClass {
     this._syncingCloud = false;
     this._manualTrigger = false; 
     this._lastManualSync = 0; 
-    this._connectAttemptPending = false; // V2.0: Mutex anti-double connexion
+    this._connectAttemptPending = false; 
+    this._lastSentTo = {};
+    this._lastReceivedFrom = {};
+    this._lastDisconnectAt = 0; 
+    this._pendingPostsCount = 0; 
     this.stats = {
       totalSyncedP2P: 0,
       totalSyncedCloud: 0,
@@ -48,25 +53,41 @@ class P2PAutoSyncClass {
     return WifiDirectService.on('onLogUpdate', (logs) => callback(logs || this.stats.logs));
   }
 
-  /**
-   * V2.0: Extraction robuste du score depuis un nom de peer.
-   * Gère les noms Android bruts ("itel a50") et nos noms custom ("73_Device_xxx").
-   * parseInt("itel") retourne NaN → || 0 le ramène à 0.
-   */
   _parseScore(name) {
     if (!name) return 0;
     return parseInt(name.split('_')[0], 10) || 0;
   }
 
-  /**
-   * V2.0: Décide si ce device doit être Master pour un peer donné.
-   * - Si les 2 scores sont connus: score le plus élevé = Master
-   * - Si le peer a un nom Android brut (score=0): seuil >= 40 = Master
-   */
   _iAmMasterFor(peerName) {
     const myScore = this._parseScore(WifiDirectService.getDeviceName());
     const peerScore = this._parseScore(peerName);
+    
+    const iHaveContent = this._pendingPostsCount > 0;
+
+    if (myScore > 0 && peerScore > 0) {
+       const lastReceived = this._lastReceivedFrom[peerName] || 0;
+       const lastSent = this._lastSentTo[peerName] || 0;
+       const fiveMinsAgo = Date.now() - 5 * 60000;
+       
+       if (iHaveContent && lastReceived > lastSent && lastReceived > fiveMinsAgo) {
+           return false;
+       }
+       
+       if (lastSent > lastReceived && lastSent > fiveMinsAgo) {
+           return true; 
+       }
+    }
+
     return peerScore > 0 ? myScore > peerScore : myScore >= 40;
+  }
+
+  async _updatePendingCount() {
+    try {
+      const count = await database.get('loba_posts').query(Q.where('is_propagating', true)).fetchCount();
+      this._pendingPostsCount = count;
+    } catch (_) {
+      this._pendingPostsCount = 0;
+    }
   }
 
   async start() {
@@ -74,7 +95,7 @@ class P2PAutoSyncClass {
     this._running = true;
 
     console.log('[P2PAutoSync] Démarrage de l\'orchestrateur Multi-Rail...');
-    this._log('🚀 Orchestrateur démarré (V2.0).');
+    this._log('🚀 Orchestrateur démarré (V2.6).');
 
     NetworkRailDetector.start();
     NetworkRailDetector.onRailChange((rails) => {
@@ -87,102 +108,63 @@ class P2PAutoSyncClass {
       this._log(`[MESH] ${msg}`);
     });
 
-    // Lancement Mesh après 5 secondes pour éviter les collisions hardware.
     setTimeout(() => {
       if (this._running) {
         NearbyMeshService.startMesh().catch(e => {
           this._log(`[MESH] ❌ Crash initialisation: ${e.message}`);
         });
       }
-    }, 5000);
+    }, 2000);
 
     try {
-      // WiFi Direct Discovery doit TOUJOURS tourner en tâche de fond
       const state = WifiDirectService.getState();
       if (state.isAvailable) {
         await WifiDirectService.initialize();
         await WifiDirectService.startDiscovery(true);
       }
       
-      this._log('🚀 Orchestrateur démarré (V2.0).');
-      
-      // Nettoyage impératif pour éviter les fuites de listeners au Reload
       WifiDirectService.removeAllListeners('onPeerFound');
       WifiDirectService.removeAllListeners('onConnectionChange');
 
-      // === LISTENER: Peer WiFi Direct détecté ===
       WifiDirectService.on('onPeerFound', async (peer) => {
-        if (WifiDirectService.connectedPeer || WifiDirectService.isConnecting || !this._running) {
-          return;
-        }
-        if (this._connectAttemptPending) return; // Mutex
+        if (!this._running || WifiDirectService.connectedPeer || WifiDirectService.isConnecting) return;
+
+        const timeSinceDisconnect = Date.now() - this._lastDisconnectAt;
+        if (timeSinceDisconnect < DISCONNECT_COOLDOWN_MS) return;
 
         const peerName = (peer.deviceName || 'Unknown').toLowerCase();
-        const myScore = this._parseScore(WifiDirectService.getDeviceName());
-        const peerScore = this._parseScore(peerName);
+        const isMaster = this._iAmMasterFor(peerName);
 
-        if (this._iAmMasterFor(peerName)) {
-          this._connectAttemptPending = true;
-          this._log(`🤝 [Master] Score ${myScore} > ${peerScore || '?'}. Création du groupe...`);
-
-          try {
-            this._log('📴 Pause Nearby Mesh (libération hardware WiFi)...');
-            await NearbyMeshService.stopMesh();
-          } catch (_) {}
-
-          await new Promise(r => setTimeout(r, 1000));
-
-          this._connectAttemptPending = false;
-          if (!WifiDirectService.connectedPeer && !WifiDirectService.isConnecting && this._running) {
-            try {
-              await WifiDirectService.connectToPeer(peer);
-            } catch (e) {
-              this._log(`⚠️ Échec Master: ${e.message}`);
-              NearbyMeshService.startMesh().catch(() => {});
-            }
-          }
+        if (isMaster) {
+          this._log(`🤝 [Master] Création du groupe...`);
+          await WifiDirectService.connectToPeer(peer, 0, 'MASTER');
         } else {
-          this._log(`⏳ [Slave] Score ${myScore} < ${peerScore || '?'}. Connexion au Master dans 3s...`);
-          
-          try {
-            this._log('📴 Pause Nearby Mesh (libération hardware WiFi pour rejoindre le groupe)...');
-            await NearbyMeshService.stopMesh();
-          } catch (_) {}
-
-          // V2.4: Le Slave attend 3s que le Master ait créé le groupe, puis se connecte
+          this._log(`⏳ [Slave] Connexion au Master dans 2s...`);
           setTimeout(async () => {
             if (!WifiDirectService.connectedPeer && !WifiDirectService.isConnecting && this._running) {
-              this._log('🔗 Tentative de connexion au groupe du Master...');
-              try {
-                await WifiDirectService.connectToPeer(peer);
-              } catch (e) {
-                this._log(`⚠️ Échec Slave-Connect: ${e.message}`);
-                NearbyMeshService.startMesh().catch(() => {});
-              }
+              await WifiDirectService.connectToPeer(peer, 0, 'SLAVE');
             }
-          }, 3000);
+          }, 2000);
         }
       });
 
-      // === LISTENER: Connexion WiFi Direct établie/perdue ===
       WifiDirectService.on('onConnectionChange', async ({ connected, info }) => {
         if (connected && this._running) {
           this._log('📶 WiFi Direct CONNECTÉ ! Handshake final (1s)...');
-          this._sessionSent = false;
-          
           setTimeout(() => {
             if (WifiDirectService.connectedPeer && this._running) {
               if (!WifiDirectService.isGroupOwner) {
                 this._log('🚀 Envoi immédiat du Pack Loba...');
                 this._p2pSyncCycle();
               } else {
-                this._log('📡 Mode Réception — Prêt à recevoir des Packs.');
+                this._log('📡 Mode Réception — Prêt.');
               }
             }
           }, 1000);
-
         } else {
           WifiDirectService.stopReceiving();
+          this._lastDisconnectAt = Date.now();
+          this._log('🔌 Déconnexion détectée. Cool-down (5s)...');
         }
       });
 
@@ -195,55 +177,45 @@ class P2PAutoSyncClass {
     this._p2pSyncCycle();
   }
 
-  /**
-   * Demande hybride pour l'écran LobaHomeScreen.
-   */
   async requestWifiDirectActivation() {
     try {
       const state = WifiDirectService.getState();
-      if (!state.initialized) {
-        await WifiDirectService.initialize();
-      }
+      if (!state.initialized) await WifiDirectService.initialize();
+      await WifiDirectService.startDiscovery(true);
       this._log('⚡ Activation WiFi Direct demandée par l\'accueil.');
-    } catch (e) {
-      console.warn('[P2PAutoSync] Échec activation WiFi:', e.message);
-    }
+    } catch (e) {}
   }
 
   async forceRefresh() {
-    this._log('🔄 Hard Reset des services P2P (Déconnexion)...');
+    this._log('🔄 Hard Reset des services P2P...');
     this.stop();
     await new Promise(resolve => setTimeout(resolve, 1500));
     await this.start();
     WifiDirectService.startDiscovery(true);
   }
 
-  async triggerSync(category = null) {
-    if (!this._running) {
-       this._log('ℹ️ Orchestrateur non démarré. Démarrage automatique...');
-       await this.start();
-    }
+  async triggerSync(category = null, force = false) {
+    if (!this._running) await this.start();
     this._manualTrigger = true;
     this._lastManualSync = Date.now();
-    this._log(`⚡ Synchronisation ${category ? category : 'manuelle'} déclenchée...`);
+    this._log(`⚡ Synchronisation forcée déclenchée...`);
 
-    // V2.0: Si WiFi Direct n'est pas connecté mais des peers sont disponibles, forcer la connexion
     if (!WifiDirectService.connectedPeer && !WifiDirectService.isConnecting) {
+      const timeSinceDisconnect = Date.now() - this._lastDisconnectAt;
+      if (!force && timeSinceDisconnect < DISCONNECT_COOLDOWN_MS) return;
+      
+      if (force) await WifiDirectService.startDiscovery(true);
+
+      await this._updatePendingCount();
       const detectedPeers = WifiDirectService.peers || [];
-      if (detectedPeers.length > 0 && this._iAmMasterFor(detectedPeers[0].deviceName)) {
-        this._log('🔗 Forçage connexion WiFi Direct après détection delta...');
-        try {
-          await WifiDirectService.connectToPeer(detectedPeers[0]);
-        } catch (e) {
-          this._log(`⚠️ Échec connexion forcée: ${e.message}`);
-        }
+      if (detectedPeers.length > 0) {
+        const isMaster = this._iAmMasterFor(detectedPeers[0].deviceName);
+        await WifiDirectService.connectToPeer(detectedPeers[0], 0, isMaster ? 'MASTER' : 'SLAVE');
       }
     }
 
     await this._p2pSyncCycle(category);
-    setTimeout(() => {
-      this._manualTrigger = false;
-    }, 30000);
+    setTimeout(() => { this._manualTrigger = false; }, 10000);
   }
 
   async sendTestPing() {
@@ -260,13 +232,8 @@ class P2PAutoSyncClass {
         });
         if (success) this._log('✅ Ping envoyé via WiFi!');
         return success;
-      } else if (bestRail === RAIL_TYPES.BLE_MESH) {
-        this._log('ℹ️ Ping Mesh automatique via Nearby Mesh.');
-        return true;
       }
-    } catch (e) {
-      this._log(`❌ Échec Ping: ${e.message}`);
-    }
+    } catch (e) {}
     return false;
   }
 
@@ -281,10 +248,8 @@ class P2PAutoSyncClass {
       NetworkRailDetector.stop();
       await NearbyMeshService.stopMesh();
       await WifiDirectService.stopDiscovery();
-    } catch (e) {
-      console.warn('[P2PAutoSync] Erreur arrêt:', e.message);
-    }
-    
+      await WifiDirectService.disconnect();
+    } catch (e) {}
     this._log('🛑 Orchestrateur arrêté.');
   }
 
@@ -293,119 +258,59 @@ class P2PAutoSyncClass {
     this._syncingP2P = true;
 
     try {
-      // 1. GESTION LIEN WIFI DIRECT
+      await this._updatePendingCount();
       const state = WifiDirectService.getState();
       if (state.isAvailable) {
-        if (!state.initialized) {
-          await WifiDirectService.initialize();
+        if (!state.initialized) await WifiDirectService.initialize();
+
+        const timeSinceDisconnect = Date.now() - this._lastDisconnectAt;
+        if (timeSinceDisconnect < DISCONNECT_COOLDOWN_MS) {
+           this._syncingP2P = false;
+           return;
         }
-        
-        if (!WifiDirectService.connectedPeer && !WifiDirectService.isConnecting && !this._connectAttemptPending) {
-          if (!state.isDiscovering) {
-             await WifiDirectService.startDiscovery(true);
-          }
+
+        if (!WifiDirectService.connectedPeer && !WifiDirectService.isConnecting) {
+          if (!state.isDiscovering) await WifiDirectService.startDiscovery(true);
           
-          // V2.0: Fix — utilise .peers (pas .availablePeers qui n'existait pas!)
           const detectedPeers = WifiDirectService.peers || [];
           if (detectedPeers.length > 0) {
             const peer = detectedPeers[0];
-            const peerName = (peer.deviceName || 'Unknown').toLowerCase();
-
-            if (this._iAmMasterFor(peerName)) {
-               // V2.0: Pas de createGroup — le framework négocie via groupOwnerIntent
-               this._log(`🔄 [Master] Retry connexion vers ${peerName}...`);
-               try {
-                 await WifiDirectService.connectToPeer(peer);
-               } catch (e) {
-                 this._log(`⚠️ Échec retry connexion: ${e.message}`);
-               }
-            }
-            // Slave: ne fait rien, attend l'invitation du Master
+            const isMaster = this._iAmMasterFor(peer.deviceName);
+            await WifiDirectService.connectToPeer(peer, 0, isMaster ? 'MASTER' : 'SLAVE');
           }
         }
       }
 
-      // 2. LOGIQUE DE TRANSFERT
       const bestP2P = NetworkRailDetector.getBestRail(true);
-      if (bestP2P === RAIL_TYPES.OFFLINE || bestP2P === RAIL_TYPES.INTERNET) {
-        this._syncingP2P = false;
-        return;
-      }
-
       if (bestP2P === RAIL_TYPES.WIFI_DIRECT && WifiDirectService.connectedPeer) {
-         // V2.0: Log uniquement pour WiFi Direct (pas pour les cycles idle BLE)
-         this._log(`🔄 Cycle P2P via wifi_direct...`);
+        if (WifiDirectService.isGroupOwner) {
+          this._log('📡 Mode Réception — Prêt.');
+        } else {
+          this._log('🟢 Slave connecté — envoi du pack...');
+          const packPath = await LobaPackService.buildPack(category);
+          if (packPath) {
+            this._log(`📤 Envoi du Pack...`);
+            let sent = await WifiDirectService.sendFile(packPath, {
+              hash: `pack_${Date.now()}`,
+              type: 'LOBA_PACK',
+              category: category || 'bundle',
+              senderDevice: WifiDirectService.getDeviceName()
+            });
 
-         if (!WifiDirectService.groupOwnerAddress) {
-           this._log('⚠️ Connecté mais IP non résolue. Attente du Framework...');
-           return;
-         }
-
-         if (WifiDirectService.isGroupOwner) {
-           if (!this._goLoggedOnce) {
-             this._log('📡 Ce device est le Group Owner — mode réception actif.');
-             this._goLoggedOnce = true;
-           }
-           WifiDirectService._emit('onSyncStatus', { status: 'WAITING_FOR_CLIENT' });
-         } else {
-            this._goLoggedOnce = false;
-            if (this._manualTrigger && this._sessionSent) {
-              return;
+            if (sent) {
+              const peerName = (WifiDirectService.connectedPeer?.deviceName || 'Unknown').toLowerCase();
+              this._lastSentTo[peerName] = Date.now();
+              this._log(`✅ Succès: Pack envoyé !`);
+              setTimeout(() => { WifiDirectService.disconnect(); }, 3000);
             }
-            if (this._sessionSent && !category) {
-               return;
-            }
-           this._log(`📦 Création du Pack ${category || 'Général'} en cours (Max 50MB)...`);
-           WifiDirectService._emit('onSyncStatus', { status: 'PACKING' });
-           
-           const packPath = await LobaPackService.buildPack(category);
-            if (packPath) {
-                this._log(`📤 Envoi du Pack ${category || 'Général'} via WiFi Direct...`);
-                WifiDirectService._emit('onSyncStatus', { status: 'SENDING' });
-                
-                let sent = await WifiDirectService.sendFile(packPath, {
-                   hash: `pack_${Date.now()}`,
-                   type: 'LOBA_PACK',
-                   category: category || 'bundle'
-                });
-
-                // RETRY: Si échec, on attend 5s et on réessaie une fois.
-                if (!sent) {
-                   this._log('⚠️ Premier essai échoué. Tentative de secours dans 5s...');
-                   await new Promise(r => setTimeout(r, 5000));
-                   sent = await WifiDirectService.sendFile(packPath, {
-                      hash: `pack_retry_${Date.now()}`,
-                      type: 'LOBA_PACK',
-                      category: category || 'bundle'
-                   });
-                }
-
-                if (sent) {
-                   this._sessionSent = true;
-                   this._log(`✅ Succès: Pack ${category || 'Général'} envoyé !`);
-                   WifiDirectService._emit('onSyncStatus', { status: 'SUCCESS' });
-                } else {
-                   this._log('❌ Échec critique de l\'envoi du Loba Pack après retry.');
-                   WifiDirectService._emit('onSyncStatus', { status: 'ERROR', message: 'Échec envoi définitif' });
-                   setTimeout(() => WifiDirectService.disconnect(), 2000);
-                }
-            } else {
-               this._log('ℹ️ Rien de nouveau à envoyer dans le Pack.');
-               WifiDirectService._emit('onSyncStatus', { status: 'IDLE' });
-           }
-         }
-       } else {
-           // Rail BLE Mesh: pas de transfert de gros packs
-           const pendingUploads = await this._getPendingUploads();
-           if (pendingUploads.length === 0) {
-             // V2.0: Early return silencieux — pas de log pour les cycles idle BLE
-             this._syncingP2P = false;
-             return;
-           }
-           for (const post of pendingUploads) {
-             await this._propagateToPeers(post, bestP2P);
-           }
-       }
+          }
+        }
+      } else if (bestP2P === RAIL_TYPES.BLE_MESH) {
+        const pendingUploads = await this._getPendingUploads();
+        if (pendingUploads.length > 0) {
+          for (const post of pendingUploads) await this._propagateToPeers(post, bestP2P);
+        }
+      }
 
       await LocalStorageManager.applyLRUPolicy();
       this.stats.lastSyncAt = Date.now();
@@ -420,25 +325,22 @@ class P2PAutoSyncClass {
     try {
       if (!metadata || !metadata.hash) {
         if (metadata?.action === 'PING') {
-          this._log(`⭐ REÇU PING via ${source}! (Connecté OK)`);
+          this._log(`⭐ REÇU PING via ${source}!`);
           return;
         }
         return;
       }
       
       if (metadata.type === 'LOBA_PACK') {
-          this._log(`📥 Reçu Loba Pack via ${source}. Décompression & Traitement...`);
-          WifiDirectService._emit('onSyncStatus', { status: 'RECEIVING' });
+          this._log(`📥 Reçu Loba Pack. Traitement...`);
+          const peerName = (metadata.senderDevice || WifiDirectService.connectedPeer?.deviceName || 'Unknown').toLowerCase();
+          this._lastReceivedFrom[peerName] = Date.now();
           const success = await LobaPackService.unpackAndProcess(filePath);
           if (success) {
-              this._log(`✅ Pack traité avec succès !`);
-              this.stats.totalSyncedP2P++;
-              WifiDirectService._emit('onSyncStatus', { status: 'SUCCESS' });
-              setTimeout(() => WifiDirectService.disconnect(), 3000);
-          } else {
-              this._log(`❌ Échec du traitement du Pack.`);
-              WifiDirectService._emit('onSyncStatus', { status: 'ERROR', message: 'Erreur décompression' });
+            this._log(`✅ Pack traité !`);
+            this.stats.totalSyncedP2P++;
           }
+          setTimeout(() => WifiDirectService.disconnect(), 3000);
           return;
       }
       
@@ -449,7 +351,6 @@ class P2PAutoSyncClass {
       const { path: savedPath, size: savedSize } = result;
 
       const existing = await database.get('loba_posts').query(Q.where('hash', hash)).fetch();
-
       await database.write(async () => {
         if (existing.length > 0) {
           await existing[0].update(p => {
@@ -484,33 +385,23 @@ class P2PAutoSyncClass {
   }
 
   async _getPendingUploads() {
-    return await database.get('loba_posts')
-      .query(Q.where('is_propagating', true), Q.where('local_media_path', Q.notEq(null)))
-      .fetch();
+    return await database.get('loba_posts').query(Q.where('is_propagating', true), Q.where('local_media_path', Q.notEq(null))).fetch();
   }
 
   async _markAsPropagated(post) {
-    await database.write(async () => {
-      await post.update(p => { p.isPropagating = false; });
-    });
+    await database.write(async () => { await post.update(p => { p.isPropagating = false; }); });
     this.stats.totalSyncedP2P++;
   }
 
-  /**
-   * Propage un post individuel vers les peers via BLE Mesh (petits payloads < 5MB).
-   */
   async _propagateToPeers(post, rail) {
     try {
       if (!post || !post.localMediaPath) {
         await this._markAsPropagated(post);
         return;
       }
-
       if (rail === RAIL_TYPES.BLE_MESH) {
-        this._log(`📡 Propagation via Mesh (Nearby) planifiée: ${post.hash?.substring(0, 8)}`);
+        this._log(`📡 Propagation via Mesh: ${post.hash?.substring(0, 8)}`);
         await this._markAsPropagated(post);
-      } else {
-        this._log(`ℹ️ Rail ${rail} non supporté pour propagation directe. Attente WiFi Direct.`);
       }
     } catch (e) {
       this._log(`❌ Erreur propagation: ${e.message}`);
@@ -539,13 +430,13 @@ class P2PAutoSyncClass {
           post.category = category;
           post.isPropagating = true;
           post.downloadedAt = Date.now();
-          post.imageUrl = type === 'image' ? result.path : null;
-          post.videoUrl = type === 'video' ? result.path : null;
+          post.imageUrl = type === 'image' ? (result ? result.path : null) : null;
+          post.videoUrl = type === 'video' ? (result ? result.path : null) : null;
           post.filterColor = filter || null;
           post.likes = 0;
           post.comments = 0;
           post.isLiked = false;
-          post.size = result.size || 0;
+          post.size = (result ? result.size : 0) || 0;
         });
 
         await database.get('sync_queue').create(item => {
@@ -557,7 +448,6 @@ class P2PAutoSyncClass {
           item.updatedAt = Date.now();
         });
       });
-
       return { success: true, postId: newPost.id, hash };
     } catch (e) {
       console.error('[P2PAutoSync] publishLocal error:', e);
@@ -571,22 +461,6 @@ class P2PAutoSyncClass {
       blePeers: NearbyMeshService.connectedPeers?.size || 0,
       wifiDirectPeer: WifiDirectService.connectedPeer ? 1 : 0,
     };
-  }
-
-  async _getUnsyncedPosts() {
-    try {
-      const posts = await database.get('loba_posts')
-        .query(
-          Q.where('localMediaPath', Q.notEq(null)),
-          Q.sortBy('created_at', Q.desc),
-          Q.take(20)
-        )
-        .fetch();
-      return posts.filter(p => p.localMediaPath);
-    } catch (e) {
-      this._log(`⚠️ Erreur getUnsyncedPosts: ${e.message}`);
-      return [];
-    }
   }
 }
 

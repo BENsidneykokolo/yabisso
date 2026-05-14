@@ -14,6 +14,7 @@ import {
   Share,
   ActivityIndicator,
   Animated,
+  Platform,
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { VideoView, useVideoPlayer } from 'expo-video';
@@ -126,6 +127,7 @@ function LobaHomeScreen({ onBack, onNavigate, posts = [] }) {
             username: p.username,
             avatar: p.avatar,
             video: p.localMediaPath || p.videoUrl || p.imageUrl,
+            hasMedia: !!(p.localMediaPath || p.videoUrl || p.imageUrl),
             type: p.videoUrl || (p.localMediaPath && p.localMediaPath.endsWith('.mp4')) ? 'video' : 'photo',
             caption: p.content,
             song: 'Original Sound - ' + p.username,
@@ -160,6 +162,7 @@ function LobaHomeScreen({ onBack, onNavigate, posts = [] }) {
               username: p.username,
               avatar: p.avatar,
               video: p.localMediaPath || p.videoUrl || p.imageUrl,
+              hasMedia: !!(p.localMediaPath || p.videoUrl || p.imageUrl),
               type: p.videoUrl || (p.localMediaPath && p.localMediaPath.endsWith('.mp4')) ? 'video' : 'photo',
               caption: p.content,
               song: 'Original Sound - ' + p.username,

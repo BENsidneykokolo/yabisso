@@ -1,11 +1,12 @@
 import { appSchema, tableSchema } from '@nozbe/watermelondb'
 
 export const schema = appSchema({
-  version: 9,
+  version: 10,
   tables: [
     tableSchema({
       name: 'profiles',
       columns: [
+        { name: 'user_id', type: 'string', isIndexed: true },
         { name: 'phone', type: 'string', isIndexed: true },
         { name: 'device_id', type: 'string' },
         { name: 'public_key', type: 'string' },
@@ -19,6 +20,7 @@ export const schema = appSchema({
     tableSchema({
       name: 'sync_queue',
       columns: [
+        { name: 'user_id', type: 'string', isIndexed: true },
         { name: 'action', type: 'string', isIndexed: true },
         { name: 'payload_json', type: 'string' },
         { name: 'status', type: 'string', isIndexed: true },
@@ -50,6 +52,7 @@ export const schema = appSchema({
     tableSchema({
       name: 'addresses',
       columns: [
+        { name: 'user_id', type: 'string', isIndexed: true },
         { name: 'name', type: 'string' },
         { name: 'category', type: 'string' },
         { name: 'city', type: 'string', isOptional: true },
@@ -66,6 +69,7 @@ export const schema = appSchema({
     tableSchema({
       name: 'products',
       columns: [
+        { name: 'user_id', type: 'string', isIndexed: true },
         { name: 'name', type: 'string' },
         { name: 'brand', type: 'string' },
         { name: 'price', type: 'string' },
@@ -92,6 +96,7 @@ export const schema = appSchema({
     tableSchema({
       name: 'wallet_transactions',
       columns: [
+        { name: 'user_id', type: 'string', isIndexed: true },
         { name: 'title', type: 'string' },
         { name: 'meta', type: 'string' },
         { name: 'amount', type: 'string' },
@@ -104,6 +109,7 @@ export const schema = appSchema({
     tableSchema({
       name: 'loba_posts',
       columns: [
+        { name: 'user_id', type: 'string', isIndexed: true },
         { name: 'username', type: 'string' },
         { name: 'avatar', type: 'string', isOptional: true },
         { name: 'content', type: 'string' },
@@ -127,6 +133,7 @@ export const schema = appSchema({
     tableSchema({
       name: 'p2p_transfers',
       columns: [
+        { name: 'user_id', type: 'string', isIndexed: true },
         { name: 'hash', type: 'string', isIndexed: true },
         { name: 'peer_id', type: 'string' },
         { name: 'direction', type: 'string' },
@@ -143,6 +150,7 @@ export const schema = appSchema({
     tableSchema({
       name: 'user_interests',
       columns: [
+        { name: 'user_id', type: 'string', isIndexed: true },
         { name: 'service', type: 'string', isIndexed: true },
         { name: 'category', type: 'string', isIndexed: true },
         { name: 'weight', type: 'number' },
@@ -152,6 +160,7 @@ export const schema = appSchema({
     tableSchema({
       name: 'assistant_messages',
       columns: [
+        { name: 'user_id', type: 'string', isIndexed: true },
         { name: 'role', type: 'string' },
         { name: 'content', type: 'string' },
         { name: 'created_at', type: 'number' },
@@ -160,21 +169,22 @@ export const schema = appSchema({
     tableSchema({
       name: 'loba_friends',
       columns: [
+        { name: 'user_id', type: 'string', isIndexed: true },
         { name: 'friend_id', type: 'string', isIndexed: true },
         { name: 'name', type: 'string' },
         { name: 'username', type: 'string', isIndexed: true },
         { name: 'phone', type: 'string', isIndexed: true },
         { name: 'avatar', type: 'string', isOptional: true },
-        { name: 'status', type: 'string' }, // online, mesh, direct, offline
+        { name: 'status', type: 'string' },
         { name: 'last_seen', type: 'number' },
         { name: 'created_at', type: 'number' },
         { name: 'updated_at', type: 'number' },
       ],
     }),
-    // Type 1 - Public (sync + P2P shareable)
     tableSchema({
       name: 'restaurants',
       columns: [
+        { name: 'user_id', type: 'string', isIndexed: true },
         { name: 'name', type: 'string' },
         { name: 'category', type: 'string', isIndexed: true },
         { name: 'cuisine', type: 'string' },
@@ -196,6 +206,7 @@ export const schema = appSchema({
     tableSchema({
       name: 'hotels',
       columns: [
+        { name: 'user_id', type: 'string', isIndexed: true },
         { name: 'name', type: 'string' },
         { name: 'category', type: 'string', isIndexed: true },
         { name: 'city', type: 'string', isIndexed: true },
@@ -218,6 +229,7 @@ export const schema = appSchema({
     tableSchema({
       name: 'courses',
       columns: [
+        { name: 'user_id', type: 'string', isIndexed: true },
         { name: 'title', type: 'string' },
         { name: 'category', type: 'string', isIndexed: true },
         { name: 'instructor', type: 'string' },
@@ -236,9 +248,10 @@ export const schema = appSchema({
     tableSchema({
       name: 'properties',
       columns: [
+        { name: 'user_id', type: 'string', isIndexed: true },
         { name: 'title', type: 'string' },
-        { name: 'type', type: 'string', isIndexed: true }, // vente, location
-        { name: 'category', type: 'string', isIndexed: true }, // appartement, maison, villa
+        { name: 'type', type: 'string', isIndexed: true },
+        { name: 'category', type: 'string', isIndexed: true },
         { name: 'city', type: 'string', isIndexed: true },
         { name: 'address', type: 'string' },
         { name: 'latitude', type: 'number' },
@@ -261,8 +274,9 @@ export const schema = appSchema({
     tableSchema({
       name: 'routes',
       columns: [
+        { name: 'user_id', type: 'string', isIndexed: true },
         { name: 'name', type: 'string' },
-        { name: 'type', type: 'string', isIndexed: true }, // bus, train, metro
+        { name: 'type', type: 'string', isIndexed: true },
         { name: 'city', type: 'string', isIndexed: true },
         { name: 'stops_json', type: 'string' },
         { name: 'schedule_json', type: 'string' },
@@ -277,6 +291,7 @@ export const schema = appSchema({
     tableSchema({
       name: 'taxi_zones',
       columns: [
+        { name: 'user_id', type: 'string', isIndexed: true },
         { name: 'name', type: 'string' },
         { name: 'city', type: 'string', isIndexed: true },
         { name: 'area_coordinates_json', type: 'string' },
@@ -292,6 +307,7 @@ export const schema = appSchema({
     tableSchema({
       name: 'tracks',
       columns: [
+        { name: 'user_id', type: 'string', isIndexed: true },
         { name: 'title', type: 'string' },
         { name: 'artist', type: 'string' },
         { name: 'album', type: 'string', isOptional: true },
@@ -309,6 +325,7 @@ export const schema = appSchema({
     tableSchema({
       name: 'medicaments',
       columns: [
+        { name: 'user_id', type: 'string', isIndexed: true },
         { name: 'name', type: 'string' },
         { name: 'generic_name', type: 'string' },
         { name: 'category', type: 'string', isIndexed: true },
@@ -328,6 +345,7 @@ export const schema = appSchema({
     tableSchema({
       name: 'videos',
       columns: [
+        { name: 'user_id', type: 'string', isIndexed: true },
         { name: 'title', type: 'string' },
         { name: 'category', type: 'string', isIndexed: true },
         { name: 'genre', type: 'string' },
@@ -342,10 +360,10 @@ export const schema = appSchema({
         { name: 'updated_at', type: 'number' },
       ],
     }),
-    // Type 2 - Personal (sync, not shareable)
     tableSchema({
       name: 'conversations',
       columns: [
+        { name: 'user_id', type: 'string', isIndexed: true },
         { name: 'participant_id', type: 'string', isIndexed: true },
         { name: 'participant_name', type: 'string' },
         { name: 'last_message', type: 'string' },
@@ -359,6 +377,7 @@ export const schema = appSchema({
     tableSchema({
       name: 'dating_profiles',
       columns: [
+        { name: 'user_id', type: 'string', isIndexed: true },
         { name: 'name', type: 'string' },
         { name: 'age', type: 'number' },
         { name: 'gender', type: 'string' },
@@ -375,14 +394,124 @@ export const schema = appSchema({
     tableSchema({
       name: 'reservations',
       columns: [
-        { name: 'service_type', type: 'string', isIndexed: true }, // restaurant, hotel, flight
+        { name: 'user_id', type: 'string', isIndexed: true },
+        { name: 'service_type', type: 'string', isIndexed: true },
         { name: 'service_id', type: 'string', isIndexed: true },
         { name: 'service_name', type: 'string' },
         { name: 'date', type: 'number' },
         { name: 'time', type: 'string' },
-        { name: 'status', type: 'string' }, // pending, confirmed, cancelled
+        { name: 'status', type: 'string' },
         { name: 'details_json', type: 'string' },
         { name: 'total_price', type: 'string' },
+        { name: 'sync_status', type: 'string', isIndexed: true },
+        { name: 'created_at', type: 'number' },
+        { name: 'updated_at', type: 'number' },
+      ],
+    }),
+    // New Super-App Tables
+    tableSchema({
+      name: 'betting_matches',
+      columns: [
+        { name: 'home_team', type: 'string' },
+        { name: 'away_team', type: 'string' },
+        { name: 'home_logo', type: 'string' },
+        { name: 'away_logo', type: 'string' },
+        { name: 'score', type: 'string' },
+        { name: 'time', type: 'string' },
+        { name: 'competition', type: 'string', isIndexed: true },
+        { name: 'odds_json', type: 'string' },
+        { name: 'start_time', type: 'number' },
+        { name: 'status', type: 'string', isIndexed: true },
+        { name: 'sync_status', type: 'string', isIndexed: true },
+        { name: 'created_at', type: 'number' },
+        { name: 'updated_at', type: 'number' },
+      ],
+    }),
+    tableSchema({
+      name: 'betting_bets',
+      columns: [
+        { name: 'user_id', type: 'string', isIndexed: true },
+        { name: 'match_id', type: 'string', isIndexed: true },
+        { name: 'selection', type: 'string' },
+        { name: 'odds', type: 'number' },
+        { name: 'stake', type: 'number' },
+        { name: 'status', type: 'string', isIndexed: true }, // pending, won, lost
+        { name: 'payout', type: 'number' },
+        { name: 'sync_status', type: 'string', isIndexed: true },
+        { name: 'created_at', type: 'number' },
+        { name: 'updated_at', type: 'number' },
+      ],
+    }),
+    tableSchema({
+      name: 'flight_offers',
+      columns: [
+        { name: 'airline', type: 'string' },
+        { name: 'from_city', type: 'string', isIndexed: true },
+        { name: 'to_city', type: 'string', isIndexed: true },
+        { name: 'departure_time', type: 'number' },
+        { name: 'price', type: 'string' },
+        { name: 'class', type: 'string' },
+        { name: 'status', type: 'string' },
+        { name: 'sync_status', type: 'string', isIndexed: true },
+        { name: 'created_at', type: 'number' },
+        { name: 'updated_at', type: 'number' },
+      ],
+    }),
+    tableSchema({
+      name: 'swap_items',
+      columns: [
+        { name: 'user_id', type: 'string', isIndexed: true },
+        { name: 'title', type: 'string' },
+        { name: 'description', type: 'string' },
+        { name: 'category', type: 'string', isIndexed: true },
+        { name: 'condition', type: 'string' },
+        { name: 'image_url', type: 'string', isOptional: true },
+        { name: 'value_est', type: 'string' },
+        { name: 'status', type: 'string', isIndexed: true },
+        { name: 'sync_status', type: 'string', isIndexed: true },
+        { name: 'created_at', type: 'number' },
+        { name: 'updated_at', type: 'number' },
+      ],
+    }),
+    tableSchema({
+      name: 'notebook_notes',
+      columns: [
+        { name: 'user_id', type: 'string', isIndexed: true },
+        { name: 'title', type: 'string' },
+        { name: 'content', type: 'string' },
+        { name: 'category', type: 'string', isIndexed: true },
+        { name: 'color', type: 'string' },
+        { name: 'is_pinned', type: 'boolean' },
+        { name: 'sync_status', type: 'string', isIndexed: true },
+        { name: 'created_at', type: 'number' },
+        { name: 'updated_at', type: 'number' },
+      ],
+    }),
+    tableSchema({
+      name: 'generic_services',
+      columns: [
+        { name: 'service_type', type: 'string', isIndexed: true }, // perso, pro, digital, maison
+        { name: 'name', type: 'string' },
+        { name: 'provider_name', type: 'string' },
+        { name: 'description', type: 'string' },
+        { name: 'price', type: 'string' },
+        { name: 'rating', type: 'number' },
+        { name: 'location', type: 'string' },
+        { name: 'status', type: 'string' },
+        { name: 'sync_status', type: 'string', isIndexed: true },
+        { name: 'created_at', type: 'number' },
+        { name: 'updated_at', type: 'number' },
+      ],
+    }),
+    tableSchema({
+      name: 'delivery_orders',
+      columns: [
+        { name: 'user_id', type: 'string', isIndexed: true },
+        { name: 'service_name', type: 'string' },
+        { name: 'items_json', type: 'string' },
+        { name: 'total_price', type: 'string' },
+        { name: 'status', type: 'string', isIndexed: true },
+        { name: 'address', type: 'string' },
         { name: 'sync_status', type: 'string', isIndexed: true },
         { name: 'created_at', type: 'number' },
         { name: 'updated_at', type: 'number' },

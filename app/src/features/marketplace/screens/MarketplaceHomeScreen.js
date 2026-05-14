@@ -34,13 +34,13 @@ const CATEGORIES_MAP = {
 const bottomNavItems = [
   { label: 'Marketplace', icon: 'store' },
   { label: 'Catégories', icon: 'view-grid' },
-  { label: 'Nouveauté', icon: 'sparkles' },
+  { label: 'Nouveauté', icon: 'star-four-points' },
   { label: 'Panier', icon: 'cart' },
 ];
 
 const categories = [
   { name: 'Tout', icon: 'apps', color: '#324d67' },
-  { name: 'Téléphones', icon: 'smartphone', color: '#137fec' },
+  { name: 'Téléphones', icon: 'cellphone', color: '#137fec' },
   { name: 'Mode', icon: 'tshirt-crew', color: '#eab308' },
   { name: 'Maison', icon: 'sofa', color: '#22c55e' },
   { name: 'Beauté', icon: 'face-woman', color: '#ef4444' },
@@ -145,9 +145,9 @@ function MarketplaceHomeScreen({ onBack, onNavigate, favorites = [], onToggleFav
   const menuItems = [
     { label: 'Profil', icon: 'account-circle', screen: 'profile' },
     { label: 'Boutique', icon: 'store', screen: 'marketplace_home' },
-    { label: 'Vendre', icon: 'tag-plus', screen: 'market_seller' },
+    { label: 'Vendre', icon: 'tag-plus', screen: 'seller_dashboard' },
     { label: 'Catégories', icon: 'view-grid', screen: 'category_page' },
-    { label: 'Nouveautés', icon: 'sparkles', screen: 'new_arrivals' },
+    { label: 'Nouveautés', icon: 'star-four-points', screen: 'new_arrivals' },
     { label: 'Mes commandes', icon: 'shopping', screen: 'orders' },
     { label: 'Panier', icon: 'cart', screen: 'cart' },
     { label: 'Favoris', icon: 'heart', screen: 'marketplace_favorites' },

@@ -32,6 +32,21 @@ export default function HomeScreen({
   onOpenRealEstate,
   onOpenChat,
   onOpenPharmacy,
+  onOpenTaxi,
+  onOpenMusic,
+  onOpenStreaming,
+  onOpenFlights,
+  onOpenBetting,
+  onOpenTransport,
+  onOpenDelivery,
+  onOpenFormation,
+  onOpenSwap,
+  onOpenNotebook,
+  onOpenReservation,
+  onOpenServicePerso,
+  onOpenServicePro,
+  onOpenServiceDigital,
+  onOpenServiceMaison,
 }) {
   const { baseVisible, extraVisible, visibleServices, loading } = useServicePreferences();
   const [activeTab, setActiveTab] = useState('Accueil');
@@ -170,6 +185,22 @@ export default function HomeScreen({
                 }
                 if (item.key === 'chat') onOpenChat?.();
                 if (item.key === 'pharmacy') onOpenPharmacy?.();
+                if (item.key === 'taxi') onOpenTaxi?.();
+                if (item.key === 'music') onOpenMusic?.();
+                if (item.key === 'streaming') onOpenStreaming?.();
+                if (item.key === 'flights') onOpenFlights?.();
+                if (item.key === 'betting') onOpenBetting?.();
+                if (item.key === 'transport') onOpenTransport?.();
+                if (item.key === 'delivery') onOpenDelivery?.();
+                if (item.key === 'formation') onOpenFormation?.();
+                if (item.key === 'swap') onOpenSwap?.();
+                if (item.key === 'notebook') onOpenNotebook?.();
+                if (item.key === 'reservation') onOpenReservation?.();
+                if (item.key === 'service_perso') onOpenServicePerso?.();
+                if (item.key === 'service_pro') onOpenServicePro?.();
+                if (item.key === 'service_digital') onOpenServiceDigital?.();
+                if (item.key === 'service_maison') onOpenServiceMaison?.();
+                if (item.key === 'wallet') onOpenWallet?.();
               }}
             >
               <View style={[styles.serviceIcon, { backgroundColor: item.color }]}>

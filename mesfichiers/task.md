@@ -138,8 +138,20 @@
 | Marketplace - Confirmation reception commande (commentaire + photo) | Done | P1 | S5 |
 | Marketplace - Signalement probleme commande avec upload image | Done | P1 | S5 |
 | Marketplace - SellerProfile sans onglet "Avis" (mockups supprimes) | Done | P1 | S5 |
+| Marketplace - SellerDashboard (stats, alertes, ventes, actions rapides) | Done | P1 | S5 |
+| Marketplace - SellerOrdersScreen (liste, filtre, detail, actions statut) | Done | P1 | S5 |
+| Marketplace - SellerNotificationsScreen (notifications vendeur, badges) | Done | P1 | S5 |
+| Marketplace - SellerAnalyticsScreen (revenus, periode, top produits, chart) | Done | P1 | S5 |
+| Marketplace - Lien menu "Vendre" -> SellerDashboard | Done | P1 | S5 |
+| Marketplace - Bouton Dashboard dans SellerProfileScreen | Done | P1 | S5 |
 | Restaurant - Persistence offline (useEffect + WatermelonDB) | Done | P1 | S5 |
 | Restaurant - Sync queue pour Supabase | Done | P1 | S5 |
+| Restaurant - Seller Dashboard (stats, revenus, actions) | Done | P1 | S5 |
+| Restaurant - Seller Orders (filtres tabs, badges) | Done | P1 | S5 |
+| Restaurant - Seller Order Detail (timeline, actions) | Done | P1 | S5 |
+| Restaurant - Seller Assign Courier (liste, sélection) | Done | P1 | S5 |
+| Restaurant - Seller Notifications (temps réel) | Done | P1 | S5 |
+| Restaurant - Fix database null (getDatabase fallback) | Done | P1 | S5 |
 | Services - SellerScreen avec persistence offline | Done | P2 | S5 |
 | Services - SyncService avec sync queue | Done | P2 | S5 |
 | Validation - OfflineValidationService (creation, QR, approve/reject) | Done | P1 | S5 |
@@ -243,3 +255,80 @@
 | - Fix Internal Error (Role-based initialization) | Done | P1 | S6 |
 | - Fix native crash (sendMessage GO NPE) | Done | P1 | S6 |
 | - Fix UI crash (expo-video released player) | Done | P1 | S6 |
+| Kiosque Yabisso Admin QR Scanner | Done | P1 | S13 |
+| - Boutons QR dans 4 écrans (Validation, Recharge, Points, Users) | Done | P1 | S13 |
+| - Scanner QR universel (KioskQRScreen.js) | Done | P1 | S13 |
+| - Fix MeshRequestEvents.addListener error | Done | P1 | S13 |
+| - Fix route.params undefined | Done | P1 | S13 |
+| - Fix SafeAreaView deprecated | Done | P1 | S13 |
+| - Fix renderError manquant | Done | P1 | S13 |
+| - Centrer QR code dans modal | Done | P1 | S13 |
+| - Descendre boutons header pour zone système | Done | P1 | S13 |
+| - Validation produit avec vérification | In Progress | P1 | S13 |
+
+---
+
+## Implémentation Services (Tous écrans)
+
+| Tâche | Status | Sprint |
+|-------|--------|--------|
+| Services - ServiceDetailsScreen (prestataire, photos, avis) | Done | S14 |
+| Services - ServiceBookingScreen (réservation, date, heure, adresse) | Done | S14 |
+| Services - ServiceCheckoutScreen (confirmation, paiement) | Done | S14 |
+| Services - ServicesOrdersScreen (réservations, filtres, stats) | Done | S14 |
+| Services - ServicesFavoritesScreen (favoris, supprimer) | Done | S14 |
+| Services - ServicesNotificationsScreen (notifications) | Done | S14 |
+| Services - ServicesProfileScreen (profil, paramètres) | Done | S14 |
+| Services - ServicesProvidersScreen (liste providers, filtres) | Done | S14 |
+| Services - Toutes routes + imports dans App.js | Done | S14 |
+
+---
+
+## Implémentation Pharmacie (Tous écrans)
+
+| Tâche | Status | Sprint |
+|-------|--------|--------|
+| Pharmacie - PharmacyHomeScreen (navigation + bottom nav) | Done | S14 |
+| Pharmacie - PharmacyDetailsScreen (détail produit, posologie) | Done | S14 |
+| Pharmacie - PharmacyCartScreen (panier, quantité, total) | Done | S14 |
+| Pharmacie - PharmacyCheckoutScreen (commande, paiement) | Done | S14 |
+| Pharmacie - PharmacyOrderScreen (suivi commande, timeline) | Done | S14 |
+| Pharmacie - Toutes routes + imports dans App.js | Done | S14 |
+
+---
+
+## Implémentation Appartements (Tous écrans)
+
+| Tâche | Status | Sprint |
+|-------|--------|--------|
+| Appartements - RealEstateHomeScreen (réécrit en français) | Done | S14 |
+| Appartements - ApartmentDetailsScreen (photos, équipements, avis) | Done | S14 |
+| Appartements - ApartmentBookingScreen (réservation, durée, paiement) | Done | S14 |
+| Appartements - ApartmentPaymentScreen (paiement, confirmation) | Done | S14 |
+| Appartements - ApartmentFavoritesScreen (favoris) | Done | S14 |
+| Appartements - ApartmentSearchScreen (recherche, filtres) | Done | S14 |
+| Appartements - Toutes routes + imports dans App.js | Done | S14 |
+
+---
+
+## Implémentation Assistant IA (Écrans additionnels)
+
+| Tâche | Status | Sprint |
+|-------|--------|--------|
+| IA - AssistantHistoryScreen (historique conversations) | Done | S14 |
+| IA - AssistantSettingsScreen (paramètres IA) | Done | S14 |
+| IA - Navigation menu → history & settings | Done | S14 |
+| IA - Toutes routes + imports dans App.js | Done | S14 |
+
+## Session S15 — 2026-05-11
+
+| Tâche | Status | Sprint |
+|-------|--------|--------|
+| Pharmacie - PharmacyProfileScreen (profil, historique, paramètres) | Done | S15 |
+| Appartements - ApartmentProfileScreen (profil gestionnaire, biens) | Done | S15 |
+| Appartements - ApartmentListingsScreen (liste annonces, stats) | Done | S15 |
+| Restaurant - RestaurantSellerMenuScreen (gestion livreurs) | Done | S15 |
+| Dating - Routes corrigées en snake_case (dating_profile, dating_chat, etc.) | Done | S15 |
+| Dating - Noms de composants corrigés (DatingHomeScreen → DatingHome, etc.) | Done | S15 |
+| Dating - Toutes routes + imports dans App.js (7 écrans) | Done | S15 |
+| Navigation dead-ends résolus (pharmacy_profile, apartment_profile, apartment_listings, restaurant_seller_couriers) | Done | S15 |

@@ -10,6 +10,7 @@
     "devClient": true,
     "packagerOpts": {
       "hostType": "lan",
+      "lanType": "ip",
       "port": 8081
     },
     "splash": {
@@ -26,6 +27,11 @@
         "backgroundColor": "#000000"
       },
       "package": "com.benksidney.yabisso",
+      "config": {
+        "googleMaps": {
+          "apiKey": "VOTRE_CLE_API_GOOGLE_MAPS_ICI"
+        }
+      },
       "permissions": [
         "SEND_SMS",
         "READ_SMS",

@@ -110,6 +110,7 @@ export class LobaPackService {
         // Ajouter au manifeste
         manifestList.push({
           id: post.id,
+          userId: post.userId,
           hash: post.hash,
           type: post.videoUrl ? 'video' : 'image',
           category: post.category,

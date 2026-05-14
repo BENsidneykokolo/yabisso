@@ -15,7 +15,7 @@ import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import * as SecureStore from 'expo-secure-store';
 import OfflineValidationService from '../services/OfflineValidationService';
 import { VALIDATION_STATUS, SERVICE_TYPES } from '../services/OfflineValidationService';
-import { MeshRequestEvents, NearbyMeshService } from '../../bluetooth/services/NearbyMeshService';
+import { MeshRequestEvents } from '../../bluetooth/services/NearbyMeshService';
 
 const SERVICE_LABELS = {
   marketplace: 'Marché',
@@ -51,7 +51,7 @@ function KioskAdminDashboardScreen({ navigation }) {
     loadValidations();
     
     // Écouter les requêtes Nearby Mesh
-    const sub = MeshRequestEvents.addListener((data) => {
+    const sub = MeshRequestEvents.subscribe((data) => {
       setNearbyRequests(prev => [
         { ...data.request, peerId: data.peerId, isNearby: true, timestamp: Date.now() },
         ...prev
@@ -59,7 +59,7 @@ function KioskAdminDashboardScreen({ navigation }) {
       Alert.alert('🔔 Nouvelle requête', `Requête de validation reçue via Bluetooth de ${data.peerId}`);
     });
 
-    return () => sub.remove();
+    return () => sub();
   }, []);
 
   const loadValidations = async () => {
@@ -205,27 +205,16 @@ function KioskAdminDashboardScreen({ navigation }) {
           <Ionicons name="arrow-back" size={24} color="#fff" />
         </Pressable>
         <Text style={styles.headerTitle}>Admin Kiosque</Text>
-        <Pressable style={styles.settingsButton}>
-          <Ionicons name="settings-outline" size={24} color="#fff" />
-        </Pressable>
-      </View>
-
-      {/* Stats */}
-      <View style={styles.statsContainer}>
-        <View style={[styles.statCard, { backgroundColor: '#16213e' }]}>
-          <MaterialCommunityIcons name="clock-outline" size={24} color="#FFD166" />
-          <Text style={styles.statValue}>{kioskStats.pending}</Text>
-          <Text style={styles.statLabel}>En attente</Text>
-        </View>
-        <View style={[styles.statCard, { backgroundColor: '#16213e' }]}>
-          <MaterialCommunityIcons name="check-circle-outline" size={24} color="#2BEE79" />
-          <Text style={styles.statValue}>{kioskStats.validated}</Text>
-          <Text style={styles.statLabel}>Validés</Text>
-        </View>
-        <View style={[styles.statCard, { backgroundColor: '#16213e' }]}>
-          <MaterialCommunityIcons name="close-circle-outline" size={24} color="#FF4444" />
-          <Text style={styles.statValue}>{kioskStats.rejected}</Text>
-          <Text style={styles.statLabel}>Rejetés</Text>
+        <View style={styles.headerRight}>
+          <Pressable style={styles.settingsButton}>
+            <Ionicons name="settings-outline" size={24} color="#fff" />
+          </Pressable>
+          <Pressable 
+            style={styles.qrButton}
+            onPress={() => navigation.navigate('kiosk_qr', { qrType: 'validation' })}
+          >
+            <MaterialCommunityIcons name="qrcode-scan" size={24} color="#2BEE79" />
+          </Pressable>
         </View>
       </View>
 
@@ -399,10 +388,12 @@ function KioskAdminDashboardScreen({ navigation }) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#1a1a2e' },
-  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 16, paddingTop: 8, backgroundColor: '#16213e' },
+  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 16, paddingTop: 50, backgroundColor: '#16213e' },
   backButton: { padding: 8 },
   headerTitle: { color: '#fff', fontSize: 18, fontWeight: 'bold' },
+  headerRight: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   settingsButton: { padding: 8 },
+  qrButton: { padding: 8 },
   statsContainer: { flexDirection: 'row', padding: 16, gap: 12 },
   statCard: { flex: 1, padding: 16, borderRadius: 12, alignItems: 'center' },
   statValue: { color: '#fff', fontSize: 24, fontWeight: 'bold', marginTop: 8 },

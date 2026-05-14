@@ -199,10 +199,10 @@ function AssistantScreen({
 
   const menuActions = {
     newChat: () => { setInputText(''); Alert.alert('Nouvelle discussion', 'Réinitialisé'); },
-    history: () => Alert.alert('Historique', 'Historique des discussions'),
+    history: () => { setShowMenuModal(false); if (onNavigate) onNavigate('assistant_history'); },
     search: () => Alert.alert('Rechercher', 'Fonctionnalité de recherche'),
-    categories: () => { setShowMenuModal(false); if (onNavigate) onNavigate('services'); },
-    settings: () => { setShowMenuModal(false); if (onNavigate) onNavigate('settings'); },
+    categories: () => { setShowMenuModal(false); if (onNavigate) onNavigate('services_home'); },
+    settings: () => { setShowMenuModal(false); if (onNavigate) onNavigate('assistant_settings'); },
     home: () => { setShowMenuModal(false); if (onNavigate) onNavigate('home'); },
     wallet: () => { setShowMenuModal(false); if (onNavigate) onNavigate('wallet'); },
     profile: () => { setShowMenuModal(false); if (onNavigate) onNavigate('profile'); },

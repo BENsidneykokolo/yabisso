@@ -153,16 +153,39 @@ Processus:
 - Store locally
 - Add to Sync Queue
 
-### QR Kiosque (Offline Signup)
+### QR Kiosque (Offline Signup + Validation)
 Utilise si:
 - user offline sans SMS
 - presence d'un vendeur kiosque
-Processus:
+- Validation produit/service par un kiosque
+
+#### Processus Inscription:
 - App user genere QR (payload signe)
 - App kiosque scanne et valide
 - Creation profil local (validated_by_kiosk)
 - ACK + verification_token
 - User passe actif localement
+
+#### Processus Validation Produit:
+- Vendeur crée produit → QR généré (product_validation)
+- Kiosque scanne le QR via KioskQRScreen.js
+- Validation avec confirmation et vérification
+- Entrée créée dans sync_queue
+- Produit marqué validated
+
+#### Ecrans Kiosque Admin:
+- `KioskAdminDashboardScreen.js` - Dashboard principal
+- `KioskRechargeScreen.js` - Recharge packs (bouton QR)
+- `KioskPointsScreen.js` - Vente points (bouton QR)
+- `KioskUsersScreen.js` - Gestion utilisateurs (bouton QR)
+- `KioskQRScreen.js` - Scanner QR universel (NOUVEAU)
+
+#### Types QR supportés:
+- `recharge` - Recharge packs utilisateur
+- `points` - Vente de points
+- `product_validation` - Validation produit marché
+- `validation_request_*` - Validation via service
+- `user` - Création utilisateur
 
 ### Sync Engine
 Quand internet revient:

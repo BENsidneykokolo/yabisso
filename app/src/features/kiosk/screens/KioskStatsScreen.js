@@ -133,7 +133,7 @@ function KioskStatsScreen({ navigation }) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#1a1a2e' },
-  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 16, paddingTop: 8, backgroundColor: '#16213e' },
+  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 16, paddingTop: 50, backgroundColor: '#16213e' },
   backButton: { padding: 8 },
   headerTitle: { color: '#fff', fontSize: 18, fontWeight: 'bold' },
   content: { flex: 1, padding: 16, paddingBottom: 100 },

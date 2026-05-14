@@ -96,7 +96,12 @@ function KioskRechargeScreen({ navigation }) {
           <Ionicons name="arrow-back" size={24} color="#fff" />
         </Pressable>
         <Text style={styles.headerTitle}>Recharge Packs</Text>
-        <View style={{ width: 40 }} />
+        <Pressable 
+          style={styles.headerQRButton}
+          onPress={() => navigation.navigate('kiosk_qr', { qrType: 'recharge' })}
+        >
+          <MaterialCommunityIcons name="qrcode-scan" size={24} color="#FFD166" />
+        </Pressable>
       </View>
 
       <ScrollView style={styles.content}>
@@ -286,7 +291,7 @@ function KioskRechargeScreen({ navigation }) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#1a1a2e' },
-  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 16, backgroundColor: '#16213e', paddingBottom: 16 },
+  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 16, paddingTop: 50, backgroundColor: '#16213e', paddingBottom: 16 },
   content: { flex: 1, padding: 16, paddingBottom: 150 },
   sectionTitle: { color: '#aaa', fontSize: 14, marginBottom: 12 },
   modeToggle: { flexDirection: 'row', gap: 12, marginBottom: 16 },
@@ -322,6 +327,7 @@ const styles = StyleSheet.create({
   sendButton: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: '#2BEE79', padding: 16, borderRadius: 12 },
   sendButtonDisabled: { backgroundColor: '#666' },
   sendButtonText: { color: '#000', fontSize: 16, fontWeight: 'bold', marginLeft: 8 },
+  headerQRButton: { padding: 8 },
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.8)', justifyContent: 'center', padding: 20 },
   modalContent: { backgroundColor: '#1a1a2e', borderRadius: 16, padding: 20 },
   modalTitle: { color: '#fff', fontSize: 20, fontWeight: 'bold', textAlign: 'center', marginBottom: 20 },

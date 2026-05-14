@@ -547,5 +547,3 @@ const styles = StyleSheet.create({
   saveButton: { backgroundColor: '#2BEE79', padding: 16, borderRadius: 12, alignItems: 'center', marginTop: 20 },
   saveButtonText: { color: '#000', fontSize: 16, fontWeight: 'bold' },
 });
-
-export default ServicesSellerScreen;

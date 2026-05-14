@@ -42,7 +42,7 @@ const MOCK_MESSAGES = [
   },
 ];
 
-function DatingChatScreen({ navigation, route, onBack, onNavigate }) {
+function DatingChat({ navigation, route, onBack, onNavigate }) {
   const profile = route?.params?.profile || {
     id: '1',
     name: 'Amara',
@@ -440,4 +440,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default DatingChatScreen;
+export default DatingChat;

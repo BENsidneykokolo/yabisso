@@ -391,10 +391,15 @@ const handleAddProduct = async () => {
             </View>
 
             <View style={styles.actionRow}>
-              <TouchableOpacity style={styles.primaryButton}>
-                <Text style={styles.primaryButtonText}>Statistiques</Text>
+              <TouchableOpacity 
+                style={styles.primaryButton}
+                onPress={() => onNavigate('restaurant_seller_dashboard')}
+              >
+                <MaterialCommunityIcons name="view-dashboard" size={18} color="#0E151B" />
+                <Text style={styles.primaryButtonText}>Tableau de bord</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.secondaryButton} onPress={() => setShowEditShop(true)}>
+                <Ionicons name="settings-outline" size={18} color="#E6EDF3" />
                 <Text style={styles.secondaryButtonText}>Modifier</Text>
               </TouchableOpacity>
             </View>
@@ -452,10 +457,48 @@ const handleAddProduct = async () => {
             )}
 
             {activeTab === 'orders' && (
-              <View style={styles.emptyProducts}>
-                <MaterialCommunityIcons name="receipt" size={48} color="#4B5563" />
-                <Text style={styles.emptyText}>Aucune commande</Text>
-                <Text style={styles.emptySubtext}>Vos commandes apparaîtront ici</Text>
+              <View style={styles.ordersTabContent}>
+                <TouchableOpacity 
+                  style={styles.ordersTabItem}
+                  onPress={() => onNavigate('restaurant_seller_orders')}
+                >
+                  <View style={styles.ordersTabItemIcon}>
+                    <Ionicons name="receipt" size={24} color="#2BEE79" />
+                  </View>
+                  <View style={styles.ordersTabItemContent}>
+                    <Text style={styles.ordersTabItemTitle}>Toutes les commandes</Text>
+                    <Text style={styles.ordersTabItemSubtitle}>Voir et gérer vos commandes</Text>
+                  </View>
+                  <Ionicons name="chevron-forward" size={20} color="#94A3B8" />
+                </TouchableOpacity>
+
+                <TouchableOpacity 
+                  style={styles.ordersTabItem}
+                  onPress={() => onNavigate('restaurant_seller_notifications')}
+                >
+                  <View style={styles.ordersTabItemIcon}>
+                    <Ionicons name="notifications" size={24} color="#F59E0B" />
+                  </View>
+                  <View style={styles.ordersTabItemContent}>
+                    <Text style={styles.ordersTabItemTitle}>Notifications</Text>
+                    <Text style={styles.ordersTabItemSubtitle}>Alertes et mises à jour</Text>
+                  </View>
+                  <Ionicons name="chevron-forward" size={20} color="#94A3B8" />
+                </TouchableOpacity>
+
+                <TouchableOpacity 
+                  style={styles.ordersTabItem}
+                  onPress={() => onNavigate('restaurant_seller_couriers')}
+                >
+                  <View style={styles.ordersTabItemIcon}>
+                    <Ionicons name="bicycle" size={24} color="#06B6D4" />
+                  </View>
+                  <View style={styles.ordersTabItemContent}>
+                    <Text style={styles.ordersTabItemTitle}>Mes livreurs</Text>
+                    <Text style={styles.ordersTabItemSubtitle}>Gérer vos livreurs</Text>
+                  </View>
+                  <Ionicons name="chevron-forward" size={20} color="#94A3B8" />
+                </TouchableOpacity>
               </View>
             )}
           </>
@@ -939,6 +982,9 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     alignItems: 'center',
     marginRight: 10,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 8,
   },
   primaryButtonText: {
     color: '#0E151B',
@@ -953,6 +999,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.08)',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 8,
   },
   secondaryButtonText: {
     color: '#E6EDF3',
@@ -996,6 +1045,41 @@ const styles = StyleSheet.create({
     color: '#94A3B8',
     fontSize: 13,
     marginTop: 8,
+  },
+  ordersTabContent: {
+    marginTop: 8,
+  },
+  ordersTabItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(24, 32, 40, 0.9)',
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+  },
+  ordersTabItemIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: 'rgba(43, 238, 121, 0.1)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  ordersTabItemContent: {
+    flex: 1,
+  },
+  ordersTabItemTitle: {
+    color: '#F8FAFC',
+    fontSize: 15,
+    fontWeight: '600',
+  },
+  ordersTabItemSubtitle: {
+    color: '#94A3B8',
+    fontSize: 12,
+    marginTop: 2,
   },
   addProductBtn: {
     flexDirection: 'row',

@@ -5,6 +5,7 @@ export default class P2PTransfer extends Model {
   static table = 'p2p_transfers'
 
   @field('hash') hash!: string;
+  @field('user_id') userId!: string;
   @field('peer_id') peerId!: string;
   @field('direction') direction!: string; // 'upload' | 'download'
   @field('rail') rail!: string; // 'ble_mesh' | 'wifi_direct' | 'internet'

@@ -90,7 +90,12 @@ function KioskPointsScreen({ navigation }) {
           <Ionicons name="arrow-back" size={24} color="#fff" />
         </Pressable>
         <Text style={styles.headerTitle}>Vente Points</Text>
-        <View style={{ width: 40 }} />
+        <Pressable 
+          style={styles.headerQRButton}
+          onPress={() => navigation.navigate('kiosk_qr', { qrType: 'points' })}
+        >
+          <MaterialCommunityIcons name="qrcode-scan" size={24} color="#F472B6" />
+        </Pressable>
       </View>
 
       <ScrollView style={styles.content}>
@@ -252,7 +257,7 @@ function KioskPointsScreen({ navigation }) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#1a1a2e' },
-  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 16, paddingTop: 8, backgroundColor: '#16213e' },
+  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 16, paddingTop: 50, backgroundColor: '#16213e' },
   backButton: { padding: 8 },
   headerTitle: { color: '#fff', fontSize: 18, fontWeight: 'bold' },
   content: { flex: 1, padding: 16, paddingBottom: 100 },
@@ -282,6 +287,7 @@ const styles = StyleSheet.create({
   sellButton: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: '#F472B6', padding: 16, borderRadius: 12 },
   sellButtonDisabled: { backgroundColor: '#666' },
   sellButtonText: { color: '#000', fontSize: 16, fontWeight: 'bold', marginLeft: 8 },
+  headerQRButton: { padding: 8 },
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.8)', justifyContent: 'center', padding: 20 },
   modalContent: { backgroundColor: '#1a1a2e', borderRadius: 16, padding: 20 },
   modalTitle: { color: '#fff', fontSize: 20, fontWeight: 'bold', textAlign: 'center', marginBottom: 20 },

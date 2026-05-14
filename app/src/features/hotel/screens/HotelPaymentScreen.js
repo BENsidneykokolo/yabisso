@@ -115,7 +115,7 @@ export default function HotelPaymentScreen({ onBack, onNavigate, route }) {
 
         {/* Booking Summary */}
         <View style={styles.summaryCard}>
-          <Image source={{ uri: roomData.image }} style={summaryImage = { width: 60, height: 60, borderRadius: 10 }} />
+          <Image source={{ uri: roomData.image }} style={{ width: 60, height: 60, borderRadius: 10 }} />
           <View style={styles.summaryInfo}>
             <Text style={styles.roomName}>{roomData.name}</Text>
             <Text style={styles.hotelName}>{hotelData.name}</Text>

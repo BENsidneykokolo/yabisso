@@ -39,10 +39,15 @@ S13-S16: reservations, services, admin console, Play Store launch
 - **Universal Offline-First integration completed** for Marketplace, Wallet, Loba, and AI Assistant.
 - **SellerContactScreen**: Ecran de contact vendeur (appeler, WhatsApp, email, adresse)
 - **RestaurantSellerScreen**: Creation restaurant virtuel (nom, catégorie, livraison, plats)
+- **RestaurantSellerDashboard (Uber Eats style)**: Dashboard complet avec stats, commandes, livreurs, notifications
+- **RestaurantSellerOrdersScreen**: Liste commandes avec filtres (Nouvelles, En cours, Terminées)
+- **RestaurantSellerOrderDetailScreen**: Détail commande avec timeline 6 étapes + actions (Accepter/Préparer/Assigner livreur)
+- **RestaurantSellerAssignCourierScreen**: Sélection et assignation livreur
+- **RestaurantSellerNotificationsScreen**: Notifications temps réel pour le vendeur
 - **Restaurant Menu**: Menu popup style Marketplace (gauche)
 - **Nom boutique dynamique**: Charge depuis SecureStore sur tous les ecrans parcours achat
 - **Migration WatermelonDB (Marketplace)**: Migration complète (Profil Vendeur, Nouveautés, Accueil) pour une gestion offline performante et réactive.
-- **Validation Kiosque (Produits)**: Système de validation officielle par QR Code (Vendeur -> Kiosque) pour activer la visibilité publique.
+- **Validation Kiosque (Produits)**: Système de validation officielle par QR Code (Vendeur -> Kiosque) pour activer la visibilité publique. ✅ COMPLETED (S13)
 
 ## Hotels (COMPLETED)
 - HotelHome: Accueil avec destinations populaires, hôtels en vedette, recherche

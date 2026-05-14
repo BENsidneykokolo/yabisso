@@ -18,7 +18,7 @@ const INTERESTS = [
   'Fashion', 'Gaming', 'Cuisine', 'Lecture', 'Sport', 'Danse',
 ];
 
-function DatingFiltersScreen({ navigation, onBack, onNavigate }) {
+function DatingFilters({ navigation, onBack, onNavigate }) {
   const [selectedGender, setSelectedGender] = useState('Homme');
   const [minAge, setMinAge] = useState(18);
   const [maxAge, setMaxAge] = useState(35);
@@ -51,7 +51,7 @@ function DatingFiltersScreen({ navigation, onBack, onNavigate }) {
         <TouchableOpacity style={styles.headerButton} onPress={onBack}>
           <MaterialCommunityIcons name="arrow-left" size={24} color="#fff" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Filtres</Text>
+<Text style={styles.headerTitle}>Filtres</Text>
         <TouchableOpacity onPress={handleReset}>
           <Text style={styles.resetText}>Réinitialiser</Text>
         </TouchableOpacity>
@@ -60,29 +60,6 @@ function DatingFiltersScreen({ navigation, onBack, onNavigate }) {
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Genre</Text>
-          <View style={styles.optionsRow}>
-            {GENDERS.map((gender) => (
-              <TouchableOpacity
-                key={gender}
-                style={[
-                  styles.optionButton,
-                  selectedGender === gender && styles.optionButtonSelected,
-                ]}
-                onPress={() => setSelectedGender(gender)}
-              >
-                <Text style={[
-                  styles.optionText,
-                  selectedGender === gender && styles.optionTextSelected,
-                ]}>
-                  {gender}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        </View>
-
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Âge</Text>
           <View style={styles.ageContainer}>
             <View style={styles.ageSelector}>
               <Text style={styles.ageLabel}>Min</Text>
@@ -364,4 +341,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default DatingFiltersScreen;
+export default DatingFilters;
