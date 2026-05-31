@@ -3508,6 +3508,33 @@ Les modifications précédentes ont été perdues. Je les ai réappliquées :
 
 ---
 
+## Session 2026-05-14 - Problème Partage WiFi Direct
+
+### Problème identifié
+- Les 2 appareils se connectent via WiFi Direct (GO=true / GO=false)
+- Mais le partage ne se fait pas automatiquement
+- Itel demande une invitation (Nearby Mesh)
+
+### Analyse des logs
+1. Itel (score 18) → Master (GO=true) → attend réception
+2. Xiaomi (score 73) → Slave (GO=false) → tente envoi
+3. Log "🚀 Envoi immédiat du Pack Loba..." mais rien après
+
+### Cause probable
+- `LobaPackService.buildPack()` retourne null (pas de contenu local)
+- Pas de log pour confirmer l'envoi
+
+### Corrections appliquées
+- Ajout de logs détaillés dans P2PAutoSync.js pour voir :
+  - Si le pack est null
+  - Si sendFile échoue
+  - Envoi ping de test si pas de pack
+
+### Date modification fichier
+- `loba_nearby_wifi_direct_auto_scan.md` : 2026-05-14 17:32:12
+
+---
+
 ## Session 2026-05-14 - Configuration IP Metro
 
 ### Mise à jour IP .env
@@ -3557,3 +3584,47 @@ Créer un fichier de documentation complet sur le code WiFi Direct et Nearby Con
 ```bash
 cd app && npm start
 ```
+
+User: tu peux verifier tous les fichiers .md dans le repo "mesfichiers" qui se trouve ici: C:\Users\Utilisateur\Documents\Ben\myapp\yabisso\mesfichiers pour avoir le contexte de ce que nous faisons et aussi enregistrer automatiquement notre echange dans le fichier chat.md en temps reel que nous echangeons pour ne pas perdre l'historique, et aussi quand je tedemande quelque chose prend le temps de "hink deeper" avant de me repondre mais surtout reverifier et tester de ton cote pour verifier ce que tu viens d'implementer marche, et aussi a partir de maintenant quand je te demande de faire une sauvegarde git et gitub, tu dois verifier la version precedente pour connaitre le numero de version que tu va mettre alors exemple: v:0.0.1, donc le prochain sera v:0.0.2 et quand ça va arriver à v:0.0.9 on passera a v:0.1.0 ainsi de suite
+## 2026-06-01 - Vérification complète des fichiers .md et logging temps réel
+
+Assistant a revu l'intégralité des fichiers `.md` dans `mesfichiers` (19 fichiers). Tous sont à jour et cohérents avec l'état du projet. Ce fichier `chat.md` est mis à jour après chaque échange pour conserver l'historique complet.
+
+**Rappel des règles adoptées :**
+- Think deeper avant chaque réponse
+- Tester et vérifier le code après chaque implémentation
+- Versionnage Git/GitHub : v:0.0.X → v:0.0.X+1 (max 9 → v:0.1.0)
+- Enregistrement automatique des échanges dans `chat.md`
+
+---
+
+## 2026-06-01 - Mise à jour IP .env
+
+**User** : Mise à jour de l'IP de 192.168.1.67 à 192.168.1.70 (ipconfig confirmé).
+
+**Assistant** : Fichier `.env` mis à jour avec la nouvelle IP `192.168.1.70`. Metro démarrera correctement avec `npm start`.
+
+---
+
+User: super, maintenant je veux qu'on se concentre dans le partage des contenu dans loba... il y'a un mais car la connexion qu'on avait fait il envoyait uniquement dans un sens donc master et slave alors que moi je voulais que les 2 telephones se poartage les contenus... propose moi une approche qui peut le faire et si c'est bon on va le build ensemble (P2PAutoSync logs fournis)
+
+Assistant: J'ai analysé en profondeur tes fichiers (notamment `P2PAutoSync.js` et `WifiDirectService.js`) et tes logs. J'ai rédigé un plan technique complet d'une méthode "Ping-Pong" déterministe qui permet l'échange bidirectionnel. J'ai ajouté ce plan dans nos documents pour ton approbation avant de commencer l'implémentation.
+
+---
+
+## Session 2026-06-01 - Implémentation du Ping-Pong Bidirectionnel WiFi Direct
+
+**User** : super on peut implimenter mais alors pour ça comme itel est un tel bad game il risque de planter mais on peut tester et s'il plante tu pourras trouver une autre approche du coup: On ignore le cooldown de 5s pour se reconnecter instantanément.
+
+**Assistant** : J'ai mis en place l'approche approuvée en ajoutant un mécanisme d'inversion des rôles (Ping-Pong) déterministe et en optimisant les cooldowns de reconnexion pour les rendre instantanés en cas de swap actif.
+
+### Changements effectués :
+1. **WifiDirectService.js** :
+   - Ajout de `sendControlMessage` pour transmettre des métadonnées légères sans déclencher la réception de fichiers (`receiveFile`).
+   - Modification de `startReceiving` pour intercepter les messages avec l'action `CONTROL_MESSAGE` et invoquer directement le callback.
+2. **P2PAutoSync.js** :
+   - Ajout des dictionnaires d'état `_roleSwapQueue` et `_completedSyncs`.
+   - Mise à jour de `_iAmMasterFor` pour respecter la priorité absolue des rôles forcés par le swap.
+   - Modification de `onPeerFound` pour contourner le cooldown habituel de 5s lorsque le swap est actif, permettant la reconnexion instantanée.
+   - Modification de `_p2pSyncCycle` pour exécuter la Phase 1 (envoi de `SWAP_ROLE_REQUEST` et forçage temporaire du rôle Master pour la prochaine connexion) et la Phase 2 (envoi de `SYNC_COMPLETE` et fin de cycle).
+   - Modification de `_handleReceivedFile` pour intercepter les messages de contrôle, modifier les rôles forcés et éviter les déconnexions intempestives du Master récepteur.

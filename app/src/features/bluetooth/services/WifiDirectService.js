@@ -83,6 +83,7 @@ class WifiDirectServiceClass {
       }
 
       await WifiP2P.initialize();
+      await new Promise(r => setTimeout(r, 500));
       
       WifiP2P.subscribeOnPeersUpdates(({ devices }) => {
         this.peers = devices || [];
@@ -104,9 +105,15 @@ class WifiDirectServiceClass {
             this.startReceiving(this.globalFileHandler);
           }
         } else {
+          const wasConnected = !!this.connectedPeer;
+          this.connectedPeer = null;
           this.isConnected = false;
           this.isConnecting = false;
-          this._emit('onConnectionChange', { connected: false });
+          this.isGroupOwner = false;
+          this.groupOwnerAddress = null;
+          if (wasConnected) {
+            this._emit('onConnectionChange', { connected: false });
+          }
         }
       });
 
@@ -114,28 +121,35 @@ class WifiDirectServiceClass {
       this.isInitializing = false;
       return true;
     } catch (e) {
+      console.warn('[WifiDirectService] Init native échouée:', e.message);
+      this.isSupported = false;
       this.isInitializing = false;
       return false;
     }
   }
 
   async startDiscovery(force = false) {
-    if (!this.initialized) await this.initialize();
+    if (!this.isSupported || !WifiP2P) return false;
+    if (!this.initialized) {
+      const ok = await this.initialize();
+      if (!ok) return false;
+    }
     try {
-      await WifiP2P.stopDiscoveringPeers();
-      await new Promise(r => setTimeout(r, 200));
+      try { await WifiP2P.stopDiscoveringPeers(); } catch (_) {}
+      await new Promise(r => setTimeout(r, 300));
       await WifiP2P.startDiscoveringPeers();
       this.isDiscovering = true;
       console.log('[WifiDirectService] Découverte démarrée.');
       return true;
-    } catch (_) {
+    } catch (e) {
+      console.warn('[WifiDirectService] startDiscovery error:', e.message);
       return false;
     }
   }
 
   async stopDiscovery() {
     this.isDiscovering = false;
-    try { await WifiP2P.stopDiscoveringPeers(); } catch (_) {}
+    try { if (WifiP2P && this.initialized) await WifiP2P.stopDiscoveringPeers(); } catch (_) {}
   }
 
   async connectToPeer(device, retryCount = 0, forceRole = null) {
@@ -153,27 +167,48 @@ class WifiDirectServiceClass {
 
       console.log(`[WifiDirectService] 🔄 Tentative ${iAmMaster ? 'MASTER' : 'SLAVE'}`);
 
-      // NETTOYAGE (Stabilité Maximale : 3s)
-      if (!this.isConnecting && !this.isConnected) {
+      if (iAmMaster) {
+        // MASTER: Nettoyage complet avant createGroup
         try { await WifiP2P.removeGroup(); } catch (_) {}
         try { await WifiP2P.stopDiscoveringPeers(); } catch (_) {}
-        await new Promise(r => setTimeout(r, 3000));
-      }
+        await new Promise(r => setTimeout(r, 1000));
 
-      if (iAmMaster) {
         try {
           await WifiP2P.createGroup();
           await new Promise(r => setTimeout(r, 2000));
           return true;
         } catch (e) {
+          console.warn('[WifiDirectService] ❌ Erreur createGroup:', e.message);
           this.isConnecting = false;
           return false;
         }
       } else {
-        await WifiP2P.connect(macAddr);
-        return true;
+        // SLAVE: PAS de nettoyage — on se connecte directement au groupe du Master
+        // Petit délai de sécurité pour les appareils bas de gamme (Itel)
+        await new Promise(r => setTimeout(r, 500));
+
+        try {
+          await WifiP2P.connect(macAddr);
+          return true;
+        } catch (e) {
+          console.warn('[WifiDirectService] ⚠️ Erreur connect (tentative 1):', e.message);
+          // Retry une fois après 2s (laisser le Master finir son createGroup)
+          await new Promise(r => setTimeout(r, 2000));
+          try {
+            await WifiP2P.connect(macAddr);
+            console.log('[WifiDirectService] ✅ Retry SLAVE réussi !');
+            return true;
+          } catch (e2) {
+            console.warn('[WifiDirectService] ❌ Erreur connect (tentative 2):', e2.message);
+            // Relancer la découverte pour ne pas rester bloqué
+            try { await WifiP2P.startDiscoveringPeers(); this.isDiscovering = true; } catch (_) {}
+            this.isConnecting = false;
+            return false;
+          }
+        }
       }
     } catch (e) {
+      console.warn('[WifiDirectService] ❌ Erreur connectToPeer:', e.message);
       this.isConnecting = false;
       return false;
     }
@@ -205,6 +240,27 @@ class WifiDirectServiceClass {
     }
   }
 
+  async sendControlMessage(metadata = {}) {
+    if (!this.isConnected || this.isGroupOwner) return false;
+    if (this._isSending) return false;
+    this._isSending = true;
+
+    try {
+      const metaPayload = JSON.stringify({
+        ...metadata,
+        action: 'CONTROL_MESSAGE',
+        senderDevice: this.getDeviceName()
+      });
+
+      await WifiP2P.sendMessage(metaPayload);
+      return true;
+    } catch (e) {
+      return false;
+    } finally {
+      this._isSending = false;
+    }
+  }
+
   async startReceiving(callback) {
     if (this._receiveMessages) return;
     this._receiveMessages = true;
@@ -220,7 +276,9 @@ class WifiDirectServiceClass {
         const msg = await WifiP2P.receiveMessage();
         if (msg) {
           const meta = JSON.parse(msg);
-          if (meta.action === 'FILE_TRANSFER' || meta.type === 'LOBA_PACK') {
+          if (meta.action === 'CONTROL_MESSAGE') {
+            if (callback) callback(null, meta);
+          } else if (meta.action === 'FILE_TRANSFER' || meta.type === 'LOBA_PACK') {
             const filename = meta.filename || `p2p_${Date.now()}`;
             const path = await WifiP2P.receiveFile(mediaDir, filename);
             if (callback) callback(path, meta);
@@ -238,14 +296,18 @@ class WifiDirectServiceClass {
 
   async disconnect() {
     try { await WifiP2P.removeGroup(); } catch (_) {}
+    this.connectedPeer = null;
     this.isConnected = false;
     this.isConnecting = false;
+    this.isGroupOwner = false;
+    this.groupOwnerAddress = null;
     this._emit('onConnectionChange', { connected: false });
   }
 
   getState() {
     return {
       initialized: this.initialized,
+      isAvailable: this.isSupported && !!WifiP2P,
       isConnected: this.isConnected,
       isConnecting: this.isConnecting,
       isGroupOwner: this.isGroupOwner,

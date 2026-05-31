@@ -32,6 +32,9 @@ class P2PAutoSyncClass {
     this._lastReceivedFrom = {};
     this._lastDisconnectAt = 0; 
     this._pendingPostsCount = 0; 
+    this._roleSwapQueue = {};
+    this._completedSyncs = {};
+    this._wasConnected = false;
     this.stats = {
       totalSyncedP2P: 0,
       totalSyncedCloud: 0,
@@ -59,14 +62,24 @@ class P2PAutoSyncClass {
   }
 
   _iAmMasterFor(peerName) {
+    if (!peerName) return false;
+    const key = peerName.toLowerCase();
+
+    if (this._roleSwapQueue[key]) {
+      const forcedRole = this._roleSwapQueue[key];
+      const amMaster = forcedRole === 'MASTER';
+      this._log(`🔄 [Swap Actif] Rôle forcé pour ${peerName} : ${forcedRole} (Je suis Master ? ${amMaster})`);
+      return amMaster;
+    }
+
     const myScore = this._parseScore(WifiDirectService.getDeviceName());
     const peerScore = this._parseScore(peerName);
     
     const iHaveContent = this._pendingPostsCount > 0;
 
     if (myScore > 0 && peerScore > 0) {
-       const lastReceived = this._lastReceivedFrom[peerName] || 0;
-       const lastSent = this._lastSentTo[peerName] || 0;
+       const lastReceived = this._lastReceivedFrom[key] || 0;
+       const lastSent = this._lastSentTo[key] || 0;
        const fiveMinsAgo = Date.now() - 5 * 60000;
        
        if (iHaveContent && lastReceived > lastSent && lastReceived > fiveMinsAgo) {
@@ -129,10 +142,21 @@ class P2PAutoSyncClass {
       WifiDirectService.on('onPeerFound', async (peer) => {
         if (!this._running || WifiDirectService.connectedPeer || WifiDirectService.isConnecting) return;
 
-        const timeSinceDisconnect = Date.now() - this._lastDisconnectAt;
-        if (timeSinceDisconnect < DISCONNECT_COOLDOWN_MS) return;
-
         const peerName = (peer.deviceName || 'Unknown').toLowerCase();
+
+        // 1. Vérifier si la synchro bidirectionnelle a été complétée récemment (5 min de repos)
+        const lastSyncComplete = this._completedSyncs[peerName] || 0;
+        const fiveMinsAgo = Date.now() - 5 * 60000;
+        if (lastSyncComplete > fiveMinsAgo) return;
+
+        // 2. Vérifier si un swap de rôle est actif
+        const isSwapActive = !!this._roleSwapQueue[peerName];
+
+        // Si swap actif, on ignore complètement le cooldown de 5s
+        const timeSinceDisconnect = Date.now() - this._lastDisconnectAt;
+        const cooldown = isSwapActive ? 0 : DISCONNECT_COOLDOWN_MS;
+        if (timeSinceDisconnect < cooldown) return;
+
         const isMaster = this._iAmMasterFor(peerName);
 
         if (isMaster) {
@@ -150,6 +174,7 @@ class P2PAutoSyncClass {
 
       WifiDirectService.on('onConnectionChange', async ({ connected, info }) => {
         if (connected && this._running) {
+          this._wasConnected = true;
           this._log('📶 WiFi Direct CONNECTÉ ! Handshake final (1s)...');
           setTimeout(() => {
             if (WifiDirectService.connectedPeer && this._running) {
@@ -161,10 +186,17 @@ class P2PAutoSyncClass {
               }
             }
           }, 1000);
-        } else {
+        } else if (this._wasConnected) {
+          this._wasConnected = false;
           WifiDirectService.stopReceiving();
           this._lastDisconnectAt = Date.now();
-          this._log('🔌 Déconnexion détectée. Cool-down (5s)...');
+          const peerName = 'unknown';
+          const isSwapActive = Object.keys(this._roleSwapQueue).length > 0;
+          if (isSwapActive) {
+            this._log('🔌 Déconnexion détectée. Swap actif : reconnexion immédiate...');
+          } else {
+            this._log('🔌 Déconnexion détectée. Cool-down (5s)...');
+          }
         }
       });
 
@@ -201,16 +233,32 @@ class P2PAutoSyncClass {
     this._log(`⚡ Synchronisation forcée déclenchée...`);
 
     if (!WifiDirectService.connectedPeer && !WifiDirectService.isConnecting) {
-      const timeSinceDisconnect = Date.now() - this._lastDisconnectAt;
-      if (!force && timeSinceDisconnect < DISCONNECT_COOLDOWN_MS) return;
-      
-      if (force) await WifiDirectService.startDiscovery(true);
-
-      await this._updatePendingCount();
       const detectedPeers = WifiDirectService.peers || [];
       if (detectedPeers.length > 0) {
-        const isMaster = this._iAmMasterFor(detectedPeers[0].deviceName);
-        await WifiDirectService.connectToPeer(detectedPeers[0], 0, isMaster ? 'MASTER' : 'SLAVE');
+        const peer = detectedPeers[0];
+        const peerName = (peer.deviceName || 'Unknown').toLowerCase();
+
+        if (force) {
+          delete this._completedSyncs[peerName];
+          if (!this._roleSwapQueue[peerName]) {
+            delete this._roleSwapQueue[peerName];
+          }
+        }
+
+        const lastSyncComplete = this._completedSyncs[peerName] || 0;
+        const fiveMinsAgo = Date.now() - 5 * 60000;
+        if (!force && lastSyncComplete > fiveMinsAgo) return;
+
+        const isSwapActive = !!this._roleSwapQueue[peerName];
+        const timeSinceDisconnect = Date.now() - this._lastDisconnectAt;
+        const cooldown = isSwapActive ? 0 : DISCONNECT_COOLDOWN_MS;
+        if (!force && timeSinceDisconnect < cooldown) return;
+        
+        if (force) await WifiDirectService.startDiscovery(true);
+
+        await this._updatePendingCount();
+        const isMaster = this._iAmMasterFor(peer.deviceName);
+        await WifiDirectService.connectToPeer(peer, 0, isMaster ? 'MASTER' : 'SLAVE');
       }
     }
 
@@ -263,8 +311,29 @@ class P2PAutoSyncClass {
       if (state.isAvailable) {
         if (!state.initialized) await WifiDirectService.initialize();
 
+        const detectedPeers = WifiDirectService.peers || [];
+        let isSwapActive = false;
+        let peerName = 'unknown';
+        if (detectedPeers.length > 0) {
+          peerName = (detectedPeers[0].deviceName || 'Unknown').toLowerCase();
+          if (this._roleSwapQueue[peerName]) {
+            isSwapActive = true;
+          }
+        }
+
+        // Vérifier si la synchro bidirectionnelle a été complétée récemment (5 min de repos)
+        if (peerName !== 'unknown') {
+          const lastSyncComplete = this._completedSyncs[peerName] || 0;
+          const fiveMinsAgo = Date.now() - 5 * 60000;
+          if (lastSyncComplete > fiveMinsAgo) {
+            this._syncingP2P = false;
+            return;
+          }
+        }
+
         const timeSinceDisconnect = Date.now() - this._lastDisconnectAt;
-        if (timeSinceDisconnect < DISCONNECT_COOLDOWN_MS) {
+        const cooldown = isSwapActive ? 0 : DISCONNECT_COOLDOWN_MS;
+        if (timeSinceDisconnect < cooldown) {
            this._syncingP2P = false;
            return;
         }
@@ -272,7 +341,6 @@ class P2PAutoSyncClass {
         if (!WifiDirectService.connectedPeer && !WifiDirectService.isConnecting) {
           if (!state.isDiscovering) await WifiDirectService.startDiscovery(true);
           
-          const detectedPeers = WifiDirectService.peers || [];
           if (detectedPeers.length > 0) {
             const peer = detectedPeers[0];
             const isMaster = this._iAmMasterFor(peer.deviceName);
@@ -288,9 +356,13 @@ class P2PAutoSyncClass {
         } else {
           this._log('🟢 Slave connecté — envoi du pack...');
           const packPath = await LobaPackService.buildPack(category);
+          const peerName = (WifiDirectService.connectedPeer?.deviceName || 'Unknown').toLowerCase();
+          const isSwapActive = !!this._roleSwapQueue[peerName];
+
+          let sent = false;
           if (packPath) {
-            this._log(`📤 Envoi du Pack...`);
-            let sent = await WifiDirectService.sendFile(packPath, {
+            this._log(`📤 Envoi du Pack: ${packPath}`);
+            sent = await WifiDirectService.sendFile(packPath, {
               hash: `pack_${Date.now()}`,
               type: 'LOBA_PACK',
               category: category || 'bundle',
@@ -298,11 +370,43 @@ class P2PAutoSyncClass {
             });
 
             if (sent) {
-              const peerName = (WifiDirectService.connectedPeer?.deviceName || 'Unknown').toLowerCase();
               this._lastSentTo[peerName] = Date.now();
               this._log(`✅ Succès: Pack envoyé !`);
-              setTimeout(() => { WifiDirectService.disconnect(); }, 3000);
+            } else {
+              this._log(`❌ Échec envoi pack (sendFile a retourné false)`);
             }
+          } else {
+            this._log(`⚠️ Pas de pack à envoyer (buildPack a retourné null)`);
+          }
+
+          // Déterminer l'action post-transfert (Swap ou Fin de Synchro)
+          if (!isSwapActive) {
+            // PHASE 1 : Demande de Swap
+            this._log(`🔄 Fin Phase 1 — Envoi de SWAP_ROLE_REQUEST...`);
+            const msgSent = await WifiDirectService.sendControlMessage({
+              type: 'SWAP_ROLE_REQUEST'
+            });
+            if (msgSent) {
+              this._roleSwapQueue[peerName] = 'MASTER';
+              this._log(`✅ SWAP_ROLE_REQUEST envoyé. Déconnexion dans 3s...`);
+            } else {
+              this._log(`❌ Échec de l'envoi de SWAP_ROLE_REQUEST`);
+            }
+            setTimeout(() => { WifiDirectService.disconnect(); }, 3000);
+          } else {
+            // PHASE 2 : Confirmation Fin de Synchro
+            this._log(`🏁 Fin Phase 2 — Envoi de SYNC_COMPLETE...`);
+            const msgSent = await WifiDirectService.sendControlMessage({
+              type: 'SYNC_COMPLETE'
+            });
+            if (msgSent) {
+              delete this._roleSwapQueue[peerName];
+              this._completedSyncs[peerName] = Date.now();
+              this._log(`✅ SYNC_COMPLETE envoyé. Déconnexion dans 3s...`);
+            } else {
+              this._log(`❌ Échec de l'envoi de SYNC_COMPLETE`);
+            }
+            setTimeout(() => { WifiDirectService.disconnect(); }, 3000);
           }
         }
       } else if (bestP2P === RAIL_TYPES.BLE_MESH) {
@@ -323,8 +427,26 @@ class P2PAutoSyncClass {
 
   async _handleReceivedFile(filePath, metadata, source) {
     try {
-      if (!metadata || !metadata.hash) {
-        if (metadata?.action === 'PING') {
+      if (!metadata) return;
+
+      // Intercepter les messages de contrôle du protocole de swap bidirectionnel
+      if (metadata.action === 'CONTROL_MESSAGE') {
+        this._log(`⭐ REÇU MESSAGE DE CONTRÔLE: ${metadata.type} de ${metadata.senderDevice}`);
+        const peerName = (metadata.senderDevice || WifiDirectService.connectedPeer?.deviceName || 'Unknown').toLowerCase();
+        
+        if (metadata.type === 'SWAP_ROLE_REQUEST') {
+          this._roleSwapQueue[peerName] = 'SLAVE';
+          this._log(`🔄 Rôle SWAP enregistré : Prochaine connexion avec ${peerName} en tant que SLAVE`);
+        } else if (metadata.type === 'SYNC_COMPLETE') {
+          delete this._roleSwapQueue[peerName];
+          this._completedSyncs[peerName] = Date.now();
+          this._log(`✅ Synchro bidirectionnelle complétée avec ${peerName}. Repos de 5 minutes.`);
+        }
+        return;
+      }
+
+      if (!metadata.hash) {
+        if (metadata.action === 'PING') {
           this._log(`⭐ REÇU PING via ${source}!`);
           return;
         }
@@ -340,7 +462,7 @@ class P2PAutoSyncClass {
             this._log(`✅ Pack traité !`);
             this.stats.totalSyncedP2P++;
           }
-          setTimeout(() => WifiDirectService.disconnect(), 3000);
+          // Note: On ne disconnecte plus automatiquement ici car le Slave gère le cycle et la déconnexion après envoi du message de contrôle.
           return;
       }
       
