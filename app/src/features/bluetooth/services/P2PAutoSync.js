@@ -35,6 +35,7 @@ class P2PAutoSyncClass {
     this._roleSwapQueue = {};
     this._completedSyncs = {};
     this._wasConnected = false;
+    this._discoveryHeartbeat = null;
     this.stats = {
       totalSyncedP2P: 0,
       totalSyncedCloud: 0,
@@ -133,6 +134,7 @@ class P2PAutoSyncClass {
       const state = WifiDirectService.getState();
       if (state.isAvailable) {
         await WifiDirectService.initialize();
+        NetworkRailDetector.setWifiDirectAvailable(true);
         await WifiDirectService.startDiscovery(true);
       }
       
@@ -175,6 +177,7 @@ class P2PAutoSyncClass {
       WifiDirectService.on('onConnectionChange', async ({ connected, info }) => {
         if (connected && this._running) {
           this._wasConnected = true;
+          NetworkRailDetector.setWifiDirectAvailable(true);
           this._log('📶 WiFi Direct CONNECTÉ ! Handshake final (1s)...');
           setTimeout(() => {
             if (WifiDirectService.connectedPeer && this._running) {
@@ -188,11 +191,10 @@ class P2PAutoSyncClass {
           }, 1000);
         } else if (this._wasConnected) {
           this._wasConnected = false;
+          NetworkRailDetector.setWifiDirectAvailable(false);
           WifiDirectService.stopReceiving();
           this._lastDisconnectAt = Date.now();
-          const peerName = 'unknown';
-          const isSwapActive = Object.keys(this._roleSwapQueue).length > 0;
-          if (isSwapActive) {
+          if (Object.keys(this._roleSwapQueue).length > 0) {
             this._log('🔌 Déconnexion détectée. Swap actif : reconnexion immédiate...');
           } else {
             this._log('🔌 Déconnexion détectée. Cool-down (5s)...');
@@ -207,12 +209,25 @@ class P2PAutoSyncClass {
     if (this._p2pInterval) clearInterval(this._p2pInterval);
     this._p2pInterval = setInterval(() => this._p2pSyncCycle(), P2P_SYNC_INTERVAL_MS);
     this._p2pSyncCycle();
+
+    // Heartbeat: relancer la découverte WiFi Direct toutes les 25s (Android la tue après ~30s)
+    if (this._discoveryHeartbeat) clearInterval(this._discoveryHeartbeat);
+    this._discoveryHeartbeat = setInterval(() => {
+      if (this._running && !WifiDirectService.connectedPeer && !WifiDirectService.isConnecting) {
+        const peers = WifiDirectService.peers || [];
+        if (peers.length === 0) {
+          this._log(`💓 [Heartbeat] Relance découverte WiFi Direct (peers=0)...`);
+          WifiDirectService.startDiscovery(true);
+        }
+      }
+    }, 25000);
   }
 
   async requestWifiDirectActivation() {
     try {
       const state = WifiDirectService.getState();
       if (!state.initialized) await WifiDirectService.initialize();
+      NetworkRailDetector.setWifiDirectAvailable(true);
       await WifiDirectService.startDiscovery(true);
       this._log('⚡ Activation WiFi Direct demandée par l\'accueil.');
     } catch (e) {}
@@ -231,6 +246,12 @@ class P2PAutoSyncClass {
     this._manualTrigger = true;
     this._lastManualSync = Date.now();
     this._log(`⚡ Synchronisation forcée déclenchée...`);
+
+    // Toujours relancer la découverte WiFi Direct si non connecté
+    if (!WifiDirectService.connectedPeer && !WifiDirectService.isConnecting) {
+      this._log(`🔍 [Trigger] Relance découverte WiFi Direct (force=${force})...`);
+      await WifiDirectService.startDiscovery(true);
+    }
 
     if (!WifiDirectService.connectedPeer && !WifiDirectService.isConnecting) {
       const detectedPeers = WifiDirectService.peers || [];
@@ -253,12 +274,13 @@ class P2PAutoSyncClass {
         const timeSinceDisconnect = Date.now() - this._lastDisconnectAt;
         const cooldown = isSwapActive ? 0 : DISCONNECT_COOLDOWN_MS;
         if (!force && timeSinceDisconnect < cooldown) return;
-        
-        if (force) await WifiDirectService.startDiscovery(true);
 
         await this._updatePendingCount();
         const isMaster = this._iAmMasterFor(peer.deviceName);
+        this._log(`🔗 [Trigger] Connexion à ${peer.deviceName} (${isMaster ? 'MASTER' : 'SLAVE'})...`);
         await WifiDirectService.connectToPeer(peer, 0, isMaster ? 'MASTER' : 'SLAVE');
+      } else {
+        this._log(`⏳ [Trigger] Aucun peer WiFi Direct détecté. Découverte relancée, attente...`);
       }
     }
 
@@ -289,8 +311,10 @@ class P2PAutoSyncClass {
     this._running = false;
     if (this._p2pInterval) clearInterval(this._p2pInterval);
     if (this._cloudInterval) clearInterval(this._cloudInterval);
+    if (this._discoveryHeartbeat) clearInterval(this._discoveryHeartbeat);
     this._p2pInterval = null;
     this._cloudInterval = null;
+    this._discoveryHeartbeat = null;
 
     try {
       NetworkRailDetector.stop();
@@ -339,18 +363,22 @@ class P2PAutoSyncClass {
         }
 
         if (!WifiDirectService.connectedPeer && !WifiDirectService.isConnecting) {
-          if (!state.isDiscovering) await WifiDirectService.startDiscovery(true);
+          // Toujours relancer la découverte si peers est vide (Android tue la découverte après ~30s)
+          if (detectedPeers.length === 0 || !state.isDiscovering) {
+            this._log(`🔄 [Cycle] Relance découverte WiFi Direct (peers=${detectedPeers.length}, discovering=${state.isDiscovering})...`);
+            await WifiDirectService.startDiscovery(true);
+          }
           
           if (detectedPeers.length > 0) {
             const peer = detectedPeers[0];
             const isMaster = this._iAmMasterFor(peer.deviceName);
+            this._log(`🔗 [Cycle] Connexion à ${peer.deviceName} (${isMaster ? 'MASTER' : 'SLAVE'})...`);
             await WifiDirectService.connectToPeer(peer, 0, isMaster ? 'MASTER' : 'SLAVE');
           }
         }
       }
 
-      const bestP2P = NetworkRailDetector.getBestRail(true);
-      if (bestP2P === RAIL_TYPES.WIFI_DIRECT && WifiDirectService.connectedPeer) {
+      if (WifiDirectService.connectedPeer) {
         if (WifiDirectService.isGroupOwner) {
           this._log('📡 Mode Réception — Prêt.');
         } else {
@@ -409,10 +437,10 @@ class P2PAutoSyncClass {
             setTimeout(() => { WifiDirectService.disconnect(); }, 3000);
           }
         }
-      } else if (bestP2P === RAIL_TYPES.BLE_MESH) {
+      } else if (NetworkRailDetector.activeRails.has(RAIL_TYPES.BLE_MESH)) {
         const pendingUploads = await this._getPendingUploads();
         if (pendingUploads.length > 0) {
-          for (const post of pendingUploads) await this._propagateToPeers(post, bestP2P);
+          for (const post of pendingUploads) await this._propagateToPeers(post, RAIL_TYPES.BLE_MESH);
         }
       }
 

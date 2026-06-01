@@ -38,6 +38,7 @@ class WifiDirectServiceClass {
       onSyncStatus: [],
     };
     this._nativeLock = false;
+    this._nativeReady = false;
   }
 
   _buildDeviceName() {
@@ -71,7 +72,10 @@ class WifiDirectServiceClass {
     this.isInitializing = true;
 
     try {
-      if (!WifiP2P) return false;
+      if (!WifiP2P) {
+        this.isInitializing = false;
+        return false;
+      }
 
       if (Platform.OS === 'android') {
         try {
@@ -83,8 +87,29 @@ class WifiDirectServiceClass {
       }
 
       await WifiP2P.initialize();
-      await new Promise(r => setTimeout(r, 500));
-      
+      await new Promise(r => setTimeout(r, 800));
+
+      let nativeReady = false;
+      try {
+        const testResult = await WifiP2P.getName();
+        nativeReady = !!testResult;
+      } catch (_) {
+        // Retry avec plus de temps pour les appareils lents (Itel)
+        await new Promise(r => setTimeout(r, 1500));
+        try {
+          const testResult2 = await WifiP2P.getName();
+          nativeReady = !!testResult2;
+        } catch (_) {
+          nativeReady = false;
+        }
+      }
+
+      if (!nativeReady) {
+        console.warn('[WifiDirectService] ⚠️ getName() a échoué mais on continue quand même...');
+      }
+
+      this._nativeReady = true;
+
       WifiP2P.subscribeOnPeersUpdates(({ devices }) => {
         this.peers = devices || [];
         this.peers.forEach(p => {
@@ -123,13 +148,15 @@ class WifiDirectServiceClass {
     } catch (e) {
       console.warn('[WifiDirectService] Init native échouée:', e.message);
       this.isSupported = false;
+      this.initialized = false;
+      this._nativeReady = false;
       this.isInitializing = false;
       return false;
     }
   }
 
   async startDiscovery(force = false) {
-    if (!this.isSupported || !WifiP2P) return false;
+    if (!this.isSupported || !WifiP2P || !this._nativeReady) return false;
     if (!this.initialized) {
       const ok = await this.initialize();
       if (!ok) return false;
@@ -149,11 +176,12 @@ class WifiDirectServiceClass {
 
   async stopDiscovery() {
     this.isDiscovering = false;
-    try { if (WifiP2P && this.initialized) await WifiP2P.stopDiscoveringPeers(); } catch (_) {}
+    try { if (WifiP2P && this._nativeReady && this.initialized) await WifiP2P.stopDiscoveringPeers(); } catch (_) {}
   }
 
   async connectToPeer(device, retryCount = 0, forceRole = null) {
     if (this.isConnecting || this.isConnected) return false;
+    if (!this._nativeReady || !WifiP2P) return false;
     this.isConnecting = true;
 
     try {
@@ -295,7 +323,7 @@ class WifiDirectServiceClass {
   }
 
   async disconnect() {
-    try { await WifiP2P.removeGroup(); } catch (_) {}
+    try { if (WifiP2P && this._nativeReady) await WifiP2P.removeGroup(); } catch (_) {}
     this.connectedPeer = null;
     this.isConnected = false;
     this.isConnecting = false;

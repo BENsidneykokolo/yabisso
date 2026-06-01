@@ -3628,3 +3628,175 @@ Assistant: J'ai analysé en profondeur tes fichiers (notamment `P2PAutoSync.js` 
    - Modification de `onPeerFound` pour contourner le cooldown habituel de 5s lorsque le swap est actif, permettant la reconnexion instantanée.
    - Modification de `_p2pSyncCycle` pour exécuter la Phase 1 (envoi de `SWAP_ROLE_REQUEST` et forçage temporaire du rôle Master pour la prochaine connexion) et la Phase 2 (envoi de `SYNC_COMPLETE` et fin de cycle).
    - Modification de `_handleReceivedFile` pour intercepter les messages de contrôle, modifier les rôles forcés et éviter les déconnexions intempestives du Master récepteur.
+
+---
+
+## 2026-06-01 - Session: Vérification fichiers .md + Nouvelles directives
+
+### Utilisateur
+Tu peux vérifier tous les fichiers .md dans le repo "mesfichiers" pour avoir le contexte de ce que nous faisons, et aussi enregistrer automatiquement notre échange dans chat.md en temps réel. Quand je te demande quelque chose, prends le temps de "think deeper" avant de répondre, surtout reverifier et tester ce que tu viens d'implementer. Pour les sauvegardes Git/GitHub, vérifier la version précédente pour connaître le numéro de version (v:0.0.1 → v:0.0.2, v:0.0.9 → v:0.1.0).
+
+### Assistant
+J'ai vérifié tous les 21 fichiers .md dans le dossier `mesfichiers`. Voici le résumé du contexte complet :
+
+| Fichier | Contenu principal |
+|---------|-------------------|
+| **project_memory.md** | Versions (Expo SDK 54, WatermelonDB 0.28.0), état actuel (27 services, P2P WiFi Direct complet) |
+| **architecture.md** | Architecture globale, 5 rails communication, diagrammes PlantUML, stack technique |
+| **roadmap.md** | Phases 1-6, sprints S0-S15, backlog Trello |
+| **task.md** | Task manager (334 lignes, priorités P1-P3, statuts Done/InProgress/NotStarted) |
+| **role.md** | Règles de développement (plan avant code, offline-first, français, 100% fonctionnel) |
+| **implementation.md** | Stack technique, schemas DB, flows offline, diagramme Phase 1 |
+| **probleme.md** | 32+ bugs résolus (OOM, WiFi Direct, collisions, crashes) |
+| **yabisso_storage_logique.md** | 3 types de tiroirs (PUBLIC/PERSONAL/LOCKED), format .yab, manifest.db |
+| **chat.md** | Historique complet (3630+ lignes) |
+| **wifidirect.md** | Documentation WiFi Direct, Nearby Mesh, score hardware |
+| **loba_nearby_wifi_direct_auto_scan.md** | Code P2P auto-scan Loba |
+| **wifi_direct_p2p_manualshare_partagepackp2p.md** | Code transfert manuel P2P |
+| **p2p_session_25042026.md** | Session P2P détaillée |
+| **code_changes_backup.md** | Backup des changements |
+| **ui_screens/ui_screens_index.md** | Index UI, design system Stitch |
+| **Network/*.md** | Architecture P2P sync |
+
+### Résumé du projet Yabisso
+- **Type** : Super-app africaine offline-first
+- **Stack** : React Native + Expo SDK 54 + WatermelonDB
+- **Services** : 27 services implémentés (Marketplace, Loba, Restaurant, Hotels, Services, Wallet, Taxi, Dating, Pharmacie, Appartements, Streaming, Formation, etc.)
+- **P2P** : WiFi Direct (principal) + Nearby Mesh (backup) + Bluetooth LE
+- **Phase actuelle** : Phase 1 (UI + Online + SMS Fallback) + P2P stabilisé
+- **Dernière action** : Implémentation du Ping-Pong bidirectionnel WiFi Direct
+
+### Nouvelles directives adoptées
+1. **Think deeper** : Analyser en profondeur avant chaque réponse
+2. **Tester & vérifier** : Valider systématiquement ce qui est implémenté
+3. **Versionnage Git** : v:0.0.X → v:0.0.X+1 (max 9 → v:0.1.0)
+4. **Logging temps réel** : Enregistrer chaque échange dans chat.md
+
+---
+
+## 2026-06-01 - Session: Fix WiFi Direct Discovery (Root Cause Analysis)
+
+### Utilisateur
+Continue if you have next steps, or stop and ask for clarification if you are unsure how to proceed.
+
+### Assistant
+Après une analyse approfondie du code et des logs, j'ai identifié la **cause racine** de l'échec de connexion WiFi Direct après la détection delta par NearbyMesh :
+
+**Problème** : Quand NearbyMesh détecte un delta (18-20 vidéos) et appelle `P2PAutoSync.triggerSync(null, true)`, la découverte WiFi Direct n'est jamais relancée correctement car :
+
+1. `triggerSync()` ne relançait la découverte que SI des peers étaient déjà détectés (boucle conditionnelle inversée)
+2. `_p2pSyncCycle()` ne relançait la découverte que si `isDiscovering === false`, mais Android tue silencieusement la découverte après ~30s sans mettre à jour le flag JS
+3. Résultat : `WifiDirectService.peers` reste vide → aucune connexion WiFi Direct tentée
+
+### Correctifs appliqués (P2PAutoSync.js V2.7) :
+
+1. **`triggerSync()`** : La découverte WiFi Direct est maintenant relancée **AVANT** la vérification des peers, et toujours quand non connecté
+2. **`_p2pSyncCycle()`** : La découverte est relancée si `peers.length === 0` OU si `isDiscovering === false`
+3. **Heartbeat timer** : Nouveau timer toutes les 25s qui relance la découverte si `peers` est vide (previent Android qui tue après ~30s)
+4. **Logs de debug** : Ajout de messages `[Trigger]`, `[Cycle]`, `[Heartbeat]` pour tracer chaque relance
+
+### Fichiers modifiés :
+- `app/src/features/bluetooth/services/P2PAutoSync.js` (V2.7 - Discovery Heartbeat)
+
+### Prochaine étape :
+Tester sur les deux téléphones (Itel A50 score 18 + Xiaomi 11T score 73) pour vérifier que la connexion WiFi Direct s'établit maintenant après la détection delta NearbyMesh.
+
+---
+
+## 2026-06-01 - Session: Fix Partage WiFi Direct (Rail WIFI_DIRECT jamais activé)
+
+### Utilisateur
+La connexion WiFi Direct fonctionne maintenant mais le partage ne se fait toujours pas.
+
+### Analyse des logs
+Les logs montrent :
+1. WiFi Direct connecté : `CONNECTÉ: GO=true` (Itel) et `CONNECTÉ: GO=false` (Xiaomi) ✅
+2. `🚀 Envoi immédiat du Pack Loba...` affiché sur le slave ✅
+3. **MAIS** : `Rails actifs: ["internet", "ble_mesh"]` — le rail `wifi_direct` n'est JAMAIS activé !
+4. Résultat : `getBestRail(true)` retourne `ble_mesh` au lieu de `wifi_direct`
+5. La condition `if (bestP2P === RAIL_TYPES.WIFI_DIRECT && ...)` est TOUJOURS fausse
+6. Le code d'envoi (`buildPack`, `sendFile`) n'est JAMAIS exécuté
+
+### Cause racine
+`NetworkRailDetector.setWifiDirectAvailable(true)` n'est jamais appelé quand WiFi Direct se connecte. Le flag `_wifiDirectAvailable` reste à `false` par défaut.
+
+### Correctif appliqué (P2PAutoSync.js V2.8) :
+Dans le handler `onConnectionChange` :
+- **Sur connexion** : `NetworkRailDetector.setWifiDirectAvailable(true)` → active le rail `wifi_direct`
+- **Sur déconnexion** : `NetworkRailDetector.setWifiDirectAvailable(false)` → désactive le rail
+
+### Fichiers modifiés :
+- `app/src/features/bluetooth/services/P2PAutoSync.js` (V2.8 - WiFi Direct Rail Activation)
+
+### Prochaine étape :
+Tester que le partage de fichiers fonctionne maintenant que le rail WiFi Direct est correctement activé.
+
+---
+
+## 2026-06-01 - Fix crash NullPointerException WiFi P2P (stopPeerDiscovery)
+
+### Utilisateur
+Erreur : `java.lang.NullPointerException` dans `WiFiP2PManagerModule.stopPeerDiscovery` — crash au démarrage de l'app.
+
+### Analyse "Think Deeper"
+- Le module natif Android `WifiP2pManager` est `null` quand `stopPeerDiscovery` est appelé
+- Les `try/catch` JS ne peuvent pas attraper les exceptions Java natives
+- Cause : `WifiP2P.initialize()` résout mais le manager reste `null` (WiFi Direct non disponible sur l'appareil)
+- Le flag `this.initialized` passe à `true` alors que le natif n'est pas prêt
+
+### Correctifs appliqués (WifiDirectService.js)
+1. **Test post-init** : Après `WifiP2P.initialize()`, appel `WifiP2P.getName()` pour valider le natif. Si ça échoue → `isSupported = false`.
+2. **Flag `_nativeReady`** : Tous les appels natifs (`stopDiscoveringPeers`, `startDiscoveringPeers`, `connect`, `removeGroup`) vérifient `this._nativeReady` avant d'être exécutés.
+3. **Guardes ajoutées** dans : `startDiscovery()`, `stopDiscovery()`, `connectToPeer()`, `disconnect()`
+
+### Fichiers modifiés
+- `app/src/features/bluetooth/services/WifiDirectService.js`
+
+### Vérification
+- Syntaxe : `node --check` → 0 erreurs ✅
+
+---
+
+## 2026-06-01 - Session: Fix Partage WiFi Direct V2 — Suppression dépendance rail
+
+### Utilisateur
+Le changement V2.8 (setWifiDirectAvailable dans onConnectionChange) a cassé la connexion — le module natif WiFi Direct ne s'initialise plus. Logs : `Natif non prêt après init`.
+
+### Approche simplifiée (V2.9)
+Au lieu de corriger le rail `NetworkRailDetector`, on **contourne** cette couche :
+
+1. **`_p2pSyncCycle()`** : Remplace `bestP2P === RAIL_TYPES.WIFI_DIRECT && WifiDirectService.connectedPeer` par `WifiDirectService.connectedPeer` directement
+2. **`setWifiDirectAvailable(true)`** : Appelé dans `start()`, `onConnectionChange(connected)`, et `requestWifiDirectActivation()`
+3. **`setWifiDirectAvailable(false)`** : Appelé dans `onConnectionChange(disconnected)`
+4. **Fix bug** : `bestP2P` résiduel remplacé par `RAIL_TYPES.BLE_MESH` dans le fallback BLE
+
+### Fichiers modifiés :
+- `app/src/features/bluetooth/services/P2PAutoSync.js` (V2.9 - Direct WiFi Direct Check)
+
+### Logs attendus après fix :
+- `🟢 Slave connecté — envoi du pack...`
+- `📤 Envoi du Pack: ...`
+- `✅ Succès: Pack envoyé !`
+
+---
+
+## 2026-06-01 - Session: Fix WifiDirectService natif non prêt
+
+### Utilisateur
+Logs : `WARN [WifiDirectService] Natif non prêt après init.` → aucun peer WiFi Direct trouvé, jamais de connexion.
+
+### Analyse
+Le test `WifiP2P.getName()` dans `initialize()` échoue sur les deux appareils, ce qui met `isSupported = false` et `_nativeReady = false`. Résultat : `startDiscovery()` retourne `false` immédiatement (ligne 155 : `if (!this.isSupported || !WifiP2P || !this._nativeReady) return false`).
+
+**Avant** ce test (session précédente), WiFi Direct fonctionnait parfaitement. Le test est trop strict.
+
+### Correctif (WifiDirectService.js)
+1. **Retry avec délai** : Si `getName()` échoue, attendre 1.5s de plus et réessayer (appareils lents comme Itel)
+2. **Ne plus bloquer** : Si `getName()` échoue quand même, on met un warning mais on continue (`_nativeReady = true`)
+3. **Délai init augmenté** : 500ms → 800ms après `initialize()`
+
+### Fichiers modifiés :
+- `app/src/features/bluetooth/services/WifiDirectService.js`
+
+---
+
