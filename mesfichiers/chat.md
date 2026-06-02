@@ -2221,6 +2221,14 @@ static getInstance() {
 
 ---
 
+## 2026-06-01 - Mise à jour IP .env
+
+**User**: IP changée de 192.168.1.70 à 192.168.1.68 (ipconfig confirmé)
+
+**Assistant**: Mis à jour `.env` avec la nouvelle IP (192.168.1.68). Lancement: `npx expo start --dev-client --host 192.168.1.68 --port 8081`
+
+---
+
 ## Contexte Projet (lu depuis mesfichiers/)
 
 **Projet** : Yabisso - Super-app africaine offline-first
@@ -3799,4 +3807,476 @@ Le test `WifiP2P.getName()` dans `initialize()` échoue sur les deux appareils, 
 - `app/src/features/bluetooth/services/WifiDirectService.js`
 
 ---
+
+## 2026-06-01 - Session: Fix sendMessage NPE crash + sendFile timeout
+
+### Utilisateur
+Crash Itel : `java.lang.NullPointerException` dans `WiFiP2PManagerModule.sendMessage()`. Le pack est bien généré (23.2MB) mais `sendFile()` bloque indéfiniment.
+
+### Analyse
+1. `sendFile()` appelle `sendMessage()` (méta) puis `sendFile()` (fichier)
+2. `sendMessage()` crash avec NPE car le socket TCP n'est pas établi
+3. Le GO (Xiaomi) n'a pas encore fini de configurer son ServerSocket via `receiveMessage()`
+4. Le timeout natif est infini → l'app bloque
+
+### Correctifs (WifiDirectService.js) :
+1. **sendFile()** : 
+   - Délai 2s avant `sendMessage` pour laisser le GO configurer le ServerSocket
+   - Timeout 8s sur `sendMessage` + 3 retries avec 3s entre chaque
+   - Timeout 60s sur `sendFile` (fichier volumineux)
+   - Logs détaillés de chaque tentative
+   - Si `sendMessage` échoue 3x, tente `sendFile` directement
+2. **sendControlMessage()** : Timeout 8s ajouté
+3. **startReceiving()** : Timeout 30s sur `receiveMessage()` pour ne pas bloquer
+
+### Fichiers modifiés :
+- `app/src/features/bluetooth/services/WifiDirectService.js`
+
+---
+
+## 2026-06-01 - Fix Partage Auto Loba : 3 Bugs Racines
+
+**User** : Les telephones se connectent mais il n'y a pas de partage de contenu sur Loba. Les logs montrent un cycle infini de "Mode Réception — Prêt" + "LRU: pas de nettoyage requis".
+
+**Diagnostic "Think Deeper" — 3 bugs racines :**
+
+### BUG #1 : Nearby Mesh bloque la connexion WiFi Direct
+- Logs : `⚠️ Erreur connect: Operation failed because the framework is busy`
+- Cause : Nearby Mesh lance Advertising + Discovery au même moment que WiFi Direct tente `connect()`. Le matériel radio Android ne peut pas gérer les deux simultanément.
+
+### BUG #2 : Les deux telephones pensent etre Group Owner
+- Logs : Phone A (Itel) ET Phone B (Xiaomi) affichent `CONNECTÉ: GO=true`
+- Conséquence : Les DEUX entrent en "Mode Réception" et AUCUN n'envoie de pack
+
+### BUG #3 : Boucle infinie sans envoi
+- Logs : `📡 Mode Réception — Prêt.` + `LRU: pas de nettoyage requis.` (x100)
+- Conséquence : Aucun transfert de contenu, cycle à vide toutes les 3 secondes
+
+### Corrections appliquées (v2.7) :
+
+| Fix | Fichier | Description |
+|-----|---------|-------------|
+| **Pause Mesh** | NearbyMeshService.js | Nouvelles méthodes `pauseMesh()` / `resumeMesh()` pour libérer la radio avant WiFi Direct |
+| **Rôle intendé** | P2PAutoSync.js | Stockage du rôle (MASTER/SLAVE) basé sur le score AVANT connexion, utilisé au lieu de `isGroupOwner` |
+| **Resume Mesh** | P2PAutoSync.js | Reprise auto du Mesh après déconnexion WiFi Direct |
+| **Timeout secours** | P2PAutoSync.js | Si connecté >10s sans envoi, forcer le relancement du cycle |
+| **Fix peerName** | P2PAutoSync.js | Remplacement `peerName` par `peerKey` dans le swap/complétion |
+
+### Fichiers modifiés :
+- `app/src/features/bluetooth/services/P2PAutoSync.js`
+- `app/src/features/bluetooth/services/WifiDirectService.js`
+
+---
+
+## 2026-06-02 - Fix V4.2 : Restauration des délais historiques
+
+**User** : "Ca ne marche toujours pas je pense que la pause est trop long, check dans chat.md comment on avait fixer ce probleme"
+
+### Diagnostic "Think Deeper" — Restauration des délais qui marchaient :
+
+L'utilisateur a eu raison de me rappeler de consulter chat.md. En cherchant dans l'historique, j'ai trouvé :
+
+**Session du 09 Mai 2026** (avant que ça casse) :
+- `pauseMesh()` = **500ms** (j'avais changé à 2000ms)
+- Délai SLAVE = **3 secondes** (j'avais changé à 2s)
+
+**Bug que j'ai créé en V4.0** :
+- L'augmentation du `pauseMesh()` à 2000ms bloquait le SLAVE car :
+  - Le `pauseMesh()` est appelé dans le handler `onPeerFound` AVANT `connectToPeer()`
+  - Avec 2000ms, le SLAVE attendait 2s supplémentaires avant de tenter `connect()`
+  - Multiplié par le `setTimeout` de 2s, le SLAVE n'arrivait jamais à se connecter
+  - Le `pauseMesh()` 2000ms causait aussi des timeouts en cascade
+
+### Corrections appliquées (V4.2) :
+
+| Fix | Fichier | Description |
+|-----|---------|-------------|
+| **pauseMesh 2000ms → 500ms** | NearbyMeshService.js | Restauré le délai historique qui marchait (Session 09 Mai 2026) |
+| **Délai SLAVE 2s → 3s** | P2PAutoSync.js | Restauré le délai historique (Session 09 Mai 2026, ligne 2407) |
+
+### Fichiers modifiés :
+- `app/src/features/bluetooth/services/P2PAutoSync.js`
+- `app/src/features/bluetooth/services/NearbyMeshService.js`
+
+---
+
+## 2026-06-02 - Fix V4.3 : WifiP2P.connect() pending infinite + isConnecting bloqué
+
+**User** : "ça ne marche toujours pas, alors check le fichier chat.md et loba_nearby_wifi_direct_auto_scan.md"
+
+**Logs observés** : Boucle infinie de `LocalStorageManager] LRU: pas de nettoyage requis` SANS aucun message d'erreur.
+
+### Diagnostic "Think Deeper" — Le bug critique :
+
+Quand le SLAVE appelle `WifiP2P.connect(macAddr)`, deux cas problématiques :
+1. **Le peer n'a pas encore créé son groupe** → la lib `react-native-wifi-p2p` reste "pending" indéfiniment (pas d'erreur, pas de résolution)
+2. **Le peer a disparu** → même comportement, pending forever
+
+**Conséquence** :
+- `this.isConnecting = true` reste TRUE pour toujours
+- Le early return `if (!WifiDirectService.isConnecting) return;` dans `_p2pSyncCycle` n'est jamais atteint
+- `_p2pSyncCycle` boucle toutes les 3s, fait le check LRU, mais ne peut pas retenter
+- D'où l'infinite loop de `LRU: pas de nettoyage requis` sans aucune erreur visible
+
+### Corrections appliquées (V4.3) :
+
+| Fix | Fichier | Description |
+|-----|---------|-------------|
+| **Timeout 8s sur WifiP2P.connect()** | WifiDirectService.js | `Promise.race` avec timeout 8s pour éviter que connect() reste pending |
+| **Timeout 8s sur WifiP2P.createGroup()** | WifiDirectService.js | Même protection pour createGroup (peut aussi rester pending) |
+| **Reset isConnecting = false** | WifiDirectService.js | Reset explicite du flag avant chaque retour, pour ne pas bloquer le cycle suivant |
+
+### Fichiers modifiés :
+- `app/src/features/bluetooth/services/WifiDirectService.js`
+
+---
+
+### Diagnostic "Think Deeper" — 2 bugs racines identifiés :
+
+#### BUG #1 : `_lastIntendedRole = null` au disconnect tue le rôle SLAVE (BUG PRINCIPAL)
+- **Mécanisme** : Le GO (Xiaomi) tente un 2ème `createGroup()` → échoue → déclenche un disconnect temporaire
+- Le handler `onConnectionChange` du SLAVE (Itel) reçoit `connected: false`
+- `this._lastIntendedRole = null` est exécuté (ligne 219)
+- Le cycle `_p2pSyncCycle` suit : `shouldSend = (null === 'SLAVE') || (null === null && !isGroupOwner)`
+- Si `isGroupOwner = true` (bug Android connu), alors `shouldSend = false` → "Mode Réception"
+- **Résultat** : Le SLAVE ne renvoie plus jamais de pack
+
+#### BUG #2 : `createGroup()` multiple → "framework busy"
+- `_p2pSyncCycle` tourne toutes les 3s et tente de créer un nouveau groupe même après connexion réussie
+- Le 2ème `createGroup()` échoue avec `Operation failed because the framework is busy`
+- Cet échec déclenche un disconnect temporaire → détruit le rôle du SLAVE (BUG #1)
+
+### Corrections appliquées (v4.0) :
+
+| Fix | Fichier | Description |
+|-----|---------|-------------|
+| **Suppression reset _lastIntendedRole** | P2PAutoSync.js | Supprimé `this._lastIntendedRole = null` du handler disconnect. Le rôle est préservé même après un disconnect temporaire. |
+| **Cooldown createGroup 10s** | P2PAutoSync.js | Nouvelle constante `GROUP_CREATE_COOLDOWN_MS = 10000`. Empêche les appels `createGroup()` multiples dans les 10s suivant le dernier. |
+| **pauseMesh delay 500ms → 2000ms** | NearbyMeshService.js | Temps nécessaire pour que le radio Android se libère complètement (500ms était trop court → "framework busy" sur Itel A50). |
+| **_lastGroupCreatedAt tracking** | P2PAutoSync.js | Timestamp du dernier `createGroup()` stocké et vérifié dans `onPeerFound` et `_p2pSyncCycle`. |
+
+### Logique corrigée :
+```
+1. onPeerFound → _iAmMasterFor(peerName) → _lastIntendedRole = 'MASTER' ou 'SLAVE'
+2. Cooldown createGroup vérifié (< 10s → skip)
+3. connectToPeer(peer, 0, role) → MASTER: createGroup, SLAVE: connect
+4. onConnectionChange connected:
+   - Log: GO=${isGroupOwner}, Rôle intendé=${_lastIntendedRole}
+   - Si _lastIntendedRole == 'SLAVE' → envoie le pack
+   - Sinon → Mode Réception + startReceiving()
+5. onConnectionChange disconnected:
+   - _lastIntendedRole = PRÉSERVÉ (pas de reset)
+   - resumeMesh
+6. _p2pSyncCycle:
+   - Cooldown createGroup vérifié
+   - Si _lastIntendedRole == 'SLAVE' → envoie
+   - Sinon si _lastIntendedRole == null && !isGroupOwner → envoie (fallback)
+   - Sinon → Mode Réception + startReceiving()
+```
+
+### Vérification :
+- Syntaxe : `node --check` → 0 erreurs ✅
+
+### Fichiers modifiés :
+- `app/src/features/bluetooth/services/P2PAutoSync.js`
+- `app/src/features/bluetooth/services/WifiDirectService.js`
+
+---
+
+## 2026-06-02 - Fix V4.1 : Cooldown createGroup bloquait le SLAVE
+
+**User** : La connexion ne passe plus du tout après le V4.0. Le SLAVE tente `connect()` mais rien ne se passe.
+
+### Diagnostic "Think Deeper" :
+
+**Bug** : Le cooldown `GROUP_CREATE_COOLDOWN_MS` (10s) était vérifié AVANT de déterminer le rôle MASTER/SLAVE. Résultat : même le SLAVE (qui n'appelle JAMAIS `createGroup()`) était bloqué par le cooldown.
+
+**Logs** : Le SLAVE affiche `🔄 Tentative SLAVE` puis `⏳ [Slave] Connexion au Master dans 2s...` mais la connexion ne se forme jamais car le cycle `_p2pSyncCycle` sort avant d'atteindre `connectToPeer`.
+
+### Correction (V4.1) :
+- **Déterminer `isMaster` AVANT le cooldown** dans `onPeerFound` et `_p2pSyncCycle`
+- **Le cooldown ne s'applique QUE au MASTER** (celui qui appelle `createGroup()`)
+- Le SLAVE peut toujours se connecter librement
+
+### Fichiers modifiés :
+- `app/src/features/bluetooth/services/P2PAutoSync.js`
+
+---
+
+## 2026-06-01 - Fix Crash NullPointerException + peerKey introuvable
+
+**User** : Erreur `java.lang.NullPointerException` au `WiFiP2PManagerModule.sendFile` + les packs ne partent toujours pas.
+
+**Diagnostic "Think Deeper" — 2 nouveaux bugs :**
+
+### BUG #4 : `peerKey` ne correspond jamais
+- `connectedPeer` est un objet `WifiP2PInfo` d'Android (pas un device avec `deviceName`)
+- `connectedPeer?.deviceName` = `undefined`, `connectedPeer?.deviceAddress` = `undefined`
+- Donc `peerKey = ''` et `_intendedRoles['']` est toujours `undefined`
+- **Le fallback `!isGroupOwner` marche quand GO=false, mais pas quand GO=true**
+
+### BUG #5 : Crash natif `sendFile`
+- `WiFiP2PManagerModule.sendFile()` crash avec NullPointerException
+- Cause : la connexion WiFi P2P est détruite pendant que `sendFile` est en cours
+- **Fix** : Ajout de `_nativeLock` pour séquencer les opérations native
+
+### Corrections appliquées :
+
+| Fix | Fichier | Description |
+|-----|---------|-------------|
+| **`_lastIntendedRole`** | P2PAutoSync.js | Variable unique (pas map) stockée AVANT connexion. Utilisée dans `onConnectionChange` et `_p2pSyncCycle` |
+| **Simplification onConnectionChange** | P2PAutoSync.js | `if (!isGroupOwner)` direct au lieu de lookup peerKey cassé |
+| **`_nativeLock` sendFile** | WifiDirectService.js | Séquencage des opérations native pour éviter les crashes |
+| **`_nativeLock` sendControlMessage** | WifiDirectService.js | Même protection pour les messages de contrôle |
+| **Reset `_lastIntendedRole`** | P2PAutoSync.js | Reset à null après déconnexion |
+
+### Logique corrigée :
+```
+1. onPeerFound → _lastIntendedRole = 'SLAVE' ou 'MASTER'
+2. connectToPeer(peer, 0, role)
+3. onConnectionChange connected:
+   - Si !isGroupOwner → envoie le pack (utilise _lastIntendedRole)
+   - Si isGroupOwner → Mode Réception
+4. _p2pSyncCycle:
+   - Si _lastIntendedRole == 'SLAVE' → envoie
+   - Sinon si !isGroupOwner → envoie (fallback)
+   - Sinon → Mode Réception
+5. sendFile → _nativeLock guard → envoi sécurisé
+6. Déconnexion → _lastIntendedRole = null + resumeMesh
+```
+
+### Fichiers modifiés :
+- `app/src/features/bluetooth/services/P2PAutoSync.js`
+- `app/src/features/bluetooth/services/WifiDirectService.js`
+
+---
+
+## 2026-06-01 - Fix Partage Auto V3: Les 3 bugs racines du GO=true
+
+**User** : Les deux telephones se connectent mais AUCUN contenu n'est partagé. Le pack Loba n'arrive jamais. Logs : les deux affichent "Mode Réception — Prêt."
+
+### Diagnostic "Think Deeper" — 3 bugs racines identifiés :
+
+#### BUG #1 : `isGroupOwner` inutilisable (bug Android connu)
+- Les DEUX telephones reçoivent `isGroupOwner = true` de la part du framework Android P2P
+- Conséquence : les DEUX entrent en "Mode Réception" et AUCUN n'envoie
+- Le code utilisait `isGroupOwner` pour decider d'envoyer ou recevoir → cassé
+
+#### BUG #2 : `sendFile()` refuse d'envoyer si `isGroupOwner = true`
+- Guard dans `sendFile()`: `if (!this.isConnected || this.isGroupOwner) return false`
+- Meme si P2PAutoSync voulait envoyer, le natif refuse → crash NullPointerException
+- Meme chose dans `sendControlMessage()`
+
+#### BUG #3 : `startReceiving()` se lance automatiquement sur le GO
+- `subscribeOnConnectionInfoUpdates` appelle `startReceiving()` des que `isGroupOwner = true`
+- Les DEUX telephones se mettent en reception → mort du transfert
+
+### Corrections appliquées (v3.0) :
+
+| Fix | Fichier | Description |
+|-----|---------|-------------|
+| **Remove isGroupOwner guard** | WifiDirectService.js | `sendFile()` et `sendControlMessage()` n'ont plus le check `isGroupOwner` |
+| **Remove auto startReceiving** | WifiDirectService.js | `subscribeOnConnectionInfoUpdates` ne lance plus `startReceiving()` automatiquement |
+| **Stockage _wifiDirectName** | WifiDirectService.js | `getName()` stocke le vrai nom WiFi Direct dans `_wifiDirectName` |
+| **getWifiDirectName()** | WifiDirectService.js | Nouvelle méthode pour récupérer le nom WiFi Direct réel |
+| **_lastIntendedRole dans onConnectionChange** | P2PAutoSync.js | Utilise `_lastIntendedRole` (SLAVE→envoie, MASTER→reçoit) au lieu de `isGroupOwner` |
+| **_lastIntendedRole dans _p2pSyncCycle** | P2PAutoSync.js | Même logique pour le cycle de synchro |
+| **Reset _lastIntendedRole on disconnect** | P2PAutoSync.js | Reset à null après déconnexion |
+| **Logique de fallback** | P2PAutoSync.js | Si `_lastIntendedRole` est null, fallback sur `!isGroupOwner` |
+| **Comparaison alphabetique** | P2PAutoSync.js | Si peerScore=0 (nom WiFi Direct sans score), compare les noms alphabetiquement pour determiner le role |
+| **Log _wifiDirectName** | WifiDirectService.js | Log du nom WiFi Direct réel au démarrage |
+
+### Logique corrigée :
+```
+1. onPeerFound → _iAmMasterFor(peerName) → _lastIntendedRole = 'MASTER' ou 'SLAVE'
+2. connectToPeer(peer, 0, role)
+3. onConnectionChange connected:
+   - Log: GO=${isGroupOwner}, Rôle intendé=${_lastIntendedRole}
+   - Si _lastIntendedRole == 'SLAVE' → envoie le pack
+   - Sinon → Mode Réception + startReceiving()
+4. _p2pSyncCycle:
+   - Si _lastIntendedRole == 'SLAVE' → envoie
+   - Sinon si _lastIntendedRole == null && !isGroupOwner → envoie (fallback)
+   - Sinon → Mode Réception + startReceiving()
+5. sendFile → PLUS DE guard isGroupOwner → envoi sécurisé
+6. Déconnexion → _lastIntendedRole = null + resumeMesh
+```
+
+### Vérification :
+- Syntaxe : `node --check` → 0 erreurs ✅
+
+### Fichiers modifiés :
+- `app/src/features/bluetooth/services/P2PAutoSync.js`
+- `app/src/features/bluetooth/services/WifiDirectService.js`
+
+---
+
+
+## 2026-06-02 - Vérification complète des fichiers .md et reprise de contexte
+
+**User** : Tu peux vérifier tous les fichiers .md dans le repo "mesfichiers" qui se trouve ici : C:\Users\Utilisateur\Documents\Ben\myapp\yabisso\mesfichiers pour avoir le contexte de ce que nous faisons et aussi enregistrer automatiquement notre échange dans le fichier chat.md en temps réel que nous échangeons pour ne pas perdre l'historique, et aussi quand je te demande quelque chose prend le temps de "think deeper" avant de me répondre mais surtout re-vérifier et tester de ton côté pour vérifier ce que tu viens d'implémenter marche, et aussi à partir de maintenant quand je te demande de faire une sauvegarde git et github, tu dois vérifier la version précédente pour connaître le numéro de version que tu vas mettre alors exemple : v:0.0.1, donc le prochain sera v:0.0.2 et quand ça va arriver à v:0.0.9 on passera a v:0.1.0 ainsi de suite.
+
+**Assistant** : J'ai relu l'intégralité des fichiers `.md` du dossier `mesfichiers` (19 fichiers à la racine + sous-dossiers `ui_screens/UI`, `Network`, `erreur`, `login`). Voici la synthèse complète :
+
+### Fichiers .md principaux
+| Fichier | Contenu |
+|---------|---------|
+| **project_memory.md** | Versions (Expo SDK 54, WatermelonDB 0.28.0), 27 services, dépendances natives |
+| **architecture.md** | 5 rails communication (QR, SMS, BLE, WiFi Direct, Cloud), PlantUML, 3 types de tiroirs |
+| **roadmap.md** | Phases 1-6, sprints S0-S15, backlog Trello, état actuel (Phase 1 + P2P) |
+| **task.md** | Task manager (334 lignes, statuts Done/In Progress/Not Started) |
+| **role.md** | Règles : plan avant code, offline-first, français, 100% fonctionnel |
+| **implementation.md** | Stack technique, schemas DB, flows offline, diagramme Phase 1 |
+| **probleme.md** | 33+ bugs résolus (OOM, collisions WiFi Direct, crashes NPE, etc.) |
+| **yabisso_storage_logique.md** | 3 types tiroirs (PUBLIC/PERSONAL/LOCKED), format .yab, manifest.db, 200MB/jour/service |
+| **chat.md** | Historique complet (4113+ lignes) |
+| **wifidirect.md** | Documentation WiFi Direct + Nearby Mesh, score hardware, hooks |
+| **loba_nearby_wifi_direct_auto_scan.md** | Code LobaHomeScreen + P2PAutoSync + NearbyMeshService |
+| **wifi_direct_p2p_manualshare_partagepackp2p.md** | Code LobaPacksScreen (partage manuel) |
+| **p2p_session_25042026.md** | Session P2P détaillée, scores hardware |
+| **code_changes_backup.md** | Backup des changements NearbyMeshService + P2PAutoSync |
+| **design yabisso.md** | UI Welcome/Language/Signup en HTML (référence) |
+| **Network/*.md** | Architecture P2P sync Loba, schémas HTML |
+
+### État du projet Yabisso
+- **Type** : Super-app africaine offline-first (27 services)
+- **Stack** : React Native + Expo SDK 54 + WatermelonDB + SecureStore
+- **Modules** : Auth, Wallet (FCFA+Points), Marketplace, Loba (vidéo), Restaurant, Hotels, Services, Dating, Pharmacie, Appartements, IA, Kiosque, Taxi, Streaming, Formation, etc.
+- **P2P** : WiFi Direct (principal, stabilisé V2.6+) + Nearby Mesh (backup) + Bluetooth LE
+- **Phase** : Phase 1 (UI + Online + SMS Fallback) complétée + P2P WiFi Direct stabilisé
+
+### Versioning Git — État actuel
+- **Dernier commit** : `7ebd925 v:0.0.6: Fix crash NullPointerException WiFi P2P + guardes _nativeReady`
+- **Dernier tag** : `v0.0.6`
+- **Prochaine version** : `v:0.0.7` (selon règle : v:0.0.6 → v:0.0.7, puis v:0.0.8, v:0.0.9, v:0.1.0)
+
+### Règles adoptées (confirmées)
+1. **Think deeper** : Analyser en profondeur avant chaque réponse
+2. **Tester & vérifier** : Valider systématiquement ce qui est implémenté (node --check, lecture de logs)
+3. **Versionnage Git/GitHub** : v:0.0.X → v:0.0.X+1 (max 9 → v:0.1.0 → v:0.1.1 → ...)
+4. **Logging temps réel** : Enregistrer chaque échange dans `chat.md`
+
+Je suis prêt à continuer. Dis-moi sur quoi tu veux avancer.
+
+---
+
+## 2026-06-02 - Mise à jour IP .env (192.168.1.68 → 192.168.1.67)
+
+**User** : Tu peux mettre le nouveau IP dans .env, il est passé de 192.168.1.68 à 192.168.1.67 comme tu peux voir quand j'ai fait ipconfig.
+
+**Assistant** : 
+- `ipconfig` confirmé : carte Wi-Fi → IPv4 = **192.168.1.67** (gateway 192.168.1.254)
+- Fichier `app/.env` mis à jour :
+  - `EXPO_PACKAGER_HOSTNAME=192.168.1.67`
+  - `REACT_NATIVE_PACKAGER_HOSTNAME=192.168.1.67`
+- Vérification effectuée : lecture post-édition confirme les 2 valeurs sont bien à `192.168.1.67`
+
+### Commande pour connecter le téléphone
+```bash
+cd C:\Users\Utilisateur\Documents\Ben\myapp\yabisso\app
+npx expo start --dev-client --host 192.168.1.67 --port 8081
+```
+
+### URL dev client
+```
+exp+yabisso://expo-development-client/?url=http%3A%2F%2F192.168.1.67%3A8081
+```
+
+**Statut** : ✅ IP synchronisée dans `.env`
+
+---
+
+## 2026-06-02 - Session reprise contexte complet (répétition règles)
+
+**User** : tu peux verifier tous les fichiers .md dans le repo "mesfichiers" qui se trouve ici: C:\Users\Utilisateur\Documents\Ben\myapp\yabisso\mesfichiers pour avoir le contexte de ce que nous faisons et aussi enregistrer automatiquement notre echange dans le fichier chat.md en temps reel que nous echangeons pour ne pas perdre l'historique, et aussi quand je tedemande quelque chose prend le temps de "hink deeper" avant de me repondre mais surtout reverifier et tester de ton cote pour verifier ce que tu viens d'implementer marche, et aussi a partir de maintenant quand je te demande de faire une sauvegarde git et gitub, tu dois verifier la version precedente pour connaitre le numero de version que tu va mettre alors exemple: v:0.0.1, donc le prochain sera v:0.0.2 et quand ça va arriver à v:0.0.9 on passera a v:0.1.0 ainsi de suite
+
+**Assistant** : 
+- ✅ Vérification complète des fichiers .md dans `mesfichiers` (19 fichiers racine)
+- ✅ Contexte restauré : super-app offline-first africaine (Yabisso), React Native + Expo SDK 54 + WatermelonDB
+- ✅ Modules : Auth, Wallet, Marketplace, Loba, Restaurant, Hotels, Services, Dating, Pharmacie, Appartements, Kiosque, IA Assistant
+- ✅ P2P : WiFi Direct (V2.6 stabilisé) + Nearby Mesh + BLE
+- ✅ chat.md mis à jour (cette entrée)
+- ✅ Règles confirmées : think deeper, tester, version v:0.0.7 pour la prochaine sauvegarde (actuelle = v:0.0.6)
+- ⏳ En attente d'instructions pour la suite
+
+### État Git actuel
+- Branche : `main`
+- Dernier commit : `7ebd925 v:0.0.6: Fix crash NullPointerException WiFi P2P + guardes _nativeReady`
+- Prochaine version : **v:0.0.7**
+
+### Fichiers modifiés non commités actuellement
+- `app/.env` (modifié)
+- `app/src/features/bluetooth/services/NearbyMeshService.js` (modifié)
+- `app/src/features/bluetooth/services/P2PAutoSync.js` (modifié)
+- `app/src/features/bluetooth/services/WifiDirectService.js` (modifié)
+- `mesfichiers/chat.md` (modifié)
+- `mesfichiers/erreur/Screenshot_20260601-080013.png` (supprimé)
+- `mesfichiers/probleme.md` (modifié)
+- `mesfichiers/erreur/Screenshot_20260601-211234.png` (non tracké)
+
+---
+
+## Session 2026-06-02 - Super Admin + Vérification Services
+
+### Contexte
+L'utilisateur a demandé de :
+1. Construire le **Super Admin** (user suprême qui commande toute l'app)
+2. Vérifier le **Main Admin (Kiosk)** 
+3. Vérifier les services : **marché, restaurant, taxi, hôtel, reservation**
+4. Pour chaque : front + back + connexion + vérif 0 erreur
+
+### Réalisations
+**Super Admin créé de zéro** (n'existait pas) :
+- ✅ `app/src/features/admin/services/SuperAdminService.js` (~300 lignes) - backend complet
+  - Auth SecureStore, getGlobalStats, getAllUsers, getServicesStatus (27 services)
+  - getFlaggedContent, moderatePost, getAnalytics, getKiosksStatus, getSettings
+- ✅ 10 écrans Super Admin créés (tous en français, dark theme Yabisso #2BEE79) :
+  - SuperAdminLoginScreen (login avec identifiants par défaut admin@yabisso.app / superadmin)
+  - SuperAdminDashboardScreen (hero card + 6 stats + alertes + 8 actions rapides)
+  - SuperAdminUsersScreen (recherche + filtres + actions statut)
+  - SuperAdminServicesScreen (27 services on/off catégorisés)
+  - SuperAdminContentModerationScreen (modération posts/produits/avis)
+  - SuperAdminAnalyticsScreen (KPIs + graphique croissance + top services + réseau)
+  - SuperAdminSettingsScreen (6 toggles + clé API IA + maintenance + danger zone)
+  - SuperAdminKiosksScreen (3 kiosques + summary + actions start/stop)
+  - SuperAdminNotificationsScreen (broadcast multi-canal + 4 templates + historique)
+  - SuperAdminAIScreen (8 modèles IA + ask AI + décisions récentes)
+- ✅ 10 routes connectées dans `app/App.js` (super_admin_*)
+- ✅ Entrée "Super Admin" ajoutée dans `app/src/features/profile/screens/ProfileScreen.js`
+
+**Reservation backend créé** :
+- ✅ `app/src/features/reservation/services/ReservationService.js` - service complet
+  - createReservation, getMyReservations, getReservationById
+  - updateReservationStatus (pending/confirmed/cancelled/completed)
+  - cancelReservation, confirmReservation, completeReservation
+  - getReservationsByService, getUpcomingReservations, getPastReservations
+  - getReservationStats, syncToCloud
+  - Fallback SecureStore (yabisso_reservations_v1)
+  - Constantes RESERVATION_STATUS et RESERVATION_SERVICE_TYPES
+
+### Modifications App.js
+- Ajout de 10 imports SuperAdmin (lignes 28-37)
+- Ajout de 10 routes super_admin_* (lignes 484-570)
+
+### Vérifications syntaxe
+Tous les fichiers passent `node --check` :
+- ✅ SuperAdminService.js
+- ✅ ReservationService.js
+- ✅ 10 SuperAdmin*.js screens
+- ✅ App.js (2005 lignes)
+- ✅ ProfileScreen.js
+
+### Statut services
+- ✅ **Super Admin** : 10/10 écrans + service backend
+- ⏳ **Main Admin (Kiosk)** : 12 écrans existent, à vérifier
+- ⏳ **Marché** : 24 écrans existent, à vérifier
+- ⏳ **Restaurant** : 13 écrans existent, à vérifier
+- ⏳ **Taxi** : 18 écrans existent, à vérifier
+- ⏳ **Hotel** : 12 écrans existent, à vérifier
+- 🔄 **Reservation** : 3 écrans + ReservationService créés
+
+### Prochaines étapes
+- Commit v:0.0.7
+- Vérification approfondie des services (Main Admin, Marché, Restaurant, Taxi, Hotel)
+- Intégrer ReservationService dans les 3 écrans Reservation existants
 

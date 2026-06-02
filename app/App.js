@@ -24,6 +24,16 @@ import KioskAssistanceScreen from './src/features/kiosk/screens/KioskAssistanceS
 import KioskUsersScreen from './src/features/kiosk/screens/KioskUsersScreen';
 import KioskStatsScreen from './src/features/kiosk/screens/KioskStatsScreen';
 import KioskQRScreen from './src/features/kiosk/screens/KioskQRScreen';
+import SuperAdminLoginScreen from './src/features/admin/screens/SuperAdminLoginScreen';
+import SuperAdminDashboardScreen from './src/features/admin/screens/SuperAdminDashboardScreen';
+import SuperAdminUsersScreen from './src/features/admin/screens/SuperAdminUsersScreen';
+import SuperAdminServicesScreen from './src/features/admin/screens/SuperAdminServicesScreen';
+import SuperAdminContentModerationScreen from './src/features/admin/screens/SuperAdminContentModerationScreen';
+import SuperAdminAnalyticsScreen from './src/features/admin/screens/SuperAdminAnalyticsScreen';
+import SuperAdminSettingsScreen from './src/features/admin/screens/SuperAdminSettingsScreen';
+import SuperAdminKiosksScreen from './src/features/admin/screens/SuperAdminKiosksScreen';
+import SuperAdminNotificationsScreen from './src/features/admin/screens/SuperAdminNotificationsScreen';
+import SuperAdminAIScreen from './src/features/admin/screens/SuperAdminAIScreen';
 import ChatHomeScreen from './src/features/chat/screens/ChatHomeScreen';
 import ChatConversationScreen from './src/features/chat/screens/ChatConversationScreen';
 import PharmacyHomeScreen from './src/features/pharmacy/screens/PharmacyHomeScreen';
@@ -476,6 +486,90 @@ export default function App() {
       <KioskQRScreen
         navigation={{ navigate, goBack }}
         route={{ params: { type: qrParams } }}
+      />
+    );
+  }
+
+  // ============ SUPER ADMIN SCREENS ============
+  if (screen === 'super_admin_login') {
+    content = (
+      <SuperAdminLoginScreen
+        onBack={() => goBack()}
+        onLoginSuccess={() => navigate('super_admin_dashboard')}
+      />
+    );
+  }
+  if (screen === 'super_admin_dashboard') {
+    content = (
+      <SuperAdminDashboardScreen
+        onBack={() => goBack()}
+        onNavigate={(s, p) => navigate(s, p)}
+        onLogout={() => navigate('super_admin_login')}
+      />
+    );
+  }
+  if (screen === 'super_admin_users') {
+    content = (
+      <SuperAdminUsersScreen
+        onBack={() => goBack()}
+        onNavigate={(s, p) => navigate(s, p)}
+      />
+    );
+  }
+  if (screen === 'super_admin_services') {
+    content = (
+      <SuperAdminServicesScreen
+        onBack={() => goBack()}
+        onNavigate={(s, p) => navigate(s, p)}
+      />
+    );
+  }
+  if (screen === 'super_admin_content') {
+    content = (
+      <SuperAdminContentModerationScreen
+        onBack={() => goBack()}
+        onNavigate={(s, p) => navigate(s, p)}
+      />
+    );
+  }
+  if (screen === 'super_admin_analytics') {
+    content = (
+      <SuperAdminAnalyticsScreen
+        onBack={() => goBack()}
+        onNavigate={(s, p) => navigate(s, p)}
+      />
+    );
+  }
+  if (screen === 'super_admin_settings') {
+    content = (
+      <SuperAdminSettingsScreen
+        onBack={() => goBack()}
+        onNavigate={(s, p) => navigate(s, p)}
+      />
+    );
+  }
+  if (screen === 'super_admin_kiosks') {
+    content = (
+      <SuperAdminKiosksScreen
+        onBack={() => goBack()}
+        onNavigate={(s, p) => navigate(s, p)}
+        onOpenKioskAdmin={() => navigate('kiosk_admin_dashboard')}
+      />
+    );
+  }
+  if (screen === 'super_admin_notifications') {
+    content = (
+      <SuperAdminNotificationsScreen
+        onBack={() => goBack()}
+        onNavigate={(s, p) => navigate(s, p)}
+      />
+    );
+  }
+  if (screen === 'super_admin_ai') {
+    content = (
+      <SuperAdminAIScreen
+        onBack={() => goBack()}
+        onNavigate={(s, p) => navigate(s, p)}
       />
     );
   }

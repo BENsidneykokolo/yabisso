@@ -169,6 +169,14 @@ export default function ProfileScreen({
           <Ionicons name="chevron-forward" size={18} color="#6B7280" />
         </Pressable>
 
+        <Pressable style={styles.settingRow} onPress={() => onNavigate('super_admin_login')}>
+          <View style={[styles.settingIcon, { backgroundColor: 'rgba(43, 238, 121, 0.2)' }]}>
+            <MaterialCommunityIcons name="crown" size={20} color="#2BEE79" />
+          </View>
+          <Text style={styles.settingLabel}>Super Admin</Text>
+          <Ionicons name="chevron-forward" size={18} color="#6B7280" />
+        </Pressable>
+
         <Pressable style={styles.settingRow} onPress={() => onNavigate('packs_management')}>
           <View style={[styles.settingIcon, { backgroundColor: 'rgba(236, 72, 153, 0.2)' }]}>
             <MaterialCommunityIcons name="folder-zip-outline" size={20} color="#EC4899" />

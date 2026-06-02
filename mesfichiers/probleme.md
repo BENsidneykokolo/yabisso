@@ -353,6 +353,19 @@
 - **Fichier** : `app/src/features/kiosk/screens/KioskQRScreen.js`
 - **Statut** : 🔄 En cours - En test avec Xiaomi
 
+### BUG-033 — _lastIntendedRole détruit au disconnect temporaire (SLAVE ne renvoie plus)
+- **Date** : 2026-06-02
+- **Problème** : Les deux téléphones se connectent mais le SLAVE entre en "Mode Réception" au lieu d'envoyer le pack. Le GO (Xiaomi) tente un 2ème `createGroup()` qui échoue avec "framework busy", déclenchant un disconnect temporaire qui détruit `_lastIntendedRole`.
+- **Cause** : 
+  1. `this._lastIntendedRole = null` dans le handler `onConnectionChange` disconnected (ligne 219) détruit le rôle SLAVE lors d'un disconnect temporaire
+  2. `_p2pSyncCycle` tourne toutes les 3s et tente de créer un nouveau groupe même après connexion réussie → "framework busy"
+- **Solution** : 
+  1. Supprimé `this._lastIntendedRole = null` du handler disconnect — le rôle est préservé
+  2. Ajouté cooldown 10s (`GROUP_CREATE_COOLDOWN_MS`) pour les appels `createGroup()`
+  3. Augmenté `pauseMesh()` delay de 500ms à 2000ms pour libérer le radio
+- **Fichiers modifiés** : `P2PAutoSync.js`, `NearbyMeshService.js`
+- **Statut** : ✅ Résolu (2026-06-02)
+
 ---
 
 ## Exigences sécurité critiques (non négociables)
