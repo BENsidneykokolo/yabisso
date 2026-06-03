@@ -39,6 +39,64 @@ class WifiDirectServiceClass {
     };
     this._nativeLock = false;
     this._nativeReady = false;
+    this._wifiDirectName = null;
+    this._nonYabissoPeers = new Map();
+    this._peerLastAttempt = new Map();
+  }
+
+  isPeerBlacklisted(peerName) {
+    if (!peerName) return false;
+    const exp = this._nonYabissoPeers.get(peerName);
+    if (!exp) return false;
+    if (Date.now() > exp) {
+      this._nonYabissoPeers.delete(peerName);
+      return false;
+    }
+    return true;
+  }
+
+  markPeerAsNonYabisso(peerName, ttlMs = 300000) {
+    if (!peerName) return;
+    this._nonYabissoPeers.set(peerName, Date.now() + ttlMs);
+    console.log(`[WifiDirectService] ⛔ Peer blacklisté (non-Yabisso) pour ${Math.round(ttlMs / 60000)}min: ${peerName}`);
+  }
+
+  shouldBackoffPeer(peerName, minIntervalMs = 10000) {
+    if (!peerName) return false;
+    const last = this._peerLastAttempt.get(peerName) || 0;
+    return Date.now() - last < minIntervalMs;
+  }
+
+  recordPeerAttempt(peerName) {
+    if (!peerName) return;
+    this._peerLastAttempt.set(peerName, Date.now());
+  }
+
+  isLikelyYabissoDevice(deviceName) {
+    if (!deviceName) return false;
+    return /^\d+_(Yabisso|Device)_/i.test(deviceName);
+  }
+
+  async createGroup() {
+    if (this.isConnecting || this.isConnected) return false;
+    if (!this._nativeReady || !WifiP2P) return false;
+    this.isConnecting = true;
+    try {
+      try { await WifiP2P.removeGroup(); } catch (_) {}
+      try { await WifiP2P.stopDiscoveringPeers(); } catch (_) {}
+      await new Promise(r => setTimeout(r, 1000));
+      await Promise.race([
+        WifiP2P.createGroup(),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('createGroup timeout 8s')), 8000))
+      ]);
+      this.isConnecting = false;
+      console.log('[WifiDirectService] ✅ createGroup réussi (mode MASTER proactif)');
+      return true;
+    } catch (e) {
+      console.warn(`[WifiDirectService] ❌ createGroup error: ${e.message}`);
+      this.isConnecting = false;
+      return false;
+    }
   }
 
   _buildDeviceName() {
@@ -54,6 +112,10 @@ class WifiDirectServiceClass {
 
   getDeviceName() {
     return this.deviceName || this._cachedDeviceName || this._buildDeviceName();
+  }
+
+  getWifiDirectName() {
+    return this._wifiDirectName || this.getDeviceName();
   }
 
   getPowerScore() {
@@ -93,12 +155,20 @@ class WifiDirectServiceClass {
       try {
         const testResult = await WifiP2P.getName();
         nativeReady = !!testResult;
+        if (testResult) {
+          this._wifiDirectName = testResult;
+          console.log(`[WifiDirectService] 📱 Nom WiFi Direct: ${testResult}`);
+        }
       } catch (_) {
         // Retry avec plus de temps pour les appareils lents (Itel)
         await new Promise(r => setTimeout(r, 1500));
         try {
           const testResult2 = await WifiP2P.getName();
           nativeReady = !!testResult2;
+          if (testResult2) {
+            this._wifiDirectName = testResult2;
+            console.log(`[WifiDirectService] 📱 Nom WiFi Direct (retry): ${testResult2}`);
+          }
         } catch (_) {
           nativeReady = false;
         }
@@ -126,9 +196,6 @@ class WifiDirectServiceClass {
           this.isConnecting = false;
           console.log(`[WifiDirectService] ✅ CONNECTÉ: GO=${this.isGroupOwner}`);
           this._emit('onConnectionChange', { connected: true, isGroupOwner: this.isGroupOwner, info });
-          if (this.isGroupOwner && this.globalFileHandler) {
-            this.startReceiving(this.globalFileHandler);
-          }
         } else {
           const wasConnected = !!this.connectedPeer;
           this.connectedPeer = null;
@@ -202,7 +269,12 @@ class WifiDirectServiceClass {
         await new Promise(r => setTimeout(r, 1000));
 
         try {
-          await WifiP2P.createGroup();
+          // Timeout 8s sur createGroup() aussi (peut rester pending)
+          await Promise.race([
+            WifiP2P.createGroup(),
+            new Promise((_, reject) => setTimeout(() => reject(new Error('createGroup timeout 8s')), 8000))
+          ]);
+          this.isConnecting = false;
           await new Promise(r => setTimeout(r, 2000));
           return true;
         } catch (e) {
@@ -216,21 +288,32 @@ class WifiDirectServiceClass {
         await new Promise(r => setTimeout(r, 500));
 
         try {
-          await WifiP2P.connect(macAddr);
+          // Timeout 8s sur connect() — la lib native peut rester pending indéfiniment
+          // si le Master n'a pas encore créé son groupe, ce qui bloque tout le cycle
+          await Promise.race([
+            WifiP2P.connect(macAddr),
+            new Promise((_, reject) => setTimeout(() => reject(new Error('connect timeout 8s')), 8000))
+          ]);
+          this.isConnecting = false;
           return true;
         } catch (e) {
           console.warn('[WifiDirectService] ⚠️ Erreur connect (tentative 1):', e.message);
+          // Reset isConnecting même en cas d'erreur pour permettre un nouveau cycle
+          this.isConnecting = false;
           // Retry une fois après 2s (laisser le Master finir son createGroup)
           await new Promise(r => setTimeout(r, 2000));
           try {
-            await WifiP2P.connect(macAddr);
+            await Promise.race([
+              WifiP2P.connect(macAddr),
+              new Promise((_, reject) => setTimeout(() => reject(new Error('connect retry timeout 8s')), 8000))
+            ]);
             console.log('[WifiDirectService] ✅ Retry SLAVE réussi !');
             return true;
           } catch (e2) {
             console.warn('[WifiDirectService] ❌ Erreur connect (tentative 2):', e2.message);
+            this.isConnecting = false;
             // Relancer la découverte pour ne pas rester bloqué
             try { await WifiP2P.startDiscoveringPeers(); this.isDiscovering = true; } catch (_) {}
-            this.isConnecting = false;
             return false;
           }
         }
@@ -243,25 +326,24 @@ class WifiDirectServiceClass {
   }
 
   async sendFile(filePath, metadata = {}) {
-    if (!this.isConnected || this.isGroupOwner) return false;
+    if (!this.isConnected) return false;
     if (this._isSending) return false;
     this._isSending = true;
 
     try {
-      const metaPayload = JSON.stringify({
-        ...metadata,
-        action: 'FILE_TRANSFER',
-        senderDevice: this.getDeviceName()
-      });
-
-      await WifiP2P.sendMessage(metaPayload);
       if (filePath) {
-        await new Promise(r => setTimeout(r, 500));
-        await WifiP2P.sendFile(filePath.replace('file://', ''));
+        const cleanPath = filePath.replace('file://', '');
+        console.log(`[WifiDirectService] 📤 sendFile: ${cleanPath}`);
+        await Promise.race([
+          WifiP2P.sendFile(cleanPath),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('sendFile timeout')), 120000))
+        ]);
+        console.log(`[WifiDirectService] ✅ sendFile réussi`);
       }
       this._emit('onTransferProgress', { hash: metadata.hash, progress: 100, status: 'complete' });
       return true;
     } catch (e) {
+      console.warn(`[WifiDirectService] ❌ sendFile error: ${e.message}`);
       return false;
     } finally {
       this._isSending = false;
@@ -269,20 +351,38 @@ class WifiDirectServiceClass {
   }
 
   async sendControlMessage(metadata = {}) {
-    if (!this.isConnected || this.isGroupOwner) return false;
+    if (!this.isConnected) return false;
     if (this._isSending) return false;
     this._isSending = true;
 
     try {
-      const metaPayload = JSON.stringify({
+      // V1.0.18: Utiliser loba_media/ au lieu de p2p_control/ (p2p_control n'est pas writable sur Android)
+      // loba_media/ est créé par startReceiving() donc toujours dispo
+      const baseDir = `${FileSystem.documentDirectory}loba_media/`;
+      const dirInfo = await FileSystem.getInfoAsync(baseDir);
+      if (!dirInfo.exists) {
+        await FileSystem.makeDirectoryAsync(baseDir, { intermediates: true });
+      }
+
+      const controlFile = `${baseDir}ctrl_${metadata.type || 'unknown'}_${Date.now()}.json`;
+      const payload = JSON.stringify({
         ...metadata,
         action: 'CONTROL_MESSAGE',
         senderDevice: this.getDeviceName()
       });
+      await FileSystem.writeAsStringAsync(controlFile, payload);
 
-      await WifiP2P.sendMessage(metaPayload);
+      console.log(`[WifiDirectService] 📤 sendControlMessage: ${metadata.type}`);
+      await Promise.race([
+        WifiP2P.sendFile(controlFile),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('sendControlMessage timeout')), 15000))
+      ]);
+      console.log(`[WifiDirectService] ✅ sendControlMessage réussi`);
+      // V1.0.18: Nettoyer le fichier de contrôle après envoi
+      try { await FileSystem.deleteAsync(controlFile, { idempotent: true }); } catch (_) {}
       return true;
     } catch (e) {
+      console.warn(`[WifiDirectService] ❌ sendControlMessage error: ${e.message}`);
       return false;
     } finally {
       this._isSending = false;
@@ -299,21 +399,33 @@ class WifiDirectServiceClass {
       await FileSystem.makeDirectoryAsync(`${FileSystem.documentDirectory}loba_media/`, { intermediates: true });
     }
 
+    console.log('[WifiDirectService] 📡 En attente de fichiers...');
     while (this._receiveMessages && this.isConnected) {
       try {
-        const msg = await WifiP2P.receiveMessage();
-        if (msg) {
-          const meta = JSON.parse(msg);
-          if (meta.action === 'CONTROL_MESSAGE') {
-            if (callback) callback(null, meta);
-          } else if (meta.action === 'FILE_TRANSFER' || meta.type === 'LOBA_PACK') {
-            const filename = meta.filename || `p2p_${Date.now()}`;
-            const path = await WifiP2P.receiveFile(mediaDir, filename);
-            if (callback) callback(path, meta);
+        const filename = `p2p_${Date.now()}`;
+        const path = await Promise.race([
+          WifiP2P.receiveFile(mediaDir, filename),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('receiveFile timeout')), 60000))
+        ]);
+        if (path) {
+          console.log(`[WifiDirectService] 📨 Fichier reçu: ${path}`);
+          try {
+            const content = await FileSystem.readAsStringAsync(path);
+            const meta = JSON.parse(content);
+            if (meta.action === 'CONTROL_MESSAGE') {
+              if (callback) callback(null, meta);
+              // V1.0.18: Nettoyer le fichier de contrôle après traitement
+              try { await FileSystem.deleteAsync(path, { idempotent: true }); } catch (_) {}
+            } else if (meta.action === 'FILE_TRANSFER' || meta.type === 'LOBA_PACK') {
+              if (callback) callback(path, meta);
+            }
+          } catch (_) {
+            if (callback) callback(path, { action: 'FILE_TRANSFER', type: 'LOBA_PACK', senderDevice: 'unknown' });
           }
         }
-      } catch (_) {
-        await new Promise(r => setTimeout(r, 1000));
+      } catch (e) {
+        console.warn(`[WifiDirectService] ⚠️ receiveFile: ${e.message}`);
+        await new Promise(r => setTimeout(r, 2000));
       }
     }
   }

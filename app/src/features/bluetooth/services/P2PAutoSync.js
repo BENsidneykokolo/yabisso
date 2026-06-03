@@ -12,7 +12,8 @@ import { Q } from '@nozbe/watermelondb';
 
 const P2P_SYNC_INTERVAL_MS = 3000; 
 const CLOUD_SYNC_INTERVAL_MS = 60000; 
-const DISCONNECT_COOLDOWN_MS = 5000; 
+const DISCONNECT_COOLDOWN_MS = 5000;
+const GROUP_CREATE_COOLDOWN_MS = 10000; // 10s entre chaque createGroup pour éviter "framework busy"
 
 /**
  * P2PAutoSync — L'Orchestrateur Central (V2.6 - Deep Fix Handshake)
@@ -36,6 +37,14 @@ class P2PAutoSyncClass {
     this._completedSyncs = {};
     this._wasConnected = false;
     this._discoveryHeartbeat = null;
+    this._lastIntendedRole = null;
+    this._lastGroupCreatedAt = 0; // Empêche les createGroup() multiples (framework busy)
+    this._lastYabissoPeerSeen = 0;
+    this._lastMasterProactiveAt = Date.now() - Math.floor(Math.random() * 25000);
+    this._peerLogThrottle = {};
+    this._helloTimeoutHandle = null;
+    this._peerHandshakeConfirmed = {};
+    this._meshPeers = new Map();
     this.stats = {
       totalSyncedP2P: 0,
       totalSyncedCloud: 0,
@@ -74,7 +83,18 @@ class P2PAutoSyncClass {
     }
 
     const myScore = this._parseScore(WifiDirectService.getDeviceName());
-    const peerScore = this._parseScore(peerName);
+
+    // V1.0.17: Préférer le score du peer MESH (plus fiable que le nom WiFi Direct qui est souvent le nom Android)
+    const meshPeer = this._getLatestMeshPeer();
+    let peerScore = 0;
+    let effectivePeerName = peerName;
+    if (meshPeer) {
+      peerScore = meshPeer.score;
+      effectivePeerName = meshPeer.name;
+      this._log(`🕸️ [Role] Score Mesh utilisé pour ${effectivePeerName} (score=${peerScore})`);
+    } else {
+      peerScore = this._parseScore(peerName);
+    }
     
     const iHaveContent = this._pendingPostsCount > 0;
 
@@ -92,6 +112,18 @@ class P2PAutoSyncClass {
        }
     }
 
+    if (peerScore === 0) {
+      const myName = WifiDirectService.getWifiDirectName() || '';
+      const myNameLower = myName.toLowerCase();
+      const peerNameLower = peerName.toLowerCase();
+      
+      if (myNameLower !== peerNameLower) {
+        const isMaster = myNameLower > peerNameLower;
+        this._log(`🎯 [Role] Score inconnu pour "${peerName}". Tri alphabetique: "${myName}" vs "${peerName}" → ${isMaster ? 'MASTER' : 'SLAVE'}`);
+        return isMaster;
+      }
+    }
+
     return peerScore > 0 ? myScore > peerScore : myScore >= 40;
   }
 
@@ -104,12 +136,84 @@ class P2PAutoSyncClass {
     }
   }
 
+  async _sendYabissoHello(isMasterSide, peerName) {
+    if (!WifiDirectService.isConnected) return;
+    const myScore = WifiDirectService.getPowerScore();
+    const sent = await WifiDirectService.sendControlMessage({
+      type: 'YABISSO_HELLO',
+      myScore,
+      isMasterSide,
+    });
+    if (sent) {
+      this._log(`🤝 [Handshake] YABISSO_HELLO envoyé à ${peerName} (score=${myScore})`);
+    } else {
+      this._log(`⚠️ [Handshake] Échec envoi YABISSO_HELLO à ${peerName}`);
+    }
+  }
+
+  _startYabissoHelloWatchdog(peerName) {
+    if (this._helloTimeoutHandle) {
+      clearTimeout(this._helloTimeoutHandle);
+      this._helloTimeoutHandle = null;
+    }
+    this._helloTimeoutHandle = setTimeout(() => {
+      if (WifiDirectService.isConnected && this._running) {
+        const confirmed = !!this._peerHandshakeConfirmed[peerName];
+        if (!confirmed) {
+          this._log(`⏰ [Handshake] Pas de YABISSO_HELLO reçu en 10s — ${peerName} n'est pas Yabisso. Déconnexion...`);
+          WifiDirectService.markPeerAsNonYabisso(peerName, 300000);
+          setTimeout(() => { try { WifiDirectService.disconnect(); } catch (_) {} }, 500);
+        }
+      }
+    }, 10000);
+  }
+
+  _confirmYabissoHandshake(peerName, peerScore) {
+    this._peerHandshakeConfirmed[peerName] = { peerScore, confirmedAt: Date.now() };
+    if (this._helloTimeoutHandle) {
+      clearTimeout(this._helloTimeoutHandle);
+      this._helloTimeoutHandle = null;
+    }
+    WifiDirectService._nonYabissoPeers?.delete(peerName);
+  }
+
+  setMeshPeer(peerId, name, score, isMeshMaster) {
+    this._meshPeers.set(peerId, {
+      name,
+      score,
+      isMeshMaster,
+      discoveredAt: Date.now(),
+    });
+    this._lastYabissoPeerSeen = Date.now();
+    this._log(`🕸️ [Mesh] Peer enregistré: ${name} (score=${score}, MeshMaster=${isMeshMaster})`);
+  }
+
+  clearMeshPeer(peerId) {
+    if (this._meshPeers.has(peerId)) {
+      const info = this._meshPeers.get(peerId);
+      this._meshPeers.delete(peerId);
+      this._log(`🕸️ [Mesh] Peer retiré: ${info.name}`);
+    }
+  }
+
+  _getLatestMeshPeer() {
+    let latest = null;
+    let latestTime = 0;
+    for (const [, info] of this._meshPeers) {
+      if (info.discoveredAt > latestTime) {
+        latestTime = info.discoveredAt;
+        latest = info;
+      }
+    }
+    return latest && (Date.now() - latest.discoveredAt < 120000) ? latest : null;
+  }
+
   async start() {
     if (this._running) return;
     this._running = true;
 
     console.log('[P2PAutoSync] Démarrage de l\'orchestrateur Multi-Rail...');
-    this._log('🚀 Orchestrateur démarré (V2.6).');
+    this._log('🚀 Orchestrateur démarré (V2.7 - fix BUG-038 sendControlMessage dir).');
 
     NetworkRailDetector.start();
     NetworkRailDetector.onRailChange((rails) => {
@@ -146,31 +250,53 @@ class P2PAutoSyncClass {
 
         const peerName = (peer.deviceName || 'Unknown').toLowerCase();
 
-        // 1. Vérifier si la synchro bidirectionnelle a été complétée récemment (5 min de repos)
+        if (WifiDirectService.isPeerBlacklisted(peerName)) {
+          return;
+        }
+
+        if (WifiDirectService.shouldBackoffPeer(peerName, 10000)) {
+          return;
+        }
+
+        const now = Date.now();
+        const lastLog = this._peerLogThrottle[peerName] || 0;
+        if (now - lastLog < 30000) {
+          return;
+        }
+        this._peerLogThrottle[peerName] = now;
+
         const lastSyncComplete = this._completedSyncs[peerName] || 0;
         const fiveMinsAgo = Date.now() - 5 * 60000;
         if (lastSyncComplete > fiveMinsAgo) return;
 
-        // 2. Vérifier si un swap de rôle est actif
         const isSwapActive = !!this._roleSwapQueue[peerName];
 
-        // Si swap actif, on ignore complètement le cooldown de 5s
         const timeSinceDisconnect = Date.now() - this._lastDisconnectAt;
         const cooldown = isSwapActive ? 0 : DISCONNECT_COOLDOWN_MS;
         if (timeSinceDisconnect < cooldown) return;
 
+        await this._updatePendingCount();
         const isMaster = this._iAmMasterFor(peerName);
 
         if (isMaster) {
+          const timeSinceLastGroup = Date.now() - this._lastGroupCreatedAt;
+          if (timeSinceLastGroup < GROUP_CREATE_COOLDOWN_MS) {
+            this._log(`⏳ [Peer] Cooldown createGroup actif (${Math.round((GROUP_CREATE_COOLDOWN_MS - timeSinceLastGroup) / 1000)}s restantes)...`);
+            return;
+          }
+        }
+
+        this._lastIntendedRole = isMaster ? 'MASTER' : 'SLAVE';
+        WifiDirectService.recordPeerAttempt(peerName);
+
+        try { await NearbyMeshService.pauseMesh(); } catch (_) {}
+
+        if (isMaster) {
           this._log(`🤝 [Master] Création du groupe...`);
+          this._lastGroupCreatedAt = Date.now();
           await WifiDirectService.connectToPeer(peer, 0, 'MASTER');
         } else {
-          this._log(`⏳ [Slave] Connexion au Master dans 2s...`);
-          setTimeout(async () => {
-            if (!WifiDirectService.connectedPeer && !WifiDirectService.isConnecting && this._running) {
-              await WifiDirectService.connectToPeer(peer, 0, 'SLAVE');
-            }
-          }, 2000);
+          this._log(`⏳ [Slave] Connexion au Master dans 3s (laissé au cycle 3s pour éviter double-trigger)...`);
         }
       });
 
@@ -178,22 +304,50 @@ class P2PAutoSyncClass {
         if (connected && this._running) {
           this._wasConnected = true;
           NetworkRailDetector.setWifiDirectAvailable(true);
-          this._log('📶 WiFi Direct CONNECTÉ ! Handshake final (1s)...');
+          this._log(`📶 WiFi Direct CONNECTÉ ! GO=${WifiDirectService.isGroupOwner}, Rôle intendé=${this._lastIntendedRole || 'inconnu'}`);
+
+          const isMyRoleMaster = this._lastIntendedRole === 'MASTER';
+          const peerName = (info?.deviceName || WifiDirectService.connectedPeer?.deviceName || 'Unknown').toLowerCase();
+
           setTimeout(() => {
             if (WifiDirectService.connectedPeer && this._running) {
-              if (!WifiDirectService.isGroupOwner) {
-                this._log('🚀 Envoi immédiat du Pack Loba...');
-                this._p2pSyncCycle();
+              const shouldSend = this._lastIntendedRole === 'SLAVE' ||
+                                 (this._lastIntendedRole === null && !WifiDirectService.isGroupOwner);
+              if (shouldSend) {
+                this._log('🚀 Envoi imminent — HELLO d\'abord, pack ensuite...');
+                WifiDirectService.startReceiving(WifiDirectService.globalFileHandler);
+                this._sendYabissoHello(isMyRoleMaster, peerName);
+                setTimeout(() => {
+                  if (WifiDirectService.connectedPeer && this._running) {
+                    const isYabissoConfirmed = this._peerHandshakeConfirmed[peerName];
+                    if (isYabissoConfirmed) {
+                      this._log('✅ Handshake OK → Envoi du pack...');
+                      this._p2pSyncCycle();
+                    } else {
+                      this._log('⏳ Pas d\'ACK reçu (3s) — envoi du pack quand même (best effort)...');
+                      this._p2pSyncCycle();
+                    }
+                  }
+                }, 3000);
               } else {
                 this._log('📡 Mode Réception — Prêt.');
+                WifiDirectService.startReceiving(WifiDirectService.globalFileHandler);
+                this._startYabissoHelloWatchdog(peerName);
               }
             }
-          }, 1000);
+          }, 1500);
         } else if (this._wasConnected) {
           this._wasConnected = false;
           NetworkRailDetector.setWifiDirectAvailable(false);
           WifiDirectService.stopReceiving();
           this._lastDisconnectAt = Date.now();
+          // NE PAS reset _lastIntendedRole ici — c'est ce qui causait le bug :
+          // quand le SLAVE recevait un disconnect temporaire (createGroup échoué du GO),
+          // _lastIntendedRole devenait null et le SLAVE entrait en "Mode Réception" au lieu d'envoyer.
+
+          // Resume Nearby Mesh après déconnexion WiFi Direct
+          try { await NearbyMeshService.resumeMesh(); } catch (_) {}
+
           if (Object.keys(this._roleSwapQueue).length > 0) {
             this._log('🔌 Déconnexion détectée. Swap actif : reconnexion immédiate...');
           } else {
@@ -247,10 +401,15 @@ class P2PAutoSyncClass {
     this._lastManualSync = Date.now();
     this._log(`⚡ Synchronisation forcée déclenchée...`);
 
-    // Toujours relancer la découverte WiFi Direct si non connecté
+    // Relancer la découverte seulement si elle est inactive
     if (!WifiDirectService.connectedPeer && !WifiDirectService.isConnecting) {
-      this._log(`🔍 [Trigger] Relance découverte WiFi Direct (force=${force})...`);
-      await WifiDirectService.startDiscovery(true);
+      const trigState = WifiDirectService.getState();
+      if (!trigState.isDiscovering) {
+        this._log(`🔍 [Trigger] Découverte inactive, relance (force=${force})...`);
+        await WifiDirectService.startDiscovery(true);
+      } else {
+        this._log(`🔍 [Trigger] Découverte déjà active, on attend les peers...`);
+      }
     }
 
     if (!WifiDirectService.connectedPeer && !WifiDirectService.isConnecting) {
@@ -336,16 +495,20 @@ class P2PAutoSyncClass {
         if (!state.initialized) await WifiDirectService.initialize();
 
         const detectedPeers = WifiDirectService.peers || [];
+        const nonBlacklistedPeers = detectedPeers.filter(p => {
+          const name = (p.deviceName || 'Unknown').toLowerCase();
+          return !WifiDirectService.isPeerBlacklisted(name);
+        });
+
         let isSwapActive = false;
         let peerName = 'unknown';
-        if (detectedPeers.length > 0) {
-          peerName = (detectedPeers[0].deviceName || 'Unknown').toLowerCase();
+        if (nonBlacklistedPeers.length > 0) {
+          peerName = (nonBlacklistedPeers[0].deviceName || 'Unknown').toLowerCase();
           if (this._roleSwapQueue[peerName]) {
             isSwapActive = true;
           }
         }
 
-        // Vérifier si la synchro bidirectionnelle a été complétée récemment (5 min de repos)
         if (peerName !== 'unknown') {
           const lastSyncComplete = this._completedSyncs[peerName] || 0;
           const fiveMinsAgo = Date.now() - 5 * 60000;
@@ -363,28 +526,83 @@ class P2PAutoSyncClass {
         }
 
         if (!WifiDirectService.connectedPeer && !WifiDirectService.isConnecting) {
-          // Toujours relancer la découverte si peers est vide (Android tue la découverte après ~30s)
-          if (detectedPeers.length === 0 || !state.isDiscovering) {
-            this._log(`🔄 [Cycle] Relance découverte WiFi Direct (peers=${detectedPeers.length}, discovering=${state.isDiscovering})...`);
+          if (!state.isDiscovering) {
+            this._log(`🔄 [Cycle] Découverte inactive, relance (peers=${nonBlacklistedPeers.length})...`);
             await WifiDirectService.startDiscovery(true);
+          } else if (nonBlacklistedPeers.length === 0) {
+            // Scan en cours, on attend — pas de restart agressif
           }
-          
-          if (detectedPeers.length > 0) {
-            const peer = detectedPeers[0];
+
+          if (nonBlacklistedPeers.length > 0) {
+            const peer = nonBlacklistedPeers[0];
+            const peerKey = (peer.deviceName || 'Unknown').toLowerCase();
+            if (WifiDirectService.shouldBackoffPeer(peerKey, 10000)) {
+              this._syncingP2P = false;
+              return;
+            }
             const isMaster = this._iAmMasterFor(peer.deviceName);
+
+            if (isMaster) {
+              const timeSinceLastGroup = Date.now() - this._lastGroupCreatedAt;
+              if (timeSinceLastGroup < GROUP_CREATE_COOLDOWN_MS) {
+                this._log(`⏳ [Cycle] Cooldown createGroup actif (${Math.round((GROUP_CREATE_COOLDOWN_MS - timeSinceLastGroup) / 1000)}s restantes)...`);
+                this._syncingP2P = false;
+                return;
+              }
+            }
+
+            this._lastIntendedRole = isMaster ? 'MASTER' : 'SLAVE';
+            WifiDirectService.recordPeerAttempt(peerKey);
+
             this._log(`🔗 [Cycle] Connexion à ${peer.deviceName} (${isMaster ? 'MASTER' : 'SLAVE'})...`);
+            if (isMaster) this._lastGroupCreatedAt = Date.now();
+            try { await NearbyMeshService.pauseMesh(); } catch (_) {}
             await WifiDirectService.connectToPeer(peer, 0, isMaster ? 'MASTER' : 'SLAVE');
+          } else {
+            // Aucun peer non-blacklisté. Si ça fait > 20s, devenir MASTER proactivement
+            // (utile pour les tests sur 1 device ET pour être découvrable en attente d'un Slave)
+            const timeSinceLastYabisso = this._lastYabissoPeerSeen > 0 ? (Date.now() - this._lastYabissoPeerSeen) : Infinity;
+            const timeSinceLastProactive = Date.now() - this._lastMasterProactiveAt;
+
+            // V1.0.17: Si on a un peer Mesh avec un score plus élevé, on attend (il créera le groupe)
+            const meshPeer = this._getLatestMeshPeer();
+            if (meshPeer) {
+              const myScore = this._parseScore(WifiDirectService.getDeviceName());
+              if (meshPeer.score > myScore) {
+                if (timeSinceLastProactive > 15000) {
+                  this._log(`📡 [Cycle] Mesh peer ${meshPeer.name} a un score plus élevé (${meshPeer.score} > ${myScore}). J'attends qu'il crée le groupe...`);
+                  this._lastMasterProactiveAt = Date.now();
+                }
+                this._syncingP2P = false;
+                return;
+              }
+            }
+
+            if (timeSinceLastYabisso > 20000 && timeSinceLastProactive > 30000) {
+              const timeSinceLastGroup = Date.now() - this._lastGroupCreatedAt;
+              if (timeSinceLastGroup > GROUP_CREATE_COOLDOWN_MS) {
+                const displaySec = this._lastYabissoPeerSeen > 0 ? `${Math.round(timeSinceLastYabisso/1000)}s` : 'jamais';
+                this._log(`📡 [Cycle] Aucun peer Yabisso depuis ${displaySec} → MASTER proactif (être découvrable)...`);
+                this._lastMasterProactiveAt = Date.now();
+                this._lastGroupCreatedAt = Date.now();
+                this._lastIntendedRole = 'MASTER';
+                try { await NearbyMeshService.pauseMesh(); } catch (_) {}
+                try { await WifiDirectService.createGroup(); } catch (e) {
+                  this._log(`⚠️ [Cycle] createGroup proactif échoué: ${e.message}`);
+                }
+              }
+            }
           }
         }
       }
 
       if (WifiDirectService.connectedPeer) {
-        if (WifiDirectService.isGroupOwner) {
-          this._log('📡 Mode Réception — Prêt.');
-        } else {
-          this._log('🟢 Slave connecté — envoi du pack...');
+        const shouldSend = this._lastIntendedRole === 'SLAVE' || 
+                           (this._lastIntendedRole === null && !WifiDirectService.isGroupOwner);
+        if (shouldSend) {
+          this._log('🟢 Envoi du pack...');
           const packPath = await LobaPackService.buildPack(category);
-          const peerName = (WifiDirectService.connectedPeer?.deviceName || 'Unknown').toLowerCase();
+          const peerName = (WifiDirectService.connectedPeer?.deviceName || 'unknown').toLowerCase();
           const isSwapActive = !!this._roleSwapQueue[peerName];
 
           let sent = false;
@@ -399,6 +617,7 @@ class P2PAutoSyncClass {
 
             if (sent) {
               this._lastSentTo[peerName] = Date.now();
+              this._lastPackSentAt = Date.now();
               this._log(`✅ Succès: Pack envoyé !`);
             } else {
               this._log(`❌ Échec envoi pack (sendFile a retourné false)`);
@@ -436,6 +655,9 @@ class P2PAutoSyncClass {
             }
             setTimeout(() => { WifiDirectService.disconnect(); }, 3000);
           }
+        } else {
+          this._log('📡 Mode Réception — Prêt.');
+          WifiDirectService.startReceiving(WifiDirectService.globalFileHandler);
         }
       } else if (NetworkRailDetector.activeRails.has(RAIL_TYPES.BLE_MESH)) {
         const pendingUploads = await this._getPendingUploads();
@@ -469,6 +691,27 @@ class P2PAutoSyncClass {
           delete this._roleSwapQueue[peerName];
           this._completedSyncs[peerName] = Date.now();
           this._log(`✅ Synchro bidirectionnelle complétée avec ${peerName}. Repos de 5 minutes.`);
+        } else if (metadata.type === 'YABISSO_HELLO') {
+          const senderDevice = metadata.senderDevice || peerName;
+          const isYabisso = WifiDirectService.isLikelyYabissoDevice(senderDevice);
+          if (!isYabisso) {
+            this._log(`⛔ [Handshake] ${senderDevice} n'est PAS un device Yabisso. Blacklist + déconnexion.`);
+            WifiDirectService.markPeerAsNonYabisso(senderDevice, 300000);
+            setTimeout(() => { try { WifiDirectService.disconnect(); } catch (_) {} }, 500);
+            return;
+          }
+          this._confirmYabissoHandshake(senderDevice, metadata.myScore);
+          this._lastYabissoPeerSeen = Date.now();
+          this._log(`✅ [Handshake] ${senderDevice} confirmé Yabisso (score=${metadata.myScore}). Envoi ACK...`);
+          await WifiDirectService.sendControlMessage({
+            type: 'YABISSO_HELLO_ACK',
+            myScore: WifiDirectService.getPowerScore(),
+          });
+        } else if (metadata.type === 'YABISSO_HELLO_ACK') {
+          const senderDevice = metadata.senderDevice || peerName;
+          this._confirmYabissoHandshake(senderDevice, metadata.myScore);
+          this._lastYabissoPeerSeen = Date.now();
+          this._log(`✅ [Handshake] ${senderDevice} a répondu ACK (score=${metadata.myScore}).`);
         }
         return;
       }

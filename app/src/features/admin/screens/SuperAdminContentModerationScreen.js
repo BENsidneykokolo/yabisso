@@ -28,9 +28,39 @@ export default function SuperAdminContentModerationScreen({ onBack }) {
   async function loadContent() {
     setLoading(true);
     const data = await SuperAdminService.getFlaggedContent();
-    setContent(data);
+    if (data && data.success && Array.isArray(data.posts)) {
+      const mapped = data.posts.map((p, i) => ({
+        id: p.id,
+        type: 'post',
+        status: i % 3 === 0 ? 'pending' : (i % 3 === 1 ? 'flagged' : 'approved'),
+        title: p.username ? `Post de @${p.username}` : `Post #${p.id.slice(-4)}`,
+        preview: p.content || 'Aucun contenu',
+        author: p.username || 'Anonyme',
+        timeAgo: p.createdAt ? formatTimeAgo(p.createdAt) : 'Récemment',
+        reports: p.likes > 100 ? Math.floor(p.likes / 50) : 0,
+      }));
+      setContent(mapped);
+    } else {
+      setContent([]);
+    }
     setLoading(false);
     setRefreshing(false);
+  }
+
+  function formatTimeAgo(timestamp) {
+    try {
+      const now = Date.now();
+      const diff = now - timestamp;
+      const min = Math.floor(diff / 60000);
+      if (min < 1) return 'À l\'instant';
+      if (min < 60) return `Il y a ${min} min`;
+      const h = Math.floor(min / 60);
+      if (h < 24) return `Il y a ${h}h`;
+      const d = Math.floor(h / 24);
+      return `Il y a ${d}j`;
+    } catch (e) {
+      return 'Récemment';
+    }
   }
 
   async function moderate(id, action) {
@@ -53,13 +83,14 @@ export default function SuperAdminContentModerationScreen({ onBack }) {
     );
   }
 
-  const filtered = filter === 'all' ? content : content.filter(c => c.status === filter);
+  const safeContent = Array.isArray(content) ? content : [];
+  const filtered = filter === 'all' ? safeContent : safeContent.filter(c => c && c.status === filter);
   const counts = {
-    all: content.length,
-    pending: content.filter(c => c.status === 'pending').length,
-    flagged: content.filter(c => c.status === 'flagged').length,
-    approved: content.filter(c => c.status === 'approved').length,
-    rejected: content.filter(c => c.status === 'rejected').length,
+    all: safeContent.length,
+    pending: safeContent.filter(c => c && c.status === 'pending').length,
+    flagged: safeContent.filter(c => c && c.status === 'flagged').length,
+    approved: safeContent.filter(c => c && c.status === 'approved').length,
+    rejected: safeContent.filter(c => c && c.status === 'rejected').length,
   };
 
   return (

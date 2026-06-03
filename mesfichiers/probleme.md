@@ -366,6 +366,112 @@
 - **Fichiers modifiés** : `P2PAutoSync.js`, `NearbyMeshService.js`
 - **Statut** : ✅ Résolu (2026-06-02)
 
+### BUG-034 — Cycle P2P relance la découverte toutes les 3s → peers jamais trouvés
+- **Date** : 2026-06-03
+- **Problème** : WiFi Direct discovery tourne en boucle (`peers=0, discovering=true`) sans jamais détecter le 2ème téléphone. Log caractéristique : `🔄 [Cycle] Relance découverte WiFi Direct (peers=0, discovering=true)...` en rafale toutes les 3 secondes.
+- **Cause** : `_p2pSyncCycle` relançait la découverte dès que `peers.length === 0`, faisant `stopDiscoveringPeers() → 300ms → startDiscoveringPeers()` toutes les 3s. Or le scanner WiFi Direct natif d'Android a besoin de **5-10 secondes** minimum pour détecter un peer. En interrompant en permanence, la découverte n'a jamais le temps de compléter → `peers=0` éternel.
+- **Solution** : 
+  1. `_p2pSyncCycle` : ne relance la découverte QUE si `!state.isDiscovering` (au lieu de `peers.length === 0 || !isDiscovering`)
+  2. `triggerSync` : même logique — vérifie `isDiscovering` avant de relancer
+  3. Le heartbeat 25s (BUG-012) gère toujours le cas où Android tue le scan après ~30s
+- **Fichiers modifiés** : `P2PAutoSync.js`
+- **Statut** : ✅ Résolu (2026-06-03)
+
+### BUG-035 — Connexion WiFi Direct Loba boucle sur peers NON-Yabisso (imprimante, autres appareils)
+- **Date** : 2026-06-03
+- **Problème** : Le cycle P2P tente de se connecter en SLAVE à des appareils détectés par WiFi Direct qui ne sont **pas du tout** des Yabisso (ex: imprimante HP M281, itel A50 d'un autre réseau, xiaomi 11T sans Yabisso). Boucle infinie : `[Cycle] Connexion à itel A50 (SLAVE)...` puis timeout 8s, puis `[Cycle] Relance découverte...` 3s plus tard, puis retry. Aucun handshake bidirectionnel MASTER↔SLAVE ne s'établit entre 2 vrais Yabisso.
+- **Cause** : 
+  1. `react-native-wifi-p2p` n'expose **pas** `setDeviceName()`. Le nom Yabisso (`73_Device_xxx`) construit en JS dans `_buildDeviceName()` (WifiDirectService.js:45-54) n'est **jamais broadcasté** par le framework Android. Les peers apparaissent avec leur nom Android natif ("itel A50", "xiaomi 11t", "HP M281").
+  2. Le filtre `_iAmMasterFor()` (P2PAutoSync.js:110) matchait uniquement sur le nom du peer → score = 0 pour tous les peers → fallback alphabétique → toujours SLAVE.
+  3. SLAVE appelle `connectToPeer` → `WifiP2P.connect()` → timeout 8s (le peer non-Yabisso n'a jamais créé de groupe) → retry éternel.
+  4. Double trigger : `onPeerFound` ET `_p2pSyncCycle` appellent tous les deux `connectToPeer` → race condition.
+- **Solution** : Protocole **YABISSO_HELLO handshake** via le canal de contrôle existant :
+  1. **`isLikelyYabissoDevice(deviceName)`** dans WifiDirectService.js : regex `^\d+_Device_` (insensible à la casse) — vérifie le nom envoyé dans le payload `senderDevice` de `sendControlMessage()`.
+  2. **SLAVE envoie `YABISSO_HELLO { myScore, myRam, isMaster }`** juste après connexion (le `senderDevice` du payload contient déjà le nom Yabisso).
+  3. **MASTER reçoit HELLO** : vérifie `isLikelyYabissoDevice(peerName)` du champ `senderDevice`. Si non-Yabisso → **blacklist 5min** + déconnecte. Si Yabisso → envoie `YABISSO_HELLO_ACK { myScore, myRam }`.
+  4. **Watchdog 5s côté MASTER** : si pas de HELLO reçu → blacklist + déconnecte.
+  5. **SLAVE appelle aussi `startReceiving()`** après connexion (auparavant seul le MASTER le faisait) pour pouvoir recevoir l'ACK.
+  6. **Blacklist + backoff par peer** : Maps `_nonYabissoPeers` (TTL 5min) et `_peerLastAttempt` (intervalle min 10s) dans WifiDirectService.
+  7. **Log throttle 30s** : évite le spam de logs `[Cycle] Connexion à itel A50...` qui inondent la console.
+  8. **Suppression du `setTimeout(3000)` dans `onPeerFound`** : déduplique avec `_p2pSyncCycle` qui tourne déjà toutes les 3s.
+  9. **MASTER proactif** : si aucun peer Yabisso détecté depuis >20s, le MASTER force un `createGroup()` pour signaler sa présence aux SLAVEs (qui eux ne créent jamais de groupe en WiFi Direct standard).
+- **Flux complet** :
+  ```
+  [SLAVE itel A50]                 [MASTER Xiaomi 11T]
+  scan WiFi Direct
+   ├─ détecte Xiaomi (nom natif)
+   └─ connect("Xiaomi 11T")
+                                   reçoit connect()
+                                   sendControlMessage({
+                                     type: 'YABISSO_HELLO_ACK',
+                                     senderDevice: '20_Device_xxx',
+                                     myScore: 200
+                                   })
+  reçoit HELLO_ACK
+   ├─ vérifie regex sur senderDevice ✓
+   └─ procède au sync du pack Loba
+  ```
+- **Fichiers modifiés** : 
+  - `app/src/features/bluetooth/services/WifiDirectService.js` (ajout helpers blacklist/backoff/identify + `createGroup()` publique)
+  - `app/src/features/bluetooth/services/P2PAutoSync.js` (handshake HELLO/ACK + watchdog + dedup + MASTER proactif)
+- **Vérifications** : `node --check` → 0 erreur, `grep` → 21 références cohérentes entre les 2 fichiers
+- **Statut** : ✅ Résolu (2026-06-03)
+
+### BUG-036 — `TypeError: Cannot convert undefined value to object` + regex trop restrictif + double MASTER
+- **Date** : 2026-06-03
+- **Problème 1** : `TypeError: Cannot convert undefined value to object` apparaît 5s après connexion MASTER. Empêche le handshake bidirectionnel d'aboutir.
+- **Problème 2** : Regex `isLikelyYabissoDevice` = `^\d+_Device_` ne matche jamais les noms réels `<score>_Yabisso_<id>` produits par `NearbyMeshService` (lignes 110 et 232). Le HELLO est toujours considéré comme "non-Yabisso" → blacklist + disconnect.
+- **Problème 3** : Les 2 téléphones lancent `createGroup()` simultanément (mode MASTER proactif après 20s sans peer) → 2 Group Owners distincts → ne peuvent plus se découvrir en WiFi Direct.
+- **Cause 1** : `_peerHandshakeConfirmed` n'était PAS initialisé dans le constructor. Lazy-init uniquement dans `_confirmYabissoHandshake`. Le watchdog `_startYabissoHelloWatchdog` (5s) accède `this._peerHandshakeConfirmed[peerName]` avant toute confirmation → crash.
+- **Cause 2** : Incohérence entre les patterns de nommage : `WifiDirectService._buildDeviceName()` → `<score>_Device_<id>`, mais `NearbyMeshService` → `<score>_Yabisso_<id>`. Le `senderDevice` reçu peut être dans les 2 formats selon le chemin.
+- **Cause 3** : Symétrie parfaite : les 2 devices calculent `timeSinceLastYabisso > 20000` en même temps, déclenchent `createGroup()` en même temps, deviennent tous 2 Group Owners.
+- **Solution** :
+  1. **`_peerHandshakeConfirmed = {}`** ajouté au constructor de P2PAutoSync (ligne 46)
+  2. **Regex élargi** : `/^\d+_(Yabisso|Device)_/i` — matche les 2 patterns
+  3. **Log "1780446238s"** remplacé par "jamais" quand `_lastYabissoPeerSeen = 0`
+  4. **Random init pour briser la symétrie** : `_lastMasterProactiveAt = Date.now() - Math.floor(Math.random() * 25000)` — chaque device commence avec un délai 0-25s aléatoire. Le device dont le timer expire en premier devient MASTER, l'autre le détecte et devient SLAVE.
+- **Fichiers modifiés** : `P2PAutoSync.js`, `WifiDirectService.js`
+- **Vérifications** : `node --check` → 0 erreur
+- **Statut** : ✅ Résolu (2026-06-03)
+
+### BUG-037 — Double MASTER persistant + HELLO envoyé après le pack
+- **Date** : 2026-06-03
+- **Problème 1** : Les 2 téléphones créent un groupe en même temps (double GO) → ils ne se voient plus en WiFi Direct.
+- **Problème 2** : Le SLAVE envoyait le pack AVANT le HELLO → le watchdog 5s du MASTER se déclenchait avant la réception du HELLO → déconnexion forcée.
+- **Problème 3** : Le WiFi Direct peer name est le nom Android ("Xiaomi 11T"), pas le nom Yabisso. Le score parsé = 0 → tri alphabétique → toujours SLAVE → mauvais rôle.
+- **Cause 1** : La random init (0-25s) ne brise pas la symétrie de façon fiable. Les 2 devices finissent par créer un groupe.
+- **Cause 2** : Le code du SLAVE appelait `_p2pSyncCycle()` (envoi du pack) AVANT `_sendYabissoHello()`. Le pack prend ~30s → le HELLO arrive après 30s → watchdog déjà déclenché.
+- **Cause 3** : Le `_iAmMasterFor()` utilisait le nom du peer WiFi Direct (nom Android), pas le nom Yabisso. Le score était toujours 0.
+- **Solution** :
+  1. **`_meshPeers` Map** dans P2PAutoSync + méthodes `setMeshPeer(peerId, name, score, isMeshMaster)` / `clearMeshPeer(peerId)`
+  2. **NearbyMeshService** appelle `P2PAutoSync.setMeshPeer()` dans `onPeerFound` et `clearMeshPeer()` dans `onPeerLost`
+  3. **`_iAmMasterFor()`** utilise le score du peer Mesh en priorité (le nom Mesh est Yabisso, le score est correct)
+  4. **Proactive MASTER** : si le peer Mesh a un score plus élevé, le device ATTEND qu'il crée le groupe (au lieu de créer le sien)
+  5. **Watchdog 5s → 10s** (pour donner plus de marge sur appareils lents)
+  6. **SLAVE envoie HELLO EN PREMIER**, attend 3s pour l'ACK, puis envoie le pack (au lieu de l'inverse)
+- **Fichiers modifiés** : `P2PAutoSync.js`, `NearbyMeshService.js`
+- **Vérifications** : `node --check` → 0 erreur sur les 2 fichiers
+- **Note utilisateur** : **Faire un hard reload** (`Ctrl+Shift+R` ou shake → Reload) car le bundle Metro peut être stale
+- **Statut** : ✅ Résolu (2026-06-03)
+
+### BUG-038 — `p2p_control/` directory n'est pas writable → HELLO jamais envoyé
+- **Date** : 2026-06-03
+- **Problème** : La couche HELLO/ACK échoue systématiquement. Les 2 phones se connectent (Retry SLAVE réussi, GO=true), le SLAVE tente d'envoyer le HELLO mais :
+  ```
+  WARN  [WifiDirectService] ❌ sendControlMessage error: 
+  'FileSystem.writeAsStringAsync' has been rejected.→ Caused by: 
+  java.io.IOException: Location '/data/user/0/com.benksidney.yabisso/files/p2p_control/ctrl_YABISSO_HELLO_xxx.json' isn't writable.
+  ```
+  → Le MASTER ne reçoit jamais le HELLO → watchdog 10s → disconnect → reconnect en boucle.
+- **Cause** : `sendControlMessage()` créait le dossier `p2p_control/` via `makeDirectoryAsync({ intermediates: true })` mais ce dossier échoue silencieusement à se créer sur certains Android (problème de permissions/sandbox du `documentDirectory`). Le `writeAsStringAsync` échoue ensuite.
+- **Solution** : Réutiliser le dossier `loba_media/` (déjà créé par `startReceiving()`, donc toujours disponible et writable). Préfixe `ctrl_` pour distinguer des fichiers Loba normaux.
+  - **Fichier modifié** : `app/src/features/bluetooth/services/WifiDirectService.js`
+  - **Cleanup ajouté** : suppression des fichiers `ctrl_*.json` après envoi (sender) et après traitement (receiver) pour éviter l'accumulation
+  - **Version log** : `🚀 Orchestrateur démarré (V2.7 - fix BUG-038 sendControlMessage dir)` dans P2PAutoSync pour permettre à l'user de vérifier qu'il a bien la nouvelle version
+- **Vérifications** : `node --check` → 0 erreur
+- **Statut** : ✅ Résolu (2026-06-03)
+- **Action user** : HARD RELOAD (`Ctrl+Shift+R` dans Metro OU shake → Reload sur le téléphone) pour charger le nouveau bundle. Vérifier que le log `V2.7` apparaît.
+
 ---
 
 ## Exigences sécurité critiques (non négociables)

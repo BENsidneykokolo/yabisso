@@ -144,6 +144,13 @@ class NearbyMeshServiceClass {
       const myScore = parseInt(this.deviceName?.split('_')[0] || '0', 10);
       const peerScore = parseInt(peer.name?.split('_')[0] || '0', 10);
       
+      // V1.0.17: Informer P2PAutoSync du peer Mesh pour le calcul de rôle WiFi Direct
+      const isMeshMaster = myScore > peerScore;
+      try {
+        const { P2PAutoSync } = require('./P2PAutoSync');
+        P2PAutoSync.setMeshPeer(peer.peerId, peer.name, peerScore, isMeshMaster);
+      } catch (_) {}
+
       // Master = score le plus élevé
       if (myScore > peerScore) {
         this._log(`🤝 [Master] Envoi requête de connexion vers ${peer.peerId}...`);
@@ -171,6 +178,11 @@ class NearbyMeshServiceClass {
       this._log(`👻 Node perdu: ${peerId}`);
       this.connectedPeers.delete(peerId);
       this._updateState();
+      // V1.0.17: Nettoyer le peer Mesh du P2PAutoSync
+      try {
+        const { P2PAutoSync } = require('./P2PAutoSync');
+        P2PAutoSync.clearMeshPeer(peerId);
+      } catch (_) {}
     }));
 
     this._listeners.push(onInvitationReceived((peer) => {
@@ -204,6 +216,40 @@ class NearbyMeshServiceClass {
     meshConnectionState.peerCount = this.connectedPeers.size;
     meshConnectionState.peers = Array.from(this.connectedPeers);
     MeshConnectionEvents.emit({ ...meshConnectionState });
+  }
+
+  async pauseMesh() {
+    if (!this.isAdvertising && !this.isDiscovering) return;
+    this._log('⏸️ Pause Mesh (libération radio pour WiFi Direct)...');
+    try {
+      if (this.isAdvertising) { await stopAdvertise(); this.isAdvertising = false; }
+      if (this.isDiscovering) { await stopDiscovery(); this.isDiscovering = false; }
+      // 500ms — délai historique (Session 09 Mai 2026, marchait bien)
+      // Augmenter à 2000ms causait un blocage du SLAVE (User feedback 2026-06-02)
+      await new Promise(r => setTimeout(r, 500));
+      this._log('✅ Mesh en pause.');
+    } catch (e) {
+      this._log(`⚠️ Erreur pause Mesh: ${e.message}`);
+    }
+  }
+
+  async resumeMesh() {
+    if (this.isAdvertising && this.isDiscovering) return;
+    if (this._isStarting) return;
+    this._log('▶️ Reprise Mesh après transfert WiFi...');
+    try {
+      if (!this.deviceName) {
+        const { WifiDirectService } = require('./WifiDirectService');
+        const powerScore = this._getPowerScore();
+        this.deviceName = WifiDirectService.deviceName || `${powerScore}_Yabisso_${Math.random().toString(36).substring(7)}`;
+      }
+      const strategy = Strategy.P2P_STAR;
+      if (!this.isAdvertising) { await startAdvertise(this.deviceName, strategy); this.isAdvertising = true; }
+      if (!this.isDiscovering) { await startDiscovery(this.deviceName, strategy); this.isDiscovering = true; }
+      this._log('✅ Mesh relancé.');
+    } catch (e) {
+      this._log(`⚠️ Erreur reprise Mesh: ${e.message}`);
+    }
   }
 
   async stopMesh() {

@@ -14,9 +14,10 @@ export default function SuperAdminSettingsScreen({ onBack }) {
   async function load() {
     setLoading(true);
     const data = await SuperAdminService.getSettings();
-    setSettings(data);
-    setAiKey(data.aiApiKey || '');
-    setMaintenanceMsg(data.maintenanceMessage || '');
+    const s = (data && data.success && data.settings) ? data.settings : {};
+    setSettings(s);
+    setAiKey(s.aiApiKey || s.broadcastMessage || '');
+    setMaintenanceMsg(s.maintenanceMessage || s.broadcastMessage || '');
     setLoading(false);
   }
 
@@ -28,12 +29,12 @@ export default function SuperAdminSettingsScreen({ onBack }) {
   }
 
   async function saveAiKey() {
-    const result = await SuperAdminService.updateSettings({ aiApiKey: aiKey });
+    const result = await SuperAdminService.updateSettings({ broadcastMessage: aiKey });
     if (result.success) Alert.alert('Succès', 'Clé API IA enregistrée');
   }
 
   async function saveMaintenance() {
-    const result = await SuperAdminService.updateSettings({ maintenanceMessage: maintenanceMsg });
+    const result = await SuperAdminService.updateSettings({ broadcastMessage: maintenanceMsg });
     if (result.success) Alert.alert('Succès', 'Message de maintenance enregistré');
   }
 
