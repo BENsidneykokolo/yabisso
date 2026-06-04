@@ -49,6 +49,7 @@ class P2PAutoSyncClass {
     this._peerHandshakeConfirmed = {};
     this._meshPeers = new Map();
     this._packSentThisSession = false; // V3.0 (BUG-BIDIR): n'envoyer le pack qu'1 fois par session WiFi Direct
+    this._hasPendingDelta = false; // V3.6.3 (BUG-060 fix): flag mis à true par onMeshManifestDeltaCalculated()
     this.stats = {
       totalSyncedP2P: 0,
       totalSyncedCloud: 0,
@@ -194,6 +195,34 @@ class P2PAutoSyncClass {
     });
     this._lastYabissoPeerSeen = Date.now();
     this._log(`🕸️ [Mesh] Peer enregistré: ${name} (score=${score}, MeshMaster=${isMeshMaster})`);
+  }
+
+  // V3.6.3 (BUG-060 fix) : HOOK DU DELTA MANIFESTE
+  // Appelé par NearbyMeshService._handleGlobalManifestReceived() dès que le delta
+  // est calculé. Permet de déclencher l'envoi du pack IMMÉDIATEMENT (sans attendre
+  // que le cycle 3s revoie shouldSend=false). Solution au bug :
+  //   - Avant : le WiFi s'active, le Mesh calcule le delta, mais shouldSend reste
+  //     false car (myScore < peerScore) est inversé → boucle passive.
+  //   - Maintenant : le delta force _hasPendingDelta=true → shouldSend devient
+  //     true au prochain cycle (≤3s) OU on peut forcer un sync immédiat.
+  onMeshManifestDeltaCalculated(delta) {
+    if (!delta) return;
+    const lobaCount = delta.loba?.length || 0;
+    const productCount = delta.products?.length || 0;
+    const totalCount = lobaCount + productCount;
+    this._hasPendingDelta = totalCount > 0;
+    this._log(`✨ [V3.6.3 Delta Hook] Delta reçu: ${lobaCount} vidéos + ${productCount} produits = ${totalCount} items à pousser. _hasPendingDelta=${this._hasPendingDelta}`);
+
+    // Si on a une connexion WiFi Direct active, forcer le cycle pour débloquer l'envoi
+    if (WifiDirectService.connectedPeer && this._running) {
+      this._log(`🚀 [V3.6.3 Delta Hook] Connexion WiFi active → déclenchement cycle immédiat...`);
+      // Petit délai 500ms pour laisser le temps au slave/peer d'ouvrir son socket
+      setTimeout(() => {
+        if (WifiDirectService.connectedPeer && this._running) {
+          this._p2pSyncCycle();
+        }
+      }, 500);
+    }
   }
 
   clearMeshPeer(peerId) {
@@ -398,6 +427,7 @@ class P2PAutoSyncClass {
           // V3.0: Reset _packSentThisSession pour permettre un nouvel envoi à la prochaine connexion
           // mais NE PAS reset _lastIntendedRole (rôle préservé pour le swap)
           this._packSentThisSession = false;
+          this._hasPendingDelta = false; // V3.6.3: Reset du flag delta à la déconnexion
           // V3.6 (BUG-058 fix) : Reset lock + hasCreatedGroup sur déconnexion
           this._isConnecting = false;
           this._hasCreatedGroup = false;
@@ -704,13 +734,23 @@ class P2PAutoSyncClass {
       }
 
       if (WifiDirectService.connectedPeer) {
-        // V2.16 (BUG-046 fix) : shouldSend basé sur comparaison de SCORE Yabisso.
+        // V3.6.3 (BUG-060 fix) : CORRECTION DE LA LOGIQUE INVERSÉE
+        // AVANT (V2.16) : iShouldSend = peerScore > 0 ? (myScore < peerScore) : (SLAVE)
+        //   → Le Master (myScore=73 > peerScore=18) ne pouvait JAMAIS envoyer.
+        //   → Boucle infinie `shouldSend=false` + `Mode Réception — Prêt.`
+        // MAINTENANT (V3.6.3) : Le rôle Master/Slave hydraté depuis `isGroupOwner`
+        //   est la source de vérité. Le Master a le score le plus haut → il pousse.
+        //   Le Slave reçoit en Phase 1 puis devient émetteur en Phase 2 (V3.3).
         const myScore = this._parseScore(WifiDirectService.getDeviceName());
         const meshPeer = this._getLatestMeshPeer();
         const peerScore = meshPeer ? meshPeer.score : 0;
-        const iShouldSend = peerScore > 0 ? (myScore < peerScore) : (this._lastIntendedRole === 'SLAVE');
-        const shouldSend = iShouldSend || this._lastIntendedRole === 'SLAVE';
-        this._log(`🔍 [V3.0] shouldSend=${shouldSend}, myScore=${myScore}, peerScore=${peerScore}, role=${this._lastIntendedRole}, packSent=${this._packSentThisSession}`);
+        const isMyRoleMaster = this._lastIntendedRole === 'MASTER';
+        const hasPendingContent = this._pendingPostsCount > 0 || !!this._hasPendingDelta;
+        // Le Master envoie ssi (a) il a du contenu OU (b) le delta Mesh dit qu'il doit pousser.
+        // Le Slave n'envoie PAS en Phase 1 (il fait la Phase 2 après swap ou via sendFileTo).
+        const iShouldSend = isMyRoleMaster && hasPendingContent;
+        const shouldSend = iShouldSend;
+        this._log(`🔍 [V3.6.3] shouldSend=${shouldSend}, isMaster=${isMyRoleMaster}, myScore=${myScore}, peerScore=${peerScore}, pendingContent=${hasPendingContent}, packSent=${this._packSentThisSession}`);
         if (shouldSend && !this._packSentThisSession) {
           this._log('🟢 Envoi du pack (Phase 1: émetteur → récepteur)...');
           const packPath = await LobaPackService.buildPack(category, 25);
@@ -731,6 +771,7 @@ class P2PAutoSyncClass {
               this._lastSentTo[peerName] = Date.now();
               this._lastPackSentAt = Date.now();
               this._packSentThisSession = true; // V3.0: Marquer le pack comme envoyé pour cette session
+              this._hasPendingDelta = false; // V3.6.3: Delta poussé, on reset le flag
               this._log(`✅ [V3.3] Pack Phase 1 envoyé !`);
             } else {
               this._log(`❌ Échec envoi pack Phase 1`);

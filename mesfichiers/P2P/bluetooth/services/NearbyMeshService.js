@@ -331,15 +331,26 @@ class NearbyMeshServiceClass {
   async _handleGlobalManifestReceived(peerId, remoteManifest) {
     if (!remoteManifest) return;
     this._log(`📥 Manifeste reçu de ${peerId}. Analyse des deltas...`);
-    
+
     try {
       const delta = await GlobalManifestService.calculateGlobalDelta(remoteManifest);
       const lobaCount = delta.loba?.length || 0;
       const productCount = delta.products?.length || 0;
-      
+
+      // V3.6.3 (BUG-060 fix) : HOOK DU DELTA VERS P2PAutoSync
+      // On passe TOUJOURS le delta à P2PAutoSync (même si 0 items) pour qu'il
+      // puisse synchroniser son flag _hasPendingDelta. Sans ce hook, le cycle
+      // 3s évalue shouldSend sans savoir qu'il y a un delta à pousser.
+      try {
+        const { P2PAutoSync } = require('./P2PAutoSync');
+        P2PAutoSync.onMeshManifestDeltaCalculated(delta);
+      } catch (e) {
+        this._log(`⚠️ [V3.6.3] Échec hook delta: ${e.message}`);
+      }
+
       if (lobaCount > 0 || productCount > 0) {
         this._log(`✨ Delta détecté: ${lobaCount} vidéos, ${productCount} produits. Activation WiFi Direct...`);
-        
+
         // On importe dynamiquement pour éviter les circular dependencies
         const { P2PAutoSync } = require('./P2PAutoSync');
         P2PAutoSync.triggerSync(null, true); // force=true pour ignorer le cooldown

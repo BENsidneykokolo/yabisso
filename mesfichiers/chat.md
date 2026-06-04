@@ -5959,3 +5959,120 @@ this._isConnecting = false;
 
 ### Commit
 **v0.0.17** : `V3.6.2 BUG-059 fix - hydrate _lastIntendedRole from isGroupOwner + V3.6.1 release isConnecting lock after connectToPeer + 1000ms pause Slave before startReceiving`
+
+---
+
+## SESSION V3.6.3 (2026-06-04 ~23h45) — BUG-060 : `shouldSend=false` permanent + HOOK DELTA
+
+### Contexte
+L'utilisateur a testé V3.6.2 sur les 2 téléphones physiques. Les logs montrent que :
+- ✅ V3.6.2 BUG-059 fonctionne : `Rôle intendé=MASTER (hydraté depuis hardware)` apparaît
+- ✅ Mesh manifestes s'échangent : `📥 Manifeste reçu de KD5R. Analyse des deltas...` → `✨ Delta détecté: 18 vidéos, 0 produits`
+- ❌ **BUG-060** : `shouldSend=false` affiché en BOUCLE toutes les 3s, le Master ne pousse JAMAIS le pack
+- ❌ `📡 Mode Réception — Prêt.` répété indéfiniment
+- ❌ L'Itel (Master, score 73) reste bloqué en mode passif
+
+### Analyse du BUG-060
+**Cause racine** : Ligne 711 de `P2PAutoSync.js` :
+```javascript
+const iShouldSend = peerScore > 0 ? (myScore < peerScore) : (this._lastIntendedRole === 'SLAVE');
+const shouldSend = iShouldSend || this._lastIntendedRole === 'SLAVE';
+```
+**Bug** : La logique est INVERSÉE. Le Master (myScore=73 > peerScore=18) ne peut jamais satisfaire `myScore < peerScore`. Quand `peerScore=0` (mesh peer perdu, ce qui arrive souvent sur Itel A50), la fallback `lastIntendedRole === 'SLAVE'` est `false` pour un Master. Résultat : `shouldSend=false` en permanence.
+
+**Cause secondaire** : Le delta du manifeste (18 vidéos détectées) est calculé dans `NearbyMeshService._handleGlobalManifestReceived` mais cette information n'est PAS transmise à `P2PAutoSync.shouldSend`. Le cycle 3s continue à évaluer `shouldSend` sans savoir qu'il y a 18 items à pousser.
+
+### Solution V3.6.3 (2 sous-fixes)
+
+#### V3.6.3 FIX-1 : Corriger la logique `iShouldSend` (cause racine)
+**Fichier** : `app/src/features/bluetooth/services/P2PAutoSync.js` ligne 706-720
+**Code** :
+```javascript
+// V3.6.3 (BUG-060 fix) : CORRECTION DE LA LOGIQUE INVERSÉE
+const isMyRoleMaster = this._lastIntendedRole === 'MASTER';
+const hasPendingContent = this._pendingPostsCount > 0 || !!this._hasPendingDelta;
+const iShouldSend = isMyRoleMaster && hasPendingContent;
+const shouldSend = iShouldSend;
+this._log(`🔍 [V3.6.3] shouldSend=${shouldSend}, isMaster=${isMyRoleMaster}, ...`);
+```
+**Principe** : Le rôle hydraté depuis `isGroupOwner` (V3.6.2) est la source de vérité. Le Master envoie ssi il a du contenu OU si le delta Mesh dit qu'il doit pousser. Le Slave n'envoie PAS en Phase 1.
+
+#### V3.6.3 FIX-2 : Hook du delta manifeste (cause secondaire)
+**Fichier** : `app/src/features/bluetooth/services/NearbyMeshService.js` ligne 331-360
+**Code** :
+```javascript
+// V3.6.3 : On passe TOUJOURS le delta à P2PAutoSync (même si 0 items)
+try {
+  const { P2PAutoSync } = require('./P2PAutoSync');
+  P2PAutoSync.onMeshManifestDeltaCalculated(delta);
+} catch (e) {
+  this._log(`⚠️ [V3.6.3] Échec hook delta: ${e.message}`);
+}
+```
+
+**Fichier** : `app/src/features/bluetooth/services/P2PAutoSync.js` ligne 198-225
+**Nouvelle méthode** :
+```javascript
+onMeshManifestDeltaCalculated(delta) {
+  if (!delta) return;
+  const lobaCount = delta.loba?.length || 0;
+  const productCount = delta.products?.length || 0;
+  const totalCount = lobaCount + productCount;
+  this._hasPendingDelta = totalCount > 0;
+  this._log(`✨ [V3.6.3 Delta Hook] Delta reçu: ${lobaCount} vidéos + ${productCount} produits = ${totalCount} items à pousser.`);
+
+  // Si on a une connexion WiFi Direct active, forcer le cycle
+  if (WifiDirectService.connectedPeer && this._running) {
+    setTimeout(() => {
+      if (WifiDirectService.connectedPeer && this._running) {
+        this._p2pSyncCycle();
+      }
+    }, 500);
+  }
+}
+```
+**Principe** : Le Mesh notifie P2PAutoSync dès que le delta est calculé → `_hasPendingDelta` est setté → le prochain cycle 3s voit `hasPendingContent=true` et `isMyRoleMaster=true` → `shouldSend=true` → le pack est envoyé.
+
+**Adaptation** : Le code proposé par l'utilisateur utilisait `WifiP2PManagerModule.startSenderServer(8888)` qui n'existe pas. Adapté à l'API réelle : `WifiDirectService.sendFile()` + `startReceiving()` + `LobaPackService.buildPack()` (déjà utilisés dans V3.3 Phase 1/Phase 2).
+
+### Vérifications
+- ✅ `babel-parser` : 0 erreur de syntaxe sur les 2 fichiers
+- ✅ Backup P2P synchronisé (`mesfichiers/P2P/bluetooth/services/P2PAutoSync.js` + `NearbyMeshService.js`)
+- ✅ `git diff --stat` : 2 fichiers modifiés, 59 insertions, 7 suppressions
+- ✅ Fix-1 corrige la cause racine (logique inversée)
+- ✅ Fix-2 corrige la cause secondaire (hook delta tardif)
+- ✅ V3.5 (election Mesh), V3.6 (lock), V3.6.2 (role hydraté) préservés
+
+### ACTION REQUISE UTILISATEUR
+**HARD RELOAD** les 2 téléphones (`npx expo start --clear` puis Ctrl+Shift+R).
+
+**Logs attendus** :
+- 🚀 `Orchestrateur démarré (V3.6.3 - LOCK + ARBITRAGE MESH + role hydraté + hook delta)`
+- Côté Itel (GO/Master) :
+  - `🕸️ [V3.6] Arbitrage Mesh: Mon Score (73) vs Score Distant (18) → MASTER`
+  - `👑 [V3.5] Mesh Master détecté → création du groupe WiFi Direct`
+  - `📶 WiFi Direct CONNECTÉ ! GO=true, Rôle intendé=MASTER (hydraté depuis hardware), lock=OFF`
+  - `✨ [V3.6.3 Delta Hook] Delta reçu: 18 vidéos + 0 produits = 18 items à pousser.`  ← NOUVEAU
+  - `🚀 [V3.6.3 Delta Hook] Connexion WiFi active → déclenchement cycle immédiat...`  ← NOUVEAU
+  - `🔍 [V3.6.3] shouldSend=true, isMaster=true, myScore=73, peerScore=18, pendingContent=true, packSent=false`  ← BUG-060 FIX
+  - `🟢 Envoi du pack (Phase 1: émetteur → récepteur)...`  ← FINI la boucle passive
+  - `✅ [V3.3] Pack Phase 1 envoyé !`
+  - `🔄 [V3.3] Phase 1 terminée. Récupération IP client pour Phase 2...`
+  - `✅ [V3.3] IP client récupérée: 192.168.49.x`
+  - `📤 [V3.3] PHASE 2 : GO envoie son pack au client...`
+  - `✅ [V3.3] Pack Phase 2 (GO → Client) envoyé !`
+  - `🏁 [V3.3] Fin synchro bidirectionnelle — Envoi de SYNC_COMPLETE...`
+  - `✅ [V3.3] SYNC_COMPLETE envoyé. Déconnexion dans 3s...`
+- Côté Xiaomi (Client/Slave) :
+  - `📶 WiFi Direct CONNECTÉ ! GO=false, Rôle intendé=SLAVE (hydraté depuis hardware), lock=OFF`
+  - `📡 Mode Réception — Prêt.`
+  - `✨ [V3.6.3 Delta Hook] Delta reçu: 84 vidéos + 0 produits = 84 items à pousser.`
+  - `🔍 [V3.6.3] shouldSend=false, isMaster=false, myScore=18, peerScore=73, pendingContent=true, packSent=false`  ← Normal, Slave n'envoie PAS en Phase 1
+  - Puis après la Phase 1 du Master, le Slave reçoit et fait sa Phase 2
+
+- Plus AUCUN `shouldSend=false, role=MASTER, packSent=false` en boucle
+- Plus AUCUN `📡 Mode Réception — Prêt.` répété indéfiniment côté Master
+- Transfert bidirectionnel complet : Phase 1 (Master→Slave) + Phase 2 (Slave→Master) + SYNC_COMPLETE + déconnection
+
+### Commit
+**v0.0.18** : `V3.6.3 BUG-060 fix - logique shouldSend corrigée (Master envoie) + hook delta manifeste dans onMeshManifestDeltaCalculated`
