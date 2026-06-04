@@ -330,6 +330,15 @@ class WifiDirectServiceClass {
     if (this._isSending) return false;
     this._isSending = true;
 
+    // V3.1 (BUG-053 fix): Forcer la mise à jour de wifiP2pInfo côté natif AVANT sendFile
+    // Sans ça, le code natif `wifiP2pInfo.groupOwnerAddress != null` crash en NPE
+    // (réact-native-wifi-p2p n'initialise wifiP2pInfo que via onConnectionInfoAvailable)
+    try {
+      await this._refreshConnectionInfo();
+    } catch (_) {
+      // Continuer quand même, le sendFile pourrait quand même marcher
+    }
+
     // V2.18c (BUG-048 fix) : SUPPRIMÉ le check FileSystem qui crashait (require expo-file-system HS dans ce contexte)
     // On se fie à la taille déjà loggée par LobaPackService (ex: "Pack généré: ... (9 items, 23.2MB)")
 
@@ -366,6 +375,13 @@ class WifiDirectServiceClass {
     this._isSending = true;
 
     try {
+      // V3.1 (BUG-053 fix): Forcer la mise à jour de wifiP2pInfo côté natif AVANT sendFile
+      try {
+        await this._refreshConnectionInfo();
+      } catch (_) {
+        // Continuer quand même
+      }
+
       // V1.0.18: Utiliser loba_media/ au lieu de p2p_control/ (p2p_control n'est pas writable sur Android)
       // loba_media/ est créé par startReceiving() donc toujours dispo
       const baseDir = `${FileSystem.documentDirectory}loba_media/`;
@@ -399,6 +415,31 @@ class WifiDirectServiceClass {
       return false;
     } finally {
       this._isSending = false;
+    }
+  }
+
+  // V3.1 (BUG-053 fix): Force la mise à jour de `wifiP2pInfo` côté natif Android
+  // Le code natif de react-native-wifi-p2p crash avec NPE si wifiP2pInfo est null
+  // (cf. WiFiP2PManagerModule.java ligne 260 : `wifiP2pInfo.groupOwnerAddress != null`)
+  // On appelle getConnectionInfo() pour peupler le champ avant tout sendFile
+  async _refreshConnectionInfo() {
+    if (!this._nativeReady || !WifiP2P) return false;
+    if (!this.isConnected) return false;
+    try {
+      const info = await Promise.race([
+        WifiP2P.getConnectionInfo(),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('getConnectionInfo timeout')), 3000))
+      ]);
+      if (info && info.groupFormed) {
+        this.isGroupOwner = !!info.isGroupOwner;
+        this.groupOwnerAddress = info.groupOwnerAddress === 'null' ? '192.168.49.1' : info.groupOwnerAddress;
+        console.log(`[WifiDirectService] 🔄 ConnectionInfo rafraîchi: GO=${this.isGroupOwner}, addr=${this.groupOwnerAddress}`);
+        return true;
+      }
+      return false;
+    } catch (e) {
+      console.warn(`[WifiDirectService] ⚠️ getConnectionInfo échoué: ${e.message}`);
+      return false;
     }
   }
 

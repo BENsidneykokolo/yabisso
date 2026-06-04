@@ -5335,3 +5335,83 @@ Vérifier dans les logs :
 - BUG-051 : `_iAmMasterFor` ne trouvait pas le score mesh — résolu par V2.21
 - BUG-052 : Interférence PC/phones sur même WiFi — à tester sans PC
 - **NOUVEAU** : Partage bidirectionnel — **corrigé par V3.0** (en test)
+
+---
+
+## Session 2026-06-04 (test V3.0) — BUG-053 : NPE native dans react-native-wifi-p2p
+
+### Crash de l'application
+L'utilisateur a partagé une capture d'écran montrant le crash de l'**Itel A50** :
+```
+java.lang.NullPointerException: Attempt to read from field...
+at io.wifi.p2p.WifiP2PManagerModule.sendFile(WiFiP2PManagerModule.java:...)
+```
+
+### Analyse en profondeur du code natif
+Après avoir lu le code source de `react-native-wifi-p2p` (dans `node_modules/`), j'ai trouvé le **bug exact** :
+
+**Fichier** : `node_modules/react-native-wifi-p2p/android/src/main/java/io/wifi/p2p/WiFiP2PManagerModule.java`
+
+**Ligne 35** : `private WifiP2pInfo wifiP2pInfo;` (initialisé à `null`)
+**Ligne 260** : `if (wifiP2pInfo.groupOwnerAddress != null) {` ← **NPE ICI** car `wifiP2pInfo` peut être `null` !
+
+Le code natif accède `wifiP2pInfo.groupOwnerAddress` SANS vérifier `wifiP2pInfo != null` d'abord.
+
+**Le même bug existe ligne 340** pour `sendMessage`.
+
+### Pourquoi `wifiP2pInfo` est null
+Le champ `wifiP2pInfo` n'est rempli QUE par le callback `onConnectionInfoAvailable()` (ligne 54-56) qui est déclenché par :
+1. `subscribeOnConnectionInfoUpdates()` (abonnement passif)
+2. `getConnectionInfo()` (appel explicite)
+
+Sur l'Itel, le `subscribeOnConnectionInfoUpdates` met à jour l'état JS (`isConnected`, `isGroupOwner`) MAIS ne déclenche PAS le callback interne côté Java → `wifiP2pInfo` reste `null` côté natif.
+
+### Quand l'Itel crashe
+L'Itel est MASTER (GO=true, score=73). Quand un peer Mesh avec un score plus bas est détecté (Xiaomi score=18), le code dans `P2PAutoSync.js` ligne 343-353 force le MASTER à envoyer un HELLO :
+```javascript
+if (meshPeer && myScore > 0 && meshPeer.score < myScore) {
+  setTimeout(() => {
+    WifiDirectService.sendControlMessage({ type: 'YABISSO_HELLO', myScore, isMasterSide: true });
+  }, 5000);
+}
+```
+→ `sendControlMessage` → `WifiP2P.sendFile()` côté natif → **NPE** car `wifiP2pInfo.groupOwnerAddress` accède sur objet null.
+
+### Solution V3.1 — `_refreshConnectionInfo()`
+
+**Principe** : Appeler `WifiP2P.getConnectionInfo()` AVANT tout `sendFile()` pour forcer la mise à jour de `wifiP2pInfo` côté natif.
+
+**Fichiers modifiés** :
+- `app/src/features/bluetooth/services/WifiDirectService.js` :
+  1. **Nouvelle méthode `_refreshConnectionInfo()`** (ligne 421-443) : appelle `WifiP2P.getConnectionInfo()` avec timeout 3s et met à jour `isGroupOwner` + `groupOwnerAddress`
+  2. **`sendFile()`** (ligne 333-335) : appelle `_refreshConnectionInfo()` au début
+  3. **`sendControlMessage()`** (ligne 373-375) : appelle `_refreshConnectionInfo()` au début
+
+- `app/src/features/bluetooth/services/P2PAutoSync.js` :
+  1. **Try/catch défensif** (ligne 343-365) : le HELLO forcé du MASTER est maintenant protégé contre les crashs
+  2. **Version log** : `V3.1 - FIX NPE NATIVE: _refreshConnectionInfo avant sendFile`
+
+### Flow V3.1 corrigé
+```
+1. Itel (MASTER) + Xiaomi (SLAVE) connectés
+2. Itel entre en Mode Réception (shouldSend=false)
+3. Xiaomi (SLAVE) appelle sendControlMessage(HELLO)
+4. _refreshConnectionInfo() appelé AVANT sendFile
+5. getConnectionInfo() peuple wifiP2pInfo côté natif
+6. sendFile() peut maintenant lire wifiP2pInfo.groupOwnerAddress ✅
+```
+
+### Vérifications
+- `node --check` sur les 2 fichiers modifiés → ✅ 0 erreur
+- Backup P2P synchronisé : `mesfichiers/P2P/bluetooth/services/{WifiDirectService,P2PAutoSync}.js` ✅
+
+### ACTION REQUISE UTILISATEUR
+**HARD RELOAD** les 2 téléphones.
+
+Vérifier dans les logs :
+- `🚀 Orchestrateur démarré (V3.1 - FIX NPE NATIVE: _refreshConnectionInfo avant sendFile).`
+- `🔄 ConnectionInfo rafraîchi: GO=true/false, addr=...` (dans le log WifiDirectService)
+- Le HELLO devrait partir sans crash maintenant
+
+### Note sur la librairie
+Le bug est dans `react-native-wifi-p2p` (lib non maintenue). Le fix côté JS est un **workaround défensif**. Une vraie correction nécessiterait de patcher la lib (ajouter `if (wifiP2pInfo == null || wifiP2pInfo.groupOwnerAddress != null)`) ou de forker la lib.

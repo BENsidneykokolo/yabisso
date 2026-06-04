@@ -217,7 +217,7 @@ class P2PAutoSyncClass {
     this._running = true;
 
     console.log('[P2PAutoSync] Démarrage de l\'orchestrateur Multi-Rail...');
-    this._log('🚀 Orchestrateur démarré (V3.0 - FIX BIDIRECTIONNEL: packSentThisSession + reset rôle).');
+    this._log('🚀 Orchestrateur démarré (V3.1 - FIX NPE NATIVE: _refreshConnectionInfo avant sendFile).');
 
     NetworkRailDetector.start();
     NetworkRailDetector.onRailChange((rails) => {
@@ -343,11 +343,21 @@ class P2PAutoSyncClass {
                 const myScore = this._parseScore(WifiDirectService.getDeviceName());
                 const meshPeer = this._getLatestMeshPeer();
                 if (meshPeer && myScore > 0 && meshPeer.score < myScore) {
-                  this._log(`🔄 [V2.13] MASTER forcé d'envoyer car peer ${meshPeer.name} (score=${meshPeer.score}) < moi (${myScore})`);
+                  this._log(`🔄 [V3.1] MASTER forcé d'envoyer car peer ${meshPeer.name} (score=${meshPeer.score}) < moi (${myScore})`);
                   setTimeout(() => {
                     if (WifiDirectService.connectedPeer && this._running) {
-                      WifiDirectService.sendControlMessage({ type: 'YABISSO_HELLO', myScore, isMasterSide: true });
-                      setTimeout(() => this._p2pSyncCycle(), 2000);
+                      // V3.1: try/catch défensif contre la NPE native de react-native-wifi-p2p
+                      try {
+                        WifiDirectService.sendControlMessage({ type: 'YABISSO_HELLO', myScore, isMasterSide: true })
+                          .then(() => {
+                            setTimeout(() => this._p2pSyncCycle(), 2000);
+                          })
+                          .catch(e => {
+                            this._log(`⚠️ [V3.1] Envoi HELLO forcé échoué (try/catch): ${e.message}`);
+                          });
+                      } catch (e) {
+                        this._log(`⚠️ [V3.1] Envoi HELLO forcé catch: ${e.message}`);
+                      }
                     }
                   }, 5000);
                 }
