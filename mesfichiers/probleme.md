@@ -472,6 +472,68 @@
 - **Statut** : ✅ Résolu (2026-06-03)
 - **Action user** : HARD RELOAD (`Ctrl+Shift+R` dans Metro OU shake → Reload sur le téléphone) pour charger le nouveau bundle. Vérifier que le log `V2.7` apparaît.
 
+### BUG-039 — Connexion P2P WiFi Direct se coupe après 10s (NPE file:// + mismatch clé watchdog)
+- **Date** : 2026-06-04
+- **Problème 1 (NPE natif)** : `sendControlMessage` (WifiDirectService.js:377) passait le chemin avec préfixe `file://` à `WifiP2P.sendFile()`. La couche native `react-native-wifi-p2p` ne strippe PAS `file://` → `FileInputStream` ouvert sur chemin invalide → `java.lang.NullPointerException: Attempt to read from file` → **crash de l'app** sur itel A50.
+- **Problème 2 (MISMATCH de clés)** : Le watchdog HELLO du MASTER (`P2PAutoSync.js:163`) vérifiait `this._peerHandshakeConfirmed[peerName]` avec `peerName` = nom Android du device (ex: "xiaomi 11t", lowercase). Mais `_confirmYabissoHandshake()` (P2PAutoSync.js:703) stocke avec `metadata.senderDevice` = nom Yabisso (ex: "73_Yabisso_xxx"). → Les 2 clés sont **DIFFÉRENTES** → le watchdog ne trouve JAMAIS la confirmation → déconnecte systématiquement après 10s avec le log "Pas de YABISSO_HELLO reçu en 10s — unknown n'est pas Yabisso".
+- **Logs typiques avant fix** :
+  ```
+  [WifiDirectService] 📤 sendControlMessage: YABISSO_HELLO
+  [WifiDirectService] ❌ sendControlMessage error: ... (ou NPE natif → crash)
+  [P2PAutoSync] ⏰ [Handshake] Pas de YABISSO_HELLO reçu en 10s — unknown n'est pas Yabisso. Déconnexion...
+  [WifiDirectService] ⛔ Peer blacklisté (non-Yabisso) pour 5min: unknown
+  [P2PAutoSync] 🔌 Déconnexion détectée. Cool-down (5s)...
+  ```
+- **Cause technique identifiée** :
+  1. Le `sendFile` public (WifiDirectService.js:335) strippe `file://` via `.replace('file://', '')` → FONCTIONNE pour le transfert de pack
+  2. Le `sendControlMessage` (WifiDirectService.js:377) appelait directement `WifiP2P.sendFile(controlFile)` SANS strip → NPE
+  3. Le `peerName` est extrait du WiFi Direct natif = nom Android du device (lowercase, "xiaomi 11t")
+  4. Le `senderDevice` vient de `metadata` JSON reçu = nom Yabisso avec préfixe score
+- **Solution** :
+  1. **WifiDirectService.js (ligne 376-378)** : Ajout de `const cleanControlFile = controlFile.replace('file://', '');` avant l'appel `WifiP2P.sendFile(cleanControlFile)`.
+  2. **P2PAutoSync.js (ligne 160-165)** : Remplacement de `const confirmed = !!this._peerHandshakeConfirmed[peerName];` par `const confirmedCount = Object.keys(this._peerHandshakeConfirmed || {}).length;` → vérifie si N'IMPORTE QUEL peer a confirmé le handshake (P2P est 1-to-1 de toute façon).
+- **Fichiers modifiés** :
+  - `app/src/features/bluetooth/services/WifiDirectService.js` (1 ligne ajoutée : strip file://)
+  - `app/src/features/bluetooth/services/P2PAutoSync.js` (1 condition changée : key mismatch)
+- **Backup P2P synchronisé** : `mesfichiers/P2P/bluetooth/services/` mis à jour
+- **Vérifications** : `node --check` → 0 erreur sur les 2 fichiers
+- **Statut** : 🔄 En test (2026-06-04)
+- **Action user** : HARD RELOAD + tester la connexion entre les 2 téléphones. Vérifier que le log `✅ [Handshake] X peer(s) Yabisso confirmé(s) malgré le délai` apparaît au lieu de la déconnexion.
+
+### BUG-040 — Watchdog HELLO coupe la connexion avant que le sendFile ne complète
+- **Date** : 2026-06-04
+- **Problème** : Après le fix BUG-039 (file:// NPE), le HELLO ne s'envoie toujours pas à temps. Le SLAVE lance `sendControlMessage` (avec timeout 15s) mais le watchdog du MASTER déclenche la déconnexion à 10s. → La connexion est coupée AVANT que le HELLO ne soit transmis. Le SLAVE log `📤 sendControlMessage: YABISSO_HELLO` mais jamais `✅ sendControlMessage réussi`. Le MASTER ne voit jamais `📨 Fichier reçu`.
+- **Cause technique** : 
+  1. Le `WifiP2P.sendFile()` sur itel A50 est trop lent (peut prendre >10s à cause du "framework busy" récurrent)
+  2. Le watchdog du MASTER est trop agressif (10s)
+  3. **Asymétrie de conception** : le HELLO est censé filtrer les non-Yabisso, MAIS le Nearby Mesh a DÉJÀ échangé les manifestes avec les vrais noms Yabisso → la validation est déjà faite par un autre canal
+- **Solution (V2.9 - Méthode 1 du plan d'escalade)** : Rendre le watchdog **non-fatal** — si aucun HELLO n'est reçu en 10s, on log un warning et on **continue** avec le transfert de pack. Pas de déconnexion.
+- **Code modifié** : `P2PAutoSync.js` ligne ~163 (watchdog) :
+  ```javascript
+  // AVANT (BUG-039 fix): déconnectait à 10s
+  if (confirmedCount === 0) {
+    this._log(`⏰ Pas de YABISSO_HELLO reçu en 10s — ${peerName} n'est pas Yabisso. Déconnexion...`);
+    WifiDirectService.markPeerAsNonYabisso(peerName, 300000);
+    setTimeout(() => { try { WifiDirectService.disconnect(); } catch (_) {} }, 500);
+  }
+  
+  // APRÈS (V2.9): plus de déconnexion
+  if (confirmedCount === 0) {
+    this._log(`⏰ Pas de YABISSO_HELLO reçu en 10s — ${peerName}. Nearby Mesh a déjà validé, on continue avec le transfert.`);
+  }
+  ```
+- **Fichiers modifiés** :
+  - `app/src/features/bluetooth/services/P2PAutoSync.js` (watchdog + log V2.9)
+- **Backup P2P synchronisé** : `mesfichiers/P2P/bluetooth/services/P2PAutoSync.js`
+- **Vérifications** : `node --check` → 0 erreur
+- **Statut** : 🔄 En test (2026-06-04) — Méthode 1 du plan
+- **Action user** : HARD RELOAD. Vérifier dans les logs : `🚀 Orchestrateur démarré (V2.9 - BUG-040 fix: watchdog HELLO non-fatal).` puis la connexion doit rester STABLE même sans HELLO.
+- **Plan d'escalade si la Méthode 1 ne marche pas** :
+  1. ❌ Méthode 1 : Watchdog non-fatal (en cours)
+  2. Méthode 2 : Étendre le timeout à 30s + SLAVE plus patient
+  3. Méthode 3 : HELLO bidirectionnel (les 2 côtés envoient)
+  4. Méthode 4 : Supprimer complètement le HELLO/ACK
+
 ---
 
 ## Exigences sécurité critiques (non négociables)
