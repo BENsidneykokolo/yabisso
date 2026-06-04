@@ -5578,3 +5578,27 @@ Vérifier dans les logs :
 1. Le code de `getClientAddress` utilise `receiveMessage({meta: true})` qui crée un **MessageServer** sur le port 8988. **MAIS** le `FileServerAsyncTask` (utilisé par `receiveFile`) utilise aussi le port 8988. **CONFLIT DE PORT POSSIBLE** : on ne peut pas avoir 2 serveurs sur le même port.
 2. Si conflit, le fix est d'attendre que le `receiveFile` soit terminé avant d'appeler `getClientAddress`.
 3. Le code attend 1.5s après la Phase 1 pour que le client ouvre son serveur en Phase 2 — peut nécessiter ajustement.
+
+---
+
+## Session 2026-06-04 (V3.3 fix) — BUG-056 : Double déclaration `meshPeer`
+
+### Erreur Metro
+```
+ERROR  [Error: TransformError SyntaxError: ...P2PAutoSync.js: Identifier 'meshPeer' has already been declared.
+   97 |     const meshPeer = this._getLatestMeshPeer();
+      |           ^
+```
+
+### Cause
+Mon fix V3.2 dans `_iAmMasterFor()` a introduit une `const meshPeer` (ligne 83 originale) **DUPLIQUÉE** avec celle déjà existante en V2.16 (ligne 97).
+
+### Fix
+- Supprimé la 1ère déclaration `const meshPeer` (celle que j'avais ajoutée dans V3.2)
+- Gardé la 2ème (celle de V2.16)
+- Réordonné le code pour que le calcul de `meshKey` (utilisé dans V3.2) vienne juste après la déclaration
+
+### Vérifications
+- `node --check` → ✅ 0 erreur
+- Backup P2P synchronisé ✅
+- Commité en `v0.0.13`

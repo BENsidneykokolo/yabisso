@@ -76,12 +76,14 @@ class P2PAutoSyncClass {
     if (!peerName) return false;
     const key = peerName.toLowerCase();
 
+    // V2.16 : Préférer le score du peer MESH (le nom WiFi Direct est souvent "Xiaomi 11T"/"itel A50")
+    const meshPeer = this._getLatestMeshPeer();
+    const meshKey = meshPeer ? meshPeer.name.toLowerCase() : null;
+
     // V3.2 (BUG-054 fix): Vérifier le swap avec TOUTES les clés possibles du peer
     // (peerName peut être "xiaomi 11t" WiFi Direct OU "18_yabisso_xxx" du nom Yabisso)
     // NOTE: le rôle stocké représente le rôle que JE dois avoir à la prochaine reconnexion
     // (suite à la réception d'un SWAP_ROLE_REQUEST, je deviens SLAVE → l'autre devient MASTER)
-    const meshPeer = this._getLatestMeshPeer();
-    const meshKey = meshPeer ? meshPeer.name.toLowerCase() : null;
     for (const k of [key, meshKey, ...Object.keys(this._roleSwapQueue)]) {
       if (k && this._roleSwapQueue[k]) {
         const forcedRole = this._roleSwapQueue[k];
@@ -93,8 +95,6 @@ class P2PAutoSyncClass {
 
     const myScore = this._parseScore(WifiDirectService.getDeviceName());
 
-    // V2.16 : Préférer le score du peer MESH (le nom WiFi Direct est souvent "Xiaomi 11T"/"itel A50")
-    const meshPeer = this._getLatestMeshPeer();
     let peerScore = 0;
     let effectivePeerName = peerName;
     if (meshPeer) {
