@@ -225,7 +225,7 @@ class P2PAutoSyncClass {
     this._running = true;
 
     console.log('[P2PAutoSync] Démarrage de l\'orchestrateur Multi-Rail...');
-    this._log('🚀 Orchestrateur démarré (V3.2 - FIX SWAP KEYS: _roleSwapQueue multi-clés + SWAP bidirectionnel).');
+    this._log('🚀 Orchestrateur démarré (V3.3 - BIDIRECTIONNEL 1 CONNEXION: sendFileTo + getClientAddress).');
 
     NetworkRailDetector.start();
     NetworkRailDetector.onRailChange((rails) => {
@@ -641,7 +641,7 @@ class P2PAutoSyncClass {
         const shouldSend = iShouldSend || this._lastIntendedRole === 'SLAVE';
         this._log(`🔍 [V3.0] shouldSend=${shouldSend}, myScore=${myScore}, peerScore=${peerScore}, role=${this._lastIntendedRole}, packSent=${this._packSentThisSession}`);
         if (shouldSend && !this._packSentThisSession) {
-          this._log('🟢 Envoi du pack...');
+          this._log('🟢 Envoi du pack (Phase 1: émetteur → récepteur)...');
           const packPath = await LobaPackService.buildPack(category, 25);
           const peerName = (WifiDirectService.connectedPeer?.deviceName || 'unknown').toLowerCase();
           const isSwapActive = !!this._roleSwapQueue[peerName];
@@ -660,51 +660,123 @@ class P2PAutoSyncClass {
               this._lastSentTo[peerName] = Date.now();
               this._lastPackSentAt = Date.now();
               this._packSentThisSession = true; // V3.0: Marquer le pack comme envoyé pour cette session
-              this._log(`✅ Succès: Pack envoyé !`);
+              this._log(`✅ [V3.3] Pack Phase 1 envoyé !`);
             } else {
-              this._log(`❌ Échec envoi pack (sendFile a retourné false)`);
+              this._log(`❌ Échec envoi pack Phase 1`);
             }
           } else {
             this._log(`⚠️ Pas de pack à envoyer (buildPack a retourné null)`);
           }
 
-          // Déterminer l'action post-transfert (Swap ou Fin de Synchro)
+          // ==========================================
+          // V3.3 (BUG-055 fix): BIDIRECTIONNEL SANS DÉCONNEXION
+          // Au lieu d'envoyer SWAP_ROLE_REQUEST et de se déconnecter,
+          // on garde la connexion WiFi active et on fait la Phase 2.
+          // ==========================================
+          
           if (!isSwapActive) {
-            // PHASE 1 : Demande de Swap
-            this._log(`🔄 Fin Phase 1 — Envoi de SWAP_ROLE_REQUEST...`);
-            const msgSent = await WifiDirectService.sendControlMessage({
-              type: 'SWAP_ROLE_REQUEST'
-            });
-            if (msgSent) {
-              // V3.2 (BUG-054 fix): Stocker sous TOUTES les clés possibles
-              // (peerName WiFi Direct + meshPeer.name Yabisso)
-              const swapKeys = [peerName];
-              if (meshPeer) swapKeys.push(meshPeer.name.toLowerCase());
-              for (const k of swapKeys) {
-                this._roleSwapQueue[k] = 'MASTER';
+            // === PHASE 1 → PHASE 2 (sans déconnexion) ===
+            this._log(`🔄 [V3.3] Phase 1 terminée. Récupération IP client pour Phase 2...`);
+            
+            // Le GO récupère l'IP du client (déjà reçue lors du sendFile côté client)
+            // Astuce : le client vient juste d'envoyer son pack, le GO peut récupérer l'IP
+            let clientIp = null;
+            
+            if (WifiDirectService.isGroupOwner) {
+              // GO : on a déjà reçu le pack du client, on a peut-être son IP via les métadonnées
+              // Sinon on tente getClientAddress() qui ouvre un MessageServer et récupère l'IP
+              this._log(`📡 [V3.3] GO : tentative getClientAddress() pour récupérer IP du client...`);
+              const addrResult = await WifiDirectService.getClientAddress(8000);
+              if (addrResult && addrResult.clientIp) {
+                clientIp = addrResult.clientIp;
+                this._log(`✅ [V3.3] IP client récupérée: ${clientIp}`);
+              } else {
+                this._log(`⚠️ [V3.3] Impossible de récupérer IP client, fallback SYNC_COMPLETE`);
               }
-              this._log(`✅ [V3.2] SWAP_ROLE_REQUEST envoyé. Stocké MASTER sous ${swapKeys.length} clé(s). Déconnexion dans 3s...`);
             } else {
-              this._log(`❌ Échec de l'envoi de SWAP_ROLE_REQUEST`);
+              // Client : on connaît l'IP du GO (toujours 192.168.49.1)
+              clientIp = '192.168.49.1';
+              this._log(`📡 [V3.3] Client : IP GO connue: ${clientIp}`);
             }
-            setTimeout(() => { WifiDirectService.disconnect(); }, 3000);
+
+            if (clientIp) {
+              // === PHASE 2 : l'AUTRE device envoie son pack ===
+              // Le client (Xiaomi) ouvre un receiveFile, le GO (Itel) envoie via sendFileTo
+              if (WifiDirectService.isGroupOwner) {
+                // GO va envoyer au client via sendFileTo
+                this._log(`📤 [V3.3] PHASE 2 : GO envoie son pack au client ${clientIp}...`);
+                const myPackPath = await LobaPackService.buildPack(category, 25);
+                if (myPackPath) {
+                  // Attendre 1s pour laisser le client ouvrir son serveur
+                  this._log(`⏳ [V3.3] Attente 1.5s pour que le client ouvre son serveur...`);
+                  await new Promise(r => setTimeout(r, 1500));
+                  
+                  const sent2 = await WifiDirectService.sendFileTo(myPackPath, clientIp, {
+                    hash: `pack_${Date.now()}_phase2`,
+                    type: 'LOBA_PACK',
+                    category: category || 'bundle',
+                    senderDevice: WifiDirectService.getDeviceName()
+                  });
+                  if (sent2) {
+                    this._log(`✅ [V3.3] Pack Phase 2 (GO → Client) envoyé !`);
+                  } else {
+                    this._log(`❌ [V3.3] Échec envoi pack Phase 2`);
+                  }
+                }
+              } else {
+                // Client doit ouvrir un serveur pour que le GO puisse envoyer
+                this._log(`📡 [V3.3] PHASE 2 : Client ouvre receiveFile() pour recevoir du GO...`);
+                WifiDirectService.startReceiving(WifiDirectService.globalFileHandler);
+              }
+
+              // Attendre 3s puis envoyer SYNC_COMPLETE
+              await new Promise(r => setTimeout(r, 3000));
+              this._log(`🏁 [V3.3] Fin synchro bidirectionnelle — Envoi de SYNC_COMPLETE...`);
+              const msgSent = await WifiDirectService.sendControlMessage({
+                type: 'SYNC_COMPLETE'
+              });
+              if (msgSent) {
+                const completeKeys = [peerName];
+                if (meshPeer) completeKeys.push(meshPeer.name.toLowerCase());
+                for (const k of completeKeys) {
+                  delete this._roleSwapQueue[k];
+                }
+                this._completedSyncs[peerName] = Date.now();
+                this._log(`✅ [V3.3] SYNC_COMPLETE envoyé. Déconnexion dans 3s...`);
+              } else {
+                this._log(`❌ Échec de l'envoi de SYNC_COMPLETE`);
+              }
+              setTimeout(() => { WifiDirectService.disconnect(); }, 3000);
+            } else {
+              // Pas d'IP client → fallback à l'ancien comportement (SWAP)
+              this._log(`⚠️ [V3.3] Fallback SWAP (pas d'IP client)`);
+              const msgSent = await WifiDirectService.sendControlMessage({
+                type: 'SWAP_ROLE_REQUEST'
+              });
+              if (msgSent) {
+                const swapKeys = [peerName];
+                if (meshPeer) swapKeys.push(meshPeer.name.toLowerCase());
+                for (const k of swapKeys) {
+                  this._roleSwapQueue[k] = 'MASTER';
+                }
+                this._log(`✅ SWAP_ROLE_REQUEST envoyé. Déconnexion dans 3s...`);
+              }
+              setTimeout(() => { WifiDirectService.disconnect(); }, 3000);
+            }
           } else {
-            // PHASE 2 : Confirmation Fin de Synchro
-            this._log(`🏁 Fin Phase 2 — Envoi de SYNC_COMPLETE...`);
+            // On était en mode swap (Phase 2 classique) → envoyer SYNC_COMPLETE
+            this._log(`🏁 [V3.3] Fin Phase 2 (swap) — Envoi de SYNC_COMPLETE...`);
             const msgSent = await WifiDirectService.sendControlMessage({
               type: 'SYNC_COMPLETE'
             });
             if (msgSent) {
-              // V3.2: Nettoyer TOUTES les clés
               const completeKeys = [peerName];
               if (meshPeer) completeKeys.push(meshPeer.name.toLowerCase());
               for (const k of completeKeys) {
                 delete this._roleSwapQueue[k];
               }
               this._completedSyncs[peerName] = Date.now();
-              this._log(`✅ [V3.2] SYNC_COMPLETE envoyé. Nettoyé ${completeKeys.length} clé(s). Déconnexion dans 3s...`);
-            } else {
-              this._log(`❌ Échec de l'envoi de SYNC_COMPLETE`);
+              this._log(`✅ SYNC_COMPLETE envoyé. Déconnexion dans 3s...`);
             }
             setTimeout(() => { WifiDirectService.disconnect(); }, 3000);
           }

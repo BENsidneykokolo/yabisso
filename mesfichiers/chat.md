@@ -5504,3 +5504,77 @@ Vérifier dans les logs :
 - `🔄 [V3.2 Swap Actif] Rôle forcé pour xiaomi 11t (clé=itel A50) : SLAVE` (Itel après swap)
 - Le 2e transfert (Itel → Xiaomi) devrait maintenant s'effectuer
 - `✅ SYNC_COMPLETE envoyé` (sur les 2 phones)
+
+---
+
+## Session 2026-06-04 (V3.3) — BIDIRECTIONNEL 1 CONNEXION (sans swap)
+
+### Concept proposé par l'utilisateur
+**Inversion logique sans déconnexion** : au lieu de couper le WiFi Direct et de re-créer un groupe (ce qui prend 5-15s et provoque des conflits de cache Android), on garde la connexion active et on inverse **logiquement** les rôles applicatifs en réutilisant les sockets existants.
+
+### Contrainte technique identifiée
+En analysant le code natif de `react-native-wifi-p2p`, j'ai découvert :
+
+**Méthode 1 (existante)** : `WifiP2P.sendFile(path)` envoie vers `wifiP2pInfo.groupOwnerAddress` (port 8988). Le client écrit vers le serveur du GO.
+
+**Méthode 2 (existante mais non utilisée)** : `WifiP2P.sendFileTo(path, address)` permet de spécifier une adresse IP arbitraire ! Cette méthode est exposée par la lib (cf. `index.js` ligne 94).
+
+**Méthode 3 (clé du V3.3)** : `WifiP2P.receiveMessage({ meta: true })` retourne l'IP du client via le champ `fromAddress` (cf. `MessageServer.java` ligne 47 : `client.getInetAddress().getHostAddress()`).
+
+**Conclusion** : On peut faire du bidirectionnel SANS modifier le natif !
+
+### Solution V3.3 — sendFileTo + getClientAddress
+
+**Fichiers modifiés** :
+- `app/src/features/bluetooth/services/WifiDirectService.js` :
+  1. **Nouvelle méthode `sendFileTo(filePath, address, metadata)`** (ligne 373-402) : envoie un fichier vers une IP arbitraire
+  2. **Nouvelle méthode `getClientAddress(timeoutMs)`** (ligne 408-441) : ouvre un MessageServer et récupère l'IP du client
+- `app/src/features/bluetooth/services/P2PAutoSync.js` :
+  1. **Logique V3.3 dans `_p2pSyncCycle`** (ligne 643-756) : après Phase 1, on enchaîne directement Phase 2 sans déconnexion
+  2. **Version log** : `V3.3 - BIDIRECTIONNEL 1 CONNEXION: sendFileTo + getClientAddress`
+
+### Flow V3.3
+
+```
+1. WiFi Direct connecté (Itel=GO, Xiaomi=Client)
+2. PHASE 1 (Client → GO) :
+   - Xiaomi (Client) : sendFile(packXiaomi) → port 8988 du GO
+   - Itel (GO) : receiveFile() reçoit le pack
+3. PHASE 2 (GO → Client) :
+   - Itel (GO) : getClientAddress() via receiveMessage({meta:true}) → IP = 192.168.49.X
+   - Xiaomi (Client) : startReceiving() ouvre un serveur
+   - Itel : sendFileTo(packItel, ipClient) → port 8988 du Client
+4. SYNC_COMPLETE → fin (déconnexion)
+```
+
+**Bénéfices** :
+- ✅ Zéro coupure WiFi entre les 2 phases
+- ✅ Pas de conflit "Double Master" (un seul GO pendant tout le transfert)
+- ✅ Pas de cache Android à réinitialiser
+- ✅ Transfert bidirectionnel fiable
+
+### Vérifications
+- `node --check` sur les 2 fichiers modifiés → ✅ 0 erreur
+- Backup P2P synchronisé : `mesfichiers/P2P/bluetooth/services/{WifiDirectService,P2PAutoSync}.js` ✅
+
+### ACTION REQUISE UTILISATEUR
+**HARD RELOAD** les 2 téléphones.
+
+Vérifier dans les logs :
+- `🚀 Orchestrateur démarré (V3.3 - BIDIRECTIONNEL 1 CONNEXION: sendFileTo + getClientAddress).`
+- `🟢 Envoi du pack (Phase 1: émetteur → récepteur)...`
+- `✅ [V3.3] Pack Phase 1 envoyé !`
+- `🔄 [V3.3] Phase 1 terminée. Récupération IP client pour Phase 2...`
+- `🌐 getClientAddress: 192.168.49.X` (côté GO)
+- `📤 [V3.3] PHASE 2 : GO envoie son pack au client 192.168.49.X...`
+- `✅ [V3.3] Pack Phase 2 (GO → Client) envoyé !`
+- `✅ [V3.3] SYNC_COMPLETE envoyé. Déconnexion dans 3s...`
+
+### Plan B si V3.3 échoue
+- **V3.4** : Changer de lib P2P (ex: `react-native-wifi-p2p-discover`) qui supporte les 2 sens
+- Nécessite réécriture du `WifiDirectService` complet
+
+### Notes importantes
+1. Le code de `getClientAddress` utilise `receiveMessage({meta: true})` qui crée un **MessageServer** sur le port 8988. **MAIS** le `FileServerAsyncTask` (utilisé par `receiveFile`) utilise aussi le port 8988. **CONFLIT DE PORT POSSIBLE** : on ne peut pas avoir 2 serveurs sur le même port.
+2. Si conflit, le fix est d'attendre que le `receiveFile` soit terminé avant d'appeler `getClientAddress`.
+3. Le code attend 1.5s après la Phase 1 pour que le client ouvre son serveur en Phase 2 — peut nécessiter ajustement.

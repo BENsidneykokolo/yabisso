@@ -330,6 +330,7 @@ class WifiDirectServiceClass {
     if (this._isSending) return false;
     this._isSending = true;
 
+
     // V3.1 (BUG-053 fix): Forcer la mise à jour de wifiP2pInfo côté natif AVANT sendFile
     // Sans ça, le code natif `wifiP2pInfo.groupOwnerAddress != null` crash en NPE
     // (réact-native-wifi-p2p n'initialise wifiP2pInfo que via onConnectionInfoAvailable)
@@ -367,6 +368,71 @@ class WifiDirectServiceClass {
     }
     this._isSending = false;
     return false;
+  }
+
+  // V3.3 (BUG-055 fix) : Envoi vers une adresse IP spécifique (pour Phase 2 bidirectionnel)
+  // Permet au GO d'envoyer au client en spécifiant son IP directement
+  async sendFileTo(filePath, address, metadata = {}) {
+    if (!this.isConnected) return false;
+    if (!address) return false;
+    if (this._isSending) return false;
+    this._isSending = true;
+
+    try {
+      try {
+        await this._refreshConnectionInfo();
+      } catch (_) {}
+
+      const cleanPath = filePath.replace('file://', '');
+      console.log(`[WifiDirectService] 📤 sendFileTo (${address}): ${cleanPath}`);
+
+      // La lib expose WifiP2P.sendFileTo(pathToFile, address)
+      await Promise.race([
+        WifiP2P.sendFileTo(cleanPath, address),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('sendFileTo timeout')), 120000))
+      ]);
+
+      console.log(`[WifiDirectService] ✅ sendFileTo réussi vers ${address}`);
+      this._emit('onTransferProgress', { hash: metadata.hash, progress: 100, status: 'complete' });
+      this._isSending = false;
+      return true;
+    } catch (e) {
+      console.warn(`[WifiDirectService] ❌ sendFileTo error: ${e.message}`);
+      this._isSending = false;
+      return false;
+    }
+  }
+
+  // V3.3 (BUG-055 fix) : Récupère l'adresse IP du client via le MessageServer
+  // Astuce : receiveMessage({meta: true}) retourne fromAddress = IP du client
+  // (cf. MessageServer.java ligne 47 : client.getInetAddress().getHostAddress())
+  async getClientAddress(timeoutMs = 10000) {
+    if (!this._nativeReady || !WifiP2P) return null;
+    if (!this.isGroupOwner) {
+      console.warn('[WifiDirectService] getClientAddress: seulement le GO peut récupérer l\'IP client');
+      return null;
+    }
+    try {
+      const result = await Promise.race([
+        WifiP2P.receiveMessage({ meta: true }),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), timeoutMs))
+      ]);
+      // Le résultat peut être un string ou un objet {message, fromAddress}
+      let clientIp = null;
+      let messageBody = null;
+      if (typeof result === 'string') {
+        messageBody = result;
+        // Pas de fromAddress disponible sans meta
+      } else if (result && result.fromAddress) {
+        clientIp = result.fromAddress;
+        messageBody = result.message;
+      }
+      console.log(`[WifiDirectService] 🌐 getClientAddress: ${clientIp} (msg: ${(messageBody || '').substring(0, 30)}...)`);
+      return { clientIp, messageBody };
+    } catch (e) {
+      console.warn(`[WifiDirectService] ⚠️ getClientAddress échoué: ${e.message}`);
+      return null;
+    }
   }
 
   async sendControlMessage(metadata = {}) {
