@@ -50,6 +50,9 @@ class P2PAutoSyncClass {
     this._meshPeers = new Map();
     this._packSentThisSession = false; // V3.0 (BUG-BIDIR): n'envoyer le pack qu'1 fois par session WiFi Direct
     this._hasPendingDelta = false; // V3.6.3 (BUG-060 fix): flag mis à true par onMeshManifestDeltaCalculated()
+    this._packReceivedAckResolver = null; // V3.6.4 (Double validation): Promise resolver pour PACK_RECEIVED_OK
+    this._peerMeshId = null; // V3.6.4 (Mesh handshake): peerId Mesh du pair pour handshake WIFI_GROUP_READY
+    this._slaveConfirmedViaMesh = false; // V3.6.4: true quand SLAVE_CONNECTED_CONFIRMED reçu via Mesh
     this.stats = {
       totalSyncedP2P: 0,
       totalSyncedCloud: 0,
@@ -197,6 +200,25 @@ class P2PAutoSyncClass {
     this._log(`🕸️ [Mesh] Peer enregistré: ${name} (score=${score}, MeshMaster=${isMeshMaster})`);
   }
 
+  // V3.6.4 (Mesh handshake) : Reçu WIFI_GROUP_READY du Master via Mesh
+  // Le Master annonce que son groupe WiFi Direct est créé et que le Slave peut se connecter.
+  // Le Slave peut alors initier sa connexion WiFi en toute confiance (pas à l'aveugle).
+  async _onWifiGroupReadyMesh(peerId, masterIp) {
+    this._log(`📡 [V3.6.4 Mesh] WIFI_GROUP_READY reçu de Master ${peerId} (ip=${masterIp}) → Slave peut se connecter`);
+    this._peerMeshId = peerId;
+    // Note : la connexion WiFi elle-même se fait via onConnectionChange (déclenché par Android)
+    // quand le Slave se connecte au réseau WiFi du Master. Le Mesh sert juste de signalisation.
+  }
+
+  // V3.6.4 (Mesh handshake) : Reçu SLAVE_CONNECTED_CONFIRMED du Slave via Mesh
+  // Le Slave confirme qu'il est bien connecté au réseau WiFi du Master.
+  // Le Master peut alors commencer à envoyer le pack en toute sécurité.
+  async _onSlaveConnectedConfirmedMesh(peerId) {
+    this._log(`✅ [V3.6.4 Mesh] SLAVE_CONNECTED_CONFIRMED reçu de Slave ${peerId} → Master peut envoyer`);
+    this._slaveConfirmedViaMesh = true;
+    this._peerMeshId = peerId;
+  }
+
   // V3.6.3 (BUG-060 fix) : HOOK DU DELTA MANIFESTE
   // Appelé par NearbyMeshService._handleGlobalManifestReceived() dès que le delta
   // est calculé. Permet de déclencher l'envoi du pack IMMÉDIATEMENT (sans attendre
@@ -245,12 +267,26 @@ class P2PAutoSyncClass {
     return latest && (Date.now() - latest.discoveredAt < 120000) ? latest : null;
   }
 
+  // V3.6.4 (Mesh handshake) : Récupère le peerId Mesh du pair le plus récent.
+  // Utilisé pour envoyer des messages de signalisation Mesh (WIFI_GROUP_READY, SLAVE_CONNECTED_CONFIRMED).
+  _getLatestMeshPeerId() {
+    let latestId = null;
+    let latestTime = 0;
+    for (const [peerId, info] of this._meshPeers) {
+      if (info.discoveredAt > latestTime) {
+        latestTime = info.discoveredAt;
+        latestId = peerId;
+      }
+    }
+    return latestTime > 0 && (Date.now() - latestTime < 120000) ? latestId : null;
+  }
+
   async start() {
     if (this._running) return;
     this._running = true;
 
     console.log('[P2PAutoSync] Démarrage de l\'orchestrateur Multi-Rail...');
-    this._log('🚀 Orchestrateur démarré (V3.6 - LOCK + ARBITRAGE MESH: isConnecting anti-framework-busy, _iAmMasterFor retourne null si pas de Mesh peer, ignore imprimantes/phones tiers).');
+    this._log('🚀 Orchestrateur démarré (V3.6.4 - LOCK + MESH + DOUBLE VALIDATION: ACK PACK_RECEIVED_OK + Mesh handshake WIFI_GROUP_READY/SLAVE_CONNECTED_CONFIRMED).');
 
     NetworkRailDetector.start();
     NetworkRailDetector.onRailChange((rails) => {
@@ -261,6 +297,19 @@ class P2PAutoSyncClass {
 
     NearbyMeshService.MeshLogEvents.subscribe((msg) => {
       this._log(`[MESH] ${msg}`);
+    });
+
+    // V3.6.4 (Mesh handshake) : S'abonner aux events handshake Mesh
+    // WIFI_GROUP_READY = Master dit "groupe WiFi créé, vous pouvez vous connecter"
+    // SLAVE_CONNECTED_CONFIRMED = Slave dit "je suis connecté au WiFi, vous pouvez envoyer"
+    if (this._meshHandshakeUnsub) this._meshHandshakeUnsub();
+    const { MeshRequestEvents } = require('./NearbyMeshService');
+    this._meshHandshakeUnsub = MeshRequestEvents.subscribe((evt) => {
+      if (evt && evt.type === 'WIFI_GROUP_READY') {
+        this._onWifiGroupReadyMesh(evt.peerId, evt.masterIp);
+      } else if (evt && evt.type === 'SLAVE_CONNECTED_CONFIRMED') {
+        this._onSlaveConnectedConfirmedMesh(evt.peerId);
+      }
     });
 
     setTimeout(() => {
@@ -357,6 +406,40 @@ class P2PAutoSyncClass {
           this._isConnecting = false;
           if (WifiDirectService.isGroupOwner) {
             this._hasCreatedGroup = true;
+            // V3.6.4 (Mesh handshake) : Master annonce au Slave via Mesh que le groupe est prêt
+            // Le Slave peut alors se connecter en confiance (pas à l'aveugle)
+            // On récupère le peerId Mesh du premier pair connu
+            const meshPeerId = this._getLatestMeshPeerId();
+            if (meshPeerId) {
+              this._peerMeshId = meshPeerId;
+              try {
+                await NearbyMeshService.sendMeshMessage(meshPeerId, {
+                  type: 'wifi_group_ready',
+                  masterIp: '192.168.49.1',
+                  senderDevice: WifiDirectService.getDeviceName(),
+                });
+                this._log(`📡 [V3.6.4 Mesh] WIFI_GROUP_READY envoyé au Slave ${meshPeerId}`);
+              } catch (e) {
+                this._log(`⚠️ [V3.6.4 Mesh] Échec envoi WIFI_GROUP_READY: ${e.message}`);
+              }
+            } else {
+              this._log(`⚠️ [V3.6.4 Mesh] Pas de peerId Mesh connu, handshake WiFi_GROUP_READY skippé`);
+            }
+          } else {
+            // V3.6.4 (Mesh handshake) : Slave confirme au Master qu'il est connecté
+            const meshPeerId = this._getLatestMeshPeerId();
+            if (meshPeerId) {
+              this._peerMeshId = meshPeerId;
+              try {
+                await NearbyMeshService.sendMeshMessage(meshPeerId, {
+                  type: 'slave_connected_confirmed',
+                  senderDevice: WifiDirectService.getDeviceName(),
+                });
+                this._log(`✅ [V3.6.4 Mesh] SLAVE_CONNECTED_CONFIRMED envoyé au Master ${meshPeerId}`);
+              } catch (e) {
+                this._log(`⚠️ [V3.6.4 Mesh] Échec envoi SLAVE_CONNECTED_CONFIRMED: ${e.message}`);
+              }
+            }
           }
           // V3.6.2 (BUG-059 fix) : HYDRATER _lastIntendedRole avec la VÉRITÉ MATÉRIELLE
           // Le réseau Android peut être prêt avant que notre logique d'élection pré-connexion
@@ -773,6 +856,28 @@ class P2PAutoSyncClass {
               this._packSentThisSession = true; // V3.0: Marquer le pack comme envoyé pour cette session
               this._hasPendingDelta = false; // V3.6.3: Delta poussé, on reset le flag
               this._log(`✅ [V3.3] Pack Phase 1 envoyé !`);
+
+              // V3.6.4 (Double validation) : ATTENDRE L'ACK DU SLAVE (5s max)
+              // Le Slave doit renvoyer PACK_RECEIVED_OK pour certifier qu'il a :
+              //   1) Reçu l'intégralité des octets (TCP garantit déjà)
+              //   2) Écrit le fichier localement (FileServerAsyncTask a fermé le stream)
+              //   3) Traité le pack via unpackAndProcess (succès ou échec)
+              // Si pas d'ACK en 5s, on procède quand même (best effort) pour éviter le blocage.
+              this._log(`⏳ [V3.6.4] Attente PACK_RECEIVED_OK du Slave (5s max)...`);
+              const ackPromise = new Promise(resolve => {
+                this._packReceivedAckResolver = resolve;
+              });
+              const ackTimeout = 5000;
+              const ackResult = await Promise.race([
+                ackPromise,
+                new Promise(resolve => setTimeout(() => resolve({ received: false, timeout: true }), ackTimeout)),
+              ]);
+              this._packReceivedAckResolver = null;
+              if (ackResult.received) {
+                this._log(`✅ [V3.6.4] Phase 1 CERTIFIÉE par ACK du Slave (processed=${ackResult.processed})`);
+              } else {
+                this._log(`⚠️ [V3.6.4] Pas d'ACK en ${ackTimeout / 1000}s, Phase 1 best-effort`);
+              }
             } else {
               this._log(`❌ Échec envoi pack Phase 1`);
             }
@@ -969,6 +1074,16 @@ class P2PAutoSyncClass {
           this._confirmYabissoHandshake(senderDevice, metadata.myScore);
           this._lastYabissoPeerSeen = Date.now();
           this._log(`✅ [Handshake] ${senderDevice} a répondu ACK (score=${metadata.myScore}).`);
+        } else if (metadata.type === 'PACK_RECEIVED_OK') {
+          // V3.6.4 (Double validation) : Le Slave certifie avoir reçu et traité le LOBA_PACK.
+          // On résout la Promise `_packReceivedAckResolver` pour débloquer le Master
+          // qui attend la certification avant de procéder à la Phase 2.
+          const senderDevice = metadata.senderDevice || peerName;
+          this._log(`✅ [V3.6.4] PACK_RECEIVED_OK reçu de ${senderDevice} (hash=${metadata.fileHash?.substring(0, 8)}..., processed=${metadata.processed})`);
+          if (this._packReceivedAckResolver) {
+            this._packReceivedAckResolver({ received: true, hash: metadata.fileHash, processed: metadata.processed });
+            this._packReceivedAckResolver = null;
+          }
         }
         return;
       }
@@ -989,6 +1104,25 @@ class P2PAutoSyncClass {
           if (success) {
             this._log(`✅ Pack traité !`);
             this.stats.totalSyncedP2P++;
+          }
+          // V3.6.4 (Double validation) : ENVOYER PACK_RECEIVED_OK AU MASTER
+          // Certifie au Master que la réception et l'écriture locale sont terminées.
+          // Équivalent JS du ACK que le user proposait en Java (startSenderServer/connectToReceive).
+          // On utilise sendControlMessage (port 8988, MessageServer) qui passe par le même canal TCP.
+          try {
+            const ackSent = await WifiDirectService.sendControlMessage({
+              type: 'PACK_RECEIVED_OK',
+              senderDevice: WifiDirectService.getDeviceName(),
+              fileHash: metadata.hash,
+              processed: success,
+            });
+            if (ackSent) {
+              this._log(`✅ [V3.6.4] PACK_RECEIVED_OK envoyé au Master (hash=${metadata.hash?.substring(0, 8)}..., processed=${success})`);
+            } else {
+              this._log(`⚠️ [V3.6.4] Échec envoi PACK_RECEIVED_OK`);
+            }
+          } catch (e) {
+            this._log(`⚠️ [V3.6.4] Erreur envoi PACK_RECEIVED_OK: ${e.message}`);
           }
           // Note: On ne disconnecte plus automatiquement ici car le Slave gère le cycle et la déconnexion après envoi du message de contrôle.
           return;

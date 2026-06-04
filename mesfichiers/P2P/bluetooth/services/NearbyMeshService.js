@@ -324,9 +324,34 @@ class NearbyMeshServiceClass {
       } else if (data.type === 'validation_request') {
         this._log(`📩 Requête de validation reçue de ${peerId}`);
         MeshRequestEvents.emit({ peerId, request: data.payload });
+      } else if (data.type === 'wifi_group_ready') {
+        // V3.6.4 (Mesh handshake) : Le Master annonce via Mesh que son groupe WiFi est prêt.
+        // Le Slave peut alors initier sa connexion WiFi au Master en toute confiance.
+        this._log(`📡 [V3.6.4 Mesh] WIFI_GROUP_READY reçu de ${peerId} (masterIp=${data.masterIp})`);
+        MeshRequestEvents.emit({ type: 'WIFI_GROUP_READY', peerId, masterIp: data.masterIp });
+      } else if (data.type === 'slave_connected_confirmed') {
+        // V3.6.4 (Mesh handshake) : Le Slave confirme via Mesh qu'il est connecté au WiFi du Master.
+        // Le Master peut alors commencer à envoyer des données en toute sécurité.
+        this._log(`✅ [V3.6.4 Mesh] SLAVE_CONNECTED_CONFIRMED reçu de ${peerId}`);
+        MeshRequestEvents.emit({ type: 'SLAVE_CONNECTED_CONFIRMED', peerId });
       }
     } catch (e) { }
   }
+
+  // V3.6.4 (Mesh handshake) : Envoie un message JSON à un peer via le canal Mesh BLE.
+  // Utilisé pour le handshake WIFI_GROUP_READY / SLAVE_CONNECTED_CONFIRMED.
+  async sendMeshMessage(peerId, message) {
+    try {
+      const payload = JSON.stringify(message);
+      await sendText(peerId, payload);
+      this._log(`📤 [V3.6.4 Mesh] Message envoyé à ${peerId}: ${message.type}`);
+      return true;
+    } catch (e) {
+      this._log(`⚠️ [V3.6.4 Mesh] Échec envoi message à ${peerId}: ${e.message}`);
+      return false;
+    }
+  }
+
 
   async _handleGlobalManifestReceived(peerId, remoteManifest) {
     if (!remoteManifest) return;

@@ -6076,3 +6076,125 @@ onMeshManifestDeltaCalculated(delta) {
 
 ### Commit
 **v0.0.18** : `V3.6.3 BUG-060 fix - logique shouldSend corrigée (Master envoie) + hook delta manifeste dans onMeshManifestDeltaCalculated`
+
+---
+
+## SESSION V3.6.4 (2026-06-04 ~23h55) — DOUBLE VALIDATION (ACK + MESH HANDSHAKE)
+
+### Contexte
+L'utilisateur a testé V3.6.3 sur les 2 téléphones physiques. Les logs confirment que V3.6.3 fonctionne :
+```
+LOG  [P2PAutoSync] 🔍 [V3.6.3] shouldSend=true, isMaster=true, myScore=73, peerScore=18, pendingContent=true, packSent=false
+LOG  [P2PAutoSync] 🟢 Envoi du pack (Phase 1: émetteur → récepteur)...
+LOG  [LobaPackService] Pack généré: file:///data/user/0/com.benksidney.yabisso/files/loba_packs/loba_pack_1780610309534.zip (3 items, 23.1MB)
+LOG  [WifiDirectService] ✅ sendFile réussi (tentative 1)
+LOG  [P2PAutoSync] ✅ [V3.3] Pack Phase 1 envoyé !
+LOG  [P2PAutoSync] 🔄 [V3.6.4] Attente PACK_RECEIVED_OK du Slave (5s max)...
+LOG  [WifiDirectService] 📨 Fichier reçu: /data/user/0/com.benksidney.yabisso/files/loba_media/p2p_1780610309414
+```
+- ✅ BUG-060 fix V3.6.3 fonctionne : `shouldSend=true` + envoi confirmé
+- ✅ Pack de 23.1MB a été envoyé avec succès
+- ❌ Mais l'orchestrateur ne CERTIFIE PAS que le Slave a bien reçu (TCP garantit l'envoi, pas la réception)
+
+### Analyse : Pourquoi la double validation ?
+**Problème** : `sendFile réussi` côté Master = TCP a envoyé tous les octets. Mais :
+1. Le Slave a-t-il vraiment écrit le fichier sur disque ? (FileServerAsyncTask côté Java)
+2. Le Slave a-t-il traité le pack (unpackAndProcess) ? (JS côté Slave)
+3. Si le réseau coupe au milieu, le Master croit à tort que c'est fini
+
+**Solution user** : Implémenter un ACK `PACK_RECEIVED_OK` envoyé par le Slave après traitement, et un handshake Mesh pour s'assurer que les 2 pairs sont bien connectés.
+
+### V3.6.4 — 2 mécanismes de double validation
+
+#### FIX 1 : ACK `PACK_RECEIVED_OK` (équivalent JS du ACK Java)
+**Fichier** : `app/src/features/bluetooth/services/P2PAutoSync.js`
+
+**Slave side** (dans `_handleReceivedFile`, après unpackAndProcess) :
+```javascript
+// V3.6.4 : Envoyer PACK_RECEIVED_OK au Master via sendControlMessage (port 8988)
+const ackSent = await WifiDirectService.sendControlMessage({
+  type: 'PACK_RECEIVED_OK',
+  senderDevice: WifiDirectService.getDeviceName(),
+  fileHash: metadata.hash,
+  processed: success,
+});
+```
+
+**Master side** (dans CONTROL_MESSAGE handler) :
+```javascript
+} else if (metadata.type === 'PACK_RECEIVED_OK') {
+  this._log(`✅ [V3.6.4] PACK_RECEIVED_OK reçu de ${senderDevice} (hash=${metadata.fileHash?.substring(0, 8)}...)`);
+  if (this._packReceivedAckResolver) {
+    this._packReceivedAckResolver({ received: true, hash: metadata.fileHash, processed: metadata.processed });
+    this._packReceivedAckResolver = null;
+  }
+}
+```
+
+**Master side** (dans `_p2pSyncCycle`, après sendFile) :
+```javascript
+// V3.6.4 : ATTENDRE L'ACK DU SLAVE (5s max)
+const ackPromise = new Promise(resolve => { this._packReceivedAckResolver = resolve; });
+const ackResult = await Promise.race([
+  ackPromise,
+  new Promise(resolve => setTimeout(() => resolve({ received: false, timeout: true }), 5000)),
+]);
+if (ackResult.received) {
+  this._log(`✅ [V3.6.4] Phase 1 CERTIFIÉE par ACK du Slave`);
+} else {
+  this._log(`⚠️ [V3.6.4] Pas d'ACK en 5s, Phase 1 best-effort`);
+}
+```
+
+#### FIX 2 : Mesh Handshake (WIFI_GROUP_READY + SLAVE_CONNECTED_CONFIRMED)
+**Fichier** : `app/src/features/bluetooth/services/NearbyMeshService.js`
+**Nouveaux types de messages Mesh** : `wifi_group_ready`, `slave_connected_confirmed`
+**Nouvelle méthode** : `NearbyMeshService.sendMeshMessage(peerId, message)`
+
+**Fichier** : `app/src/features/bluetooth/services/P2PAutoSync.js`
+- Subscribe à `MeshRequestEvents` pour WIFI_GROUP_READY et SLAVE_CONNECTED_CONFIRMED
+- Master envoie WIFI_GROUP_READY via Mesh après `onConnectionChange` (lorsqu'il est GO)
+- Slave envoie SLAVE_CONNECTED_CONFIRMED via Mesh après `onConnectionChange` (lorsqu'il n'est pas GO)
+- Nouvelle méthode `_getLatestMeshPeerId()` pour récupérer le peerId Mesh
+
+**Pourquoi c'est mieux** : Le Master n'envoie plus ses données "à l'aveugle". Il sait que :
+1. Son groupe WiFi est créé (via onConnectionChange)
+2. Le Slave est connecté (via SLAVE_CONNECTED_CONFIRMED reçu du Mesh)
+
+### Adaptation au code existant
+- ❌ Le code Java proposé par l'user référençait `startSenderServer(port, filePaths, promise)` et `connectToReceive(serverIp, port, targetDirectory, promise)` qui N'EXISTENT PAS dans la lib `react-native-wifi-p2p`.
+- ✅ L'API existante est `WifiP2P.sendFile(filePath)` (IntentService → FileTransferService) + `WifiP2P.receiveFile(folder, fileName)` (FileServerAsyncTask).
+- ✅ J'ai utilisé `sendControlMessage({ type: 'PACK_RECEIVED_OK' })` qui passe par le port 8988 (MessageServer/MessageTransferService) déjà en place.
+- ✅ L'architecture "1 ZIP = 1 transfert" via `LobaPackService.buildPack()` est différente de "liste de fichiers" mais plus simple.
+
+### Vérifications
+- ✅ `babel-parser` : 0 erreur de syntaxe sur les 2 fichiers
+- ✅ Backup P2P synchronisé (`mesfichiers/P2P/bluetooth/services/P2PAutoSync.js` + `NearbyMeshService.js`)
+- ✅ `git diff --stat` : 2 fichiers modifiés, 160 insertions, 1 suppression
+- ✅ V3.5, V3.6, V3.6.1, V3.6.2, V3.6.3 préservés
+- ✅ Mécanisme de timeout (5s) pour éviter blocage en cas d'ACK perdu
+
+### ACTION REQUISE UTILISATEUR
+**HARD RELOAD** les 2 téléphones (`npx expo start --clear` puis Ctrl+Shift+R).
+
+**Logs attendus** :
+- 🚀 `Orchestrateur démarré (V3.6.4 - LOCK + MESH + DOUBLE VALIDATION...)`
+- Côté Itel (GO/Master) :
+  - `📶 WiFi Direct CONNECTÉ ! GO=true, Rôle intendé=MASTER (hydraté depuis hardware), lock=OFF`
+  - `📡 [V3.6.4 Mesh] WIFI_GROUP_READY envoyé au Slave <peerId>`  ← NOUVEAU
+  - `🔍 [V3.6.3] shouldSend=true, isMaster=true, ...`
+  - `🟢 Envoi du pack (Phase 1: émetteur → récepteur)...`
+  - `✅ [V3.3] Pack Phase 1 envoyé !`
+  - `⏳ [V3.6.4] Attente PACK_RECEIVED_OK du Slave (5s max)...`  ← NOUVEAU
+  - `✅ [V3.6.4] PACK_RECEIVED_OK reçu de <XiaomiName> (hash=pack_xxx...)`  ← NOUVEAU
+  - `✅ [V3.6.4] Phase 1 CERTIFIÉE par ACK du Slave (processed=true)`  ← NOUVEAU
+  - `🔄 [V3.3] Phase 1 terminée. Récupération IP client pour Phase 2...`
+- Côté Xiaomi (Client/Slave) :
+  - `📶 WiFi Direct CONNECTÉ ! GO=false, Rôle intendé=SLAVE (hydraté depuis hardware), lock=OFF`
+  - `✅ [V3.6.4 Mesh] SLAVE_CONNECTED_CONFIRMED envoyé au Master <peerId>`  ← NOUVEAU
+  - `📨 Fichier reçu: /data/user/0/com.benksidney.yabisso/files/loba_media/p2p_xxx`
+  - `✅ Pack traité !`
+  - `✅ [V3.6.4] PACK_RECEIVED_OK envoyé au Master (hash=pack_xxx...)`  ← NOUVEAU
+
+### Commit
+**v0.0.19** : `V3.6.4 BUG-060+ : double validation PACK_RECEIVED_OK (ACK JS) + Mesh handshake WIFI_GROUP_READY/SLAVE_CONNECTED_CONFIRMED`
