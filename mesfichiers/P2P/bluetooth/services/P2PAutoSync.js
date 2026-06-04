@@ -53,6 +53,8 @@ class P2PAutoSyncClass {
     this._packReceivedAckResolver = null; // V3.6.4 (Double validation): Promise resolver pour PACK_RECEIVED_OK
     this._peerMeshId = null; // V3.6.4 (Mesh handshake): peerId Mesh du pair pour handshake WIFI_GROUP_READY
     this._slaveConfirmedViaMesh = false; // V3.6.4: true quand SLAVE_CONNECTED_CONFIRMED reçu via Mesh
+    this._isRealConnected = false; // V3.6.5: false tant que le Slave n'a pas confirmé (YABISSO_HELLO_ACK)
+    this._slaveIpAddress = null; // V3.6.5: IP du Slave (extraite de info si dispo, sinon null)
     this.stats = {
       totalSyncedP2P: 0,
       totalSyncedCloud: 0,
@@ -217,6 +219,32 @@ class P2PAutoSyncClass {
     this._log(`✅ [V3.6.4 Mesh] SLAVE_CONNECTED_CONFIRMED reçu de Slave ${peerId} → Master peut envoyer`);
     this._slaveConfirmedViaMesh = true;
     this._peerMeshId = peerId;
+  }
+
+  // V3.6.5 (Real connection check) : Attend que le Slave confirme sa présence via YABISSO_HELLO_ACK.
+  // Équivalent JS du waitForSlaveConnection Java (qui n'existe pas dans la lib).
+  // Le Master ne considère la connexion comme "VRAIE" que quand le Slave a répondu.
+  // Retourne true si confirmé dans le timeout, false sinon.
+  async _waitForSlaveConfirmation(peerName, timeoutMs = 5000) {
+    const startTime = Date.now();
+    const pollInterval = 100;
+    this._log(`⏳ [V3.6.5] Attente confirmation Slave (${peerName}) — max ${timeoutMs}ms...`);
+    while (Date.now() - startTime < timeoutMs) {
+      if (this._peerHandshakeConfirmed && this._peerHandshakeConfirmed[peerName]) {
+        const elapsed = Date.now() - startTime;
+        this._log(`✅ [V3.6.5] Slave confirmé en ${elapsed}ms ! Connexion VRAIE établie.`);
+        this._isRealConnected = true;
+        return true;
+      }
+      if (!WifiDirectService.connectedPeer || !this._running) {
+        this._log(`⚠️ [V3.6.5] Déconnexion WiFi pendant l'attente, abandon.`);
+        return false;
+      }
+      await new Promise(r => setTimeout(r, pollInterval));
+    }
+    this._log(`⏰ [V3.6.5] Pas de confirmation Slave en ${timeoutMs}ms, best-effort.`);
+    this._isRealConnected = false;
+    return false;
   }
 
   // V3.6.3 (BUG-060 fix) : HOOK DU DELTA MANIFESTE
@@ -449,8 +477,25 @@ class P2PAutoSyncClass {
           this._lastIntendedRole = WifiDirectService.isGroupOwner ? 'MASTER' : 'SLAVE';
           this._log(`📶 WiFi Direct CONNECTÉ ! GO=${WifiDirectService.isGroupOwner}, Rôle intendé=${this._lastIntendedRole} (hydraté depuis hardware), lock=OFF`);
 
+          // V3.6.5 (REAL CONNECTION CHECK) : À ce stade, on est connecté au réseau WiFi
+          // mais on ne sait PAS encore si un Slave a réellement rejoint. On initialise
+          // _isRealConnected = false. Il passera à true UNIQUEMENT quand on recevra
+          // YABISSO_HELLO_ACK du Slave (voir _waitForSlaveConfirmation).
+          this._isRealConnected = false;
+          this._slaveIpAddress = info?.groupOwnerAddress?.getHostAddress?.() || null;
+
           const isMyRoleMaster = this._lastIntendedRole === 'MASTER';
           const peerName = (info?.deviceName || WifiDirectService.connectedPeer?.deviceName || 'Unknown').toLowerCase();
+
+          // V3.6.5 : Si je suis Slave, je sais que je suis VRAIMENT connecté (j'ai rejoint
+          // le réseau du Master, c'est Android qui m'a confirmé). Le Slave peut donc
+          // considérer _isRealConnected = true immédiatement.
+          if (!isMyRoleMaster) {
+            this._isRealConnected = true;
+            this._log(`🟢 [V3.6.5 Slave] VRAIE connexion établie (Slave a rejoint le Master).`);
+          } else {
+            this._log(`🟡 [V3.6.5 Master] Groupe WiFi créé, en attente d'un vrai Slave...`);
+          }
 
           setTimeout(() => {
             if (WifiDirectService.connectedPeer && this._running) {
@@ -482,20 +527,32 @@ class P2PAutoSyncClass {
                 const meshPeer = this._getLatestMeshPeer();
                 if (meshPeer && myScore > 0 && meshPeer.score < myScore) {
                   this._log(`🔄 [V3.1] MASTER forcé d'envoyer car peer ${meshPeer.name} (score=${meshPeer.score}) < moi (${myScore})`);
-                  setTimeout(() => {
-                    if (WifiDirectService.connectedPeer && this._running) {
-                      // V3.1: try/catch défensif contre la NPE native de react-native-wifi-p2p
-                      try {
-                        WifiDirectService.sendControlMessage({ type: 'YABISSO_HELLO', myScore, isMasterSide: true })
-                          .then(() => {
-                            setTimeout(() => this._p2pSyncCycle(), 2000);
-                          })
-                          .catch(e => {
-                            this._log(`⚠️ [V3.1] Envoi HELLO forcé échoué (try/catch): ${e.message}`);
-                          });
-                      } catch (e) {
-                        this._log(`⚠️ [V3.1] Envoi HELLO forcé catch: ${e.message}`);
-                      }
+
+                  // V3.6.5 (REAL CONNECTION CHECK) : Le Master doit VÉRIFIER qu'un Slave
+                  // a réellement rejoint avant d'envoyer le pack. Équivalent JS du
+                  // waitForSlaveConnection Java. On attend 5s max la confirmation.
+                  setTimeout(async () => {
+                    if (!WifiDirectService.connectedPeer || !this._running) return;
+                    try {
+                      this._log(`📤 [V3.6.5] Envoi YABISSO_HELLO pour vérifier la présence du Slave...`);
+                      await WifiDirectService.sendControlMessage({
+                        type: 'YABISSO_HELLO',
+                        myScore,
+                        isMasterSide: true
+                      });
+                    } catch (e) {
+                      this._log(`⚠️ [V3.6.5] Envoi HELLO forcé échoué: ${e.message}`);
+                      return;
+                    }
+
+                    // V3.6.5 : Attendre la VRAIE confirmation du Slave (HELLO_ACK)
+                    const confirmed = await this._waitForSlaveConfirmation(peerName, 5000);
+                    if (confirmed) {
+                      this._log(`🟢 [V3.6.5] VRAIE connexion Slave confirmée → envoi du pack`);
+                      this._p2pSyncCycle();
+                    } else {
+                      this._log(`⏰ [V3.6.5] Pas de Slave confirmé en 5s → best-effort, on envoie quand même`);
+                      this._p2pSyncCycle();
                     }
                   }, 5000);
                 }
@@ -514,6 +571,9 @@ class P2PAutoSyncClass {
           // V3.6 (BUG-058 fix) : Reset lock + hasCreatedGroup sur déconnexion
           this._isConnecting = false;
           this._hasCreatedGroup = false;
+          // V3.6.5 (REAL CONNECTION CHECK) : Reset du flag "vraie connexion" à la déconnexion
+          this._isRealConnected = false;
+          this._slaveIpAddress = null;
 
           // Resume Nearby Mesh après déconnexion WiFi Direct
           try { await NearbyMeshService.resumeMesh(); } catch (_) {}
@@ -1244,6 +1304,10 @@ class P2PAutoSyncClass {
       ...this.stats,
       blePeers: NearbyMeshService.connectedPeers?.size || 0,
       wifiDirectPeer: WifiDirectService.connectedPeer ? 1 : 0,
+      // V3.6.5 (REAL CONNECTION CHECK) : Expose l'état "vraiment connecté" pour l'UI
+      isRealConnected: this._isRealConnected,
+      slaveIpAddress: this._slaveIpAddress,
+      isGroupOwner: WifiDirectService.isGroupOwner,
     };
   }
 }

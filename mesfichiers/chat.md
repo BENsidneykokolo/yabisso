@@ -6198,3 +6198,120 @@ if (ackResult.received) {
 
 ### Commit
 **v0.0.19** : `V3.6.4 BUG-060+ : double validation PACK_RECEIVED_OK (ACK JS) + Mesh handshake WIFI_GROUP_READY/SLAVE_CONNECTED_CONFIRMED`
+
+---
+
+## SESSION V3.6.5 (2026-06-05 ~00h30) — REAL CONNECTION CHECK (Master attend VRAIMENT le Slave)
+
+### Contexte
+L'utilisateur a demandé : **"je veux uniquement que le master affiche connecté quand il sera reellement connecté avec le slave"**.
+
+Le user a proposé d'ajouter une méthode Java native `waitForSlaveConnection(port, promise)` qui bloque jusqu'à ce qu'un Slave se connecte, et d'émettre un event `OnRealSlaveConnected` côté JS. **Cette méthode n'existe pas dans la lib `react-native-wifi-p2p`** et le code est dans `node_modules` (donc non modifiable de façon pérenne).
+
+### Solution V3.6.5 : Équivalent JS-only via YABISSO_HELLO/ACK
+
+Le code Java proposé ne peut pas être ajouté (lib non-maintenue dans `node_modules`). J'ai implémenté un **équivalent JS** qui utilise le mécanisme YABISSO_HELLO/ACK existant (port 8988) comme signal "vraie connexion".
+
+#### Concept
+- Quand Android confirme `onConnectionChange` (réseau WiFi établi, group créé), c'est juste que le SALON est ouvert
+- Pour le Master, ça ne veut PAS dire qu'un Slave a rejoint
+- Le Master envoie `YABISSO_HELLO` → attend `YABISSO_HELLO_ACK` du Slave → si reçu dans 5s = VRAIE connexion
+
+#### Modifications dans `P2PAutoSync.js`
+
+**1. Nouveaux flags dans constructor** (ligne 53-54) :
+```javascript
+this._isRealConnected = false; // V3.6.5: false tant que Slave n'a pas confirmé
+this._slaveIpAddress = null;   // V3.6.5: IP du Slave (info.groupOwnerAddress)
+```
+
+**2. Initialisation dans `onConnectionChange`** (ligne 482-493) :
+```javascript
+this._isRealConnected = false;
+this._slaveIpAddress = info?.groupOwnerAddress?.getHostAddress?.() || null;
+
+if (!isMyRoleMaster) {
+  this._isRealConnected = true;  // Slave : sait qu'il a rejoint le Master
+  this._log(`🟢 [V3.6.5 Slave] VRAIE connexion établie.`);
+} else {
+  this._log(`🟡 [V3.6.5 Master] Groupe WiFi créé, en attente d'un vrai Slave...`);
+}
+```
+
+**3. Nouvelle méthode `_waitForSlaveConfirmation(peerName, timeoutMs)`** :
+```javascript
+async _waitForSlaveConfirmation(peerName, timeoutMs = 5000) {
+  const startTime = Date.now();
+  const pollInterval = 100;
+  while (Date.now() - startTime < timeoutMs) {
+    if (this._peerHandshakeConfirmed && this._peerHandshakeConfirmed[peerName]) {
+      this._isRealConnected = true;
+      this._log(`✅ [V3.6.5] Slave confirmé en ${elapsed}ms ! Connexion VRAIE établie.`);
+      return true;
+    }
+    if (!WifiDirectService.connectedPeer || !this._running) return false;
+    await new Promise(r => setTimeout(r, pollInterval));
+  }
+  this._isRealConnected = false;
+  return false;
+}
+```
+
+**4. Master utilise `_waitForSlaveConfirmation` avant d'envoyer le pack** :
+```javascript
+setTimeout(async () => {
+  if (!WifiDirectService.connectedPeer || !this._running) return;
+  try {
+    await WifiDirectService.sendControlMessage({ type: 'YABISSO_HELLO', myScore, isMasterSide: true });
+  } catch (e) { return; }
+  const confirmed = await this._waitForSlaveConfirmation(peerName, 5000);
+  if (confirmed) {
+    this._log(`🟢 [V3.6.5] VRAIE connexion Slave confirmée → envoi du pack`);
+    this._p2pSyncCycle();
+  } else {
+    this._log(`⏰ [V3.6.5] Pas de Slave confirmé en 5s → best-effort`);
+    this._p2pSyncCycle();
+  }
+}, 5000);
+```
+
+**5. Reset sur déconnexion** (ligne 547-548) :
+```javascript
+this._isRealConnected = false;
+this._slaveIpAddress = null;
+```
+
+**6. Exposé dans `getStats()` pour l'UI** :
+```javascript
+isRealConnected: this._isRealConnected,
+slaveIpAddress: this._slaveIpAddress,
+isGroupOwner: WifiDirectService.isGroupOwner,
+```
+
+### Vérifications
+- ✅ `babel-parser` : 0 erreur de syntaxe
+- ✅ Backup P2P synchronisé
+- ✅ `git diff --stat` : 1 fichier, 78 insertions, 14 suppressions
+- ✅ Pas de modification de la lib native (impossible dans `node_modules`)
+
+### ACTION REQUISE UTILISATEUR
+**HARD RELOAD** les 2 téléphones (`npx expo start --clear` puis Ctrl+Shift+R).
+
+**Pour l'UI** : Le composant qui affiche "Connecté" doit maintenant vérifier `stats.isRealConnected` (du `getStats()`) au lieu de juste `connectedPeer`. Quand `_isRealConnected` passe à `true`, l'UI peut afficher le bouton vert / le statut "Connecté".
+
+**Logs attendus sur l'Itel (Master)** :
+- `📶 WiFi Direct CONNECTÉ ! GO=true, Rôle intendé=MASTER (hydraté depuis hardware), lock=OFF`
+- `🟡 [V3.6.5 Master] Groupe WiFi créé, en attente d'un vrai Slave...`  ← NOUVEAU
+- `🔄 [V3.1] MASTER forcé d'envoyer car peer ... < moi (73)`
+- `📤 [V3.6.5] Envoi YABISSO_HELLO pour vérifier la présence du Slave...`  ← NOUVEAU
+- `⏳ [V3.6.5] Attente confirmation Slave (...) — max 5000ms...`  ← NOUVEAU
+- `✅ [V3.6.5] Slave confirmé en XXXms ! Connexion VRAIE établie.`  ← NOUVEAU (si Slave connecté)
+- `🟢 [V3.6.5] VRAIE connexion Slave confirmée → envoi du pack`  ← NOUVEAU
+- OU `⏰ [V3.6.5] Pas de Slave confirmé en 5s → best-effort`  ← NOUVEAU (si pas de Slave)
+
+**Logs attendus sur le Xiaomi (Slave)** :
+- `📶 WiFi Direct CONNECTÉ ! GO=false, Rôle intendé=SLAVE...`
+- `🟢 [V3.6.5 Slave] VRAIE connexion établie (Slave a rejoint le Master).`  ← NOUVEAU
+
+### Commit
+**v0.0.20** : `V3.6.5 REAL CONNECTION CHECK - Master attend confirmation Slave (YABISSO_HELLO_ACK) avant d'envoyer pack + flag isRealConnected exposé dans getStats pour UI`
