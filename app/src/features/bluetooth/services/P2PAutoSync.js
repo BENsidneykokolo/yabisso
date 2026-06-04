@@ -226,7 +226,7 @@ class P2PAutoSyncClass {
     this._running = true;
 
     console.log('[P2PAutoSync] Démarrage de l\'orchestrateur Multi-Rail...');
-    this._log('🚀 Orchestrateur démarré (V3.4 - ÉLECTION MESH: pas de createGroup pendant grâce 10s, sauf si score supérieur).');
+    this._log('🚀 Orchestrateur démarré (V3.5 - ÉLECTION MESH STRICTE: createGroup uniquement via NearbyMesh.onPeerFound, jamais proactivement dans le cycle).');
 
     NetworkRailDetector.start();
     NetworkRailDetector.onRailChange((rails) => {
@@ -432,6 +432,30 @@ class P2PAutoSyncClass {
     WifiDirectService.startDiscovery(true);
   }
 
+  // V3.5 (BUG-057 fix) : Force la création d'un groupe WiFi Direct sans attendre Mesh.
+  // Utile pour :
+  //   - Tests sur 1 seul device (pas de pair Mesh à découvrir)
+  //   - Debug : vérifier que createGroup() fonctionne seul
+  //   - Fallback manuel si Mesh échoue
+  async forceCreateGroup() {
+    this._log('🔧 [V3.5] FORCE createGroup (mode debug/test 1 device, bypass élection Mesh)...');
+    this._lastGroupCreatedAt = Date.now();
+    this._lastIntendedRole = 'MASTER';
+    try {
+      try { await NearbyMeshService.pauseMesh(); } catch (_) {}
+      const ok = await WifiDirectService.createGroup();
+      if (ok) {
+        this._log('✅ [V3.5] Groupe créé en mode FORCE. J\'attends un client...');
+      } else {
+        this._log('❌ [V3.5] forceCreateGroup a échoué');
+      }
+      return ok;
+    } catch (e) {
+      this._log(`❌ [V3.5] forceCreateGroup exception: ${e.message}`);
+      return false;
+    }
+  }
+
   async triggerSync(category = null, force = false) {
     if (!this._running) await this.start();
     this._manualTrigger = true;
@@ -596,53 +620,17 @@ class P2PAutoSyncClass {
             try { await NearbyMeshService.pauseMesh(); } catch (_) {}
             await WifiDirectService.connectToPeer(peer, 0, isMaster ? 'MASTER' : 'SLAVE');
           } else {
-            // Aucun peer non-blacklisté. Si ça fait > 20s, devenir MASTER proactivement
-            // (utile pour les tests sur 1 device ET pour être découvrable en attente d'un Slave)
-            const timeSinceLastYabisso = this._lastYabissoPeerSeen > 0 ? (Date.now() - this._lastYabissoPeerSeen) : Infinity;
-            const timeSinceLastProactive = Date.now() - this._lastMasterProactiveAt;
-
-            // V3.4 (BUG-057 fix) : ÉLECTION PAR MESH OBLIGATOIRE AVANT createGroup
-            // Le but : empêcher le "double MASTER" où les 2 phones créent leur propre bulle Wi-Fi.
-            // Règle : un device ne crée un groupe QUE SI aucun peer mesh n'a un score plus élevé.
-            // Pendant la période de grâce (10s), on attend que le mesh découvre les pairs.
-            const myScoreForElection = this._parseScore(WifiDirectService.getDeviceName());
-            const meshPeerCycle = this._getLatestMeshPeer();
-            const appBootTime = this._appBootTime || Date.now();
-            this._appBootTime = appBootTime;
-            const GRACE_PERIOD_MS = 10000; // 10s pour laisser Mesh découvrir
-
-            if (Date.now() - appBootTime < GRACE_PERIOD_MS) {
-              // Encore en période de grâce : ne RIEN faire (laisser Mesh découvrir)
-              this._syncingP2P = false;
-              return;
-            }
-
-            if (meshPeerCycle) {
-              if (meshPeerCycle.score > myScoreForElection) {
-                // Un pair avec un score plus élevé existe → IL créera le groupe
-                if (timeSinceLastProactive > 15000) {
-                  this._log(`📡 [V3.4] Mesh peer ${meshPeerCycle.name} a un score plus élevé (${meshPeerCycle.score} > ${myScoreForElection}). J'attends qu'il crée le groupe...`);
-                  this._lastMasterProactiveAt = Date.now();
-                }
-                this._syncingP2P = false;
-                return;
-              }
-            }
-
-            // Aucun peer mesh avec un score plus élevé → je suis le plus fort, je peux créer le groupe
-            if (timeSinceLastYabisso > 20000 && timeSinceLastProactive > 30000) {
-              const timeSinceLastGroup = Date.now() - this._lastGroupCreatedAt;
-              if (timeSinceLastGroup > GROUP_CREATE_COOLDOWN_MS) {
-                const displaySec = this._lastYabissoPeerSeen > 0 ? `${Math.round(timeSinceLastYabisso/1000)}s` : 'jamais';
-                this._log(`📡 [V3.4] Aucun peer Yabisso depuis ${displaySec}, je suis le plus fort (score=${myScoreForElection}) → MASTER proactif...`);
-                this._lastMasterProactiveAt = Date.now();
-                this._lastGroupCreatedAt = Date.now();
-                this._lastIntendedRole = 'MASTER';
-                try { await NearbyMeshService.pauseMesh(); } catch (_) {}
-                try { await WifiDirectService.createGroup(); } catch (e) {
-                  this._log(`⚠️ [V3.4] createGroup proactif échoué: ${e.message}`);
-                }
-              }
+            // V3.5 (BUG-057 fix) : SUPPRESSION DÉFINITIVE DU MASTER PROACTIF
+            // L'élection Master/Slave est gérée EXCLUSIVEMENT par NearbyMeshService.onPeerFound
+            // dès qu'un pair Yabisso est détecté via Bluetooth/Mesh (event-driven, pas timer-based).
+            // Sans pair découvert, le WiFi Direct reste TOTALEMENT PASSIF.
+            // Pour forcer un MASTER (test 1 device), utiliser P2PAutoSync.forceCreateGroup().
+            const sinceStart = this._appBootTime ? Math.round((Date.now() - this._appBootTime) / 1000) : 0;
+            const meshPeer = this._getLatestMeshPeer();
+            if (meshPeer) {
+              this._log(`⏳ [V3.5] En attente — pair Mesh détecté (${meshPeer.name}, score=${meshPeer.score}). L'élection se fait dans NearbyMesh.`);
+            } else {
+              this._log(`⏳ [V3.5] En attente de pair Mesh (${sinceStart}s depuis démarrage). WiFi Direct passif.`);
             }
           }
         }

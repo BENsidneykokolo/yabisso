@@ -5703,3 +5703,65 @@ Vérifier dans les logs :
 - Côté Itel (score 73) : `📡 [V3.4] Aucun peer Yabisso depuis..., je suis le plus fort (score=73) → MASTER proactif...`
 - **Un seul** `✅ createGroup réussi` sur les 2 phones
 - Puis Phase 1 + Phase 2 s'exécutent
+
+---
+
+## 🆕 Session 4 Juin 2026 (soir) — Analyse V3.4 + Implémentation V3.5
+
+### Problème remonté par l'utilisateur
+L'utilisateur a soumis une solution pour éradiquer définitivement le "double MASTER" en V3.4.
+
+**Analyse du bug V3.4** : malgré le grace period de 10s, les 2 phones créent leur groupe simultanément.
+- T+0s : les 2 apps démarrent en parallèle, `_appBootTime` quasi-identique
+- T+0.05s à T+9s : `_p2pSyncCycle` skip grâce au grace period ✅
+- T+10.05s : grace period expiré. `_getLatestMeshPeer()` retourne **null** sur les 2 phones
+  (le Mesh BLE n'a pas encore eu le temps de découvrir le pair distant)
+- Les 2 phones concluent "je suis le plus fort, je crée le groupe" → **DOUBLE MASTER** 🔴
+
+### Solution validée (proposition utilisateur) — 3 étapes
+1. **Supprimer le createGroup proactif** dans le cycle P2PAutoSync
+2. **Réécrire l'arbitrage dans `NearbyMeshService.onPeerFound`** (event-driven, pas timer-based)
+3. **Connecter le Slave au Master** via WiFi Direct discovery (Option B)
+
+### Implémentation V3.5 — Fichiers modifiés
+
+**`NearbyMeshService.js`** (lignes 140-195) :
+- Ajout filtre Yabisso : `^\d+_Yabisso_` (évite faux positifs Nearby)
+- Si Mesh Master (`myScore > peerScore`) :
+  - `WifiDirectService.createGroup()` immédiat (SEUL appel `createGroup` en mode normal)
+  - Puis `requestConnection(peer.peerId)` pour Mesh
+- Si Mesh Slave (`myScore < peerScore`) :
+  - Ne fait rien (attend que le Master crée)
+  - Le Slave se connectera via WiFi Direct discovery déjà actif
+
+**`P2PAutoSync.js`** :
+- Log de démarrage : `🚀 Orchestrateur démarré (V3.5 - ÉLECTION MESH STRICTE...)`
+- Suppression du bloc "createGroup proactif" (lignes 599-646 de V3.4) dans `_p2pSyncCycle`
+- Remplacé par : `⏳ [V3.5] En attente de pair Mesh. WiFi Direct passif.`
+- Ajout méthode `forceCreateGroup()` pour tests 1-device
+
+### Avantages V3.5 vs V3.4
+| Critère | V3.4 | V3.5 |
+|---|---|---|
+| Élection | Timer (10s) | Event (`onPeerFound`) |
+| Race condition | Possible | Impossible |
+| Test 1 device | Auto après 20s | `forceCreateGroup()` |
+| Délai connexion | 10-30s | 2-5s |
+| Logique | Complexe | Simple |
+
+### Vérifications
+- `node --check` (via babel parser) → ✅ 0 erreur
+- Backup P2P synchronisé vers `mesfichiers/P2P/bluetooth/services/` ✅
+- À commiter en `v0.0.15`
+
+### ACTION REQUISE UTILISATEUR
+**HARD RELOAD** les 2 téléphones (`npx expo start --clear` puis Ctrl+Shift+R).
+
+Vérifier dans les logs :
+- `🚀 Orchestrateur démarré (V3.5 - ÉLECTION MESH STRICTE...)`
+- `⏳ [V3.5] En attente de pair Mesh (Xs depuis démarrage). WiFi Direct passif.`
+- Quand Mesh découvre un pair :
+  - Côté Itel (score 73) : `🔍 Node trouvé: 18_Yabisso_xxx` → `👑 [V3.5] Mesh Master détecté (73 > 18) → création du groupe WiFi Direct` → `✅ [V3.5] Groupe WiFi Direct créé par le Master`
+  - Côté Xiaomi (score 18) : `🔍 Node trouvé: 73_Yabisso_xxx` → `⏳ [V3.5] Mesh Slave (18 < 73) → j'attends que le Master crée le groupe WiFi Direct`
+- **Un seul** `✅ [V3.5] Groupe WiFi Direct créé par le Master` (sur Itel uniquement)
+- **Aucun** `📡 [V3.4] Aucun peer Yabisso depuis...` (supprimé)

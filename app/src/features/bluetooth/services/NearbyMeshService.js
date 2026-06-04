@@ -140,6 +140,14 @@ class NearbyMeshServiceClass {
     this._listeners.push(onPeerFound((peer) => {
       this._log(`🔍 Node trouvé: ${peer.name} (${peer.peerId})`);
       
+      // V3.5 (BUG-057 fix): Filtrer uniquement les pairs Yabisso (regex stricte)
+      // Sans ce filtre, des appareils Nearby aléatoires pourraient déclencher createGroup
+      const isYabissoPeer = /^\d+_Yabisso_/i.test(peer.name || '');
+      if (!isYabissoPeer) {
+        this._log(`⛔ [V3.5] Peer non-Yabisso ignoré: ${peer.name}`);
+        return;
+      }
+      
       // V1.0.16: Extraire le score numérique pour comparaison propre
       const myScore = parseInt(this.deviceName?.split('_')[0] || '0', 10);
       const peerScore = parseInt(peer.name?.split('_')[0] || '0', 10);
@@ -151,20 +159,39 @@ class NearbyMeshServiceClass {
         P2PAutoSync.setMeshPeer(peer.peerId, peer.name, peerScore, isMeshMaster);
       } catch (_) {}
 
-      // Master = score le plus élevé
+      // V3.5 (BUG-057 fix): ÉLECTION MESH STRICTE
+      // L'élection Master/Slave WiFi Direct se fait ICI, au moment exact de la découverte.
+      // Plus de "createGroup proactif" dans le cycle P2PAutoSync (qui causait le double MASTER).
+      // Le WiFi Direct reste TOTALEMENT PASSIF tant qu'un pair n'est pas découvert par le Mesh.
       if (myScore > peerScore) {
-        this._log(`🤝 [Master] Envoi requête de connexion vers ${peer.peerId}...`);
+        this._log(`👑 [V3.5] Mesh Master détecté (${myScore} > ${peerScore}) → création du groupe WiFi Direct`);
         
         // Anti-spam: ne pas reconnecter si échec récent (< 30s)
         if (this._failedPeers.has(peer.peerId)) return;
 
+        // V3.5: Créer le groupe WiFi Direct ICI (pas dans le cycle)
+        // C'est le SEUL endroit où createGroup() est appelé en mode normal.
+        const { WifiDirectService } = require('./WifiDirectService');
+        WifiDirectService.createGroup().then(success => {
+          if (success) {
+            this._log(`✅ [V3.5] Groupe WiFi Direct créé par le Master. J'attends que le Slave se connecte...`);
+          } else {
+            this._log(`⚠️ [V3.5] Échec création groupe WiFi Direct`);
+          }
+        }).catch(e => {
+          this._log(`⚠️ [V3.5] createGroup exception: ${e.message}`);
+        });
+
+        // Mesh connection (pour échanger manifestes, MAC, etc.)
         requestConnection(peer.peerId).catch(err => {
           this._log(`❌ Échec requestConnection vers ${peer.peerId}: ${err.message}`);
           this._failedPeers.add(peer.peerId);
           setTimeout(() => this._failedPeers.delete(peer.peerId), 30000);
         });
       } else {
-        this._log(`⏳ [Slave] Attente de l'invitation de ${peer.name}...`);
+        this._log(`⏳ [V3.5] Mesh Slave (${myScore} < ${peerScore}) → j'attends que le Master crée le groupe WiFi Direct`);
+        // Le Slave ne fait rien. Le Master va créer le groupe, et le Slave le détectera
+        // via le WiFi Direct discovery déjà actif dans P2PAutoSync.start()
       }
       
       // 🚀 Déclencher aussi le WiFi Direct dès qu'un node est détecté
