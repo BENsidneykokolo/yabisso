@@ -5602,3 +5602,104 @@ Mon fix V3.2 dans `_iAmMasterFor()` a introduit une `const meshPeer` (ligne 83 o
 - `node --check` → ✅ 0 erreur
 - Backup P2P synchronisé ✅
 - Commité en `v0.0.13`
+
+---
+
+## Session 2026-06-04 (test V3.3) — Premier run après fix syntaxe
+
+### Logs observés (début)
+L'utilisateur a partagé les premiers logs après le hard reload. Le bundle V3.3 se charge bien :
+```
+LOG  [P2PAutoSync] 🚀 Orchestrateur démarré (V3.3 - BIDIRECTIONNEL 1 CONNEXION: sendFileTo + getClientAddress).
+```
+
+### Constats initiaux
+- **Itel (73) et Xiaomi (18)** : les 2 démarrent en MASTER proactif → **risque de double MASTER**
+- Mais avec le nouveau flow V3.3, le double MASTER n'est plus critique car on n'inversera plus les rôles
+- Mesh bien démarré sur les 2 : Advertising + Discovery actifs
+- WiFi Direct CONNECTÉ sur les 2 (GO=true)
+
+### Prochaine étape
+**Attendre la suite des logs** pour observer :
+1. Le mesh peer s'enregistre-t-il correctement (Xiaomi 18 détecté par Itel) ?
+2. La connexion WiFi s'établit-elle entre les 2 ?
+3. La Phase 1 s'exécute-t-elle (Xiaomi envoie pack vers Itel) ?
+4. La Phase 2 s'exécute-t-elle (Itel appelle getClientAddress puis sendFileTo) ?
+
+### Note sur le double MASTER
+Avec V3.3, même si les 2 sont initialement MASTER :
+- L'un des 2 va se connecter au groupe de l'autre (via `connectWithConfig`)
+- Ou bien le 1er qui a créé le groupe l'emportera
+- Le 2e stoppera son propre groupe
+
+Le **vrai test** est la Phase 2 (sendFileTo avec IP du client). C'est là qu'on verra si le V3.3 marche.
+
+---
+
+## Session 2026-06-04 (V3.4) — ÉLECTION MESH : empêcher le double MASTER
+
+### Constat critique
+L'utilisateur a parfaitement diagnostiqué le problème : **V3.3 ne peut pas fonctionner** car les 2 phones créent leur propre bulle Wi-Fi en même temps (`✅ createGroup réussi (mode MASTER proactif)` sur les 2). Les sous-réseaux IP `192.168.49.0/24` sont **isolés** entre eux.
+
+**Preuve dans les logs** :
+- Itel : `✅ createGroup réussi (mode MASTER proactif)` puis `GO=true`
+- Xiaomi : `✅ createGroup réussi (mode MASTER proactif)` puis `GO=true`
+- → `192.168.49.1` côté Itel ≠ `192.168.49.1` côté Xiaomi
+- → `getClientAddress()` retourne une IP **du mauvais sous-réseau**
+- → `sendFileTo(pack, ipClient)` envoie vers une IP **inaccessible**
+
+### Solution V3.4 — Élection par Mesh avec période de grâce
+
+**Principe** : Pendant les 10 premières secondes après le boot, AUCUN createGroup n'est lancé. On laisse le Mesh découvrir les pairs. Ensuite, seul le device avec le score le plus élevé crée le groupe.
+
+**Fichiers modifiés** : `app/src/features/bluetooth/services/P2PAutoSync.js`
+
+| # | Changement | Détail |
+|---|-----------|--------|
+| 1 | Constructor : ajout `_appBootTime = Date.now()` | Démarre le compteur de période de grâce |
+| 2 | `_p2pSyncCycle` : ajout GRACE_PERIOD_MS = 10s | Pendant ce délai, on n'appelle **jamais** `createGroup()` |
+| 3 | `_p2pSyncCycle` : `meshPeer.score > myScore` → return | Si un pair avec score plus élevé est connu, on attend qu'il crée le groupe |
+| 4 | Version log : `V3.4 - ÉLECTION MESH` | Vérification dans les logs |
+
+### Flow V3.4 corrigé
+
+```
+T+0s : Les 2 phones démarrent
+       - WiFi discovery actif sur les 2
+       - Mesh advertising/discovery actif sur les 2
+       - PAS de createGroup (période de grâce)
+
+T+2-5s : Mesh découvre les pairs (18 détecte 73, 73 détecte 18)
+         - Itel (73) : meshPeer.score=18 < myScore=73 → PEUT devenir MASTER
+         - Xiaomi (18) : meshPeer.score=73 > myScore=18 → ATTEND que 73 crée
+
+T+10s : Fin de la période de grâce
+         - Itel : aucun pair avec score plus élevé → createGroup() ✅
+         - Xiaomi : pair avec score plus élevé → attend
+
+T+15s : Xiaomi scan WiFi Direct → détecte le groupe de l'Itel
+         - connect() vers l'Itel
+
+T+20s : WiFi Direct établi
+         - Itel = GO (192.168.49.1)
+         - Xiaomi = Client (192.168.49.X)
+         - Phase 1 : Xiaomi envoie pack → Itel reçoit
+         - Phase 2 : Itel envoie pack via sendFileTo(192.168.49.X) → Xiaomi reçoit
+         - SYNC_COMPLETE → fin
+```
+
+### Vérifications
+- `node --check` → ✅ 0 erreur
+- Backup P2P synchronisé ✅
+- Commité en `v0.0.14`
+
+### ACTION REQUISE UTILISATEUR
+**HARD RELOAD** les 2 téléphones (`npx expo start --clear` puis Ctrl+Shift+R).
+
+Vérifier dans les logs :
+- `🚀 Orchestrateur démarré (V3.4 - ÉLECTION MESH...)`
+- Pendant les 10 premières secondes : **PAS** de `📡 [Cycle] Aucun peer Yabisso depuis... → MASTER proactif`
+- Côté Xiaomi (score 18) : `📡 [V3.4] Mesh peer 73_Yabisso_xxx a un score plus élevé (73 > 18). J'attends qu'il crée le groupe...`
+- Côté Itel (score 73) : `📡 [V3.4] Aucun peer Yabisso depuis..., je suis le plus fort (score=73) → MASTER proactif...`
+- **Un seul** `✅ createGroup réussi` sur les 2 phones
+- Puis Phase 1 + Phase 2 s'exécutent

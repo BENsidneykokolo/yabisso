@@ -29,6 +29,7 @@ class P2PAutoSyncClass {
     this._manualTrigger = false; 
     this._lastManualSync = 0; 
     this._connectAttemptPending = false; 
+    this._appBootTime = Date.now(); // V3.4 (BUG-057): Période de grâce avant createGroup
     this._lastSentTo = {};
     this._lastReceivedFrom = {};
     this._lastDisconnectAt = 0; 
@@ -225,7 +226,7 @@ class P2PAutoSyncClass {
     this._running = true;
 
     console.log('[P2PAutoSync] Démarrage de l\'orchestrateur Multi-Rail...');
-    this._log('🚀 Orchestrateur démarré (V3.3 - BIDIRECTIONNEL 1 CONNEXION: sendFileTo + getClientAddress).');
+    this._log('🚀 Orchestrateur démarré (V3.4 - ÉLECTION MESH: pas de createGroup pendant grâce 10s, sauf si score supérieur).');
 
     NetworkRailDetector.start();
     NetworkRailDetector.onRailChange((rails) => {
@@ -600,13 +601,27 @@ class P2PAutoSyncClass {
             const timeSinceLastYabisso = this._lastYabissoPeerSeen > 0 ? (Date.now() - this._lastYabissoPeerSeen) : Infinity;
             const timeSinceLastProactive = Date.now() - this._lastMasterProactiveAt;
 
-            // V2.16 : Si on a un peer Mesh avec un score plus élevé, on attend (il créera le groupe)
+            // V3.4 (BUG-057 fix) : ÉLECTION PAR MESH OBLIGATOIRE AVANT createGroup
+            // Le but : empêcher le "double MASTER" où les 2 phones créent leur propre bulle Wi-Fi.
+            // Règle : un device ne crée un groupe QUE SI aucun peer mesh n'a un score plus élevé.
+            // Pendant la période de grâce (10s), on attend que le mesh découvre les pairs.
+            const myScoreForElection = this._parseScore(WifiDirectService.getDeviceName());
             const meshPeerCycle = this._getLatestMeshPeer();
+            const appBootTime = this._appBootTime || Date.now();
+            this._appBootTime = appBootTime;
+            const GRACE_PERIOD_MS = 10000; // 10s pour laisser Mesh découvrir
+
+            if (Date.now() - appBootTime < GRACE_PERIOD_MS) {
+              // Encore en période de grâce : ne RIEN faire (laisser Mesh découvrir)
+              this._syncingP2P = false;
+              return;
+            }
+
             if (meshPeerCycle) {
-              const myScore = this._parseScore(WifiDirectService.getDeviceName());
-              if (meshPeerCycle.score > myScore) {
+              if (meshPeerCycle.score > myScoreForElection) {
+                // Un pair avec un score plus élevé existe → IL créera le groupe
                 if (timeSinceLastProactive > 15000) {
-                  this._log(`📡 [Cycle] Mesh peer ${meshPeerCycle.name} a un score plus élevé (${meshPeerCycle.score} > ${myScore}). J'attends qu'il crée le groupe...`);
+                  this._log(`📡 [V3.4] Mesh peer ${meshPeerCycle.name} a un score plus élevé (${meshPeerCycle.score} > ${myScoreForElection}). J'attends qu'il crée le groupe...`);
                   this._lastMasterProactiveAt = Date.now();
                 }
                 this._syncingP2P = false;
@@ -614,17 +629,18 @@ class P2PAutoSyncClass {
               }
             }
 
+            // Aucun peer mesh avec un score plus élevé → je suis le plus fort, je peux créer le groupe
             if (timeSinceLastYabisso > 20000 && timeSinceLastProactive > 30000) {
               const timeSinceLastGroup = Date.now() - this._lastGroupCreatedAt;
               if (timeSinceLastGroup > GROUP_CREATE_COOLDOWN_MS) {
                 const displaySec = this._lastYabissoPeerSeen > 0 ? `${Math.round(timeSinceLastYabisso/1000)}s` : 'jamais';
-                this._log(`📡 [Cycle] Aucun peer Yabisso depuis ${displaySec} → MASTER proactif (être découvrable)...`);
+                this._log(`📡 [V3.4] Aucun peer Yabisso depuis ${displaySec}, je suis le plus fort (score=${myScoreForElection}) → MASTER proactif...`);
                 this._lastMasterProactiveAt = Date.now();
                 this._lastGroupCreatedAt = Date.now();
                 this._lastIntendedRole = 'MASTER';
                 try { await NearbyMeshService.pauseMesh(); } catch (_) {}
                 try { await WifiDirectService.createGroup(); } catch (e) {
-                  this._log(`⚠️ [Cycle] createGroup proactif échoué: ${e.message}`);
+                  this._log(`⚠️ [V3.4] createGroup proactif échoué: ${e.message}`);
                 }
               }
             }
