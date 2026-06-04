@@ -329,7 +329,13 @@ class P2PAutoSyncClass {
           if (WifiDirectService.isGroupOwner) {
             this._hasCreatedGroup = true;
           }
-          this._log(`📶 WiFi Direct CONNECTÉ ! GO=${WifiDirectService.isGroupOwner}, Rôle intendé=${this._lastIntendedRole || 'inconnu'}, lock=OFF`);
+          // V3.6.2 (BUG-059 fix) : HYDRATER _lastIntendedRole avec la VÉRITÉ MATÉRIELLE
+          // Le réseau Android peut être prêt avant que notre logique d'élection pré-connexion
+          // (cycle ou onPeerFound WiFi Direct) n'ait eu le temps de setter _lastIntendedRole.
+          // C'est ce qui causait le bug "role=null" → l'Itel se croyait SLAVE et tentait
+          // d'envoyer HELLO + pack alors qu'il est GO/Master. On se fie au硬件 (isGroupOwner).
+          this._lastIntendedRole = WifiDirectService.isGroupOwner ? 'MASTER' : 'SLAVE';
+          this._log(`📶 WiFi Direct CONNECTÉ ! GO=${WifiDirectService.isGroupOwner}, Rôle intendé=${this._lastIntendedRole} (hydraté depuis hardware), lock=OFF`);
 
           const isMyRoleMaster = this._lastIntendedRole === 'MASTER';
           const peerName = (info?.deviceName || WifiDirectService.connectedPeer?.deviceName || 'Unknown').toLowerCase();
@@ -659,14 +665,26 @@ class P2PAutoSyncClass {
             
             // V3.6 (BUG-058 fix) : ACTIVER LE LOCK avant d'envoyer la commande au framework
             this._isConnecting = true;
+            let connectSuccess = false;
             try {
               // V3.6: On ne pause PLUS le Mesh pendant la connexion WiFi Direct.
               // Le Mesh doit rester actif pour découvrir le pair Yabisso et fournir le score.
-              await WifiDirectService.connectToPeer(peer, 0, isMaster ? 'MASTER' : 'SLAVE');
+              connectSuccess = await WifiDirectService.connectToPeer(peer, 0, isMaster ? 'MASTER' : 'SLAVE');
             } catch (e) {
-              // V3.6: Reset du lock après 5s en cas d'erreur (évite le blocage permanent)
-              this._log(`⚠️ [V3.6] connectToPeer échoué, reset du lock dans 5s...`);
+              // V3.6.1: Reset du lock après 5s en cas d'exception inattendue
+              this._log(`⚠️ [V3.6.1] connectToPeer exception: ${e.message}, reset du lock dans 5s...`);
               setTimeout(() => { this._isConnecting = false; }, 5000);
+              return;
+            }
+            // V3.6.1 (BUG-058 fix) : LIBÉRER LE LOCK IMMÉDIATEMENT après connectToPeer
+            // Bug critique : connectToPeer ne throw JAMAIS (il catch en interne et retourne true/false).
+            // Du coup le catch du V3.6 ne fire jamais, et le lock restait true pour toujours
+            // si onConnectionChange ne fire pas (cas où le Master crée le groupe mais aucun Slave ne se connecte).
+            this._isConnecting = false;
+            if (!connectSuccess) {
+              this._log(`⚠️ [V3.6.1] connectToPeer a échoué, lock libéré. Retry dans 10s (backoff).`);
+            } else {
+              this._log(`✅ [V3.6.1] connectToPeer réussi, lock libéré.`);
             }
           } else {
             // V3.5 (BUG-057 fix) : SUPPRESSION DÉFINITIVE DU MASTER PROACTIF
@@ -778,8 +796,15 @@ class P2PAutoSyncClass {
                 }
               } else {
                 // Client doit ouvrir un serveur pour que le GO puisse envoyer
+                // V3.6.2 (BUG-059 fix) : Pause 1000ms AVANT d'ouvrir le serveur
+                // pour laisser l'interface réseau de l'Itel A50 se stabiliser après
+                // le 1er HELLO qui a échoué. Évite que le GO envoie vers un socket
+                // pas encore bind.
                 this._log(`📡 [V3.3] PHASE 2 : Client ouvre receiveFile() pour recevoir du GO...`);
+                this._log(`⏳ [V3.6.2] Pause 1000ms pour stabiliser l'interface réseau...`);
+                await new Promise(r => setTimeout(r, 1000));
                 WifiDirectService.startReceiving(WifiDirectService.globalFileHandler);
+                this._log(`✅ [V3.6.2] Serveur Slave ouvert, prêt à recevoir Phase 2 du GO`);
               }
 
               // Attendre 3s puis envoyer SYNC_COMPLETE

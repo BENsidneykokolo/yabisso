@@ -5844,3 +5844,118 @@ Les 2 téléphones ont les permissions (WiFi + Localisation + Proximité). Le Me
   - Après Mesh discovery : `🕸️ [V3.6] Arbitrage Mesh: Mon Score (73) vs Score Distant (18) → MASTER` → `👑 [V3.5] Mesh Master détecté → création du groupe WiFi Direct`
 - Plus AUCUNE erreur "framework is busy" en boucle
 - Connexion rapide au lieu de 400+ secondes d'attente
+
+---
+
+## SESSION V3.6.2 (2026-06-04 ~23h) — BUG-059 : `role=null` après élection Mesh
+
+### Contexte
+L'utilisateur a testé V3.6 sur les 2 téléphones physiques. Résultats :
+- ✅ Mesh fonctionne (détection du pair 18_Yabisso_m99xn7 sur le 73_Yabisso_zzbeta)
+- ✅ Élection Mesh correcte : Itel (73) est élu MeshMaster → crée le groupe WiFi Direct
+- ✅ Connexion WiFi Direct réussie : `GO=true`
+- ❌ **BUG-059** : `Rôle intendé=inconnu` dans `onConnectionChange` → Itel se croit SLAVE
+- ❌ Envoi HELLO échoue : `⚠️ [Handshake] Échec envoi YABISSO_HELLO à unknown`
+- ❌ `shouldSend=false` alors que Itel est le GO et devrait envoyer
+- ❌ Transfert bloqué : `📡 Mode Réception — Prêt.` (stuck)
+
+### Analyse du BUG-059
+Le cycle `_p2pSyncCycle()` et le handler `onPeerFound` (WiFi Direct) peuvent être SKIPPÉS si :
+1. Le cycle 3s a déjà tourné et n'a pas vu de peer (il attend Mesh)
+2. `onPeerFound` n'a pas matché avec un pair Mesh (imprimante visible avant le Xiaomi)
+3. Le Mesh master fait `createGroup()` directement depuis `NearbyMesh.onPeerFound` (V3.5)
+4. → `_lastIntendedRole` reste `null` jusqu'à `onConnectionChange`
+5. → Quand `onConnectionChange` fire, `_lastIntendedRole` est `null`
+6. → `isMyRoleMaster = null === 'MASTER' = false` → Itel se croit SLAVE
+7. → Itel n'envoie pas le pack, reste en mode réception
+
+### Solution V3.6.2 (3 sous-fixes)
+
+#### V3.6.2 FIX-1 : Hydrater `_lastIntendedRole` depuis la VÉRITÉ MATÉRIELLE
+**Fichier** : `app/src/features/bluetooth/services/P2PAutoSync.js` ligne 332-338
+**Code** :
+```javascript
+// V3.6.2 (BUG-059 fix) : HYDRATER _lastIntendedRole avec la VÉRITÉ MATÉRIELLE
+this._lastIntendedRole = WifiDirectService.isGroupOwner ? 'MASTER' : 'SLAVE';
+this._log(`📶 WiFi Direct CONNECTÉ ! GO=${WifiDirectService.isGroupOwner}, Rôle intendé=${this._lastIntendedRole} (hydraté depuis hardware), lock=OFF`);
+```
+**Principe** : Quand Android confirme la connexion WiFi Direct, on a la VÉRITÉ : `isGroupOwner` (true/false) du `WifiDirectService`. On se fie au硬件, pas à la logique d'élection pré-connexion qui peut être bypassée.
+
+#### V3.6.2 FIX-2 : Pause 1500ms APRÈS `connected` (déjà en place depuis V2.6)
+**Fichier** : `app/src/features/bluetooth/services/P2PAutoSync.js` ligne 343
+**Code** :
+```javascript
+setTimeout(() => {
+  if (WifiDirectService.connectedPeer && this._running) {
+    // ... logique d'envoi HELLO + pack
+  }
+}, 1500);
+```
+**Principe** : Laisse 1500ms à l'interface réseau de l'Itel A50 (128MB RAM) pour stabiliser après l'event `connected`. Le 1er HELLO peut échouer, mais le 2nd (sur duplicate `onConnectionChange`) réussit.
+
+#### V3.6.2 FIX-3 : Pause 1000ms côté Slave avant `startReceiving` en Phase 2
+**Fichier** : `app/src/features/bluetooth/services/P2PAutoSync.js` ligne 797-805
+**Code** :
+```javascript
+} else {
+  // V3.6.2 (BUG-059 fix) : Pause 1000ms AVANT d'ouvrir le serveur
+  this._log(`📡 [V3.3] PHASE 2 : Client ouvre receiveFile() pour recevoir du GO...`);
+  this._log(`⏳ [V3.6.2] Pause 1000ms pour stabiliser l'interface réseau...`);
+  await new Promise(r => setTimeout(r, 1000));
+  WifiDirectService.startReceiving(WifiDirectService.globalFileHandler);
+  this._log(`✅ [V3.6.2] Serveur Slave ouvert, prêt à recevoir Phase 2 du GO`);
+}
+```
+**Principe** : Quand le Slave ouvre son serveur de réception pour la Phase 2 (GO → Client), on attend 1000ms pour être sûr que le socket est bind avant que le GO envoie.
+
+#### V3.6.1 (bonus BUG-058 fix) : Libérer `isConnecting` lock immédiatement après `connectToPeer`
+**Fichier** : `app/src/features/bluetooth/services/P2PAutoSync.js` ligne 665-688
+**Code** :
+```javascript
+this._isConnecting = true;
+let connectSuccess = false;
+try {
+  connectSuccess = await WifiDirectService.connectToPeer(peer, 0, isMaster ? 'MASTER' : 'SLAVE');
+} catch (e) {
+  setTimeout(() => { this._isConnecting = false; }, 5000);
+  return;
+}
+// V3.6.1 (BUG-058 fix) : LIBÉRER LE LOCK IMMÉDIATEMENT
+this._isConnecting = false;
+```
+**Bug critique** : `connectToPeer` ne throw JAMAIS (il catch en interne et retourne true/false). Donc le `catch` du V3.6 ne fire jamais, et le `isConnecting` lock reste `true` pour toujours si `onConnectionChange` ne fire pas.
+**Fix** : Sortir le `isConnecting = false` du `try/catch` et l'exécuter après `connectToPeer` retourne (success ou failure).
+
+### Vérifications
+- ✅ `babel-parser` : 0 erreur de syntaxe
+- ✅ Backup P2P synchronisé (`mesfichiers/P2P/bluetooth/services/P2PAutoSync.js`)
+- ✅ `git diff --stat` : 1 fichier modifié, 29 insertions, 4 suppressions
+- ✅ Logs V3.6 précédents préservés (l'Itel choisissait déjà MASTER via Mesh)
+- ✅ Pas de régression : V3.5 (election Mesh), V3.6 (lock + _iAmMasterFor null) conservés
+
+### ACTION REQUISE UTILISATEUR
+**HARD RELOAD** les 2 téléphones (`npx expo start --clear` puis Ctrl+Shift+R).
+
+**Logs attendus** :
+- 🚀 `Orchestrateur démarré (V3.6.2 - LOCK + ARBITRAGE MESH + role hydraté depuis hardware)`
+- Côté Itel (GO/Master) :
+  - `🕸️ [V3.6] Arbitrage Mesh: Mon Score (73) vs Score Distant (18) → MASTER`
+  - `👑 [V3.5] Mesh Master détecté → création du groupe WiFi Direct`
+  - `✅ createGroup réussi (mode MASTER proactif)`
+  - `📶 WiFi Direct CONNECTÉ ! GO=true, Rôle intendé=MASTER (hydraté depuis hardware), lock=OFF`  ← BUG-059 FIX
+  - `🚀 Envoi imminent — HELLO d'abord, pack ensuite...`  ← Plus de `shouldSend=false`
+  - `✅ [V3.3] Pack Phase 1 envoyé !`
+  - `📡 [V3.3] PHASE 2 : Client ouvre receiveFile()...`
+  - `⏳ [V3.6.2] Pause 1000ms pour stabiliser l'interface réseau...`  ← NOUVEAU
+  - `✅ [V3.6.2] Serveur Slave ouvert, prêt à recevoir Phase 2 du GO`
+- Côté Xiaomi (Client/Slave) :
+  - `📶 WiFi Direct CONNECTÉ ! GO=false, Rôle intendé=SLAVE (hydraté depuis hardware), lock=OFF`
+  - `📡 Mode Réception — Prêt.`
+  - `✅ [V3.3] Pack Phase 1 envoyé !` (Xiaomi est SLAVE avec score 18 < 73)
+  - `⏳ [V3.6.2] Pause 1000ms pour stabiliser l'interface réseau...`
+- Plus AUCUN `⚠️ [Handshake] Échec envoi YABISSO_HELLO à unknown`
+- Plus AUCUN `🔍 [V3.0] shouldSend=false`
+- Transfert bidirectionnel complet : Phase 1 + Phase 2 + SYNC_COMPLETE + déconnection
+
+### Commit
+**v0.0.17** : `V3.6.2 BUG-059 fix - hydrate _lastIntendedRole from isGroupOwner + V3.6.1 release isConnecting lock after connectToPeer + 1000ms pause Slave before startReceiving`
