@@ -5415,3 +5415,92 @@ Vérifier dans les logs :
 
 ### Note sur la librairie
 Le bug est dans `react-native-wifi-p2p` (lib non maintenue). Le fix côté JS est un **workaround défensif**. Une vraie correction nécessiterait de patcher la lib (ajouter `if (wifiP2pInfo == null || wifiP2pInfo.groupOwnerAddress != null)`) ou de forker la lib.
+
+---
+
+## Session 2026-06-04 (test V3.1) — BUG-054 : SWAP bidirectionnel cassé (clés incohérentes)
+
+### Test V3.1 — Partage unidirectionnel confirmé
+Les logs montrent un progrès majeur : **le HELLO et le pack Loba sont maintenant transmis sans crash NPE**. Le fix V3.1 (`_refreshConnectionInfo()`) fonctionne.
+
+**Séquence observée** :
+1. Itel (MASTER, GO=true) crée le groupe
+2. Xiaomi (SLAVE) se connecte, HELLO + pack envoyé sans crash
+3. Xiaomi envoie `SWAP_ROLE_REQUEST` → Itel reçoit
+4. **MAIS** : le swap ne s'inverse pas correctement. Le 2e transfert (Itel → Xiaomi) ne s'effectue JAMAIS
+
+### Analyse du bug restant
+Reconstruction de la séquence des logs :
+```
+Xiaomi: shouldSend=true → Envoi pack → SWAP_ROLE_REQUEST envoyé
+Xiaomi: shouldSend=true (encore, car peerScore=73) → Mode Réception
+Itel: shouldSend=false (MASTER) → Mode Réception
+Itel: reçoit un fichier, mais devrait être le 2e pack... ne vient jamais
+```
+
+**Cause technique identifiée** : Incohérence des clés dans `_roleSwapQueue`.
+
+**Côté Xiaomi (émetteur du SWAP, ligne 679)** :
+```javascript
+this._roleSwapQueue[peerName] = 'MASTER';
+// peerName = "xiaomi 11t" (nom Android WiFi Direct)
+```
+
+**Côté Itel (receiver du SWAP, ligne 722)** :
+```javascript
+const peerName = (metadata.senderDevice || 'Unknown').toLowerCase();
+this._roleSwapQueue[peerName] = 'SLAVE';
+// peerName = "73_yabisso_xxx" (nom Yabisso)
+```
+
+**Problème** : Le `_roleSwapQueue` est indexé par des clés DIFFÉRENTES sur les 2 devices !
+- Sur Itel : clé = `"73_yabisso_xxx"` (celui qui a envoyé le SWAP) → stocke `'SLAVE'`
+- Sur Xiaomi : clé = `"xiaomi 11t"` (celui qui a envoyé le SWAP) → stocke `'MASTER'`
+
+Quand `_iAmMasterFor("xiaomi 11t")` est appelé côté Itel, il cherche `_roleSwapQueue["xiaomi 11t"]` qui n'existe pas → retourne la valeur par défaut (MASTER par score) → Itel reste MASTER → le swap ne s'inverse pas.
+
+### Solution V3.2 — Multi-clés pour `_roleSwapQueue`
+
+Stocker le swap sous TOUTES les clés possibles du peer (nom Yabisso + nom WiFi Direct) pour que `_iAmMasterFor` retrouve le rôle peu importe la clé utilisée.
+
+**Fichiers modifiés** : `app/src/features/bluetooth/services/P2PAutoSync.js`
+
+| # | Changement | Ligne |
+|---|-----------|-------|
+| 1 | `_iAmMasterFor` : vérifier TOUTES les clés possibles (key + meshKey + clés existantes) | 79-92 |
+| 2 | Réception `SWAP_ROLE_REQUEST` : stocker sous 2 clés (yabissoKey + wifiDirectKey) | 717-735 |
+| 3 | Réception `SYNC_COMPLETE` : nettoyer sous 2 clés | 736-741 |
+| 4 | Émission `SWAP_ROLE_REQUEST` : stocker `MASTER` sous 2 clés (peerName + meshPeer.name) | 678-682 |
+| 5 | Émission `SYNC_COMPLETE` : nettoyer sous 2 clés | 690-696 |
+| 6 | Version log : `V3.2 - FIX SWAP KEYS: _roleSwapQueue multi-clés` | start() |
+
+### Flow V3.2 corrigé
+```
+1. Itel MASTER, Xiaomi SLAVE connectés
+2. Xiaomi envoie pack + SWAP_ROLE_REQUEST
+3. Sur Xiaomi : _roleSwapQueue["xiaomi 11t"] = "MASTER" ET _roleSwapQueue["18_yabisso_xxx"] = "MASTER"
+4. Sur Itel : _roleSwapQueue["73_yabisso_xxx"] = "SLAVE" ET _roleSwapQueue["itel A50"] = "SLAVE"
+5. Déconnexion des 2 côtés
+6. Reconnexion : Xiaomi consulte _iAmMasterFor("itel A50")
+   → _roleSwapQueue["18_yabisso_xxx"] = "MASTER" → amMaster = true
+   → Xiaomi crée le groupe ✅
+7. Itel consulte _iAmMasterFor("xiaomi 11t")
+   → _roleSwapQueue["itel A50"] = "SLAVE" → amMaster = false
+   → Itel se connecte en SLAVE ✅
+8. Transfert dans l'autre sens : Itel → Xiaomi
+9. SYNC_COMPLETE → fin synchro bidirectionnelle
+```
+
+### Vérifications
+- `node --check` → ✅ 0 erreur
+- Backup P2P synchronisé : `mesfichiers/P2P/bluetooth/services/P2PAutoSync.js` ✅
+
+### ACTION REQUISE UTILISATEUR
+**HARD RELOAD** les 2 téléphones.
+
+Vérifier dans les logs :
+- `🚀 Orchestrateur démarré (V3.2 - FIX SWAP KEYS: _roleSwapQueue multi-clés + SWAP bidirectionnel).`
+- `🔄 [V3.2 Swap Actif] Rôle forcé pour xiaomi 11t (clé=18_yabisso_xxx) : MASTER` (Xiaomi après swap)
+- `🔄 [V3.2 Swap Actif] Rôle forcé pour xiaomi 11t (clé=itel A50) : SLAVE` (Itel après swap)
+- Le 2e transfert (Itel → Xiaomi) devrait maintenant s'effectuer
+- `✅ SYNC_COMPLETE envoyé` (sur les 2 phones)

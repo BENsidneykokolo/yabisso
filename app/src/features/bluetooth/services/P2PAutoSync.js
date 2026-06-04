@@ -76,11 +76,19 @@ class P2PAutoSyncClass {
     if (!peerName) return false;
     const key = peerName.toLowerCase();
 
-    if (this._roleSwapQueue[key]) {
-      const forcedRole = this._roleSwapQueue[key];
-      const amMaster = forcedRole === 'MASTER';
-      this._log(`🔄 [Swap Actif] Rôle forcé pour ${peerName} : ${forcedRole} (Je suis Master ? ${amMaster})`);
-      return amMaster;
+    // V3.2 (BUG-054 fix): Vérifier le swap avec TOUTES les clés possibles du peer
+    // (peerName peut être "xiaomi 11t" WiFi Direct OU "18_yabisso_xxx" du nom Yabisso)
+    // NOTE: le rôle stocké représente le rôle que JE dois avoir à la prochaine reconnexion
+    // (suite à la réception d'un SWAP_ROLE_REQUEST, je deviens SLAVE → l'autre devient MASTER)
+    const meshPeer = this._getLatestMeshPeer();
+    const meshKey = meshPeer ? meshPeer.name.toLowerCase() : null;
+    for (const k of [key, meshKey, ...Object.keys(this._roleSwapQueue)]) {
+      if (k && this._roleSwapQueue[k]) {
+        const forcedRole = this._roleSwapQueue[k];
+        const amMaster = forcedRole === 'MASTER';
+        this._log(`🔄 [V3.2 Swap Actif] Rôle forcé pour ${peerName} (clé=${k}) : ${forcedRole} (Je suis Master ? ${amMaster})`);
+        return amMaster;
+      }
     }
 
     const myScore = this._parseScore(WifiDirectService.getDeviceName());
@@ -217,7 +225,7 @@ class P2PAutoSyncClass {
     this._running = true;
 
     console.log('[P2PAutoSync] Démarrage de l\'orchestrateur Multi-Rail...');
-    this._log('🚀 Orchestrateur démarré (V3.1 - FIX NPE NATIVE: _refreshConnectionInfo avant sendFile).');
+    this._log('🚀 Orchestrateur démarré (V3.2 - FIX SWAP KEYS: _roleSwapQueue multi-clés + SWAP bidirectionnel).');
 
     NetworkRailDetector.start();
     NetworkRailDetector.onRailChange((rails) => {
@@ -668,8 +676,14 @@ class P2PAutoSyncClass {
               type: 'SWAP_ROLE_REQUEST'
             });
             if (msgSent) {
-              this._roleSwapQueue[peerName] = 'MASTER';
-              this._log(`✅ SWAP_ROLE_REQUEST envoyé. Déconnexion dans 3s...`);
+              // V3.2 (BUG-054 fix): Stocker sous TOUTES les clés possibles
+              // (peerName WiFi Direct + meshPeer.name Yabisso)
+              const swapKeys = [peerName];
+              if (meshPeer) swapKeys.push(meshPeer.name.toLowerCase());
+              for (const k of swapKeys) {
+                this._roleSwapQueue[k] = 'MASTER';
+              }
+              this._log(`✅ [V3.2] SWAP_ROLE_REQUEST envoyé. Stocké MASTER sous ${swapKeys.length} clé(s). Déconnexion dans 3s...`);
             } else {
               this._log(`❌ Échec de l'envoi de SWAP_ROLE_REQUEST`);
             }
@@ -681,9 +695,14 @@ class P2PAutoSyncClass {
               type: 'SYNC_COMPLETE'
             });
             if (msgSent) {
-              delete this._roleSwapQueue[peerName];
+              // V3.2: Nettoyer TOUTES les clés
+              const completeKeys = [peerName];
+              if (meshPeer) completeKeys.push(meshPeer.name.toLowerCase());
+              for (const k of completeKeys) {
+                delete this._roleSwapQueue[k];
+              }
               this._completedSyncs[peerName] = Date.now();
-              this._log(`✅ SYNC_COMPLETE envoyé. Déconnexion dans 3s...`);
+              this._log(`✅ [V3.2] SYNC_COMPLETE envoyé. Nettoyé ${completeKeys.length} clé(s). Déconnexion dans 3s...`);
             } else {
               this._log(`❌ Échec de l'envoi de SYNC_COMPLETE`);
             }
@@ -716,17 +735,28 @@ class P2PAutoSyncClass {
       // Intercepter les messages de contrôle du protocole de swap bidirectionnel
       if (metadata.action === 'CONTROL_MESSAGE') {
         this._log(`⭐ REÇU MESSAGE DE CONTRÔLE: ${metadata.type} de ${metadata.senderDevice}`);
-        const peerName = (metadata.senderDevice || WifiDirectService.connectedPeer?.deviceName || 'Unknown').toLowerCase();
+        // V3.2 (BUG-054 fix): Stocker sous TOUTES les clés possibles (Yabisso name + WiFi Direct name)
+        const yabissoKey = (metadata.senderDevice || '').toLowerCase();
+        const wifiDirectKey = (WifiDirectService.connectedPeer?.deviceName || '').toLowerCase();
+        const keys = [yabissoKey, wifiDirectKey].filter(k => k && k !== 'unknown');
         
         if (metadata.type === 'SWAP_ROLE_REQUEST') {
-          this._roleSwapQueue[peerName] = 'SLAVE';
-          this._log(`🔄 Rôle SWAP enregistré : Prochaine connexion avec ${peerName} en tant que SLAVE`);
+          // V3.2: L'émetteur du SWAP était SLAVE → il veut devenir MASTER.
+          // Je (receiver) dois devenir SLAVE. Stocke 'SLAVE' pour que _iAmMasterFor() me fasse
+          // attendre que l'autre crée le groupe.
+          for (const k of keys) {
+            this._roleSwapQueue[k] = 'SLAVE';
+          }
+          this._log(`🔄 [V3.2] SWAP reçu → je deviens SLAVE, l'autre devient MASTER`);
         } else if (metadata.type === 'SYNC_COMPLETE') {
-          delete this._roleSwapQueue[peerName];
-          this._completedSyncs[peerName] = Date.now();
+          // V3.2 (BUG-054 fix): Nettoyer TOUTES les clés du peer (Yabisso + WiFi Direct)
+          for (const k of keys) {
+            delete this._roleSwapQueue[k];
+          }
+          this._completedSyncs[yabissoKey || wifiDirectKey] = Date.now();
           this._lastIntendedRole = null; // V3.0: Reset complet du rôle après synchro bidirectionnelle
           this._packSentThisSession = false;
-          this._log(`✅ Synchro bidirectionnelle complétée avec ${peerName}. Reset rôle + repos de 5 minutes.`);
+          this._log(`✅ [V3.2] Synchro bidirectionnelle complétée. Reset ${keys.length} clé(s) + repos 5 minutes.`);
         } else if (metadata.type === 'YABISSO_HELLO') {
           const senderDevice = metadata.senderDevice || peerName;
           const isYabisso = WifiDirectService.isLikelyYabissoDevice(senderDevice);
