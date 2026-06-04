@@ -5765,3 +5765,82 @@ Vérifier dans les logs :
   - Côté Xiaomi (score 18) : `🔍 Node trouvé: 73_Yabisso_xxx` → `⏳ [V3.5] Mesh Slave (18 < 73) → j'attends que le Master crée le groupe WiFi Direct`
 - **Un seul** `✅ [V3.5] Groupe WiFi Direct créé par le Master` (sur Itel uniquement)
 - **Aucun** `📡 [V3.4] Aucun peer Yabisso depuis...` (supprimé)
+
+---
+
+## 🆕 Session 4 Juin 2026 (nuit) — Régression V3.5 + Implémentation V3.6
+
+### Problème remonté par l'utilisateur
+V3.5 a introduit 2 régressions critiques :
+1. **Score parsing cassé** : les peers WiFi Direct utilisent leur nom Android brut ("itel a50", "Xiaomi 11T", "direct-3f-hp m281 laserjet") au lieu du nom Yabisso ("73_Yabisso_xxx"). Sans `_Yabisso_` dans le nom, `_iAmMasterFor` tombe sur le tri alphabétique → les 2 phones deviennent SLAVE.
+2. **Framework busy** : la boucle agressive de 3s relance `connectToPeer` en permanence, sature la puce WiFi Android → "Operation failed because the framework is busy".
+
+### Solution V3.6 (proposition utilisateur) — 3 piliers
+1. **Extraction score sécurisée** : `_iAmMasterFor` retourne `null` si pas de pair Mesh (au lieu de tri alphabétique)
+2. **Verrou anti-saturation** : `isConnecting` empêche les tentatives concurrentes
+3. **Reset intelligent** : `setTimeout(5s)` libère le lock après erreur
+
+### Adaptations à notre architecture
+- Le peerName WiFi Direct est TOUJOURS un nom Android (impossible de le changer, lib ne supporte pas setName)
+- L'arbitrage DOIT utiliser le score du pair MESH (qui a `_Yabisso_` dans le nom)
+- On conserve la V3.5 (Mesh onPeerFound → createGroup si Master) comme voie rapide
+- Le cycle sert de filet de sécurité si le Mesh n'a pas encore découvert
+
+### Fichiers modifiés — `P2PAutoSync.js`
+
+**Constructeur** (ligne 32-33) :
+- Ajout `this._isConnecting = false` (V3.6 lock)
+- Ajout `this._hasCreatedGroup = false` (V3.6 anti re-create)
+
+**`_iAmMasterFor`** (refactor majeur) :
+- Retourne `null` si `!meshPeer` (au lieu de tri alphabétique)
+- Si `meshPeer` existe, utilise son score
+- Log explicite : `🕸️ [V3.6] Arbitrage Mesh: Mon Score (X) vs Score Distant (Y) → MASTER/SLAVE`
+
+**`_p2pSyncCycle`** :
+- Lock en entrée : `if (!this._running || this._syncingP2P || this._isConnecting) return;`
+- Gère `roleResult === null` → skip le peer + log
+- Active `this._isConnecting = true` AVANT `connectToPeer`
+- Reset lock 5s en cas d'erreur
+- **RETIRÉ** `await NearbyMeshService.pauseMesh()` (le Mesh doit rester actif)
+
+**`onConnectionChange`** :
+- `connected` → `this._isConnecting = false` + `this._hasCreatedGroup = true` si GO
+- `disconnected` → `this._isConnecting = false` + `this._hasCreatedGroup = false`
+
+**`onPeerFound` (WiFi Direct)** :
+- Gère `roleResult === null` → ignore le peer (imprimante/phone tiers)
+- **RETIRÉ** `await NearbyMeshService.pauseMesh()`
+- Active lock avant `connectToPeer` MASTER
+
+**`triggerSync`** :
+- Gère `roleResult === null` → return
+- Active lock avant `connectToPeer`
+
+**`forceCreateGroup`** :
+- Active lock pendant l'opération
+- Reset 5s en cas d'échec
+
+### Vérifications
+- ✅ `babel-parser` : 0 erreur de syntaxe
+- ✅ Backup P2P synchronisé
+
+### Réponse à la question sur les permissions API 34
+D'après les logs partagés, AUCUNE erreur de permission :
+```
+LOG  [NetworkPermissionsService] Demande des permissions pour API 34...
+LOG  [NetworkPermissionsService] Permissions WiFi accordées. Prêt pour P2P.
+```
+Les 2 téléphones ont les permissions (WiFi + Localisation + Proximité). Le Mesh et le WiFi Direct sont fonctionnels (ils connectent et transfèrent via le SWAP fallback). Les erreurs "framework busy" sont dues à la boucle agressive, PAS aux permissions.
+
+### ACTION REQUISE UTILISATEUR
+**HARD RELOAD** les 2 téléphones (`npx expo start --clear` puis Ctrl+Shift+R).
+
+**Logs attendus** :
+- 🚀 `Orchestrateur démarré (V3.6 - LOCK + ARBITRAGE MESH...)`
+- Côté Itel (score 73) avec imprimante visible :
+  - `⏭️ [V3.6] Peer "direct-3f-hp m281 laserjet" ignoré : pas de pair Mesh pour arbitrer`
+  - `⏭️ [V3.6] Peer "itel A50" ignoré : pas de pair Mesh pour arbitrer` (avant Mesh discovery)
+  - Après Mesh discovery : `🕸️ [V3.6] Arbitrage Mesh: Mon Score (73) vs Score Distant (18) → MASTER` → `👑 [V3.5] Mesh Master détecté → création du groupe WiFi Direct`
+- Plus AUCUNE erreur "framework is busy" en boucle
+- Connexion rapide au lieu de 400+ secondes d'attente

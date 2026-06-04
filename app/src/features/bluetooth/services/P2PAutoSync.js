@@ -29,6 +29,8 @@ class P2PAutoSyncClass {
     this._manualTrigger = false; 
     this._lastManualSync = 0; 
     this._connectAttemptPending = false; 
+    this._isConnecting = false; // V3.6 (BUG-058 fix): Verrou anti-saturation framework Android
+    this._hasCreatedGroup = false; // V3.6: Empêche de recréer le groupe pendant qu'il est up
     this._appBootTime = Date.now(); // V3.4 (BUG-057): Période de grâce avant createGroup
     this._lastSentTo = {};
     this._lastReceivedFrom = {};
@@ -74,7 +76,7 @@ class P2PAutoSyncClass {
   }
 
   _iAmMasterFor(peerName) {
-    if (!peerName) return false;
+    if (!peerName) return null;
     const key = peerName.toLowerCase();
 
     // V2.16 : Préférer le score du peer MESH (le nom WiFi Direct est souvent "Xiaomi 11T"/"itel A50")
@@ -94,18 +96,22 @@ class P2PAutoSyncClass {
       }
     }
 
+    // V3.6 (BUG-058 fix) : SCORE PARSING SÉCURISÉ
+    // On refuse de tomber dans le tri alphabétique arbitraire quand le peerName
+    // n'a pas de format Yabisso. Le peerName WiFi Direct est un nom Android
+    // brut ("itel a50", "Xiaomi 11T", "direct-3f-hp m281 laserjet") qui ne
+    // contient PAS de score. On DOIT utiliser le score du peer MESH.
     const myScore = this._parseScore(WifiDirectService.getDeviceName());
 
-    let peerScore = 0;
-    let effectivePeerName = peerName;
-    if (meshPeer) {
-      peerScore = meshPeer.score;
-      effectivePeerName = meshPeer.name;
-      this._log(`🕸️ [Role] Score Mesh utilisé pour ${effectivePeerName} (score=${peerScore})`);
-    } else {
-      peerScore = this._parseScore(peerName);
+    if (!meshPeer) {
+      // V3.6: Pas de pair Mesh connu, on ne peut pas arbitrer en sécurité.
+      // Retourner null pour que le caller IGNORE ce peer (imprimante, etc.).
+      this._log(`⏭️ [V3.6] Peer "${peerName}" ignoré : pas de pair Mesh pour arbitrer (imprimante ou téléphone tiers ?)`);
+      return null;
     }
-    
+
+    // On a un pair Mesh, on utilise son score (fiable)
+    const peerScore = meshPeer.score;
     const iHaveContent = this._pendingPostsCount > 0;
 
     if (myScore > 0 && peerScore > 0) {
@@ -122,19 +128,8 @@ class P2PAutoSyncClass {
        }
     }
 
-    if (peerScore === 0) {
-      const myName = WifiDirectService.getWifiDirectName() || '';
-      const myNameLower = myName.toLowerCase();
-      const peerNameLower = peerName.toLowerCase();
-      
-      if (myNameLower !== peerNameLower) {
-        const isMaster = myNameLower > peerNameLower;
-        this._log(`🎯 [Role] Score inconnu pour "${peerName}". Tri alphabetique: "${myName}" vs "${peerName}" → ${isMaster ? 'MASTER' : 'SLAVE'}`);
-        return isMaster;
-      }
-    }
-
-    return peerScore > 0 ? myScore > peerScore : myScore >= 40;
+    this._log(`🕸️ [V3.6] Arbitrage Mesh: Mon Score (${myScore}) vs Score Distant (${peerScore}) → ${myScore > peerScore ? 'MASTER' : 'SLAVE'}`);
+    return myScore > peerScore;
   }
 
   async _updatePendingCount() {
@@ -226,7 +221,7 @@ class P2PAutoSyncClass {
     this._running = true;
 
     console.log('[P2PAutoSync] Démarrage de l\'orchestrateur Multi-Rail...');
-    this._log('🚀 Orchestrateur démarré (V3.5 - ÉLECTION MESH STRICTE: createGroup uniquement via NearbyMesh.onPeerFound, jamais proactivement dans le cycle).');
+    this._log('🚀 Orchestrateur démarré (V3.6 - LOCK + ARBITRAGE MESH: isConnecting anti-framework-busy, _iAmMasterFor retourne null si pas de Mesh peer, ignore imprimantes/phones tiers).');
 
     NetworkRailDetector.start();
     NetworkRailDetector.onRailChange((rails) => {
@@ -289,7 +284,13 @@ class P2PAutoSyncClass {
         if (timeSinceDisconnect < cooldown) return;
 
         await this._updatePendingCount();
-        const isMaster = this._iAmMasterFor(peerName);
+        // V3.6 (BUG-058 fix) : _iAmMasterFor retourne null pour les non-Mesh peers
+        const roleResult = this._iAmMasterFor(peerName);
+        if (roleResult === null) {
+          this._log(`⏭️ [V3.6 Peer] ${peerName} ignoré (pas de Mesh peer, probablement imprimante/tiers).`);
+          return;
+        }
+        const isMaster = roleResult;
 
         if (isMaster) {
           const timeSinceLastGroup = Date.now() - this._lastGroupCreatedAt;
@@ -302,14 +303,19 @@ class P2PAutoSyncClass {
         this._lastIntendedRole = isMaster ? 'MASTER' : 'SLAVE';
         WifiDirectService.recordPeerAttempt(peerName);
 
-        try { await NearbyMeshService.pauseMesh(); } catch (_) {}
-
+        // V3.6: On ne pause PLUS le Mesh, il doit rester actif pour la découverte Yabisso
         if (isMaster) {
-          this._log(`🤝 [Master] Création du groupe...`);
+          this._log(`🤝 [V3.6 Master] Création du groupe (avec lock)...`);
           this._lastGroupCreatedAt = Date.now();
-          await WifiDirectService.connectToPeer(peer, 0, 'MASTER');
+          this._isConnecting = true;
+          try {
+            await WifiDirectService.connectToPeer(peer, 0, 'MASTER');
+          } catch (e) {
+            this._log(`⚠️ [V3.6 Master] createGroup échoué, reset lock dans 5s...`);
+            setTimeout(() => { this._isConnecting = false; }, 5000);
+          }
         } else {
-          this._log(`⏳ [Slave] Connexion au Master dans 3s (laissé au cycle 3s pour éviter double-trigger)...`);
+          this._log(`⏳ [V3.6 Slave] Connexion au Master dans 3s (laissé au cycle 3s pour éviter double-trigger)...`);
         }
       });
 
@@ -318,7 +324,12 @@ class P2PAutoSyncClass {
           this._wasConnected = true;
           this._packSentThisSession = false; // V3.0: Reset flag à chaque nouvelle connexion
           NetworkRailDetector.setWifiDirectAvailable(true);
-          this._log(`📶 WiFi Direct CONNECTÉ ! GO=${WifiDirectService.isGroupOwner}, Rôle intendé=${this._lastIntendedRole || 'inconnu'}`);
+          // V3.6 (BUG-058 fix) : Libérer le lock dès que la connexion est établie
+          this._isConnecting = false;
+          if (WifiDirectService.isGroupOwner) {
+            this._hasCreatedGroup = true;
+          }
+          this._log(`📶 WiFi Direct CONNECTÉ ! GO=${WifiDirectService.isGroupOwner}, Rôle intendé=${this._lastIntendedRole || 'inconnu'}, lock=OFF`);
 
           const isMyRoleMaster = this._lastIntendedRole === 'MASTER';
           const peerName = (info?.deviceName || WifiDirectService.connectedPeer?.deviceName || 'Unknown').toLowerCase();
@@ -381,6 +392,9 @@ class P2PAutoSyncClass {
           // V3.0: Reset _packSentThisSession pour permettre un nouvel envoi à la prochaine connexion
           // mais NE PAS reset _lastIntendedRole (rôle préservé pour le swap)
           this._packSentThisSession = false;
+          // V3.6 (BUG-058 fix) : Reset lock + hasCreatedGroup sur déconnexion
+          this._isConnecting = false;
+          this._hasCreatedGroup = false;
 
           // Resume Nearby Mesh après déconnexion WiFi Direct
           try { await NearbyMeshService.resumeMesh(); } catch (_) {}
@@ -432,26 +446,30 @@ class P2PAutoSyncClass {
     WifiDirectService.startDiscovery(true);
   }
 
-  // V3.5 (BUG-057 fix) : Force la création d'un groupe WiFi Direct sans attendre Mesh.
+  // V3.6 (BUG-058 fix) : Force la création d'un groupe WiFi Direct sans attendre Mesh.
   // Utile pour :
   //   - Tests sur 1 seul device (pas de pair Mesh à découvrir)
   //   - Debug : vérifier que createGroup() fonctionne seul
   //   - Fallback manuel si Mesh échoue
   async forceCreateGroup() {
-    this._log('🔧 [V3.5] FORCE createGroup (mode debug/test 1 device, bypass élection Mesh)...');
+    this._log('🔧 [V3.6] FORCE createGroup (mode debug/test 1 device, bypass élection Mesh)...');
     this._lastGroupCreatedAt = Date.now();
     this._lastIntendedRole = 'MASTER';
+    this._isConnecting = true;
     try {
-      try { await NearbyMeshService.pauseMesh(); } catch (_) {}
       const ok = await WifiDirectService.createGroup();
       if (ok) {
-        this._log('✅ [V3.5] Groupe créé en mode FORCE. J\'attends un client...');
+        this._hasCreatedGroup = true;
+        this._log('✅ [V3.6] Groupe créé en mode FORCE. J\'attends un client...');
+        this._isConnecting = false;
       } else {
-        this._log('❌ [V3.5] forceCreateGroup a échoué');
+        this._log('❌ [V3.6] forceCreateGroup a échoué');
+        setTimeout(() => { this._isConnecting = false; }, 5000);
       }
       return ok;
     } catch (e) {
-      this._log(`❌ [V3.5] forceCreateGroup exception: ${e.message}`);
+      this._log(`❌ [V3.6] forceCreateGroup exception: ${e.message}`);
+      setTimeout(() => { this._isConnecting = false; }, 5000);
       return false;
     }
   }
@@ -496,9 +514,19 @@ class P2PAutoSyncClass {
         if (!force && timeSinceDisconnect < cooldown) return;
 
         await this._updatePendingCount();
-        const isMaster = this._iAmMasterFor(peer.deviceName);
+        const roleResult = this._iAmMasterFor(peer.deviceName);
+        if (roleResult === null) {
+          this._log(`⏭️ [V3.6 Trigger] Peer ${peer.deviceName} ignoré (pas de Mesh peer).`);
+          return;
+        }
+        const isMaster = roleResult;
         this._log(`🔗 [Trigger] Connexion à ${peer.deviceName} (${isMaster ? 'MASTER' : 'SLAVE'})...`);
-        await WifiDirectService.connectToPeer(peer, 0, isMaster ? 'MASTER' : 'SLAVE');
+        this._isConnecting = true;
+        try {
+          await WifiDirectService.connectToPeer(peer, 0, isMaster ? 'MASTER' : 'SLAVE');
+        } catch (e) {
+          setTimeout(() => { this._isConnecting = false; }, 5000);
+        }
       } else {
         this._log(`⏳ [Trigger] Aucun peer WiFi Direct détecté. Découverte relancée, attente...`);
       }
@@ -546,7 +574,10 @@ class P2PAutoSyncClass {
   }
 
   async _p2pSyncCycle(category = null) {
-    if (!this._running || this._syncingP2P) return;
+    // V3.6 (BUG-058 fix) : VERROU ANTI-SATURATION
+    // Si une connexion est déjà en cours, on ne lance PAS un nouveau cycle.
+    // Sans ce lock, la puce WiFi Android sature et renvoie "framework is busy".
+    if (!this._running || this._syncingP2P || this._isConnecting) return;
     this._syncingP2P = true;
 
     try {
@@ -601,7 +632,15 @@ class P2PAutoSyncClass {
               this._syncingP2P = false;
               return;
             }
-            const isMaster = this._iAmMasterFor(peer.deviceName);
+            // V3.6 (BUG-058 fix) : _iAmMasterFor peut retourner null
+            // (peer WiFi Direct sans pair Mesh correspondant = imprimante ou téléphone tiers)
+            const roleResult = this._iAmMasterFor(peer.deviceName);
+            if (roleResult === null) {
+              // Pas de pair Mesh pour arbitrer, on ignore ce peer et on attend Mesh
+              this._syncingP2P = false;
+              return;
+            }
+            const isMaster = roleResult;
 
             if (isMaster) {
               const timeSinceLastGroup = Date.now() - this._lastGroupCreatedAt;
@@ -615,10 +654,20 @@ class P2PAutoSyncClass {
             this._lastIntendedRole = isMaster ? 'MASTER' : 'SLAVE';
             WifiDirectService.recordPeerAttempt(peerKey);
 
-            this._log(`🔗 [Cycle] Connexion à ${peer.deviceName} (${isMaster ? 'MASTER' : 'SLAVE'})...`);
+            this._log(`🔗 [V3.6] Connexion à ${peer.deviceName} (${isMaster ? 'MASTER' : 'SLAVE'}) avec lock...`);
             if (isMaster) this._lastGroupCreatedAt = Date.now();
-            try { await NearbyMeshService.pauseMesh(); } catch (_) {}
-            await WifiDirectService.connectToPeer(peer, 0, isMaster ? 'MASTER' : 'SLAVE');
+            
+            // V3.6 (BUG-058 fix) : ACTIVER LE LOCK avant d'envoyer la commande au framework
+            this._isConnecting = true;
+            try {
+              // V3.6: On ne pause PLUS le Mesh pendant la connexion WiFi Direct.
+              // Le Mesh doit rester actif pour découvrir le pair Yabisso et fournir le score.
+              await WifiDirectService.connectToPeer(peer, 0, isMaster ? 'MASTER' : 'SLAVE');
+            } catch (e) {
+              // V3.6: Reset du lock après 5s en cas d'erreur (évite le blocage permanent)
+              this._log(`⚠️ [V3.6] connectToPeer échoué, reset du lock dans 5s...`);
+              setTimeout(() => { this._isConnecting = false; }, 5000);
+            }
           } else {
             // V3.5 (BUG-057 fix) : SUPPRESSION DÉFINITIVE DU MASTER PROACTIF
             // L'élection Master/Slave est gérée EXCLUSIVEMENT par NearbyMeshService.onPeerFound
