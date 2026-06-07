@@ -707,3 +707,25 @@
 - **Leçon** : `node --check` n'est PAS suffisant pour valider la syntaxe d'un projet React Native. Toujours valider avec `@babel/parser` (Flow + JSX) avant de déclarer OK.
 - **Vérifications** : `node --check` OK, `@babel/parser` OK (2 await dans la zone V3.15, tous dans des `setTimeout(async () => {})`)
 - **Statut** : ✅ Corrigé (2026-06-07)
+
+---
+
+### BUG-046 — WIFI_GROUP_READY Mesh échoue après createGroup ("Failed to send text") (BUG-V3.17)
+- **Date** : 2026-06-07
+- **Problème** : Le Master détecte son rôle Master, appelle `WifiDirectService.connectToPeer(peer, 0, 'MASTER')` qui crée le groupe WiFi Direct. Puis 1500ms après, dans `onConnectionChange`, le Master essaie d'envoyer `WIFI_GROUP_READY` via `NearbyMeshService.sendMeshMessage` au Slave. Cet envoi **échoue systématiquement** avec `⚠️ Échec envoi message à 1X52: Failed to send text`. Conséquence : le Slave ne reçoit jamais le signal `WIFI_GROUP_READY`, ne se connecte pas au WiFi du Master, n'envoie jamais son `YABISSO_HELLO` → le Master tombe en `⏰ Aucun Slave en 15000ms → timeout` → il essaie quand même `sendFile` vers sa propre IP (`192.168.49.1`) → `ECONNREFUSED` → boucle.
+- **Cause racine (identifiée par user)** : Sur Xiaomi 11T et Itel A50, Android limite les radios WiFi et BLE simultanées. Quand `createGroup()` active la radio WiFi Direct P2P, la connexion BLE Nearby Mesh est **coupée** (conflit radio). Le Master essayait d'envoyer `WIFI_GROUP_READY` 1500ms APRÈS `createGroup` → le Mesh BLE était déjà mort à ce moment-là. Preuve : logs montrent `NearbyMesh ✨ CONNECTÉ à: 18_Yabisso_w4pii (1X52)` AVANT `createGroup réussi`, puis `Failed to send text` APRÈS.
+- **Solution (V3.17)** : Inverser l'ordre des opérations côté Master — envoyer `WIFI_GROUP_READY` VIA MESH **AVANT** `createGroup()`, pendant que le Mesh BLE est encore actif. Attendre 1500ms que le Slave reçoive le signal et se prépare, PUIS créer le groupe. Côté Slave, ajouter une attente de 3s après réception de `WIFI_GROUP_READY` pour laisser au Master le temps de créer le groupe avant que le Slave ne tente sa connexion.
+  - **`onPeerFound` branche Master (ligne 548-583)** : envoi `WIFI_GROUP_READY` via `sendMeshMessage` + `await 1500ms` AVANT `connectToPeer(MASTER)`. Flag `_wifiGroupReadySentThisSession` (anti-double-envoi).
+  - **`onConnectionChange` branche Master (ligne 660-668)** : suppression du `setTimeout` interne qui renvoyait `WIFI_GROUP_READY` (Mesh mort après createGroup). Garde juste `_fallbackWaitForSlave(peerName)` comme sécurité.
+  - **`_onWifiGroupReadyMesh` Slave (ligne 277-285)** : ajout `await new Promise(r => setTimeout(r, 3000))` AVANT `connectToPeer`.
+  - **Constructeur + reset déconnexion (ligne 64 + 746)** : flag `_wifiGroupReadySentThisSession` initialisé à `false` + reset à chaque session.
+- **Fichiers modifiés** : `app/src/features/bluetooth/services/P2PAutoSync.js` (1480 → 1509 lignes, +29). 1 fichier uniquement, 1 seul.
+- **Vérifications** : `node --check` OK, `@babel/parser` (Flow + JSX) OK (16 statements), backup `mesfichiers/P2P/bluetooth/services/P2PAutoSync.js` synchronisé
+- **Non touché** (protégé) : V3.13-V3.16, Nearby Mesh, createGroup/connectToPeer retry V3.14, sendFile, HELLO handshake, SYNC_COMPLETE, logique de rôle, _fallbackWaitForSlave
+- **Statut** : 🔄 En test (2026-06-07) — Version v0.0.26
+- **Action user** : HARD RELOAD les 2 phones. Vérifier dans les logs la nouvelle séquence :
+  - Master : `📡 [V3.17 Master] Envoi WIFI_GROUP_READY au Slave ... AVANT createGroup (Mesh encore actif)` → `✅ [V3.17 Master] WIFI_GROUP_READY envoyé (Mesh encore actif).` → (1500ms) → `🤝 [V3.6 Master] Création du groupe (avec lock)...` → `🧹 Ancien groupe supprimé` → `✅ createGroup réussi`
+  - Slave : `📡 [V3.13 Mesh] WIFI_GROUP_READY reçu de Master ...` → `⏳ [V3.17 Slave] Attente 3000ms que le Master crée le groupe WiFi Direct...` → (3s) → `🔗 [V3.13 Slave] Connexion WiFi Direct à ...` → `✅ [V3.13] connectToPeer réussi.`
+  - **NE PLUS voir** : `⚠️ Échec envoi message à ... : Failed to send text` (côté Master)
+  - **NE PLUS voir** : `⏭️ [V3.13 Slave] Peer ... ignoré : pas de pair Mesh pour arbitrer` répété en boucle (côté Slave)
+  - Commit : `cb1c5d6` v0.0.26. Release : https://github.com/BENsidneykokolo/yabisso/releases/tag/v0.0.26

@@ -7182,4 +7182,80 @@ User: "voici mon analyse, alors tu mets pack recu mais je ne le vois pas dans le
 - createGroup, connectToPeer retry
 - sendFile, unpackAndProcess
 
+---
+
+## Implémentation V3.17 — Fix BUG-046 (WIFI_GROUP_READY Mesh mort après createGroup) (2026-06-07)
+
+User: "voici mon analyse: ## Analyse de ces nouveaux logs" + description du problème fondamental : le canal Nearby Mesh BLE se déconnecte quand WiFi Direct démarre (conflit radio sur Android). Quand le Master essaie d'envoyer `WIFI_GROUP_READY` via Mesh à `1X52`, la connexion Mesh est déjà coupée.
+
+### Logs clés du problème
+```
+NearbyMesh ✨ CONNECTÉ à: 18_Yabisso_w4pii (1X52)   ← Mesh OK
+WifiDirectService ✅ createGroup réussi               ← groupe créé
+⚠️ Échec envoi message à 1X52: Failed to send text   ← Mesh déjà mort
+```
+
+### Cause technique (identifiée par user)
+Sur Xiaomi 11T et Itel A50, Android limite les radios simultanées. Quand WiFi Direct s'active, BLE/Nearby perd sa connexion. Le Master envoyait `WIFI_GROUP_READY` 1500ms APRÈS `createGroup` → Mesh déjà mort → échec.
+
+### Fix appliqué (1 seul fichier, `P2PAutoSync.js`)
+
+**AVANT (ordre cassé)** :
+1. `createGroup()` (coupe le Mesh)
+2. `sendMesh(WIFI_GROUP_READY)` (Mesh mort → échec)
+3. attendre HELLO
+
+**APRÈS (ordre corrigé)** :
+1. `sendMesh(WIFI_GROUP_READY)` (Mesh encore actif → OK)
+2. `await 1500ms` (laisser le Slave se préparer)
+3. `createGroup()` (pendant que Slave attend 3s côté Slave)
+4. attendre HELLO
+
+### 5 modifications ciblées
+
+1. **Constructeur (ligne 64)** : nouveau flag `_wifiGroupReadySentThisSession = false` (anti-double-envoi)
+
+2. **`onPeerFound` branche Master (ligne 548-583)** : AVANT `connectToPeer(MASTER)`, envoyer `WIFI_GROUP_READY` via `NearbyMeshService.sendMeshMessage` + `await 1500ms`. Si le Slave Mesh peerId n'est pas trouvé ou si l'envoi échoue, fallback sur l'ancien comportement (envoi post-createGroup dans `onConnectionChange`).
+
+3. **`onConnectionChange` branche Master (ligne 660-668)** : SUPPRESSION du `setTimeout` interne qui envoyait `WIFI_GROUP_READY` (déjà fait en pré-createGroup). On garde juste `_fallbackWaitForSlave(peerName)` comme sécurité.
+
+4. **`_onWifiGroupReadyMesh` Slave (ligne 277-285)** : AJOUT de `await new Promise(r => setTimeout(r, 3000))` AVANT `connectToPeer`. Le Master a besoin de 2-3s pour créer le groupe après avoir envoyé le signal.
+
+5. **Reset déconnexion (ligne 746)** : `this._wifiGroupReadySentThisSession = false` à chaque nouvelle session.
+
+### Séquence temporelle attendue (V3.17)
+```
+[Master] 📡 WIFI_GROUP_READY envoyé ✅  (Mesh encore actif)
+[Master] 🧹 Ancien groupe supprimé
+[Master] ✅ createGroup réussi
+[Slave]  📡 WIFI_GROUP_READY reçu → attente 3s
+[Slave]  🔗 connectToPeer → ✅ GO=false
+[Slave]  📤 YABISSO_HELLO
+[Master] ✅ HELLO reçu → envoi pack
+```
+
+### Vérifications
+- `node --check` → OK
+- `@babel/parser` (Flow + JSX) → OK (16 statements, 1509 lignes)
+- Backup `mesfichiers/P2P/bluetooth/services/P2PAutoSync.js` synchronisé
+
+### Non touché (protégé)
+- V3.13, V3.14, V3.15, V3.16
+- Nearby Mesh (WIFI_GROUP_READY, SLAVE_CONNECTED_CONFIRMED)
+- createGroup, connectToPeer retry V3.14
+- sendFile, unpackAndProcess
+- HELLO handshake, SYNC_COMPLETE
+- Logique de rôle, _fallbackWaitForSlave
+
+### Action user
+HARD RELOAD les 2 phones. Tester sur les 2 phones (Xiaomi 11T Master + Itel A50 Slave). Vérifier dans les logs la séquence ci-dessus. Le Slave doit afficher `⏳ [V3.17 Slave] Attente 3000ms que le Master crée le groupe...` après réception du WIFI_GROUP_READY. NE PLUS voir : `⚠️ Échec envoi message à 1X52: Failed to send text`.
+
+### Commit
+- `cb1c5d6` v0.0.26: V3.17 BUG-046 FIX
+- Release : https://github.com/BENsidneykokolo/yabisso/releases/tag/v0.0.26
+
+### Prochaine étape (si OK)
+- Vérifier que le pack arrive et apparaît dans le feed LOBA
+- BUG-047 (sendFile IP destination 192.168.49.1 → 192.168.49.1) : à investiguer avec un test V3.17 (peut-être résolu par le timing)
+- BUG-051 (boucle sendFile après timeout HELLO) : peut-être résolu si HELLO arrive maintenant
 
