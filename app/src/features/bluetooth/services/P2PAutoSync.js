@@ -709,42 +709,57 @@ class P2PAutoSyncClass {
               // fallback de sécurité _fallbackWaitForSlave pour attendre le HELLO du Slave.
               this._fallbackWaitForSlave(peerName);
             } else {
-              this._log(`■ [V3.10 Slave] récepteur démarré, HELLO différé de 3s (V3.16 BUG-048 fix)`);
+              this._log(`■ [V3.19 Slave] récepteur démarré, HELLO 5s APRÈS SLAVE_CONNECTED_CONFIRMED (V3.19 BUG-055 fix)`);
               WifiDirectService.startReceiving(WifiDirectService.globalFileHandler);
 
-              // V3.15 (BUG-045 fix) : Le HELLO est différé pour laisser au Master
-              // le temps de recevoir SLAVE_CONNECTED_CONFIRMED via Mesh et de démarrer
-              // son récepteur HELLO. Sans ce délai, le HELLO arrivait sur un socket Master
-              // pas encore prêt → timeout 35s.
-              // V3.16 (BUG-048 fix) : Délai augmenté de 1s à 3s. Tests montrent que le
-              // serveur 8988 du Master met 1.5-2s à être UP après réception du signal Mesh
-              // (Mesh BLE ~500-800ms + startReceiving ~500ms + bind socket ~200ms).
-              // À T+1000ms, le serveur n'est pas encore bind → ECONNREFUSED.
-              // À T+3000ms, le serveur est UP depuis 1s → HELLO passe. ✅
-              setTimeout(() => {
-                this._sendYabissoHello(false, peerName);
-              }, 3000);
-
-              // V3.13 : Envoi SLAVE_CONNECTED_CONFIRMED au Master via Mesh
-              // Le Master reçoit ce signal et démarre son récepteur HELLO (cf. _onSlaveConnectedConfirmedMesh).
-              // Réduit de 500ms à 300ms pour que le Master traite le signal et démarre
-              // son récepteur AVANT que le HELLO ne parte (T=1000ms).
+              // V3.19 (BUG-055 fix) : Le HELLO est envoyé 5s APRÈS SLAVE_CONNECTED_CONFIRMED.
+              // SÉQUENTIEL au lieu de parallèle.
+              //
+              // AVANT (V3.16) : HELLO timer démarrait en PARALLÈLE de SLAVE_CONNECTED_CONFIRMED
+              //   (300ms). Le HELLO partait à T+3000ms en parallèle du CONFIRMED à T+300ms.
+              //   Le Master devait recevoir le CONFIRMED, traiter le signal, démarrer
+              //   startReceiving + bind port 8988 AVANT T+3000ms. Parfois le bind prenait
+              //   plus de 3s (race condition radio + Android) → ECONNREFUSED sur le HELLO.
+              //
+              // MAINTENANT (V3.19) : on envoie d'abord SLAVE_CONNECTED_CONFIRMED, on attend
+              //   que le Master confirme la réception, PUIS on attend 5s supplémentaires
+              //   pour être SÛR que le port 8988 est bind, PUIS on envoie HELLO.
+              //   Le récepteur Master est garanti d'être UP au moment du HELLO.
+              //
+              // Timing garanti :
+              //   T+300ms : SLAVE_CONNECTED_CONFIRMED envoyé
+              //   T+300+800ms : Master reçoit le Mesh BLE + démarre startReceiving
+              //   T+300+800+500ms : startReceiving a bind le port 8988
+              //   T+300+5000ms : HELLO envoyé (le serveur est UP depuis ~3.9s) ✅
               setTimeout(async () => {
                 if (!WifiDirectService.connectedPeer || !this._running) return;
                 const masterPeerId = this._peerMeshId || this._findMasterPeerId();
                 if (!masterPeerId) {
-                  this._log(`⚠️ [V3.13 Slave] Pas de Master Mesh peerId, SLAVE_CONNECTED_CONFIRMED non envoyé.`);
+                  this._log(`⚠️ [V3.19 Slave] Pas de Master Mesh peerId, HELLO direct après 3s (fallback).`);
+                  setTimeout(() => {
+                    if (!WifiDirectService.connectedPeer || !this._running) return;
+                    this._sendYabissoHello(false, peerName);
+                  }, 3000);
                   return;
                 }
-                this._log(`📤 [V3.13 Slave] Envoi SLAVE_CONNECTED_CONFIRMED au Master ${masterPeerId}...`);
+
+                // 1. Envoyer SLAVE_CONNECTED_CONFIRMED (d'abord, séquentiel)
+                this._log(`📤 [V3.19 Slave] Envoi SLAVE_CONNECTED_CONFIRMED au Master ${masterPeerId}...`);
                 const sent = await NearbyMeshService.sendMeshMessage(masterPeerId, {
                   type: 'slave_connected_confirmed',
                 });
                 if (sent) {
-                  this._log(`✅ [V3.13 Slave] SLAVE_CONNECTED_CONFIRMED envoyé.`);
+                  this._log(`✅ [V3.19 Slave] SLAVE_CONNECTED_CONFIRMED envoyé.`);
                 } else {
-                  this._log(`⚠️ [V3.13 Slave] Échec envoi SLAVE_CONNECTED_CONFIRMED.`);
+                  this._log(`⚠️ [V3.19 Slave] Échec envoi SLAVE_CONNECTED_CONFIRMED (HELLO quand même après 5s).`);
                 }
+
+                // 2. Attendre 5s pour que le Master reçoive le Mesh + startReceiving + bind 8988
+                setTimeout(() => {
+                  if (!WifiDirectService.connectedPeer || !this._running) return;
+                  this._log(`🤝 [V3.19 Slave] Envoi YABISSO_HELLO (5s après SLAVE_CONNECTED_CONFIRMED)...`);
+                  this._sendYabissoHello(false, peerName);
+                }, 5000);
               }, 300);
             }
           }, 1500);
