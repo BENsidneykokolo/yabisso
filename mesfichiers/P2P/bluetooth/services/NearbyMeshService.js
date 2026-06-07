@@ -349,6 +349,12 @@ class NearbyMeshServiceClass {
         // Le Master peut alors commencer à envoyer des données en toute sécurité.
         this._log(`✅ [V3.6.4 Mesh] SLAVE_CONNECTED_CONFIRMED reçu de ${peerId}`);
         MeshRequestEvents.emit({ type: 'SLAVE_CONNECTED_CONFIRMED', peerId });
+      } else if (data.type === 'slave_ip') {
+        // V3.20 (BUG-047 fix) : Le Slave envoie son IP locale (assignée par le DHCP du GO)
+        // via Mesh BLE au Master. Le Master la stocke et l'utilise pour sendFileTo
+        // (au lieu de sendFile qui s'envoie à lui-même = self-loop).
+        this._log(`📡 [V3.20 Mesh] SLAVE_IP reçu de ${peerId} : ${data.ip}:${data.port}`);
+        MeshRequestEvents.emit({ type: 'SLAVE_IP', peerId, ip: data.ip, port: data.port });
       }
     } catch (e) { }
   }

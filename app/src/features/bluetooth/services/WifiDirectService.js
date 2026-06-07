@@ -42,6 +42,8 @@ class WifiDirectServiceClass {
     this._wifiDirectName = null;
     this._nonYabissoPeers = new Map();
     this._peerLastAttempt = new Map();
+    this._localP2pIp = null; // V3.20 (BUG-047 fix): IP locale sur l'interface p2p (ex: 192.168.49.112)
+    this._targetPeerIp = null; // V3.20 (BUG-047 fix): IP cible pour sendFileTo (reçue du Slave via Mesh)
   }
 
   isPeerBlacklisted(peerName) {
@@ -355,6 +357,27 @@ class WifiDirectServiceClass {
     // V2.18c (BUG-048 fix) : SUPPRIMÉ le check FileSystem qui crashait (require expo-file-system HS dans ce contexte)
     // On se fie à la taille déjà loggée par LobaPackService (ex: "Pack généré: ... (9 items, 23.2MB)")
 
+    // V3.20 (BUG-047 fix): Si on a l'IP du Slave (reçue via Mesh BLE par P2PAutoSync),
+    // on utilise sendFileTo() avec cette IP au lieu de sendFile() qui s'envoie à soi-même.
+    //
+    // BUG-047 ROOT CAUSE : sendFile() dans react-native-wifi-p2p v3.6.1 appelle
+    //   sendFileTo(filePath, wifiP2pInfo.groupOwnerAddress.getHostAddress(), promise)
+    // Pour le Master (GO), groupOwnerAddress = 192.168.49.1 (sa PROPRE IP).
+    // Combiné avec le fait que le Master appelle aussi startReceiving() (qui ouvre
+    // un serveur sur 8988), le client socket du Master se connecte à SON PROPRE
+    // serveur → self-loop. Le fichier est écrit dans le propre loba_media du Master,
+    // le Slave ne reçoit JAMAIS le pack.
+    //
+    // FIX V3.20 : Si _targetPeerIp est défini, utiliser sendFileTo(_targetPeerIp, ...)
+    // pour connecter le client au serveur du Slave (port 8988 sur l'IP du Slave).
+    let useAddress = null;
+    if (this._targetPeerIp && this._targetPeerIp !== this.groupOwnerAddress) {
+      useAddress = this._targetPeerIp;
+      console.log(`[WifiDirectService] 📤 [V3.20] sendFileTo vers Slave IP=${useAddress} (pas self-loop)`);
+    } else {
+      console.log(`[WifiDirectService] ⚠️ [V3.20] _targetPeerIp non défini (=${this._targetPeerIp}) — fallback sendFile (risque self-loop)`);
+    }
+
     // V2.17 (BUG-047 fix): Retry 2x si échec
     const MAX_RETRIES = 2;
     for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
@@ -362,10 +385,19 @@ class WifiDirectServiceClass {
         if (filePath) {
           const cleanPath = filePath.replace('file://', '');
           console.log(`[WifiDirectService] 📤 sendFile (tentative ${attempt}/${MAX_RETRIES}): ${cleanPath}`);
-          await Promise.race([
-            WifiP2P.sendFile(cleanPath),
-            new Promise((_, reject) => setTimeout(() => reject(new Error('sendFile timeout')), 120000))
-          ]);
+          if (useAddress) {
+            // V3.20 : envoyer au Slave (vrai destinataire)
+            await Promise.race([
+              WifiP2P.sendFileTo(cleanPath, useAddress),
+              new Promise((_, reject) => setTimeout(() => reject(new Error('sendFileTo timeout')), 120000))
+            ]);
+          } else {
+            // Fallback : comportement legacy (risque self-loop)
+            await Promise.race([
+              WifiP2P.sendFile(cleanPath),
+              new Promise((_, reject) => setTimeout(() => reject(new Error('sendFile timeout')), 120000))
+            ]);
+          }
           console.log(`[WifiDirectService] ✅ sendFile réussi (tentative ${attempt})`);
           this._emit('onTransferProgress', { hash: metadata.hash, progress: 100, status: 'complete' });
           this._isSending = false;
@@ -480,11 +512,23 @@ class WifiDirectServiceClass {
       // V2.8 (BUG-039 FIX): Stripper file:// avant WifiP2P.sendFile
       // Sans ça, le natif Android essaie d'ouvrir le fichier "file:///..." → NPE → crash app sur itel A50
       const cleanControlFile = controlFile.replace('file://', '');
-      await Promise.race([
-        WifiP2P.sendFile(cleanControlFile),
-        new Promise((_, reject) => setTimeout(() => reject(new Error('sendControlMessage timeout')), 15000))
-      ]);
-      console.log(`[WifiDirectService] ✅ sendControlMessage réussi`);
+      // V3.20 (BUG-047 fix): Si on a l'IP du Slave, utiliser sendFileTo pour éviter le self-loop
+      let useAddress = null;
+      if (this._targetPeerIp && this._targetPeerIp !== this.groupOwnerAddress) {
+        useAddress = this._targetPeerIp;
+      }
+      if (useAddress) {
+        await Promise.race([
+          WifiP2P.sendFileTo(cleanControlFile, useAddress),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('sendControlMessageTo timeout')), 15000))
+        ]);
+      } else {
+        await Promise.race([
+          WifiP2P.sendFile(cleanControlFile),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('sendControlMessage timeout')), 15000))
+        ]);
+      }
+      console.log(`[WifiDirectService] ✅ sendControlMessage réussi${useAddress ? ` (vers ${useAddress})` : ''}`);
       // V1.0.18: Nettoyer le fichier de contrôle après envoi
       try { await FileSystem.deleteAsync(controlFile, { idempotent: true }); } catch (_) {}
       return true;
@@ -494,6 +538,55 @@ class WifiDirectServiceClass {
     } finally {
       this._isSending = false;
     }
+  }
+
+  // V3.20 (BUG-047 fix) : Définit l'IP cible pour sendFileTo (Slave IP reçue via Mesh)
+  setTargetPeerIp(ip) {
+    this._targetPeerIp = ip;
+    console.log(`[WifiDirectService] 🎯 [V3.20] Target peer IP défini: ${ip || '(null)'}`);
+  }
+
+  // V3.20 (BUG-047 fix) : Récupère l'IP locale sur l'interface p2p (côté Slave)
+  // Le lib ne fournit PAS directement l'IP locale du client.
+  // On utilise getConnectionInfo() (qui retourne groupOwnerAddress = IP du GO)
+  // combiné avec une heuristique : le client reçoit une IP du DHCP du GO en 192.168.49.x.
+  // Sans accès natif à NetworkInterface, on ne peut PAS récupérer l'IP locale précise.
+  // → On retourne null et P2PAutoSync utilisera un fallback 192.168.49.2.
+  async getLocalP2pIp() {
+    if (!this._nativeReady || !WifiP2P) return null;
+    try {
+      const info = await Promise.race([
+        WifiP2P.getConnectionInfo(),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 3000))
+      ]);
+      // Certains forks de react-native-wifi-p2p exposent myIpAddress
+      if (info && info.myIpAddress) {
+        this._localP2pIp = info.myIpAddress;
+        console.log(`[WifiDirectService] 🌐 [V3.20] IP locale p2p (myIpAddress): ${this._localP2pIp}`);
+        return this._localP2pIp;
+      }
+      if (info && info.myIp) {
+        this._localP2pIp = info.myIp;
+        console.log(`[WifiDirectService] 🌐 [V3.20] IP locale p2p (myIp): ${this._localP2pIp}`);
+        return this._localP2pIp;
+      }
+      // Pas d'IP locale dispo via le lib — fallback 192.168.49.2 (convention DHCP Android)
+      // Le 1er client reçoit typiquement 192.168.49.2 du DHCP du GO
+      console.warn('[WifiDirectService] ⚠️ [V3.20] getConnectionInfo ne retourne pas myIpAddress, fallback 192.168.49.2');
+      this._localP2pIp = '192.168.49.2';
+      return this._localP2pIp;
+    } catch (e) {
+      console.warn(`[WifiDirectService] ⚠️ [V3.20] getLocalP2pIp échoué: ${e.message}`);
+      this._localP2pIp = '192.168.49.2';
+      return this._localP2pIp;
+    }
+  }
+
+  // V3.20 (BUG-047 fix) : Reset entre sessions
+  resetTargetPeerIp() {
+    this._targetPeerIp = null;
+    this._localP2pIp = null;
+    console.log('[WifiDirectService] 🧹 [V3.20] Target peer IP reset');
   }
 
   // V3.1 (BUG-053 fix): Force la mise à jour de `wifiP2pInfo` côté natif Android

@@ -16,7 +16,7 @@ const DISCONNECT_COOLDOWN_MS = 5000;
 const GROUP_CREATE_COOLDOWN_MS = 10000; // 10s entre chaque createGroup pour éviter "framework busy"
 
 /**
- * P2PAutoSync — L'Orchestrateur Central (V3.10 - Fix _roleSwapQueue ciblé + barrière _waitingForSlave synchrone)
+ * P2PAutoSync — L'Orchestrateur Central (V3.20 - BUG-047 fix : Slave envoie son IP via Mesh BLE, Master utilise sendFileTo avec cette IP au lieu de sendFile (self-loop))
  */
 class P2PAutoSyncClass {
   constructor() {
@@ -62,6 +62,8 @@ class P2PAutoSyncClass {
     this._isRealConnected = false; // V3.6.5: false tant que le Slave n'a pas confirmé (YABISSO_HELLO_ACK)
     this._slaveIpAddress = null; // V3.6.5: IP du Slave (extraite de info si dispo, sinon null)
     this._wifiGroupReadySentThisSession = false; // V3.17 (BUG-046 fix): true quand WIFI_GROUP_READY envoyé AVANT createGroup
+    this._slaveIp = null; // V3.20 (BUG-047 fix): IP du Slave (reçue via Mesh BLE)
+    this._slavePort = 8988; // V3.20 (BUG-047 fix): Port TCP du serveur du Slave (8988 par défaut)
     this.stats = {
       totalSyncedP2P: 0,
       totalSyncedCloud: 0,
@@ -451,7 +453,7 @@ class P2PAutoSyncClass {
     this._running = true;
 
     console.log('[P2PAutoSync] Démarrage de l\'orchestrateur Multi-Rail...');
-    this._log('🚀 Orchestrateur démarré (V3.13 - Connexion WiFi synchronisée via Nearby Mesh : Master envoie WIFI_GROUP_READY, Slave ne connecte que sur ce signal).');
+    this._log('🚀 Orchestrateur démarré (V3.20 - BUG-047 fix : Slave envoie son IP via Mesh BLE, Master l\'utilise pour sendFileTo afin d\'éviter le self-loop 192.168.49.1 → 192.168.49.1).');
 
     NetworkRailDetector.start();
     NetworkRailDetector.onRailChange((rails) => {
@@ -474,6 +476,19 @@ class P2PAutoSyncClass {
         this._onWifiGroupReadyMesh(evt.peerId, evt.masterIp);
       } else if (evt && evt.type === 'SLAVE_CONNECTED_CONFIRMED') {
         this._onSlaveConnectedConfirmedMesh(evt.peerId);
+      } else if (evt && evt.type === 'SLAVE_IP') {
+        // V3.20 (BUG-047 fix) : Le Slave a envoyé son IP via Mesh BLE.
+        // On la stocke et on la passe à WifiDirectService pour que sendFile/sendControlMessage
+        // ciblent le Slave au lieu de s'envoyer à soi-même (192.168.49.1 self-loop).
+        this._slaveIp = evt.ip;
+        this._slavePort = evt.port || 8988;
+        this._log(`📥 [V3.20 Master] IP Slave reçue via Mesh: ${this._slaveIp}:${this._slavePort}`);
+        try {
+          WifiDirectService.setTargetPeerIp(this._slaveIp);
+          this._log(`🎯 [V3.20 Master] WifiDirectService._targetPeerIp = ${this._slaveIp} (sendFileTo l'utilisera)`);
+        } catch (e) {
+          this._log(`⚠️ [V3.20 Master] setTargetPeerIp échoué: ${e.message}`);
+        }
       }
     });
 
@@ -743,6 +758,40 @@ class P2PAutoSyncClass {
                   return;
                 }
 
+                // V3.20 (BUG-047 fix) : ÉTAPE 0 — ENVOI DE L'IP LOCALE AU MASTER
+                // AVANT : le Master appelait sendFile() qui pointe vers 192.168.49.1
+                // (sa propre IP de Group Owner) → self-loop. Le fichier partait nulle part
+                // ou était reçu par le Master lui-même via son propre serveur 8988.
+                // MAINTENANT : le Slave récupère son IP locale (assignée par le DHCP du GO
+                // en 192.168.49.x) et l'envoie au Master via Mesh BLE. Le Master utilisera
+                // cette IP pour sendFileTo(), ciblant le serveur TCP du Slave (port 8988).
+                this._log(`🌐 [V3.20 Slave] Récupération IP locale p2p...`);
+                let slaveIp = null;
+                try {
+                  slaveIp = await WifiDirectService.getLocalP2pIp();
+                } catch (e) {
+                  this._log(`⚠️ [V3.20 Slave] getLocalP2pIp erreur: ${e.message}`);
+                }
+                if (slaveIp) {
+                  this._log(`📤 [V3.20 Slave] Envoi SLAVE_IP au Master ${masterPeerId} : ${slaveIp}:8988`);
+                  try {
+                    const ipSent = await NearbyMeshService.sendMeshMessage(masterPeerId, {
+                      type: 'slave_ip',
+                      ip: slaveIp,
+                      port: 8988,
+                    });
+                    if (ipSent) {
+                      this._log(`✅ [V3.20 Slave] SLAVE_IP envoyé (${slaveIp}:8988)`);
+                    } else {
+                      this._log(`⚠️ [V3.20 Slave] Échec envoi SLAVE_IP (le Master fera fallback sendFile)`);
+                    }
+                  } catch (e) {
+                    this._log(`⚠️ [V3.20 Slave] sendMeshMessage SLAVE_IP exception: ${e.message}`);
+                  }
+                } else {
+                  this._log(`⚠️ [V3.20 Slave] Pas d'IP locale récupérée, fallback (le Master fera sendFile classique)`);
+                }
+
                 // 1. Envoyer SLAVE_CONNECTED_CONFIRMED (d'abord, séquentiel)
                 this._log(`📤 [V3.19 Slave] Envoi SLAVE_CONNECTED_CONFIRMED au Master ${masterPeerId}...`);
                 const sent = await NearbyMeshService.sendMeshMessage(masterPeerId, {
@@ -787,6 +836,10 @@ class P2PAutoSyncClass {
           }
           // V3.17 (BUG-046 fix): reset du flag WIFI_GROUP_READY envoyé
           this._wifiGroupReadySentThisSession = false;
+          // V3.20 (BUG-047 fix): reset de l'IP du Slave (entre sessions)
+          this._slaveIp = null;
+          this._slavePort = 8988;
+          try { WifiDirectService.resetTargetPeerIp(); } catch (_) {}
           try { await NearbyMeshService.resumeMesh(); } catch (_) {}
           this._log('■ Déconnexion détectée. Nettoyage des processus.');
         }
@@ -1109,6 +1162,15 @@ class P2PAutoSyncClass {
         this._log(`🔍 [V3.6.3] shouldSend=${shouldSend}, isMaster=${isMyRoleMaster}, myScore=${myScore}, peerScore=${peerScore}, pendingContent=${hasPendingContent}, packSent=${this._packSentThisSession}`);
         if (shouldSend && !this._packSentThisSession) {
           this._log('🟢 Envoi du pack (Phase 1: émetteur → récepteur)...');
+          // V3.20 (BUG-047 fix) : VÉRIFICATION PRÉ-ENVOI que le Slave est VRAIMENT connecté
+          // AVANT : sendFile était lancé même si le Slave venait de se déconnecter → "succès"
+          // self-loop (le Master s'envoyait le pack à lui-même).
+          // MAINTENANT : on log clairement la cible et on alerte si l'IP du Slave n'est pas connue.
+          if (!this._slaveIp) {
+            this._log(`⚠️ [V3.20 Master] _slaveIp non définie — le sendFile va fallback sur groupOwnerAddress (risque self-loop). Attente SLAVE_IP via Mesh...`);
+          } else {
+            this._log(`🎯 [V3.20 Master] Cible envoi: Slave IP=${this._slaveIp}:${this._slavePort} (pas de self-loop)`);
+          }
           const packPath = await LobaPackService.buildPack(category, 25);
           const peerName = (WifiDirectService.connectedPeer?.deviceName || 'unknown').toLowerCase();
           const isSwapActive = !!this._roleSwapQueue[peerName];
