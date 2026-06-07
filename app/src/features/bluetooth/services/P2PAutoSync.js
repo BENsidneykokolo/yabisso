@@ -61,6 +61,7 @@ class P2PAutoSyncClass {
     this._slaveConfirmedViaMesh = false; // V3.6.4: true quand SLAVE_CONNECTED_CONFIRMED reçu via Mesh
     this._isRealConnected = false; // V3.6.5: false tant que le Slave n'a pas confirmé (YABISSO_HELLO_ACK)
     this._slaveIpAddress = null; // V3.6.5: IP du Slave (extraite de info si dispo, sinon null)
+    this._wifiGroupReadySentThisSession = false; // V3.17 (BUG-046 fix): true quand WIFI_GROUP_READY envoyé AVANT createGroup
     this.stats = {
       totalSyncedP2P: 0,
       totalSyncedCloud: 0,
@@ -275,9 +276,18 @@ class P2PAutoSyncClass {
       this._meshGroupReadyTimeoutHandle = null;
     }
 
+    // V3.17 (BUG-046 fix) : Attendre 3000ms que le Master ait fini de créer le groupe.
+    // Avec le fix V3.17, le Master envoie WIFI_GROUP_READY AVANT createGroup
+    // (pour que le Mesh BLE soit encore actif). Il faut donc laisser au Master
+    // le temps de créer le groupe (2-3s) avant que le Slave ne tente sa connexion.
+    // Sans ce délai, connectToPeer() tomberait sur un groupe pas encore créé et
+    // timeout 8s → retry 4s → retry 8s (jusqu'à 20s d'attente inutile).
+    this._log(`⏳ [V3.17 Slave] Attente 3000ms que le Master crée le groupe WiFi Direct...`);
+    await new Promise(r => setTimeout(r, 3000));
+
     // Garde-fou : si on est déjà connecté, on ne fait rien
     if (WifiDirectService.connectedPeer || WifiDirectService.isConnecting) {
-      this._log(`⏭️ [V3.13] WIFI_GROUP_READY reçu mais déjà connecté/en cours, ignoré.`);
+      this._log(`⏭️ [V3.17] WIFI_GROUP_READY reçu mais déjà connecté/en cours, ignoré.`);
       return;
     }
 
@@ -549,6 +559,45 @@ class P2PAutoSyncClass {
           this._log(`🤝 [V3.6 Master] Création du groupe (avec lock)...`);
           this._lastGroupCreatedAt = Date.now();
           this._isConnecting = true;
+
+          // V3.17 (BUG-046 fix) : ENVOI DU SIGNAL WIFI_GROUP_READY AVANT createGroup
+          // Raison : sur certains Android (Xiaomi 11T, Itel A50), le createGroup() coupe
+          // la connexion BLE Nearby Mesh (conflit radio WiFi/BLE simultané). Si on envoie
+          // le signal APRÈS createGroup, le Mesh est déjà mort → "Failed to send text"
+          // → Slave ne reçoit jamais le signal → pas de HELLO → Master envoie le pack
+          // à lui-même (192.168.49.1 → 192.168.49.1) → ECONNREFUSED.
+          // Solution : envoyer le signal PENDANT que le Mesh est encore actif, attendre
+          // 1500ms que le Slave le reçoive et se prépare, PUIS créer le groupe.
+          if (!this._wifiGroupReadySentThisSession) {
+            const slavePeerId = this._findSlavePeerId();
+            if (slavePeerId) {
+              const masterIp = this._slaveIpAddress || '192.168.49.1';
+              this._log(`📡 [V3.17 Master] Envoi WIFI_GROUP_READY au Slave ${slavePeerId} (ip=${masterIp}) AVANT createGroup (Mesh encore actif)...`);
+              try {
+                const sent = await NearbyMeshService.sendMeshMessage(slavePeerId, {
+                  type: 'wifi_group_ready',
+                  masterIp,
+                });
+                if (sent) {
+                  this._log(`✅ [V3.17 Master] WIFI_GROUP_READY envoyé (Mesh encore actif).`);
+                  this._wifiGroupReadySentThisSession = true;
+                } else {
+                  this._log(`⚠️ [V3.17 Master] Échec envoi WIFI_GROUP_READY pré-createGroup, fallback post-createGroup.`);
+                }
+              } catch (e) {
+                this._log(`⚠️ [V3.17 Master] Exception envoi WIFI_GROUP_READY pré-createGroup: ${e.message}`);
+              }
+            } else {
+              this._log(`⚠️ [V3.17 Master] Pas de Slave Mesh peerId trouvé, fallback envoi post-createGroup.`);
+            }
+          } else {
+            this._log(`⏭️ [V3.17 Master] WIFI_GROUP_READY déjà envoyé cette session, skip.`);
+          }
+
+          // V3.17 : Attendre 1500ms que le Slave reçoive le signal et se prépare
+          // (pendant ce temps, le groupe n'est pas encore créé, donc le Mesh est OK)
+          await new Promise(r => setTimeout(r, 1500));
+
           try {
             await WifiDirectService.connectToPeer(peer, 0, 'MASTER');
           } catch (e) {
@@ -647,40 +696,18 @@ class P2PAutoSyncClass {
               return;
             }
             if (isMyRoleMaster) {
-              this._log(`■ [V3.10 Master] attente Slave (récepteur démarré sur SLAVE_CONNECTED_CONFIRMED)...`);
+              this._log(`■ [V3.17 Master] attente Slave (récepteur démarré sur SLAVE_CONNECTED_CONFIRMED)...`);
               // V3.15 (BUG-045 fix) : Le récepteur HELLO du Master n'est PLUS démarré ici.
               // Il sera démarré dans _onSlaveConnectedConfirmedMesh() dès que le Slave aura
               // confirmé sa connexion via Mesh. Cela élimine la race condition où le HELLO
               // du Slave arrivait sur un socket Master pas encore prêt.
 
-              // V3.13 : ENVOI DU SIGNAL WIFI_GROUP_READY VIA NEARBY MESH
-              // On attend 1500ms que le groupe WiFi soit stable, puis on notifie le Slave.
-              // Le Slave ne tentera sa connexion qu'à la réception de ce signal (plus de race).
-              setTimeout(async () => {
-                if (!WifiDirectService.connectedPeer || !this._running) {
-                  this._log(`⚠️ [V3.13] Master : connexion perdue avant envoi WIFI_GROUP_READY, abandon.`);
-                  return;
-                }
-                const slavePeerId = this._findSlavePeerId();
-                if (!slavePeerId) {
-                  this._log(`⚠️ [V3.13] Master : pas de Slave Mesh peer trouvé, fallback sur _waitForSlaveConfirmation.`);
-                  this._fallbackWaitForSlave(peerName);
-                  return;
-                }
-                const masterIp = this._slaveIpAddress || '192.168.49.1';
-                this._log(`📡 [V3.13 Master] Envoi WIFI_GROUP_READY au Slave ${slavePeerId} (ip=${masterIp})...`);
-                const sent = await NearbyMeshService.sendMeshMessage(slavePeerId, {
-                  type: 'wifi_group_ready',
-                  masterIp,
-                });
-                if (sent) {
-                  this._log(`✅ [V3.13 Master] WIFI_GROUP_READY envoyé au Slave avec succès.`);
-                } else {
-                  this._log(`⚠️ [V3.13 Master] Échec envoi WIFI_GROUP_READY, fallback sur _waitForSlaveConfirmation.`);
-                }
-                // On lance aussi _waitForSlaveConfirmation en parallèle (sécurité)
-                this._fallbackWaitForSlave(peerName);
-              }, 1500);
+              // V3.17 (BUG-046 fix) : WIFI_GROUP_READY est déjà envoyé dans onPeerFound
+              // AVANT createGroup (pendant que le Mesh BLE Nearby est encore actif). On ne
+              // le renvoie PAS ici car le Mesh est probablement déjà mort après createGroup
+              // (conflit radio WiFi/BLE sur Xiaomi 11T et Itel A50). On lance juste le
+              // fallback de sécurité _fallbackWaitForSlave pour attendre le HELLO du Slave.
+              this._fallbackWaitForSlave(peerName);
             } else {
               this._log(`■ [V3.10 Slave] récepteur démarré, HELLO différé de 3s (V3.16 BUG-048 fix)`);
               WifiDirectService.startReceiving(WifiDirectService.globalFileHandler);
@@ -743,6 +770,8 @@ class P2PAutoSyncClass {
             clearTimeout(this._meshGroupReadyTimeoutHandle);
             this._meshGroupReadyTimeoutHandle = null;
           }
+          // V3.17 (BUG-046 fix): reset du flag WIFI_GROUP_READY envoyé
+          this._wifiGroupReadySentThisSession = false;
           try { await NearbyMeshService.resumeMesh(); } catch (_) {}
           this._log('■ Déconnexion détectée. Nettoyage des processus.');
         }
