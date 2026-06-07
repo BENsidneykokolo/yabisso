@@ -1315,18 +1315,32 @@ class P2PAutoSyncClass {
           this._log(`📥 Reçu Loba Pack. Traitement...`);
           const peerName = (metadata.senderDevice || WifiDirectService.connectedPeer?.deviceName || 'Unknown').toLowerCase();
           this._lastReceivedFrom[peerName] = Date.now();
-          const success = await LobaPackService.unpackAndProcess(filePath);
-          if (success) {
-            this._log(`✅ Pack traité !`);
-            this.stats.totalSyncedP2P++;
-            // V3.16 (BUG-049 fix) : RESET DES FLAGS après ingestion réussie
-            // AVANT : _hasPendingDelta restait à true indéfiniment, ce qui forçait
-            // shouldSend=true à chaque cycle et déclenchait des envois redondants.
-            // MAINTENANT : on reset explicitement pour signaler que le delta a été consommé.
-            this._hasPendingDelta = false;
-            this._lastSentTo[peerName] = Date.now();
-            this._log(`🔄 [V3.16] Reset état post-réception: _hasPendingDelta=false, _lastSentTo[${peerName}]=now`);
+          // V3.18 (Sprint 3 / BUG-052 fix) : WRAP unpackAndProcess DANS TRY/CATCH
+          // AVANT (V3.16) : `const success = await LobaPackService.unpackAndProcess(filePath)`
+          // sans protection. Si l'unzip throw (au lieu de retourner false), la fonction
+          // crashait et le reset post-réception n'avait JAMAIS lieu → boucle infinie.
+          // MAINTENANT : try/catch garantit que le reset s'exécute quoi qu'il arrive.
+          let success = false;
+          try {
+            success = await LobaPackService.unpackAndProcess(filePath);
+            if (success) {
+              this._log(`✅ Pack traité !`);
+              this.stats.totalSyncedP2P++;
+            } else {
+              this._log(`⚠️ [V3.18] unpackAndProcess a retourné false (échec ingestion)`);
+            }
+          } catch (e) {
+            this._log(`❌ [V3.18] Erreur unzip catchée: ${e.message}`);
+            success = false;
           }
+          // V3.18 (Sprint 3 / BUG-052 fix) : RESET INCONDITIONNEL même si unzip échoue
+          // AVANT (V3.16) : `this._hasPendingDelta = false` était DANS `if (success)`.
+          // Si l'unzip échoue (returns false), _hasPendingDelta reste à true → shouldSend=true
+          // à chaque cycle → cycle recommence à l'infini → "framework busy" sur Slave
+          // (BUG-053). MAINTENANT : reset HORS du if → stopper le cycle même si ingestion KO.
+          this._hasPendingDelta = false;
+          this._lastSentTo[peerName] = Date.now();
+          this._log(`🔄 [V3.18] Reset état post-réception (succès=${success}): _hasPendingDelta=false, _lastSentTo[${peerName}]=now`);
           // V3.6.4 (Double validation) : ENVOYER PACK_RECEIVED_OK AU MASTER
           // Certifie au Master que la réception et l'écriture locale sont terminées.
           // Équivalent JS du ACK que le user proposait en Java (startSenderServer/connectToReceive).
