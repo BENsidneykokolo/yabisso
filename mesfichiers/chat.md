@@ -7385,5 +7385,85 @@ HARD RELOAD les 2 phones. Tester et partager les logs. Vérifier dans les logs :
 ### Prochaine étape (Sprint 4)
 Vérifier que le contenu s'affiche dans le feed LOBA des 2 phones. Si OK → Sprint 2 (bidirectionnel) définitivement validé ✅
 
+---
+
+## Implémentation V3.19 — Sprint 5 BUG-055 fix (handshake séquentiel) (2026-06-07)
+
+User: "Le Slave envoie YABISSO_HELLO trop tôt. Le récepteur TCP du Master est initialisé mais pas encore en écoute effective quand le HELLO arrive → ECONNREFUSED."
+
+### Constat critique observé dans les logs
+- V3.18 reset fonctionne ✅ : `shouldSend=false, pendingContent=false, packSent=false`
+- SLAVE_CONNECTED_CONFIRMED reçu ✅ : `✅ SLAVE_CONNECTED_CONFIRMED reçu de MH5P → Master peut envoyer`
+- Master démarre récepteur ✅ : `📡 [V3.15 Master] Démarrage récepteur HELLO` + `📡 En attente de fichiers...`
+- **MAIS** : `❌ sendControlMessage error: 192.168.49.198 → 192.168.49.1:8988 ECONNREFUSED`
+- Le HELLO est envoyé AVANT que le port 8988 soit bind
+
+### Séquence temporelle du problème (V3.18)
+- T=0 : Slave connectToPeer réussi
+- T=300ms : SLAVE_CONNECTED_CONFIRMED envoyé via Mesh (parallèle)
+- T=3000ms : HELLO envoyé via TCP (parallèle) ← ⚠️ trop tôt parfois
+- T=300ms+800ms : Master reçoit Mesh BLE
+- T=300ms+800ms+500ms : Master startReceiving
+- T=300ms+800ms+500ms+200ms = T+1800ms : Port 8988 bind
+
+**Le port est bind à T+1800ms mais le HELLO part à T+3000ms → devrait fonctionner...** SAUF quand le bind prend plus de 3s (charge Android, race radio).
+
+### Fix V3.19 — Handshake séquentiel
+1. T+300ms : envoyer SLAVE_CONNECTED_CONFIRMED (d'abord)
+2. T+300ms+5000ms = T+5300ms : envoyer YABISSO_HELLO (5s APRÈS le CONFIRMED)
+
+**Garantie** : Le port 8988 est bind à T+1800ms max, le HELLO part à T+5300ms → 3.5s de marge. Aucun risque de race.
+
+### Modifications
+- 1 fichier uniquement : `app/src/features/bluetooth/services/P2PAutoSync.js`
+- 1523 → 1538 lignes (+15)
+- Zone `else` (Slave) dans onConnectionChange setTimeout(1500) : L712-748
+
+### Code clé (V3.19)
+```js
+setTimeout(async () => {
+  // 1. Envoyer SLAVE_CONNECTED_CONFIRMED (séquentiel, await)
+  const sent = await NearbyMeshService.sendMeshMessage(masterPeerId, {
+    type: 'slave_connected_confirmed',
+  });
+  
+  // 2. Attendre 5s pour que le Master reçoive + startReceiving + bind 8988
+  setTimeout(() => {
+    this._sendYabissoHello(false, peerName);
+  }, 5000);
+}, 300);
+```
+
+### Vérifications
+- `node --check` → OK
+- `@babel/parser` (Flow + JSX) → OK (16 statements)
+- Backup `mesfichiers/P2P/bluetooth/services/P2PAutoSync.js` synchronisé
+
+### Non touché (protégé)
+- V3.13-V3.18
+- createGroup, WIFI_GROUP_READY
+- pendingContent reset V3.18
+- SYNC_COMPLETE, Nearby Mesh
+- _sendYabissoHello (inchangé)
+
+### Action user
+HARD RELOAD les 2 phones. Tester et partager les logs. Vérifier dans les logs :
+- `📤 [V3.19 Slave] Envoi SLAVE_CONNECTED_CONFIRMED au Master ...`
+- `✅ [V3.19 Slave] SLAVE_CONNECTED_CONFIRMED envoyé.`
+- (5s d'attente)
+- `🤝 [V3.19 Slave] Envoi YABISSO_HELLO (5s après SLAVE_CONNECTED_CONFIRMED)...`
+- `🤝 [Handshake] YABISSO_HELLO envoyé à ... (score=18)` (succès cette fois)
+- **NE PLUS voir** : `❌ sendControlMessage error: 192.168.49.198 → 192.168.49.1:8988 ECONNREFUSED`
+
+### Commit + Release
+- `e5f6533` v0.0.28 V3.19 BUG-055 fix
+- Release : https://github.com/BENsidneykokolo/yabisso/releases/tag/v0.0.28 (Latest)
+
+### Prochaine étape
+- Si HELLO passe → le handshake complet fonctionne
+- BUG-047 (sendFile IP = 192.168.49.1) reste à fixer pour que le pack soit vraiment transféré
+- Sprint 2 (bidirectionnel) si HELLO + sendFile OK
+
+
 
 

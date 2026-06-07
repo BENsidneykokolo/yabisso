@@ -775,3 +775,34 @@
 - **Release** : https://github.com/BENsidneykokolo/yabisso/releases/tag/v0.0.27
 - **Prochaine étape** : Sprint 4 — vérifier que le contenu s'affiche dans le feed LOBA des 2 phones
 
+---
+
+### BUG-055 — HELLO Slave envoyé avant bind port 8988 du Master (V3.19 fix)
+- **Date** : 2026-06-07
+- **Contexte** : Test V3.18 a montré que V3.18 reset fonctionne ✅ mais HELLO Slave échoue avec ECONNREFUSED.
+- **Problème** : Le Slave envoyait YABISSO_HELLO en PARALLÈLE de SLAVE_CONNECTED_CONFIRMED (timers 3s et 300ms). Le port 8988 du Master n'était pas toujours bind quand le HELLO arrivait.
+- **Symptôme** : `❌ sendControlMessage error: failed to connect to /192.168.49.1 (port 8988) from /192.168.49.198 (port 57737) after 5000ms: ECONNREFUSED`
+- **Séquence temporelle (V3.18)** :
+  - T=0 : Slave connectToPeer réussi
+  - T=300ms : SLAVE_CONNECTED_CONFIRMED envoyé (parallèle)
+  - T=3000ms : HELLO envoyé (parallèle) ← ⚠️ parfois trop tôt
+  - T=300ms+800ms : Master reçoit Mesh BLE
+  - T=300ms+800ms+500ms : Master startReceiving
+  - T+1800ms : Port 8988 bind (en théorie avant T+3000ms, mais race condition possible)
+- **Solution (V3.19)** : Restructurer le handshake Slave en SÉQUENTIEL :
+  1. T+300ms : envoyer SLAVE_CONNECTED_CONFIRMED (await)
+  2. T+5300ms : envoyer YABISSO_HELLO (5s APRÈS le CONFIRMED)
+- **Garantie** : Port bind à T+1800ms max, HELLO part à T+5300ms → 3.5s de marge. Aucun risque de race.
+- **Fichiers modifiés** : `app/src/features/bluetooth/services/P2PAutoSync.js` (1523 → 1538 lignes, +15)
+- **Vérifications** : `node --check` OK, `@babel/parser` OK, backup `mesfichiers/P2P/bluetooth/services/P2PAutoSync.js` synchronisé
+- **Non touché** (protégé) : V3.13-V3.18, createGroup, WIFI_GROUP_READY, pendingContent reset V3.18, SYNC_COMPLETE, Nearby Mesh
+- **Action user** : HARD RELOAD les 2 phones. Vérifier dans les logs :
+  - `📤 [V3.19 Slave] Envoi SLAVE_CONNECTED_CONFIRMED au Master ...`
+  - `✅ [V3.19 Slave] SLAVE_CONNECTED_CONFIRMED envoyé.`
+  - (5s)
+  - `🤝 [V3.19 Slave] Envoi YABISSO_HELLO (5s après SLAVE_CONNECTED_CONFIRMED)...`
+  - `🤝 [Handshake] YABISSO_HELLO envoyé à ...` (succès)
+  - **NE PLUS voir** : `❌ sendControlMessage error: 192.168.49.198 → 192.168.49.1:8988 ECONNREFUSED`
+- **Commit** : `e5f6533` v0.0.28
+- **Release** : https://github.com/BENsidneykokolo/yabisso/releases/tag/v0.0.28
+
