@@ -659,3 +659,19 @@
   - Vérifier côté Master : `📡 [V3.13 Master] Envoi WIFI_GROUP_READY au Slave ...`
   - Vérifier côté Slave : `📡 [V3.13 Mesh] WIFI_GROUP_READY reçu de Master ...` puis `🔗 [V3.13 Slave] Connexion WiFi Direct à ...`
   - Vérifier côté Slave : `📤 [V3.13 Slave] Envoi SLAVE_CONNECTED_CONFIRMED au Master ...`
+
+### BUG-044 — "framework is busy" sur connectToPeer côté Slave (BUG-V3.14)
+- **Date** : 2026-06-07
+- **Problème** : Le Slave reçoit bien `WIFI_GROUP_READY` via Nearby Mesh, déclenche `connectToPeer`, mais Android refuse : `WARN [WifiDirectService] ⚠️ Erreur connect (tentative 1): Operation failed because the framework is busy and unable to service the request.` Retry 2 fois → même erreur.
+- **Cause** : Le Master garde l'ancien groupe WiFi Direct actif en mémoire Android quand il essaie d'en créer un nouveau (session précédente). Android verrouille le framework tant que l'ancien groupe n'est pas complètement supprimé. Les 1000ms de pause après `removeGroup()` étaient insuffisants pour libérer le radio.
+- **Solution (V3.14)** : 2 changements ciblés dans `WifiDirectService.js` :
+  1. **`createGroup()` (ligne 80-110)** : Augmenter la pause après `removeGroup()` de 1000ms à **1500ms** + ajouter `cancelConnect()` (avec try/catch défensif, la lib `react-native-wifi-p2p` ne l'expose peut-être pas) + pause 500ms avant `createGroup()`. Log `🧹 Ancien groupe supprimé` pour visibilité.
+  2. **`connectToPeer()` SLAVE branch (ligne 295-330)** : Remplacer les 2 tentatives fixes par **3 tentatives avec backoff exponentiel** [2000ms, 4000ms] entre chaque. Total max : 30s (3 × 8s timeout + 6s de pauses). Logs explicites "tentative N/3" + "✅ connect réussi tentative N !"
+- **Fichiers modifiés** : `app/src/features/bluetooth/services/WifiDirectService.js` (+12 lignes)
+- **Vérifications** : `node --check` → 0 erreur, `grep` → logs V3.14 cohérents
+- **Non touché** (protégé) : Nearby Mesh, WIFI_GROUP_READY, SLAVE_CONNECTED_CONFIRMED, handshake HELLO, pack, SYNC_COMPLETE
+- **Statut** : 🔄 En test (2026-06-07) — Version v0.0.24
+- **Action user** : HARD RELOAD. Tester sur les 2 phones. Vérifier dans les logs :
+  - Master : `🧹 Ancien groupe supprimé` puis `✅ createGroup réussi`
+  - Slave : `✅ connect réussi (première tentative)` (idéal) ou `✅ connect réussi tentative 2 !` (acceptable)
+  - **NE PLUS voir** : `❌ Erreur connect (tentative 2): framework is busy`

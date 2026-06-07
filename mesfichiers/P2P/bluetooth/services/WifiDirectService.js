@@ -82,9 +82,17 @@ class WifiDirectServiceClass {
     if (!this._nativeReady || !WifiP2P) return false;
     this.isConnecting = true;
     try {
+      // V3.14 (BUG-044 fix) : NETTOYAGE COMPLET avant createGroup
+      // Problème : "framework is busy" quand l'ancien groupe est encore actif
+      // Solution : removeGroup + pause 1500ms (Android a besoin de ce délai pour
+      // libérer le radio) + cancelConnect (annule toute connexion en cours) +
+      // stopDiscoveringPeers + pause 500ms avant createGroup.
       try { await WifiP2P.removeGroup(); } catch (_) {}
+      await new Promise(r => setTimeout(r, 1500));
+      console.log('[WifiDirectService] 🧹 Ancien groupe supprimé');
+      try { if (typeof WifiP2P.cancelConnect === 'function') await WifiP2P.cancelConnect(); } catch (_) {}
       try { await WifiP2P.stopDiscoveringPeers(); } catch (_) {}
-      await new Promise(r => setTimeout(r, 1000));
+      await new Promise(r => setTimeout(r, 500));
       await Promise.race([
         WifiP2P.createGroup(),
         new Promise((_, reject) => setTimeout(() => reject(new Error('createGroup timeout 8s')), 8000))
@@ -287,36 +295,40 @@ class WifiDirectServiceClass {
         // Petit délai de sécurité pour les appareils bas de gamme (Itel)
         await new Promise(r => setTimeout(r, 500));
 
-        try {
-          // Timeout 8s sur connect() — la lib native peut rester pending indéfiniment
-          // si le Master n'a pas encore créé son groupe, ce qui bloque tout le cycle
-          await Promise.race([
-            WifiP2P.connect(macAddr),
-            new Promise((_, reject) => setTimeout(() => reject(new Error('connect timeout 8s')), 8000))
-          ]);
-          this.isConnecting = false;
-          return true;
-        } catch (e) {
-          console.warn('[WifiDirectService] ⚠️ Erreur connect (tentative 1):', e.message);
-          // Reset isConnecting même en cas d'erreur pour permettre un nouveau cycle
-          this.isConnecting = false;
-          // Retry une fois après 2s (laisser le Master finir son createGroup)
-          await new Promise(r => setTimeout(r, 2000));
+        // V3.14 (BUG-044 fix) : 3 TENTATIVES avec BACKOFF EXPONENTIEL
+        // Problème : "framework is busy" sur les appareils lents (Itel A50 Mediatek)
+        // Solution : retry 3x avec pauses 2000ms puis 4000ms entre chaque.
+        // Total max : 8s + 2s + 8s + 4s + 8s = 30s, suffisant pour stabiliser.
+        const delays = [2000, 4000];
+        const maxAttempts = 3;
+        for (let attempt = 1; attempt <= maxAttempts; attempt++) {
           try {
             await Promise.race([
               WifiP2P.connect(macAddr),
-              new Promise((_, reject) => setTimeout(() => reject(new Error('connect retry timeout 8s')), 8000))
+              new Promise((_, reject) => setTimeout(() => reject(new Error(`connect timeout 8s (tentative ${attempt})`)), 8000))
             ]);
-            console.log('[WifiDirectService] ✅ Retry SLAVE réussi !');
-            return true;
-          } catch (e2) {
-            console.warn('[WifiDirectService] ❌ Erreur connect (tentative 2):', e2.message);
             this.isConnecting = false;
-            // Relancer la découverte pour ne pas rester bloqué
-            try { await WifiP2P.startDiscoveringPeers(); this.isDiscovering = true; } catch (_) {}
-            return false;
+            if (attempt > 1) {
+              console.log(`[WifiDirectService] ✅ connect réussi tentative ${attempt} !`);
+            } else {
+              console.log('[WifiDirectService] ✅ connect réussi (première tentative)');
+            }
+            return true;
+          } catch (e) {
+            this.isConnecting = false;
+            if (attempt < maxAttempts) {
+              const delay = delays[attempt - 1];
+              console.warn(`[WifiDirectService] ⚠️ Erreur connect (tentative ${attempt}/${maxAttempts}): ${e.message} — retry dans ${delay}ms`);
+              await new Promise(r => setTimeout(r, delay));
+            } else {
+              console.warn(`[WifiDirectService] ❌ Erreur connect (tentative ${attempt}/${maxAttempts}): ${e.message} — abandon après ${maxAttempts} tentatives`);
+              // Relancer la découverte pour ne pas rester bloqué
+              try { await WifiP2P.startDiscoveringPeers(); this.isDiscovering = true; } catch (_) {}
+              return false;
+            }
           }
         }
+        return false;
       }
     } catch (e) {
       console.warn('[WifiDirectService] ❌ Erreur connectToPeer:', e.message);

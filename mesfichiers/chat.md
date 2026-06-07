@@ -6977,3 +6977,55 @@ User: Valide Option A pour le matching. Plan V3.13 confirmé. GO pour implément
 
 **Action user** : HARD RELOAD + tester connexion.
 
+
+---
+
+## Backup effectué (2026-06-07)
+
+User: "fait d'abord un backup git et gh"
+
+Actions :
+- ✅ `git add` : 7 fichiers (P2PAutoSync.js + NearbyMeshService.js + backup P2P/ + chat.md + probleme.md + solutionp2p.md)
+- ✅ `git commit` : `aee7f17` v0.0.23 (3618 insertions, 786 deletions)
+- ✅ `git push origin main` : 06059e3 → aee7f17
+- ✅ `gh release create v0.0.23` : https://github.com/BENsidneykokolo/yabisso/releases/tag/v0.0.23
+
+Non commité (volontairement) :
+- `mesfichiers/__pycache__/` (cache Python)
+- `mesfichiers/gen_share_md.py`, `log_v39.py`, `md_to_pdf.py`, `regen_solutionp2p.js` (scripts locaux)
+- `mesfichiers/share/` (dossier généré)
+
+
+---
+
+## Implémentation V3.14 (2026-06-07)
+
+User: "maintenant tu peux implimenter et apres tu update chat.md aussi et probleme.md"
+
+**Modifications appliquées dans `WifiDirectService.js` (604 → 616 lignes, +12) :**
+
+### FIX A — `createGroup()` (ligne 80-110)
+- **Avant** : `removeGroup()` + 1000ms pause + `stopDiscoveringPeers()` + `createGroup()`
+- **Après** : `removeGroup()` + **1500ms** pause + log `🧹 Ancien groupe supprimé` + `cancelConnect()` (try/catch) + `stopDiscoveringPeers()` + **500ms** pause + `createGroup()`
+
+### FIX B — `connectToPeer()` SLAVE (ligne 295-330)
+- **Avant** : 2 tentatives fixes (8s + 2s pause + 8s)
+- **Après** : 3 tentatives avec backoff [2000ms, 4000ms]
+  - Tentative 1 → fail → 2000ms
+  - Tentative 2 → fail → 4000ms
+  - Tentative 3 → fail → abandon
+- Logs : `⚠️ Erreur connect (tentative N/3): ...` + `✅ connect réussi tentative N !` ou `❌ Erreur connect (tentative 3/3): ... — abandon après 3 tentatives`
+
+### Vérifications
+- `node --check src/features/bluetooth/services/WifiDirectService.js` → 0 erreur
+- `grep` V3.14 → 2 références cohérentes
+- Backup : `mesfichiers/P2P/bluetooth/services/WifiDirectService.js` synchronisé
+- BUG-044 ajouté dans `probleme.md`
+
+### Non touché (protégé)
+- Nearby Mesh
+- WIFI_GROUP_READY
+- SLAVE_CONNECTED_CONFIRMED
+- Handshake HELLO
+- Pack / SYNC_COMPLETE
+
