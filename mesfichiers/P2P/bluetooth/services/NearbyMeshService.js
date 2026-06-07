@@ -81,6 +81,15 @@ class NearbyMeshServiceClass {
   }
 
   async startMesh() {
+    // V3.12 (Fix A) : Singleton strict — bloquer le double démarrage
+    // Évite que 2 instances de NearbyMeshService tournent en parallèle sur le même device
+    // (vu dans les logs : score 73 ET score 18 sur le même téléphone).
+    if (NearbyMeshService._instance && NearbyMeshService._instance !== this) {
+      console.warn('[NearbyMesh] Instance dupliquée détectée — arrêt forcé');
+      return;
+    }
+    NearbyMeshService._instance = this;
+
     if (this.isAdvertising || this.isDiscovering || this._isStarting) {
       this._log('Mesh déjà actif ou en démarrage (skip start).');
       return;
@@ -139,6 +148,12 @@ class NearbyMeshServiceClass {
 
     this._listeners.push(onPeerFound((peer) => {
       this._log(`🔍 Node trouvé: ${peer.name} (${peer.peerId})`);
+      
+      // V3.10: Ignorer mon propre node pour éviter de s'enregistrer comme peer
+      if (peer.name === this.deviceName) {
+        this._log(`⛔ [NearbyMesh] Mon propre node ignoré: ${peer.name}`);
+        return;
+      }
       
       // V3.5 (BUG-057 fix): Filtrer uniquement les pairs Yabisso (regex stricte)
       // Sans ce filtre, des appareils Nearby aléatoires pourraient déclencher createGroup

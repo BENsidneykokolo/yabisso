@@ -536,9 +536,126 @@
 
 ---
 
+### BUG-041 — Bidirectionnel P2P cassé (3 causes : getClientAddress, swap key stale, timeout Itel)
+
+- **Date** : 2026-06-05
+- **Problème** : Le bidirectionnel WiFi Direct ne fonctionne pas de manière fiable. 3 bugs distincts identifiés par l'ami reviewer :
+  1. **getClientAddress() ne fonctionne JAMAIS** : `WifiP2P.receiveMessage({meta:true})` côté GO reste bloqué car le Slave n'envoie jamais rien sur le port 8000 → fallback SWAP permanent
+  2. **Clé Mesh `18_yabisso_dwazse` pollue les peers suivants** : après `SYNC_COMPLETE`, `meshPeer` peut être `null` → seule la clé WiFi Direct est supprimée, la clé Mesh reste. Quand l'imprimante `direct-d2-epson-8bea56` est découverte, `_iAmMasterFor()` itère sur `Object.keys(_roleSwapQueue)` et active le swap pour l'imprimante
+  3. **Itel A50 met ~20s à se connecter** (chipset Mediatek) : race avec le timeout du Master (5s) → handshake raté de justesse. Fichiers arrivent bien sur Xiaomi mais le Master croit que la connexion a échoué
+- **Cause technique** :
+  1. Erreur de conception : le `MessageServer` du GO n'est pas programmé pour accepter de connexions entrantes sur le port 8000 dans le contexte de getClientAddress (le Slave n'envoie que via `sendFile`/`sendControlMessage`)
+  2. Code de nettoyage conditionnel : `if (meshPeer) completeKeys.push(meshPeer.name.toLowerCase())` — si null, la clé Mesh n'est jamais nettoyée
+  3. Architecture Qualcomm (Xiaomi) = 3-5s, Mediatek (Itel) = 15-20s → race avec timeout 5s
+- **Solution (V3.11)** : Refonte du bidirectionnel avec stratégie "Transfer = Proof"
+  1. **Suppression `getClientAddress()`** : le Slave initie sa Phase 2 directement via `sendFileTo('192.168.49.1')` dans `_handleReceivedFile` (après `PACK_RECEIVED_OK`)
+  2. **Suppression branche SWAP fallback** : si pas d'IP, on envoie directement `SYNC_COMPLETE` (pas de SWAP_ROLE_REQUEST)
+  3. **SYNC_COMPLETE → `_roleSwapQueue = {}`** : vidage complet au lieu de nettoyage ciblé (plus de clé Mesh stale possible)
+  4. **Master attend `_slavePhase2Received`** (max 15s) au lieu d'envoyer activement
+  5. **Timeout `_waitForSlaveConfirmation` 5s → 25s** : marge confortable pour chipset Mediatek
+  6. **Nouveau flag `_slavePhase2Received`** : détecté via `metadata.phase === 'slave_phase2'` dans `_handleReceivedFile`
+- **Code modifié** : `app/src/features/bluetooth/services/P2PAutoSync.js`
+  - Constructor ligne 51 : ajout `this._slavePhase2Received = false`
+  - Ligne 238 : timeout `_waitForSlaveConfirmation` 20000 → 25000
+  - Lignes 906-1005 (refonte complète) : suppression `getClientAddress()` + suppression SWAP fallback + attente `_slavePhase2Received` (15s) + SYNC_COMPLETE + déconnection
+  - Lignes 999-1000 : SYNC_COMPLETE handler → `this._roleSwapQueue = {}` (vidage complet)
+  - Lignes 1118-1124 : détection `metadata.phase === 'slave_phase2'` → set `_slavePhase2Received = true`
+  - Lignes 1150-1180 : Phase 2 SLAVE dans `_handleReceivedFile` (après PACK_RECEIVED_OK)
+- **Fichiers modifiés** :
+  - `app/src/features/bluetooth/services/P2PAutoSync.js`
+- **Backup P2P synchronisé** : `mesfichiers/P2P/bluetooth/services/P2PAutoSync.js`
+- **Vérifications** :
+  - `node --check` → 0 erreur
+  - `grep getClientAddress` → 0 occurrence active (uniquement commentaires)
+  - `grep SWAP_ROLE_REQUEST` → 0 envoi actif (handler réception conservé = défensif)
+  - `grep _roleSwapQueue = {}` → 2 endroits (constructor + SYNC_COMPLETE handler)
+- **Statut** : 🔄 En test (2026-06-05) — Version v0.0.21
+- **Action user** : HARD RELOAD. Vérifier dans les logs :
+  - Démarrage : `🚀 Orchestrateur démarré (V3.11 - Bidirectionnel initié par le Slave: ...)`
+  - Phase 1 Master → Slave : `📤 [V3.3] Envoi du Pack: ...` puis `✅ [V3.3] Pack Phase 1 envoyé !`
+  - Phase 2 Slave : `🚀 [V3.11] SLAVE: initiation Phase 2 (envoi mon pack vers GO 192.168.49.1)...`
+  - Phase 2 Master reçoit : `📥 [V3.11] Pack Phase 2 du Slave détecté (phase=slave_phase2)` puis `✅ [V3.11] Phase 2 du Slave reçue en XXXms !`
+  - SYNC_COMPLETE : `✅ [V3.11] SYNC_COMPLETE envoyé. Déconnexion dans 3s...`
+- **Améliorations futures (non prioritaires)** :
+- Réduire le temps de connexion Mediatek (10-15s) via optimisation framework natif
+- Cache du GO group (5 min) pour que les Slaves suivants se connectent en 3-5s
+- Slave-initiated Phase 1 si Master n'a pas de contenu à envoyer
+
+---
+
+### BUG-042 — Connexion WiFi Direct instable : 4 problèmes de timing + spam logs
+- **Date** : 2026-06-05
+- **Problème** : Le bidirectionnel V3.11 est correct en théorie mais 4 bugs de timing/observabilité empêchent sa validation :
+  1. **Double instance NearbyMesh** : score 73 ET score 18 sur le même device (singleton non protégé)
+  2. **Slave arrive trop tard** : Master timeout 20s, Slave Mediatek met 15-20s à se connecter → race perdu
+  3. **`pendingContent=true` jamais reset** côté Slave (Phase 2 bloquée — non traité dans cette Étape 1)
+  4. **itel A50 spamme les logs** "⏭️ ignoré" toutes les 3s pour les peers non-Mesh (imprimantes, téléphones tiers)
+- **Cause** :
+  1. Pas de garde au niveau classe pour `NearbyMeshService` — `startMesh()` peut être appelé plusieurs fois en parallèle
+  2. Timeout Master 20s < temps de connexion Mediatek 15-20s (chipset bas de gamme)
+  3. (Réservé Sprint 2) — pas de reset de `_hasPendingDelta` après `PACK_RECEIVED_OK` côté Slave
+  4. Aucun throttle sur le log "⏭️ ignoré" — `_peerLogThrottle` (30s) ne s'applique qu'au log générique, pas au log d'ignore
+- **Solution (V3.12 — Étape 1, CONNEXION UNIQUEMENT)** : 4 fixes ciblés, AUCUN changement sur la logique d'envoi
+  - **Fix A (singleton)** : ajout check `NearbyMeshService._instance` en début de `startMesh()` → bloque le double démarrage
+  - **Fix B (timing Slave)** : suppression du délai 3s implicite dans le else branch de `onPeerFound` → ajout `setTimeout(100)` qui déclenche `_p2pSyncCycle()` immédiatement
+  - **Fix C (timeout Master)** : `_waitForSlaveConfirmation(peerName, 20000)` → `(peerName, 35000)` (marge 15s pour Mediatek)
+  - **Fix D (throttle logs)** : nouveau `this._ignoredPeers = new Map()` + check 60s avant le log "⏭️ ignoré"
+- **Code modifié** :
+  - `app/src/features/bluetooth/services/NearbyMeshService.js`
+    - Ligne 83-92 : ajout singleton check (`_instance` + warn)
+  - `app/src/features/bluetooth/services/P2PAutoSync.js`
+    - Ligne 53 : ajout `this._ignoredPeers = new Map();`
+    - Ligne 408-417 : throttle 60s avant log "ignoré" (Fix D)
+    - Ligne 444-451 : trigger immédiat `_p2pSyncCycle()` (Fix B)
+    - Ligne 523 : `35000` au lieu de `20000` (Fix C)
+- **Fichiers modifiés** :
+  - `app/src/features/bluetooth/services/NearbyMeshService.js`
+  - `app/src/features/bluetooth/services/P2PAutoSync.js`
+- **Backup P2P synchronisé** : `mesfichiers/P2P/bluetooth/services/{NearbyMeshService,P2PAutoSync,WifiDirectService}.js`
+- **Vérifications** :
+  - `node --check` → 0 erreur sur les 3 fichiers P2P
+  - `grep _ignoredPeers` → 3 occurrences actives (constructor + get + set)
+  - `grep _instance` → 3 occurrences actives (check + warn + set)
+  - `grep 35000` → 1 occurrence (Fix C, `_waitForSlaveConfirmation`)
+  - `grep "20000"` → 0 occurrence active (uniquement dans commentaire V3.8 ligne 234)
+- **Statut** : 🔄 En test (2026-06-05) — Version v0.0.22
+- **Action user** : HARD RELOAD. Tester UNIQUEMENT la connexion (pas de pack).
+  - Vérifier sur les 2 phones : Master (73) reste connecté, Slave (18) se connecte en <35s
+  - Vérifier : log `⏭️ ignoré` n'apparaît plus que 1 fois par minute max par peer
+  - Vérifier : aucun warning `Instance dupliquée détectée`
+  - Si OK → passer au Sprint 2 (envoi du pack après connexion confirmée)
+- **Non touché dans cette Étape 1** :
+  - `_p2pSyncCycle` reste intact
+  - `_handleReceivedFile` reste intact
+  - `_p2pSyncCycle` Phase 1 + Phase 2 restent intacts
+  - `SYNC_COMPLETE` reste intact
+  - BUG-042 #3 (pendingContent reset côté Slave) sera traité au Sprint 2
+
+---
+
 ## Exigences sécurité critiques (non négociables)
 - Signatures **Ed25519** pour toutes les transactions
 - Chiffrement **XChaCha20** pour données sensibles (SMS, DB)
 - **Nonce anti-rejeu** + idempotence sur toutes les actions critiques
 - **Seuil offline max 5 000 FCFA** (jamais dépassable côté app)
 - **Pas de cash-out** pour les points Yabisso
+
+### BUG-043 — Race condition : Slave connecte avant que le groupe Master soit visible (BUG-V3.13)
+- **Date** : 2026-06-07
+- **Problème** : Le Slave fait "🔗 [Trigger] Connexion à Xiaomi 11T (SLAVE)..." puis `🔄 Tentative SLAVE` puis RIEN. Timeout 35s côté Master → abandon → pack envoyé dans le vide. Le Slave boucle en spam "Peer itel A50 ignoré".
+- **Cause** : Le Slave se base sur le scan WiFi Direct qui peut détecter le Master AVANT que `createGroup()` ne soit annoncé Android-side (2-5s de délai). Le Slave appelle `connect()` qui timeout 8s. Aucun mécanisme de synchronisation entre les 2 phases (création groupe côté Master vs tentative connexion côté Slave).
+- **Solution (V3.13)** : Protocole de synchronisation via Nearby Mesh (canal déjà fonctionnel) :
+  1. **Master** (après `onConnectionChange` + 1500ms) envoie `NearbyMeshService.sendMeshMessage(slavePeerId, { type: 'wifi_group_ready', masterIp: '192.168.49.1' })`.
+  2. **Slave** (handler `_onWifiGroupReadyMesh`) reçoit le signal, trouve le peer WiFi Direct scanné, appelle `connectToPeer(peer, 0, 'SLAVE')`. Le groupe est garanti visible côté Android.
+  3. **Slave** (après `onConnectionChange` + 500ms) envoie `slave_connected_confirmed` au Master via Mesh.
+  4. **Master** garde `_fallbackWaitForSlave()` en parallèle (sécurité si Mesh échoue, attend HELLO WiFi).
+  5. **Slave scan-based connect** : remplacé par attente passive 15s. Si pas de signal en 15s, fallback scan-based.
+  6. **Helpers** : `_findSlavePeerId()` (côté Master) et `_findMasterPeerId()` (côté Slave) matchent par score dans `_meshPeers`.
+- **Fichiers modifiés** : `app/src/features/bluetooth/services/P2PAutoSync.js` (+177 lignes : flags constructor + 3 helpers + refonte _onWifiGroupReadyMesh + refonte onConnectionChange)
+- **Vérifications** : `node --check` → 0 erreur, `grep` → flags/helper/messaging cohérents
+- **Statut** : 🔄 En test (2026-06-07) — Version v0.0.23
+- **Action user** : HARD RELOAD. Tester sur les 2 phones :
+  - Vérifier log `🚀 Orchestrateur démarré (V3.13 - Connexion WiFi synchronisée via Nearby Mesh ...)`
+  - Vérifier côté Master : `📡 [V3.13 Master] Envoi WIFI_GROUP_READY au Slave ...`
+  - Vérifier côté Slave : `📡 [V3.13 Mesh] WIFI_GROUP_READY reçu de Master ...` puis `🔗 [V3.13 Slave] Connexion WiFi Direct à ...`
+  - Vérifier côté Slave : `📤 [V3.13 Slave] Envoi SLAVE_CONNECTED_CONFIRMED au Master ...`

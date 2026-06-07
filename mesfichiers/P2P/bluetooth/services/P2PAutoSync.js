@@ -16,7 +16,7 @@ const DISCONNECT_COOLDOWN_MS = 5000;
 const GROUP_CREATE_COOLDOWN_MS = 10000; // 10s entre chaque createGroup pour éviter "framework busy"
 
 /**
- * P2PAutoSync — L'Orchestrateur Central (V2.6 - Deep Fix Handshake)
+ * P2PAutoSync — L'Orchestrateur Central (V3.10 - Fix _roleSwapQueue ciblé + barrière _waitingForSlave synchrone)
  */
 class P2PAutoSyncClass {
   constructor() {
@@ -47,8 +47,14 @@ class P2PAutoSyncClass {
     this._peerLogThrottle = {};
     this._helloTimeoutHandle = null;
     this._peerHandshakeConfirmed = {};
+    this._waitingForSlave = false; // V3.9: barrière anti-envoi tant que le Slave n'a pas confirmé
+    this._slavePhase2Received = false; // V3.11: Master détecte quand le Slave a envoyé son pack (Phase 2)
     this._meshPeers = new Map();
+    this._ignoredPeers = new Map(); // V3.12 (Fix D) : throttle 60s pour les peers ignorés (anti-spam logs itel A50)
     this._packSentThisSession = false; // V3.0 (BUG-BIDIR): n'envoyer le pack qu'1 fois par session WiFi Direct
+    this._waitingForWifiGroupReady = false; // V3.13: Slave attend le signal Mesh WIFI_GROUP_READY du Master
+    this._meshGroupReadyReceived = false; // V3.13: true quand le signal Mesh a été reçu
+    this._meshGroupReadyTimeoutHandle = null; // V3.13: timeout 15s fallback scan-based connect
     this._hasPendingDelta = false; // V3.6.3 (BUG-060 fix): flag mis à true par onMeshManifestDeltaCalculated()
     this._packReceivedAckResolver = null; // V3.6.4 (Double validation): Promise resolver pour PACK_RECEIVED_OK
     this._peerMeshId = null; // V3.6.4 (Mesh handshake): peerId Mesh du pair pour handshake WIFI_GROUP_READY
@@ -89,15 +95,18 @@ class P2PAutoSyncClass {
     const meshPeer = this._getLatestMeshPeer();
     const meshKey = meshPeer ? meshPeer.name.toLowerCase() : null;
 
-    // V3.2 (BUG-054 fix): Vérifier le swap avec TOUTES les clés possibles du peer
+    // V3.10 (BUG-FIX): Vérifier le swap UNIQUEMENT pour les clés connues de CE peer
     // (peerName peut être "xiaomi 11t" WiFi Direct OU "18_yabisso_xxx" du nom Yabisso)
+    // AVANT (V3.2) : on itérait sur Object.keys(_roleSwapQueue) entier → un swap stocké
+    // pour un AUTRE peer pouvait activer un rôle forcé de façon incorrecte.
+    // MAINTENANT (V3.10) : on vérifie seulement [key, meshKey] — les 2 identités de CE peer.
     // NOTE: le rôle stocké représente le rôle que JE dois avoir à la prochaine reconnexion
     // (suite à la réception d'un SWAP_ROLE_REQUEST, je deviens SLAVE → l'autre devient MASTER)
-    for (const k of [key, meshKey, ...Object.keys(this._roleSwapQueue)]) {
+    for (const k of [key, meshKey]) {
       if (k && this._roleSwapQueue[k]) {
         const forcedRole = this._roleSwapQueue[k];
         const amMaster = forcedRole === 'MASTER';
-        this._log(`🔄 [V3.2 Swap Actif] Rôle forcé pour ${peerName} (clé=${k}) : ${forcedRole} (Je suis Master ? ${amMaster})`);
+        this._log(`🔄 [V3.10 Swap Actif] Rôle forcé pour ${peerName} (clé=${k}) : ${forcedRole} (Je suis Master ? ${amMaster})`);
         return amMaster;
       }
     }
@@ -202,14 +211,110 @@ class P2PAutoSyncClass {
     this._log(`🕸️ [Mesh] Peer enregistré: ${name} (score=${score}, MeshMaster=${isMeshMaster})`);
   }
 
-  // V3.6.4 (Mesh handshake) : Reçu WIFI_GROUP_READY du Master via Mesh
-  // Le Master annonce que son groupe WiFi Direct est créé et que le Slave peut se connecter.
-  // Le Slave peut alors initier sa connexion WiFi en toute confiance (pas à l'aveugle).
+  // V3.13 : Helper — Trouve le peerId Nearby du Slave (côté Master)
+  // On suppose 1-to-1 : le Slave est l'unique mesh peer (différent de moi).
+  // Filtre par score : on prend le peer avec le score DIFFÉRENT du mien.
+  _findSlavePeerId() {
+    const myScore = this._parseScore(WifiDirectService.getDeviceName());
+    for (const [peerId, info] of this._meshPeers) {
+      if (Date.now() - info.discoveredAt > 120000) continue; // stale
+      // Le Slave a un score DIFFÉRENT du mien
+      if (info.score !== myScore) {
+        return peerId;
+      }
+    }
+    // Fallback : retourne le 1er peer (cas où score pas encore parsé)
+    return this._getLatestMeshPeerId();
+  }
+
+  // V3.13 : Helper — Trouve le peerId Nearby du Master (côté Slave)
+  _findMasterPeerId() {
+    const myScore = this._parseScore(WifiDirectService.getDeviceName());
+    for (const [peerId, info] of this._meshPeers) {
+      if (Date.now() - info.discoveredAt > 120000) continue;
+      if (info.score !== myScore) {
+        return peerId;
+      }
+    }
+    return this._peerMeshId || this._getLatestMeshPeerId();
+  }
+
+  // V3.13 : Helper — Fallback _waitForSlaveConfirmation (sécurité si Mesh échoue)
+  // Appelé après l'envoi de WIFI_GROUP_READY. Si le Slave se connecte avant de
+  // recevoir le signal Mesh, cette attente le détectera via YABISSO_HELLO.
+  _fallbackWaitForSlave(peerName) {
+    this._waitForSlaveConfirmation(peerName, 35000).then(confirmed => {
+      this._waitingForSlave = false;
+      if (confirmed && this._running && WifiDirectService.connectedPeer) {
+        this._log(`■ [V3.13] ✅ Slave confirmé (via HELLO WiFi) → lancement envoi`);
+        this._p2pSyncCycle();
+      } else {
+        this._log(`■ [V3.13] ⏰ Timeout — abandon (ni signal Mesh, ni HELLO WiFi)`);
+      }
+    });
+  }
+
+  // V3.13 : Reçu WIFI_GROUP_READY du Master via Mesh
+  // Le Master a confirmé que son groupe WiFi Direct est créé ET visible Android-side.
+  // Le Slave peut maintenant initier sa connexion WiFi en toute confiance (pas à l'aveugle).
+  // - Trouve le peer WiFi Direct correspondant au Master
+  // - Annule le fallback timeout (scan-based)
+  // - Appelle connectToPeer avec le rôle SLAVE
   async _onWifiGroupReadyMesh(peerId, masterIp) {
-    this._log(`📡 [V3.6.4 Mesh] WIFI_GROUP_READY reçu de Master ${peerId} (ip=${masterIp}) → Slave peut se connecter`);
+    this._log(`📡 [V3.13 Mesh] WIFI_GROUP_READY reçu de Master ${peerId} (ip=${masterIp}) → déclenchement connexion SLAVE`);
     this._peerMeshId = peerId;
-    // Note : la connexion WiFi elle-même se fait via onConnectionChange (déclenché par Android)
-    // quand le Slave se connecte au réseau WiFi du Master. Le Mesh sert juste de signalisation.
+    this._meshGroupReadyReceived = true;
+
+    // V3.13 : Annuler le fallback timeout (scan-based) — on a reçu le signal
+    if (this._meshGroupReadyTimeoutHandle) {
+      clearTimeout(this._meshGroupReadyTimeoutHandle);
+      this._meshGroupReadyTimeoutHandle = null;
+    }
+
+    // Garde-fou : si on est déjà connecté, on ne fait rien
+    if (WifiDirectService.connectedPeer || WifiDirectService.isConnecting) {
+      this._log(`⏭️ [V3.13] WIFI_GROUP_READY reçu mais déjà connecté/en cours, ignoré.`);
+      return;
+    }
+
+    // V3.13 : Trouver le peer WiFi Direct du Master (Android name) dans la liste scannée
+    // On prend le 1er peer non-blacklisté (cas Yabisso 1-to-1)
+    const masterYabissoName = this._meshPeers.get(peerId)?.name?.toLowerCase();
+    const detectedPeers = WifiDirectService.peers || [];
+    let targetPeer = null;
+
+    if (detectedPeers.length > 0) {
+      // Filtrer : prendre le 1er peer qui n'est PAS dans notre blacklist
+      targetPeer = detectedPeers.find(p => {
+        const name = (p.deviceName || '').toLowerCase();
+        return !WifiDirectService.isPeerBlacklisted(name);
+      }) || detectedPeers[0];
+    }
+
+    if (!targetPeer) {
+      this._log(`⚠️ [V3.13] Aucun peer WiFi Direct scanné. Master signalé mais le scan n'a pas encore vu le peer. Retry dans 3s.`);
+      setTimeout(() => this._onWifiGroupReadyMesh(peerId, masterIp), 3000);
+      return;
+    }
+
+    const targetName = (targetPeer.deviceName || 'Unknown').toLowerCase();
+    this._log(`🔗 [V3.13 Slave] Connexion WiFi Direct à ${targetName} (signal Mesh du Master ${masterYabissoName || peerId})...`);
+
+    this._lastIntendedRole = 'SLAVE';
+    this._isConnecting = true;
+    try {
+      const ok = await WifiDirectService.connectToPeer(targetPeer, 0, 'SLAVE');
+      if (!ok) {
+        this._log(`⚠️ [V3.13] connectToPeer a échoué. Reset lock dans 5s.`);
+        setTimeout(() => { this._isConnecting = false; }, 5000);
+      } else {
+        this._log(`✅ [V3.13] connectToPeer réussi.`);
+        this._isConnecting = false;
+      }
+    } catch (e) {
+      this._log(`⚠️ [V3.13] connectToPeer exception: ${e.message}`);
+      setTimeout(() => { this._isConnecting = false; }, 5000);
+    }
   }
 
   // V3.6.4 (Mesh handshake) : Reçu SLAVE_CONNECTED_CONFIRMED du Slave via Mesh
@@ -225,24 +330,29 @@ class P2PAutoSyncClass {
   // Équivalent JS du waitForSlaveConnection Java (qui n'existe pas dans la lib).
   // Le Master ne considère la connexion comme "VRAIE" que quand le Slave a répondu.
   // Retourne true si confirmé dans le timeout, false sinon.
-  async _waitForSlaveConfirmation(peerName, timeoutMs = 5000) {
+  // V3.8 : timeout par défaut passé de 5000 à 20000ms (delta réel Master→Slave ~5-10s,
+  // 20s laisse une marge confortable pour la connexion Android côté Itel A50).
+  // V3.9 : on cherche dans TOUTES les clés de _peerHandshakeConfirmed (au lieu d'un
+  // peerName spécifique) car au moment du fire, peerName vaut souvent "unknown" côté
+  // Master. La 1ère confirmation gagne.
+  async _waitForSlaveConfirmation(peerName, timeoutMs = 25000) {
     const startTime = Date.now();
-    const pollInterval = 100;
-    this._log(`⏳ [V3.6.5] Attente confirmation Slave (${peerName}) — max ${timeoutMs}ms...`);
+    this._log(`⏳ [V3.9] Attente YABISSO_HELLO Slave — max ${timeoutMs}ms...`);
     while (Date.now() - startTime < timeoutMs) {
-      if (this._peerHandshakeConfirmed && this._peerHandshakeConfirmed[peerName]) {
+      const confirmedKeys = Object.keys(this._peerHandshakeConfirmed || {});
+      if (confirmedKeys.length > 0) {
         const elapsed = Date.now() - startTime;
-        this._log(`✅ [V3.6.5] Slave confirmé en ${elapsed}ms ! Connexion VRAIE établie.`);
+        this._log(`✅ [V3.9] Slave "${confirmedKeys[0]}" confirmé en ${elapsed}ms !`);
         this._isRealConnected = true;
         return true;
       }
       if (!WifiDirectService.connectedPeer || !this._running) {
-        this._log(`⚠️ [V3.6.5] Déconnexion WiFi pendant l'attente, abandon.`);
+        this._log(`⚠️ [V3.9] Déconnexion pendant l'attente, abandon.`);
         return false;
       }
-      await new Promise(r => setTimeout(r, pollInterval));
+      await new Promise(r => setTimeout(r, 100));
     }
-    this._log(`⏰ [V3.6.5] Pas de confirmation Slave en ${timeoutMs}ms, best-effort.`);
+    this._log(`⏰ [V3.9] Aucun Slave en ${timeoutMs}ms.`);
     this._isRealConnected = false;
     return false;
   }
@@ -314,7 +424,7 @@ class P2PAutoSyncClass {
     this._running = true;
 
     console.log('[P2PAutoSync] Démarrage de l\'orchestrateur Multi-Rail...');
-    this._log('🚀 Orchestrateur démarré (V3.6.4 - LOCK + MESH + DOUBLE VALIDATION: ACK PACK_RECEIVED_OK + Mesh handshake WIFI_GROUP_READY/SLAVE_CONNECTED_CONFIRMED).');
+    this._log('🚀 Orchestrateur démarré (V3.13 - Connexion WiFi synchronisée via Nearby Mesh : Master envoie WIFI_GROUP_READY, Slave ne connecte que sur ce signal).');
 
     NetworkRailDetector.start();
     NetworkRailDetector.onRailChange((rails) => {
@@ -393,6 +503,14 @@ class P2PAutoSyncClass {
         // V3.6 (BUG-058 fix) : _iAmMasterFor retourne null pour les non-Mesh peers
         const roleResult = this._iAmMasterFor(peerName);
         if (roleResult === null) {
+          // V3.12 (Fix D) : Throttle 60s pour le log "ignoré" du même peer
+          // Avant : l'itel A50 spamme les logs toutes les 3s ("⏭️ ignoré") pour le même peer
+          // Maintenant : silence 60s entre 2 logs pour le même peerName
+          const lastIgnored = this._ignoredPeers.get(peerName);
+          if (lastIgnored && (now - lastIgnored) < 60000) {
+            return; // silence 60s pour ce peer
+          }
+          this._ignoredPeers.set(peerName, now);
           this._log(`⏭️ [V3.6 Peer] ${peerName} ignoré (pas de Mesh peer, probablement imprimante/tiers).`);
           return;
         }
@@ -421,168 +539,179 @@ class P2PAutoSyncClass {
             setTimeout(() => { this._isConnecting = false; }, 5000);
           }
         } else {
-          this._log(`⏳ [V3.6 Slave] Connexion au Master dans 3s (laissé au cycle 3s pour éviter double-trigger)...`);
+          // V3.13 : Le Slave NE TENTE PLUS de connectToPeer directement sur scan.
+          // - Race condition : le scan peut détecter le Master AVANT que createGroup() ne soit
+          //   visible côté Android (2-5s de délai), le Slave appelle connect() et timeout 8s.
+          // - Le Slave attend maintenant le signal Mesh WIFI_GROUP_READY du Master
+          //   (_onWifiGroupReadyMesh) qui garantit que le groupe est créé et visible.
+          // - Fallback : si aucun signal reçu en 15s, le Slave retente via scan (sécurité).
+          this._log(`⏳ [V3.13 Slave] Peer ${peerName} détecté — j'attends le signal Mesh WIFI_GROUP_READY du Master (max 15s)...`);
+          this._lastIntendedRole = 'SLAVE';
+          WifiDirectService.recordPeerAttempt(peerName);
+          this._waitingForWifiGroupReady = true;
+
+          if (this._meshGroupReadyTimeoutHandle) {
+            clearTimeout(this._meshGroupReadyTimeoutHandle);
+          }
+          this._meshGroupReadyTimeoutHandle = setTimeout(() => {
+            this._meshGroupReadyTimeoutHandle = null;
+            if (this._running && !WifiDirectService.connectedPeer && !WifiDirectService.isConnecting && this._waitingForWifiGroupReady) {
+              this._log(`⏰ [V3.13 Slave] Aucun WIFI_GROUP_READY en 15s — fallback scan-based connect vers ${peerName}`);
+              this._waitingForWifiGroupReady = false;
+              this._p2pSyncCycle();
+            }
+          }, 15000);
         }
       });
 
       WifiDirectService.on('onConnectionChange', async ({ connected, info }) => {
         if (connected && this._running) {
           this._wasConnected = true;
-          this._packSentThisSession = false; // V3.0: Reset flag à chaque nouvelle connexion
+          this._packSentThisSession = false; // V3.7: Reset de session
           NetworkRailDetector.setWifiDirectAvailable(true);
           // V3.6 (BUG-058 fix) : Libérer le lock dès que la connexion est établie
           this._isConnecting = false;
           if (WifiDirectService.isGroupOwner) {
             this._hasCreatedGroup = true;
-            // V3.6.4 (Mesh handshake) : Master annonce au Slave via Mesh que le groupe est prêt
-            // Le Slave peut alors se connecter en confiance (pas à l'aveugle)
-            // On récupère le peerId Mesh du premier pair connu
-            const meshPeerId = this._getLatestMeshPeerId();
-            if (meshPeerId) {
-              this._peerMeshId = meshPeerId;
-              try {
-                await NearbyMeshService.sendMeshMessage(meshPeerId, {
-                  type: 'wifi_group_ready',
-                  masterIp: '192.168.49.1',
-                  senderDevice: WifiDirectService.getDeviceName(),
-                });
-                this._log(`📡 [V3.6.4 Mesh] WIFI_GROUP_READY envoyé au Slave ${meshPeerId}`);
-              } catch (e) {
-                this._log(`⚠️ [V3.6.4 Mesh] Échec envoi WIFI_GROUP_READY: ${e.message}`);
-              }
-            } else {
-              this._log(`⚠️ [V3.6.4 Mesh] Pas de peerId Mesh connu, handshake WiFi_GROUP_READY skippé`);
-            }
-          } else {
-            // V3.6.4 (Mesh handshake) : Slave confirme au Master qu'il est connecté
-            const meshPeerId = this._getLatestMeshPeerId();
-            if (meshPeerId) {
-              this._peerMeshId = meshPeerId;
-              try {
-                await NearbyMeshService.sendMeshMessage(meshPeerId, {
-                  type: 'slave_connected_confirmed',
-                  senderDevice: WifiDirectService.getDeviceName(),
-                });
-                this._log(`✅ [V3.6.4 Mesh] SLAVE_CONNECTED_CONFIRMED envoyé au Master ${meshPeerId}`);
-              } catch (e) {
-                this._log(`⚠️ [V3.6.4 Mesh] Échec envoi SLAVE_CONNECTED_CONFIRMED: ${e.message}`);
-              }
-            }
           }
-          // V3.6.2 (BUG-059 fix) : HYDRATER _lastIntendedRole avec la VÉRITÉ MATÉRIELLE
-          // Le réseau Android peut être prêt avant que notre logique d'élection pré-connexion
-          // (cycle ou onPeerFound WiFi Direct) n'ait eu le temps de setter _lastIntendedRole.
-          // C'est ce qui causait le bug "role=null" → l'Itel se croyait SLAVE et tentait
-          // d'envoyer HELLO + pack alors qu'il est GO/Master. On se fie au硬件 (isGroupOwner).
-          this._lastIntendedRole = WifiDirectService.isGroupOwner ? 'MASTER' : 'SLAVE';
-          this._log(`📶 WiFi Direct CONNECTÉ ! GO=${WifiDirectService.isGroupOwner}, Rôle intendé=${this._lastIntendedRole} (hydraté depuis hardware), lock=OFF`);
 
-          // V3.6.5 (REAL CONNECTION CHECK) : À ce stade, on est connecté au réseau WiFi
-          // mais on ne sait PAS encore si un Slave a réellement rejoint. On initialise
-          // _isRealConnected = false. Il passera à true UNIQUEMENT quand on recevra
-          // YABISSO_HELLO_ACK du Slave (voir _waitForSlaveConfirmation).
+          // V3.7 (FIX UNILATÉRAL — retour ami) : Ne PAS faire confiance aveuglément au
+          // hardware de l'Itel A50 instantanément. Sur l'Itel d'entrée de gamme, la couche
+          // matérielle met du temps à stabiliser isGroupOwner, ce qui faisait basculer les
+          // DEUX phones en SLAVE. On se base d'abord sur l'élection Mesh (score), fallback
+          // sur le hardware si pas de peer Mesh encore découvert.
+          const myScore = this._parseScore(WifiDirectService.getDeviceName());
+          const meshPeer = this._getLatestMeshPeer();
+          const peerScore = meshPeer ? meshPeer.score : 0;
+          if (myScore > 0 && peerScore > 0) {
+            this._lastIntendedRole = myScore > peerScore ? 'MASTER' : 'SLAVE';
+          } else {
+            this._lastIntendedRole = WifiDirectService.isGroupOwner ? 'MASTER' : 'SLAVE';
+          }
+          this._log(`■ [V3.7 Fix] Connexion Wi-Fi validée. myScore=${myScore}, peerScore=${peerScore} → Rôle logique affecté : ${this._lastIntendedRole}`);
+
+          // V3.6.5 (REAL CONNECTION CHECK) : à ce stade on est branché au réseau WiFi
+          // mais on ne sait PAS encore si un Slave a réellement rejoint.
           this._isRealConnected = false;
           this._slaveIpAddress = info?.groupOwnerAddress?.getHostAddress?.() || null;
 
           const isMyRoleMaster = this._lastIntendedRole === 'MASTER';
           const peerName = (info?.deviceName || WifiDirectService.connectedPeer?.deviceName || 'Unknown').toLowerCase();
 
-          // V3.6.5 : Si je suis Slave, je sais que je suis VRAIMENT connecté (j'ai rejoint
-          // le réseau du Master, c'est Android qui m'a confirmé). Le Slave peut donc
-          // considérer _isRealConnected = true immédiatement.
+          // V3.6.5 : si je suis Slave, je sais que je suis VRAIMENT connecté (j'ai rejoint
+          // le réseau du Master, c'est Android qui m'a confirmé).
           if (!isMyRoleMaster) {
             this._isRealConnected = true;
-            this._log(`🟢 [V3.6.5 Slave] VRAIE connexion établie (Slave a rejoint le Master).`);
+            this._log(`■ [V3.7 Slave] Mode Client validé. Lancement automatique du récepteur.`);
           } else {
             this._log(`🟡 [V3.6.5 Master] Groupe WiFi créé, en attente d'un vrai Slave...`);
           }
 
+          // V3.10 (FIX BARRIÈRE SYNCHRONE) : _waitingForSlave est posé ICI, de façon
+          // SYNCHRONE, AVANT le setTimeout(1500ms). Sans ça, le cycle de 3s pouvait
+          // se glisser dans la fenêtre [0ms → 1500ms] et lancer un envoi prématuré.
+          // Le verrou est levé dans le .then() de _waitForSlaveConfirmation.
+          if (isMyRoleMaster) {
+            this._waitingForSlave = true;
+            this._log(`■ [V3.10] Master : verrou _waitingForSlave ON (synchrone)`);
+          }
+
+          // V3.9 (SLAVE-INITIATED HANDSHAKE + BARRIÈRE) : on laisse 1500 ms à Android
+          // pour lier la table de routage IP sur l'Itel A50.
+          // - Master : startReceiving + _waitForSlaveConfirmation en .then() (PAS d'await).
+          // - Slave : startReceiving + _sendYabissoHello immédiat.
           setTimeout(() => {
-            if (WifiDirectService.connectedPeer && this._running) {
-              const shouldSend = !isMyRoleMaster;
-              if (shouldSend) {
-                this._log('🚀 Envoi imminent — HELLO d\'abord, pack ensuite...');
-                WifiDirectService.startReceiving(WifiDirectService.globalFileHandler);
-                this._sendYabissoHello(isMyRoleMaster, peerName);
-                setTimeout(() => {
-                  if (WifiDirectService.connectedPeer && this._running) {
-                    const isYabissoConfirmed = this._peerHandshakeConfirmed[peerName];
-                    if (isYabissoConfirmed) {
-                      this._log('✅ Handshake OK → Envoi du pack...');
-                      this._p2pSyncCycle();
-                    } else {
-                      this._log('⏳ Pas d\'ACK reçu (3s) — envoi du pack quand même (best effort)...');
-                      this._p2pSyncCycle();
-                    }
-                  }
-                }, 3000);
-              } else {
-                this._log('📡 Mode Réception — Prêt.');
-                WifiDirectService.startReceiving(WifiDirectService.globalFileHandler);
-                this._startYabissoHelloWatchdog(peerName);
-
-                // V2.13 (BUG-043) : Si on a un peer Mesh avec score plus bas que nous, c'est étrange
-                // (on est censé être MASTER, mais on reçoit). Forcer l'envoi.
-                const myScore = this._parseScore(WifiDirectService.getDeviceName());
-                const meshPeer = this._getLatestMeshPeer();
-                if (meshPeer && myScore > 0 && meshPeer.score < myScore) {
-                  this._log(`🔄 [V3.1] MASTER forcé d'envoyer car peer ${meshPeer.name} (score=${meshPeer.score}) < moi (${myScore})`);
-
-                  // V3.6.5 (REAL CONNECTION CHECK) : Le Master doit VÉRIFIER qu'un Slave
-                  // a réellement rejoint avant d'envoyer le pack. Équivalent JS du
-                  // waitForSlaveConnection Java. On attend 5s max la confirmation.
-                  setTimeout(async () => {
-                    if (!WifiDirectService.connectedPeer || !this._running) return;
-                    try {
-                      this._log(`📤 [V3.6.5] Envoi YABISSO_HELLO pour vérifier la présence du Slave...`);
-                      await WifiDirectService.sendControlMessage({
-                        type: 'YABISSO_HELLO',
-                        myScore,
-                        isMasterSide: true
-                      });
-                    } catch (e) {
-                      this._log(`⚠️ [V3.6.5] Envoi HELLO forcé échoué: ${e.message}`);
-                      return;
-                    }
-
-                    // V3.6.5 : Attendre la VRAIE confirmation du Slave (HELLO_ACK)
-                    const confirmed = await this._waitForSlaveConfirmation(peerName, 5000);
-                    if (confirmed) {
-                      this._log(`🟢 [V3.6.5] VRAIE connexion Slave confirmée → envoi du pack`);
-                      this._p2pSyncCycle();
-                    } else {
-                      this._log(`⏰ [V3.6.5] Pas de Slave confirmé en 5s → best-effort, on envoie quand même`);
-                      this._p2pSyncCycle();
-                    }
-                  }, 5000);
-                }
+            if (!WifiDirectService.connectedPeer || !this._running) {
+              // Si la connexion a chuté pendant le délai, on lève le verrou pour ne pas bloquer
+              if (isMyRoleMaster) {
+                this._waitingForSlave = false;
+                this._log(`■ [V3.10] Master : connexion perdue pendant délai, verrou levé`);
               }
+              return;
+            }
+            if (isMyRoleMaster) {
+              this._log(`■ [V3.10] Master : récepteur démarré, attente Slave...`);
+              WifiDirectService.startReceiving(WifiDirectService.globalFileHandler);
+
+              // V3.13 : ENVOI DU SIGNAL WIFI_GROUP_READY VIA NEARBY MESH
+              // On attend 1500ms que le groupe WiFi soit stable, puis on notifie le Slave.
+              // Le Slave ne tentera sa connexion qu'à la réception de ce signal (plus de race).
+              setTimeout(async () => {
+                if (!WifiDirectService.connectedPeer || !this._running) {
+                  this._log(`⚠️ [V3.13] Master : connexion perdue avant envoi WIFI_GROUP_READY, abandon.`);
+                  return;
+                }
+                const slavePeerId = this._findSlavePeerId();
+                if (!slavePeerId) {
+                  this._log(`⚠️ [V3.13] Master : pas de Slave Mesh peer trouvé, fallback sur _waitForSlaveConfirmation.`);
+                  this._fallbackWaitForSlave(peerName);
+                  return;
+                }
+                const masterIp = this._slaveIpAddress || '192.168.49.1';
+                this._log(`📡 [V3.13 Master] Envoi WIFI_GROUP_READY au Slave ${slavePeerId} (ip=${masterIp})...`);
+                const sent = await NearbyMeshService.sendMeshMessage(slavePeerId, {
+                  type: 'wifi_group_ready',
+                  masterIp,
+                });
+                if (sent) {
+                  this._log(`✅ [V3.13 Master] WIFI_GROUP_READY envoyé au Slave avec succès.`);
+                } else {
+                  this._log(`⚠️ [V3.13 Master] Échec envoi WIFI_GROUP_READY, fallback sur _waitForSlaveConfirmation.`);
+                }
+                // On lance aussi _waitForSlaveConfirmation en parallèle (sécurité)
+                this._fallbackWaitForSlave(peerName);
+              }, 1500);
+            } else {
+              this._log(`■ [V3.10] Slave : récepteur + HELLO`);
+              WifiDirectService.startReceiving(WifiDirectService.globalFileHandler);
+              this._sendYabissoHello(false, peerName);
+
+              // V3.13 : Envoi SLAVE_CONNECTED_CONFIRMED au Master via Mesh
+              // Le Master reçoit ce signal et sait qu'il peut commencer à envoyer (sécurité
+              // supplémentaire au YABISSO_HELLO_ACK qui passe par WiFi Direct).
+              setTimeout(async () => {
+                if (!WifiDirectService.connectedPeer || !this._running) return;
+                const masterPeerId = this._peerMeshId || this._findMasterPeerId();
+                if (!masterPeerId) {
+                  this._log(`⚠️ [V3.13 Slave] Pas de Master Mesh peerId, SLAVE_CONNECTED_CONFIRMED non envoyé.`);
+                  return;
+                }
+                this._log(`📤 [V3.13 Slave] Envoi SLAVE_CONNECTED_CONFIRMED au Master ${masterPeerId}...`);
+                const sent = await NearbyMeshService.sendMeshMessage(masterPeerId, {
+                  type: 'slave_connected_confirmed',
+                });
+                if (sent) {
+                  this._log(`✅ [V3.13 Slave] SLAVE_CONNECTED_CONFIRMED envoyé.`);
+                } else {
+                  this._log(`⚠️ [V3.13 Slave] Échec envoi SLAVE_CONNECTED_CONFIRMED.`);
+                }
+              }, 500);
             }
           }, 1500);
         } else if (this._wasConnected) {
+          // Section Déconnexion classique
           this._wasConnected = false;
           NetworkRailDetector.setWifiDirectAvailable(false);
           WifiDirectService.stopReceiving();
           this._lastDisconnectAt = Date.now();
-          // V3.0: Reset _packSentThisSession pour permettre un nouvel envoi à la prochaine connexion
-          // mais NE PAS reset _lastIntendedRole (rôle préservé pour le swap)
           this._packSentThisSession = false;
-          this._hasPendingDelta = false; // V3.6.3: Reset du flag delta à la déconnexion
-          // V3.6 (BUG-058 fix) : Reset lock + hasCreatedGroup sur déconnexion
+          this._hasPendingDelta = false;
           this._isConnecting = false;
           this._hasCreatedGroup = false;
-          // V3.6.5 (REAL CONNECTION CHECK) : Reset du flag "vraie connexion" à la déconnexion
           this._isRealConnected = false;
           this._slaveIpAddress = null;
-
-          // Resume Nearby Mesh après déconnexion WiFi Direct
-          try { await NearbyMeshService.resumeMesh(); } catch (_) {}
-
-          if (Object.keys(this._roleSwapQueue).length > 0) {
-            this._log('🔌 Déconnexion détectée. Swap actif : reconnexion immédiate...');
-          } else {
-            this._log('🔌 Déconnexion détectée. Cool-down (5s)...');
+          // V3.9: reset des flags de handshake à chaque session
+          this._waitingForSlave = false;
+          this._peerHandshakeConfirmed = {};
+          // V3.13: reset des flags de signalisation Mesh
+          this._waitingForWifiGroupReady = false;
+          this._meshGroupReadyReceived = false;
+          if (this._meshGroupReadyTimeoutHandle) {
+            clearTimeout(this._meshGroupReadyTimeoutHandle);
+            this._meshGroupReadyTimeoutHandle = null;
           }
+          try { await NearbyMeshService.resumeMesh(); } catch (_) {}
+          this._log('■ Déconnexion détectée. Nettoyage des processus.');
         }
       });
 
@@ -753,6 +882,13 @@ class P2PAutoSyncClass {
   }
 
   async _p2pSyncCycle(category = null) {
+    // V3.9 BARRIÈRE ABSOLUE : on bloque le cycle tant que le Slave n'a pas confirmé
+    // son handshake YABISSO_HELLO. La barrière est posée AVANT _syncingP2P pour
+    // qu'aucun autre verrou ne masque l'attente. Reset via .then() (pas await).
+    if (this._waitingForSlave) {
+      this._log('⏸️ [V3.9] Cycle bloqué — attente handshake Slave');
+      return;
+    }
     // V3.6 (BUG-058 fix) : VERROU ANTI-SATURATION
     // Si une connexion est déjà en cours, on ne lance PAS un nouveau cycle.
     // Sans ce lock, la puce WiFi Android sature et renvoie "framework is busy".
@@ -946,124 +1082,51 @@ class P2PAutoSyncClass {
           }
 
           // ==========================================
-          // V3.3 (BUG-055 fix): BIDIRECTIONNEL SANS DÉCONNEXION
-          // Au lieu d'envoyer SWAP_ROLE_REQUEST et de se déconnecter,
-          // on garde la connexion WiFi active et on fait la Phase 2.
+          // V3.11 (BUG-041 fix): BIDIRECTIONNEL INITIÉ PAR LE SLAVE
+          // - SUPPRESSION de getClientAddress() (échouait toujours sur Itel A50)
+          // - SUPPRESSION du fallback SWAP_ROLE_REQUEST (l'imprimante héritait du swap)
+          // - Le SLAVE initie sa Phase 2 depuis _handleReceivedFile (sendFileTo vers 192.168.49.1)
+          // - Le MASTER attend _slavePhase2Received (max 15s) puis envoie SYNC_COMPLETE
+          // - Plus de SWAP du tout. Le bidirectionnel se fait naturellement via TCP.
           // ==========================================
-          
-          if (!isSwapActive) {
-            // === PHASE 1 → PHASE 2 (sans déconnexion) ===
-            this._log(`🔄 [V3.3] Phase 1 terminée. Récupération IP client pour Phase 2...`);
-            
-            // Le GO récupère l'IP du client (déjà reçue lors du sendFile côté client)
-            // Astuce : le client vient juste d'envoyer son pack, le GO peut récupérer l'IP
-            let clientIp = null;
-            
-            if (WifiDirectService.isGroupOwner) {
-              // GO : on a déjà reçu le pack du client, on a peut-être son IP via les métadonnées
-              // Sinon on tente getClientAddress() qui ouvre un MessageServer et récupère l'IP
-              this._log(`📡 [V3.3] GO : tentative getClientAddress() pour récupérer IP du client...`);
-              const addrResult = await WifiDirectService.getClientAddress(8000);
-              if (addrResult && addrResult.clientIp) {
-                clientIp = addrResult.clientIp;
-                this._log(`✅ [V3.3] IP client récupérée: ${clientIp}`);
-              } else {
-                this._log(`⚠️ [V3.3] Impossible de récupérer IP client, fallback SYNC_COMPLETE`);
-              }
-            } else {
-              // Client : on connaît l'IP du GO (toujours 192.168.49.1)
-              clientIp = '192.168.49.1';
-              this._log(`📡 [V3.3] Client : IP GO connue: ${clientIp}`);
-            }
 
-            if (clientIp) {
-              // === PHASE 2 : l'AUTRE device envoie son pack ===
-              // Le client (Xiaomi) ouvre un receiveFile, le GO (Itel) envoie via sendFileTo
-              if (WifiDirectService.isGroupOwner) {
-                // GO va envoyer au client via sendFileTo
-                this._log(`📤 [V3.3] PHASE 2 : GO envoie son pack au client ${clientIp}...`);
-                const myPackPath = await LobaPackService.buildPack(category, 25);
-                if (myPackPath) {
-                  // Attendre 1s pour laisser le client ouvrir son serveur
-                  this._log(`⏳ [V3.3] Attente 1.5s pour que le client ouvre son serveur...`);
-                  await new Promise(r => setTimeout(r, 1500));
-                  
-                  const sent2 = await WifiDirectService.sendFileTo(myPackPath, clientIp, {
-                    hash: `pack_${Date.now()}_phase2`,
-                    type: 'LOBA_PACK',
-                    category: category || 'bundle',
-                    senderDevice: WifiDirectService.getDeviceName()
-                  });
-                  if (sent2) {
-                    this._log(`✅ [V3.3] Pack Phase 2 (GO → Client) envoyé !`);
-                  } else {
-                    this._log(`❌ [V3.3] Échec envoi pack Phase 2`);
-                  }
-                }
-              } else {
-                // Client doit ouvrir un serveur pour que le GO puisse envoyer
-                // V3.6.2 (BUG-059 fix) : Pause 1000ms AVANT d'ouvrir le serveur
-                // pour laisser l'interface réseau de l'Itel A50 se stabiliser après
-                // le 1er HELLO qui a échoué. Évite que le GO envoie vers un socket
-                // pas encore bind.
-                this._log(`📡 [V3.3] PHASE 2 : Client ouvre receiveFile() pour recevoir du GO...`);
-                this._log(`⏳ [V3.6.2] Pause 1000ms pour stabiliser l'interface réseau...`);
-                await new Promise(r => setTimeout(r, 1000));
-                WifiDirectService.startReceiving(WifiDirectService.globalFileHandler);
-                this._log(`✅ [V3.6.2] Serveur Slave ouvert, prêt à recevoir Phase 2 du GO`);
-              }
+          this._log(`🔄 [V3.11] Phase 1 terminée. Attente Phase 2 du Slave (jusqu'à 15s)...`);
+          this._slavePhase2Received = false; // reset du flag pour cette session
 
-              // Attendre 3s puis envoyer SYNC_COMPLETE
-              await new Promise(r => setTimeout(r, 3000));
-              this._log(`🏁 [V3.3] Fin synchro bidirectionnelle — Envoi de SYNC_COMPLETE...`);
-              const msgSent = await WifiDirectService.sendControlMessage({
-                type: 'SYNC_COMPLETE'
-              });
-              if (msgSent) {
-                const completeKeys = [peerName];
-                if (meshPeer) completeKeys.push(meshPeer.name.toLowerCase());
-                for (const k of completeKeys) {
-                  delete this._roleSwapQueue[k];
-                }
-                this._completedSyncs[peerName] = Date.now();
-                this._log(`✅ [V3.3] SYNC_COMPLETE envoyé. Déconnexion dans 3s...`);
-              } else {
-                this._log(`❌ Échec de l'envoi de SYNC_COMPLETE`);
-              }
-              setTimeout(() => { WifiDirectService.disconnect(); }, 3000);
-            } else {
-              // Pas d'IP client → fallback à l'ancien comportement (SWAP)
-              this._log(`⚠️ [V3.3] Fallback SWAP (pas d'IP client)`);
-              const msgSent = await WifiDirectService.sendControlMessage({
-                type: 'SWAP_ROLE_REQUEST'
-              });
-              if (msgSent) {
-                const swapKeys = [peerName];
-                if (meshPeer) swapKeys.push(meshPeer.name.toLowerCase());
-                for (const k of swapKeys) {
-                  this._roleSwapQueue[k] = 'MASTER';
-                }
-                this._log(`✅ SWAP_ROLE_REQUEST envoyé. Déconnexion dans 3s...`);
-              }
-              setTimeout(() => { WifiDirectService.disconnect(); }, 3000);
+          // Attente active: 15s max OU _slavePhase2Received = true OU déconnexion
+          const phase2StartTime = Date.now();
+          const phase2TimeoutMs = 15000;
+          while (Date.now() - phase2StartTime < phase2TimeoutMs) {
+            if (this._slavePhase2Received) {
+              const elapsed = Date.now() - phase2StartTime;
+              this._log(`✅ [V3.11] Phase 2 du Slave reçue en ${elapsed}ms ! Bidirectionnel OK.`);
+              break;
             }
-          } else {
-            // On était en mode swap (Phase 2 classique) → envoyer SYNC_COMPLETE
-            this._log(`🏁 [V3.3] Fin Phase 2 (swap) — Envoi de SYNC_COMPLETE...`);
-            const msgSent = await WifiDirectService.sendControlMessage({
-              type: 'SYNC_COMPLETE'
-            });
-            if (msgSent) {
-              const completeKeys = [peerName];
-              if (meshPeer) completeKeys.push(meshPeer.name.toLowerCase());
-              for (const k of completeKeys) {
-                delete this._roleSwapQueue[k];
-              }
-              this._completedSyncs[peerName] = Date.now();
-              this._log(`✅ SYNC_COMPLETE envoyé. Déconnexion dans 3s...`);
+            if (!WifiDirectService.connectedPeer || !this._running) {
+              this._log(`⚠️ [V3.11] Déconnexion WiFi pendant attente Phase 2, abandon.`);
+              return;
             }
-            setTimeout(() => { WifiDirectService.disconnect(); }, 3000);
+            await new Promise(r => setTimeout(r, 200));
           }
+
+          if (!this._slavePhase2Received) {
+            this._log(`⏰ [V3.11] Timeout 15s Phase 2 - le Slave n'a pas envoyé (best-effort, on continue avec SYNC_COMPLETE).`);
+          }
+
+          // Envoyer SYNC_COMPLETE (succès bidirectionnel ou best-effort)
+          this._log(`🏁 [V3.11] Fin synchro — Envoi de SYNC_COMPLETE...`);
+          const msgSent = await WifiDirectService.sendControlMessage({
+            type: 'SYNC_COMPLETE'
+          });
+          if (msgSent) {
+            // V3.11 : on ne fait PLUS de nettoyage ciblé, _handleReceivedFile SYNC_COMPLETE
+            // handler s'occupe du vidage complet de _roleSwapQueue à la réception.
+            this._completedSyncs[peerName] = Date.now();
+            this._log(`✅ [V3.11] SYNC_COMPLETE envoyé. Déconnexion dans 3s...`);
+          } else {
+            this._log(`❌ [V3.11] Échec envoi SYNC_COMPLETE`);
+          }
+          setTimeout(() => { WifiDirectService.disconnect(); }, 3000);
         } else {
           this._log('📡 Mode Réception — Prêt.');
           WifiDirectService.startReceiving(WifiDirectService.globalFileHandler);
@@ -1105,14 +1168,16 @@ class P2PAutoSyncClass {
           }
           this._log(`🔄 [V3.2] SWAP reçu → je deviens SLAVE, l'autre devient MASTER`);
         } else if (metadata.type === 'SYNC_COMPLETE') {
-          // V3.2 (BUG-054 fix): Nettoyer TOUTES les clés du peer (Yabisso + WiFi Direct)
-          for (const k of keys) {
-            delete this._roleSwapQueue[k];
-          }
+          // V3.11 (BUG-041 fix) : VIDAGE COMPLET de _roleSwapQueue
+          // AVANT (V3.2-V3.10) : on nettoyait seulement les clés Yabisso + WiFi Direct du peer actuel.
+          // Problème : si meshPeer est null au moment du nettoyage, la clé Mesh (ex: "18_yabisso_dwazse")
+          // reste dans _roleSwapQueue et pollue les futures connexions (l'imprimante hérite du swap).
+          // MAINTENANT (V3.11) : on reset TOUT le dictionnaire. Plus de clé Mesh stale possible.
+          this._roleSwapQueue = {};
           this._completedSyncs[yabissoKey || wifiDirectKey] = Date.now();
           this._lastIntendedRole = null; // V3.0: Reset complet du rôle après synchro bidirectionnelle
           this._packSentThisSession = false;
-          this._log(`✅ [V3.2] Synchro bidirectionnelle complétée. Reset ${keys.length} clé(s) + repos 5 minutes.`);
+          this._log(`✅ [V3.11] Synchro bidirectionnelle complétée. _roleSwapQueue vidé (${keys.length} clé(s) nettoyée(s)) + repos 5 minutes.`);
         } else if (metadata.type === 'YABISSO_HELLO') {
           const senderDevice = metadata.senderDevice || peerName;
           const isYabisso = WifiDirectService.isLikelyYabissoDevice(senderDevice);
@@ -1122,9 +1187,10 @@ class P2PAutoSyncClass {
             setTimeout(() => { try { WifiDirectService.disconnect(); } catch (_) {} }, 500);
             return;
           }
+          // V3.8 : le YABISSO_HELLO du Slave débloque le _waitForSlaveConfirmation du Master
           this._confirmYabissoHandshake(senderDevice, metadata.myScore);
           this._lastYabissoPeerSeen = Date.now();
-          this._log(`✅ [Handshake] ${senderDevice} confirmé Yabisso (score=${metadata.myScore}). Envoi ACK...`);
+          this._log(`🤝 [V3.8] YABISSO_HELLO reçu de ${senderDevice} (score=${metadata.myScore}) → handshake confirmé`);
           await WifiDirectService.sendControlMessage({
             type: 'YABISSO_HELLO_ACK',
             myScore: WifiDirectService.getPowerScore(),
@@ -1157,6 +1223,14 @@ class P2PAutoSyncClass {
       }
       
       if (metadata.type === 'LOBA_PACK') {
+          // V3.11 (BUG-041 fix) : DÉTECTION PHASE 2 DU SLAVE
+          // Le Slave envoie son pack avec metadata.phase === 'slave_phase2'.
+          // Le Master détecte ce tag et set _slavePhase2Received = true pour débloquer
+          // la boucle d'attente dans _p2pSyncCycle (sortie immédiate du wait).
+          if (metadata.phase === 'slave_phase2') {
+            this._slavePhase2Received = true;
+            this._log(`📥 [V3.11] Pack Phase 2 du Slave détecté (phase=slave_phase2)`);
+          }
           this._log(`📥 Reçu Loba Pack. Traitement...`);
           const peerName = (metadata.senderDevice || WifiDirectService.connectedPeer?.deviceName || 'Unknown').toLowerCase();
           this._lastReceivedFrom[peerName] = Date.now();
@@ -1183,6 +1257,37 @@ class P2PAutoSyncClass {
             }
           } catch (e) {
             this._log(`⚠️ [V3.6.4] Erreur envoi PACK_RECEIVED_OK: ${e.message}`);
+          }
+
+          // V3.11 (BUG-041 fix) : LE SLAVE INITIE SA PHASE 2 DIRECTEMENT
+          // Au lieu d'attendre que le Master récupère l'IP via getClientAddress() (qui échoue toujours),
+          // le Slave connaît l'IP du GO (toujours 192.168.49.1 sur Android) et initie lui-même
+          // l'envoi de son pack vers le Master. Le Master a déjà startReceiving() actif.
+          if (!WifiDirectService.isGroupOwner && WifiDirectService.connectedPeer) {
+            this._log(`🚀 [V3.11] SLAVE: initiation Phase 2 (envoi mon pack vers GO 192.168.49.1)...`);
+            setTimeout(async () => {
+              try {
+                const myPackPath = await LobaPackService.buildPack(null, 25);
+                if (!myPackPath) {
+                  this._log(`⚠️ [V3.11] SLAVE Phase 2: buildPack a retourné null`);
+                  return;
+                }
+                const sent = await WifiDirectService.sendFileTo(myPackPath, '192.168.49.1', {
+                  hash: `pack_${Date.now()}_slave_phase2`,
+                  type: 'LOBA_PACK',
+                  phase: 'slave_phase2', // V3.11: tag pour que le Master sache que c'est la Phase 2
+                  category: 'bundle',
+                  senderDevice: WifiDirectService.getDeviceName(),
+                });
+                if (sent) {
+                  this._log(`✅ [V3.11] SLAVE Phase 2 envoyée au GO !`);
+                } else {
+                  this._log(`❌ [V3.11] SLAVE Phase 2 échouée (sendFileTo false)`);
+                }
+              } catch (e) {
+                this._log(`⚠️ [V3.11] SLAVE Phase 2 erreur: ${e.message}`);
+              }
+            }, 500); // Petit délai 500ms pour stabiliser l'interface réseau après ACK
           }
           // Note: On ne disconnecte plus automatiquement ici car le Slave gère le cycle et la déconnexion après envoi du message de contrôle.
           return;

@@ -6315,3 +6315,665 @@ isGroupOwner: WifiDirectService.isGroupOwner,
 
 ### Commit
 **v0.0.20** : `V3.6.5 REAL CONNECTION CHECK - Master attend confirmation Slave (YABISSO_HELLO_ACK) avant d'envoyer pack + flag isRealConnected exposé dans getStats pour UI`
+
+---
+
+## SESSION solutionp2p.md (2026-06-05 ~00h45) — EXTRACTION CODE COMPLET POUR RELECTURE AMI
+
+### Contexte
+L'utilisateur a demandé : "**copie et colle tout le code de partage automatique que nous sommes entrain d'implimenter dans le fichier solutionp2p.md je dis bien tout je vais demander à mon ami de verifier aussi**".
+
+### Action effectuée
+1. **Vidé** `mesfichiers/solutionp2p.md` (ancien contenu de V3.0 supprimé)
+2. **Écrit un header** avec :
+   - Date d'extraction (2026-06-05)
+   - Version (v0.0.20)
+   - Liste des 3 fichiers et leur nombre de lignes
+   - Tableau récapitulatif V3.6 → V3.6.5
+3. **Copié-collé à 100%** les 3 fichiers (rien omis, rien résumé) :
+   - `P2PAutoSync.js` (1315 lignes) — Orchestrateur
+   - `NearbyMeshService.js` (405 lignes) — Mesh BLE
+   - `WifiDirectService.js` (604 lignes) — WiFi Direct natif
+4. **Ajouté des séparateurs clairs** entre chaque fichier :
+   - `# ============================================================`
+   - `# FICHIER X/3 : NomDuFichier.js (XXX lignes)`
+   - `# Chemin : ...`
+   - `# Rôle : ...`
+   - `# ============================================================`
+5. **Ajouté un footer** avec instructions de réinjection
+
+### Résultat
+- `mesfichiers/solutionp2p.md` = **2392 lignes** (68 lignes de header/separators + 2324 lignes de code)
+- Code 100% complet (vérifié par échantillonnage : imports, classes, exports, commentaires)
+- Total des 3 fichiers source = 2324 lignes (correspond exactement au code collé)
+
+### État Git
+- `mesfichiers/solutionp2p.md` est maintenant `modified` (non commité)
+- En attente de validation par l'ami de l'utilisateur
+
+### Prochaine étape
+- L'utilisateur va demander à son ami de relire `solutionp2p.md`
+- Si OK → commit du fichier mis à jour
+- Si corrections → appliquer les retours de l'ami
+
+## [2026-06-05 01:00:34] SESSION - Génération PDF de solutionp2p.md
+
+**Action:** Conversion MD -> PDF du fichier solutionp2p.md (2392 lignes, 101602 caractères, 100% du code P2P).
+
+**Outil créé:** C:/Users/Utilisateur/Documents/Ben/myapp/yabisso/mesfichiers/md_to_pdf.py
+- Python 3.13 + reportlab 4.5.1 + markdown + pygments
+- Bug corrigé: UnicodeEncodeError cp1252 (Windows) -> ajout sys.stdout.reconfigure(utf-8) + remplacement flèches unicode
+
+**Résultat:**
+- Fichier: C:/Users/Utilisateur/Documents/Ben/myapp/yabisso/mesfichiers/solutionp2p.pdf
+- Taille: 103827 octets (103 KB)
+- Pages: 54
+- Code inclus: P2PAutoSync.js (1315 lignes) + NearbyMeshService.js (405 lignes) + WifiDirectService.js (604 lignes)
+
+**Statut:** Prêt à envoyer à l'ami pour review.
+
+**Prochaines étapes:**
+1. L'utilisateur envoie solutionp2p.pdf (ou .md) à son ami
+2. L'ami review et fait des retours
+3. Si OK -> commit solutionp2p.md + md_to_pdf.py sur git
+4. Si changements -> appliquer et régénérer le PDF
+
+## [2026-06-05 01:15:29] SESSION - Application V3.7 (retour ami)
+
+**Bug analysé par l'ami (3 points):**
+1. _lastIntendedRole resetait à SLAVE sur les 2 phones (hardware Itel A50 trop lent) → isGroupOwner pas encore stable
+2. Conséquence: isMyRoleMaster=false sur Xiaomi → mode passif, refuse de pousser le .zip
+3. WIFI_GROUP_READY sature le canal Mesh BLE (trop de messages texte)
+
+**Correctif V3.7 appliqué dans app/src/features/bluetooth/services/P2PAutoSync.js:**
+- Rôle déterminé par score Mesh EN PRIORITÉ (pas le hardware isGroupOwner)
+- Fallback isGroupOwner UNIQUEMENT si pas de peer Mesh découvert
+- Suppression du WIFI_GROUP_READY/SLAVE_CONNECTED_CONFIRMED Mesh handshake (saturation)
+- Pause stabilisation matérielle 1500ms (spécifique Itel A50)
+- Master pousse le pack DIRECTEMENT après pause (pas de wait HELLO_ACK intermédiaire)
+- Slave reçoit + envoie YABISSO_HELLO comme avant
+
+**Syntaxe:** node -c OK
+
+**Backup synchronisé:** mesfichiers/P2P/bluetooth/services/P2PAutoSync.js
+
+**Statut:** En attente de test physique sur les 2 phones par l'utilisateur.
+Le Xiaomi doit afficher:
+- "■ [V3.7 Fix] Connexion Wi-Fi validée. myScore=18, peerScore=73 → Rôle logique affecté : SLAVE"
+- OU "■ [V3.7 Fix] Connexion Wi-Fi validée. myScore=18, peerScore=0 → Rôle logique affecté : MASTER" (fallback hardware)
+
+selon que le peer Mesh a été découvert ou non au moment du onConnectionChange.
+
+## [2026-06-05 01:16:51] CLARIFICATION - Logs utilisateur = V3.6.5 (avant patch V3.7)
+
+L'utilisateur a confirmé que les logs partagés étaient capturés AVANT l'application du fix V3.7.
+Les logs montraient le bug BUG-060 toujours présent (shouldSend=false, isMaster=false, myScore=73, peerScore=18)
+car le cycle _p2pSyncCycle tournait AVANT que le listener onConnectionChange n'ait setté _lastIntendedRole.
+
+**V3.7 est appliqué dans le code (node -c OK).** En attente du rechargement de l'app par l'utilisateur
+pour test sur les 2 phones physiques.
+
+**Signatures de log V3.7 attendues:**
+- Au démarrage: "🚀 Orchestrateur démarré (V3.7 - FIX UNILATÉRAL: ...)"
+- À la connexion WiFi (Xiaomi Master): "■ [V3.7 Fix] Connexion Wi-Fi validée. myScore=73, peerScore=18 → Rôle logique affecté : MASTER"
+- 1500ms après: "■ [V3.7] Master prend l'initiative : ouverture du canal d'envoi..."
+- Puis cycle: shouldSend=true, isMaster=true → push du pack
+
+## [2026-06-05 01:42:56] SESSION - V3.8 SLAVE-INITIATED HANDSHAKE (retour ami)
+
+**Diagnostic ami (cause racine):**
+- createGroup() Android retourne CONNECTED avant qu'un client ne se connecte
+- V3.7 Master envoyait _p2pSyncCycle() direct → sendFile() reussi mais 0 recepteur reel
+- sendControlMessage cache les bytes en local sans vrai destinataire
+- Le SEUL a savoir qu'il est VRAIMENT connecte = le Slave (Android confirme GO=false cote client)
+
+**V3.8 - 3 changements appliques dans P2PAutoSync.js:**
+
+1. **Changement 1 (onConnectionChange setTimeout):**
+   - Master: startReceiving + _waitForSlaveConfirmation(peerName, 20000).then() → _p2pSyncCycle() si confirme
+   - PAS de _p2pSyncCycle() direct (sinon sendFile part dans le vide)
+   - Slave: startReceiving + _sendYabissoHello(false, peerName) immediatement
+   - Le Slave est le seul a initier le contact
+
+2. **Changement 2 (_waitForSlaveConfirmation):**
+   - Default timeout 5000ms → 20000ms
+   - Delta reel Master->Slave ~5-10s, 20s laisse marge confortable
+
+3. **Changement 3 (handler YABISSO_HELLO dans _handleReceivedFile):**
+   - Log explicite V3.8 quand YABISSO_HELLO recu
+   - _confirmYabissoHandshake() debloque le _waitForSlaveConfirmation du Master
+   - Reponse YABISSO_HELLO_ACK deja en place (deja correct)
+
+**Syntaxe:** node -c OK
+**Backup sync:** mesfichiers/P2P/bluetooth/services/P2PAutoSync.js
+**share/solutionp2p.md regenere:** 99955 octets, 2257 lignes de code total
+
+**Signatures de log V3.8 attendues:**
+- Au demarrage: "🚀 Orchestrateur démarré (V3.8 - SLAVE-INITIATED HANDSHAKE: ...)"
+- Master apres 1500ms: "■ [V3.8] Master : démarrage récepteur + attente handshake Slave..."
+- Slave apres 1500ms: "■ [V3.8] Slave : démarrage récepteur + envoi YABISSO_HELLO au Master..."
+- Master recoit HELLO: "🤝 [V3.8] YABISSO_HELLO reçu de N21F (score=18) → handshake confirmé"
+- Master debloque: "■ [V3.8] ✅ Slave confirmé → lancement cycle d'envoi"
+- OU timeout: "■ [V3.8] ⏰ Timeout slave (20s) — abandon cycle"
+
+## [2026-06-05 02:00:56] SESSION - V3.9 BARRIERE + .then() pattern (retour ami)
+
+**Diagnostic ami (V3.8 avait un probleme):**
+- await dans setTimeout = pattern FAUX (le setTimeout callback ne peut pas etre async)
+- _waitForSlaveConfirmation cherchait peerName specifique, mais au moment du fire peerName vaut souvent "unknown" cote Master
+- Pas de barriere dans _p2pSyncCycle : le cycle 3s pouvait envoyer pendant l attente
+
+**V3.9 - 5 changements appliques dans P2PAutoSync.js:**
+
+1. **Constructeur:** ajout this._waitingForSlave = false (barriere anti-envoi)
+
+2. **Section deconnexion:** reset this._waitingForSlave = false + this._peerHandshakeConfirmed = {}
+
+3. **_waitForSlaveConfirmation:** rewrite avec Object.keys(...).length > 0 au lieu de [peerName]
+   (la 1ere confirmation Slave gagne, peu importe le peerName)
+
+4. **setTimeout Master:**
+   - this._waitingForSlave = true AVANT le wait
+   - .then() pattern (PAS await dans setTimeout)
+   - this._waitingForSlave = false dans le .then() (success ou timeout)
+
+- Python 3.13 + reportlab 4.5.1 + markdown + pygments
+- Bug corrigé: UnicodeEncodeError cp1252 (Windows) -> ajout sys.stdout.reconfigure(utf-8) + remplacement flèches unicode
+
+**Résultat:**
+- Fichier: C:/Users/Utilisateur/Documents/Ben/myapp/yabisso/mesfichiers/solutionp2p.pdf
+- Taille: 103827 octets (103 KB)
+- Pages: 54
+- Code inclus: P2PAutoSync.js (1315 lignes) + NearbyMeshService.js (405 lignes) + WifiDirectService.js (604 lignes)
+
+**Statut:** Prêt à envoyer à l'ami pour review.
+
+**Prochaines étapes:**
+1. L'utilisateur envoie solutionp2p.pdf (ou .md) à son ami
+2. L'ami review et fait des retours
+3. Si OK -> commit solutionp2p.md + md_to_pdf.py sur git
+4. Si changements -> appliquer et régénérer le PDF
+
+## [2026-06-05 01:15:29] SESSION - Application V3.7 (retour ami)
+
+**Bug analysé par l'ami (3 points):**
+1. _lastIntendedRole resetait à SLAVE sur les 2 phones (hardware Itel A50 trop lent) → isGroupOwner pas encore stable
+2. Conséquence: isMyRoleMaster=false sur Xiaomi → mode passif, refuse de pousser le .zip
+3. WIFI_GROUP_READY sature le canal Mesh BLE (trop de messages texte)
+
+**Correctif V3.7 appliqué dans app/src/features/bluetooth/services/P2PAutoSync.js:**
+- Rôle déterminé par score Mesh EN PRIORITÉ (pas le hardware isGroupOwner)
+- Fallback isGroupOwner UNIQUEMENT si pas de peer Mesh découvert
+- Suppression du WIFI_GROUP_READY/SLAVE_CONNECTED_CONFIRMED Mesh handshake (saturation)
+- Pause stabilisation matérielle 1500ms (spécifique Itel A50)
+- Master pousse le pack DIRECTEMENT après pause (pas de wait HELLO_ACK intermédiaire)
+- Slave reçoit + envoie YABISSO_HELLO comme avant
+
+**Syntaxe:** node -c OK
+
+**Backup synchronisé:** mesfichiers/P2P/bluetooth/services/P2PAutoSync.js
+
+**Statut:** En attente de test physique sur les 2 phones par l'utilisateur.
+Le Xiaomi doit afficher:
+- "■ [V3.7 Fix] Connexion Wi-Fi validée. myScore=18, peerScore=73 → Rôle logique affecté : SLAVE"
+- OU "■ [V3.7 Fix] Connexion Wi-Fi validée. myScore=18, peerScore=0 → Rôle logique affecté : MASTER" (fallback hardware)
+
+selon que le peer Mesh a été découvert ou non au moment du onConnectionChange.
+
+## [2026-06-05 01:16:51] CLARIFICATION - Logs utilisateur = V3.6.5 (avant patch V3.7)
+
+L'utilisateur a confirmé que les logs partagés étaient capturés AVANT l'application du fix V3.7.
+Les logs montraient le bug BUG-060 toujours présent (shouldSend=false, isMaster=false, myScore=73, peerScore=18)
+car le cycle _p2pSyncCycle tournait AVANT que le listener onConnectionChange n'ait setté _lastIntendedRole.
+
+**V3.7 est appliqué dans le code (node -c OK).** En attente du rechargement de l'app par l'utilisateur
+pour test sur les 2 phones physiques.
+
+**Signatures de log V3.7 attendues:**
+- Au démarrage: "🚀 Orchestrateur démarré (V3.7 - FIX UNILATÉRAL: ...)"
+- À la connexion WiFi (Xiaomi Master): "■ [V3.7 Fix] Connexion Wi-Fi validée. myScore=73, peerScore=18 → Rôle logique affecté : MASTER"
+- 1500ms après: "■ [V3.7] Master prend l'initiative : ouverture du canal d'envoi..."
+- Puis cycle: shouldSend=true, isMaster=true → push du pack
+
+## [2026-06-05 01:42:56] SESSION - V3.8 SLAVE-INITIATED HANDSHAKE (retour ami)
+
+**Diagnostic ami (cause racine):**
+- createGroup() Android retourne CONNECTED avant qu'un client ne se connecte
+- V3.7 Master envoyait _p2pSyncCycle() direct → sendFile() reussi mais 0 recepteur reel
+- sendControlMessage cache les bytes en local sans vrai destinataire
+- Le SEUL a savoir qu'il est VRAIMENT connecte = le Slave (Android confirme GO=false cote client)
+
+**V3.8 - 3 changements appliques dans P2PAutoSync.js:**
+
+1. **Changement 1 (onConnectionChange setTimeout):**
+   - Master: startReceiving + _waitForSlaveConfirmation(peerName, 20000).then() → _p2pSyncCycle() si confirme
+   - PAS de _p2pSyncCycle() direct (sinon sendFile part dans le vide)
+   - Slave: startReceiving + _sendYabissoHello(false, peerName) immediatement
+   - Le Slave est le seul a initier le contact
+
+2. **Changement 2 (_waitForSlaveConfirmation):**
+   - Default timeout 5000ms → 20000ms
+   - Delta reel Master->Slave ~5-10s, 20s laisse marge confortable
+
+3. **Changement 3 (handler YABISSO_HELLO dans _handleReceivedFile):**
+   - Log explicite V3.8 quand YABISSO_HELLO recu
+   - _confirmYabissoHandshake() debloque le _waitForSlaveConfirmation du Master
+   - Reponse YABISSO_HELLO_ACK deja en place (deja correct)
+
+**Syntaxe:** node -c OK
+**Backup sync:** mesfichiers/P2P/bluetooth/services/P2PAutoSync.js
+**share/solutionp2p.md regenere:** 99955 octets, 2257 lignes de code total
+
+**Signatures de log V3.8 attendues:**
+- Au demarrage: "🚀 Orchestrateur démarré (V3.8 - SLAVE-INITIATED HANDSHAKE: ...)"
+- Master apres 1500ms: "■ [V3.8] Master : démarrage récepteur + attente handshake Slave..."
+- Slave apres 1500ms: "■ [V3.8] Slave : démarrage récepteur + envoi YABISSO_HELLO au Master..."
+- Master recoit HELLO: "🤝 [V3.8] YABISSO_HELLO reçu de N21F (score=18) → handshake confirmé"
+- Master debloque: "■ [V3.8] ✅ Slave confirmé → lancement cycle d'envoi"
+- OU timeout: "■ [V3.8] ⏰ Timeout slave (20s) — abandon cycle"
+
+## [2026-06-05 02:00:56] SESSION - V3.9 BARRIERE + .then() pattern (retour ami)
+
+**Diagnostic ami (V3.8 avait un probleme):**
+- await dans setTimeout = pattern FAUX (le setTimeout callback ne peut pas etre async)
+- _waitForSlaveConfirmation cherchait peerName specifique, mais au moment du fire peerName vaut souvent "unknown" cote Master
+- Pas de barriere dans _p2pSyncCycle : le cycle 3s pouvait envoyer pendant l attente
+
+**V3.9 - 5 changements appliques dans P2PAutoSync.js:**
+
+1. **Constructeur:** ajout this._waitingForSlave = false (barriere anti-envoi)
+
+2. **Section deconnexion:** reset this._waitingForSlave = false + this._peerHandshakeConfirmed = {}
+
+3. **_waitForSlaveConfirmation:** rewrite avec Object.keys(...).length > 0 au lieu de [peerName]
+   (la 1ere confirmation Slave gagne, peu importe le peerName)
+
+4. **setTimeout Master:**
+   - this._waitingForSlave = true AVANT le wait
+   - .then() pattern (PAS await dans setTimeout)
+   - this._waitingForSlave = false dans le .then() (success ou timeout)
+
+5. **_p2pSyncCycle debut:** barriere ABSOLUE if(this._waitingForSlave) return AVANT _syncingP2P
+   (le cycle 3s est bloque tant que le Slave n a pas confirme)
+
+**Syntaxe:** node -c OK
+**Backup sync:** mesfichiers/P2P/bluetooth/services/P2PAutoSync.js
+**share/solutionp2p.md regenere:** 100601 octets, 2270 lignes de code total
+
+**Signatures de log V3.9 attendues:**
+- Demarrage: "🚀 Orchestrateur démarré (V3.9 - BARRIÈRE _waitingForSlave + .then() pattern, ...)"
+- Master apres 1500ms: "■ [V3.9] Master : récepteur démarré, verrou ON"
+- Cycle 3s pendant l attente: "⏸️ [V3.9] Cycle bloqué — attente handshake Slave"
+- Master recoit HELLO: "✅ [V3.9] Slave "..." confirmé en Xms !"
+- Master debloque: "■ [V3.9] ✅ Slave confirmé → lancement envoi"
+- Timeout: "⏸️ [V3.9] ⏰ Timeout — abandon"
+
+---
+
+## [2026-06-05 03:23:08] SESSION - Initialisation et lecture de la documentation
+- **User**: bonjour
+- **Assistant**: Bonjour ! Comment puis-je vous aider aujourd'hui ? Je vois que vous avez actuellement ouverts les fichiers suivants liés à la synchronisation P2P/WifiDirect : [solutionp2p.md](file:///c:/Users/Utilisateur/Documents/Ben/myapp/yabisso/mesfichiers/solutionp2p.md)... Dites-moi sur quel sujet ou quelle tâche vous souhaitez que nous travaillions ensemble.
+- **User**: tu peux lire les fichiers .md dans "mesfichiers" pour deja bien savoir ce que nous faisons
+- **Assistant**: (Lecture des fichiers mémoire dans `mesfichiers/` : `project_memory.md`, `role.md`, `chat.md`, `roadmap.md`, `task.md`, `implementation.md`, `loba_nearby_wifi_direct_auto_scan.md`, `yabisso_storage_logique.md`, `architecture.md`). Analyse de la stack technique, de la roadmap (Phase 1, 2, 3), de la logique de stockage local, du protocole P2P (WiFi Direct + Nearby Mesh) et des correctifs récents de la version V3.9 (barrière lock, synchronisation, confirmation, etc.).
+
+## [2026-06-05 03:30:00] SESSION - Reprise contexte complète + nouvelles règles de travail
+
+### Demande utilisateur
+> "tu peux verifier tous les fichiers .md dans le repo "mesfichiers" qui se trouve ici: C:\Users\Utilisateur\Documents\Ben\myapp\yabisso\mesfichiers pour avoir le contexte de ce que nous faisons et aussi enregistrer automatiquement notre echange dans le fichier chat.md en temps reel que nous echangeons pour ne pas perdre l'historique, et aussi quand je te demande quelque chose prend le temps de "think deeper" avant de me repondre mais surtout reverifier et tester de ton cote pour verifier ce que tu viens d'implementer marche"
+
+### Fichiers .md analysés (lecture complète)
+- `project_memory.md` (177 lignes) - État du projet, versions, dépendances, décisions
+- `role.md` (148 lignes) - Règles de réponse + Plan avant code + 7 règles obligatoires
+- `architecture.md` (418 lignes) - Architecture globale, PlantUML, 5 rails communication
+- `roadmap.md` (175 lignes) - Phases 1-6, sprints détaillés, backlog Trello
+- `task.md` (334 lignes) - Task manager avec statuts par sprint
+- `probleme.md` (544 lignes) - 40 bugs résolus (BUG-001 → BUG-040)
+- `implementation.md` (512 lignes) - Stack, schemas DB, flows offline
+- `ui_screens/ui_screens_index.md` (197 lignes) - Index UI par service
+- `wifidirect.md` (514 lignes) - Doc complète WiFi Direct + Mesh
+- `solutionp2p.md` (2392 lignes) - Code complet P2P V3.6.5
+- `design yabisso.md` (2381 lignes) - Références UI HTML
+- Autres : `yabisso_storage_logique.md`, `p2p_session_25042026.md`, `Network/`, `login/`, etc.
+
+### État actuel du projet (validé 2026-06-05)
+- **Version Git** : v0.0.20 (commit 2880d5b)
+- **Stack** : React Native + Expo SDK 54, WatermelonDB + SQLite, SecureStore, NetInfo
+- **P2P** : V3.9 (V3.6.5 en prod, V3.7/V3.8/V3.9 testés par ami)
+  - WiFi Direct = rail principal (transfert gros volumes)
+  - Nearby Mesh (Google Nearby Connections) = backup BLE
+  - BUG-040 (watchdog HELLO non-fatal) appliqué
+- **Modules implémentés** : Auth, Wallet (double FCFA/Points), Marketplace, Loba, Restaurant, Hotels, Services, Immobilier, Pharmacie, Appartements, Assistant IA, Kiosque Admin, Super Admin
+- **Stabilisation** : 40 bugs résolus (OOM, P2P, build, UI, etc.)
+- **APK** : `app/android/app/build/outputs/apk/debug/app-debug.apk` (249 MB)
+
+### Nouvelles règles de travail confirmées
+1. **Mise à jour `chat.md` automatique** : à chaque échange important (en cours)
+2. **"Think deeper"** : analyser les impacts avant chaque modification
+3. **Tester & Vérifier** : `node --check` + cohérence grep avant de présenter un fix
+4. **Versioning Git** : incrémenter selon la règle
+   - v:0.0.1 → v:0.0.2 → ... → v:0.0.9
+   - v:0.0.9 → v:0.1.0 → ... → v:0.1.9
+   - v:0.1.9 → v:0.2.0 (ainsi de suite)
+5. **Règles `role.md` toujours appliquées** :
+   - Plan avant code (Étape 0 obligatoire)
+   - 100% fonctionnel dès la 1ère livraison
+   - Offline-first / stockage local
+   - Logique métier intégrée automatiquement
+   - Toujours en français (UI)
+   - 1 écran de Panier/Commandes/Suivi/Historique par service
+
+### Stack technique (verifiée)
+```
+- Expo SDK 54 ✅
+- React Native via Expo SDK 54 ✅
+- EAS config (eas.json + projectId) ✅
+- expo-dev-client ^6.0.20 ✅
+- expo-build-properties ~1.0.10 ✅
+- WatermelonDB ^0.28.0 ✅
+- SQLiteAdapter (pas makeExpoSQLiteAdapter) ✅
+- expo-sqlite ^16.0.10 ✅
+- expo-secure-store ^15.0.8 ✅
+- NetInfo ^12.0.1 ✅
+- react-native-get-sms-android ^1.2.0 ✅
+- expo-camera ~17.0.10 ✅
+- expo-image-picker ~16.0.10 ✅
+- expo-document-picker ~13.0.6 ✅
+- expo-location ~19.0.10 ✅
+- expo-contacts ~14.0.6 ✅
+- expo-av ~16.0.8 ✅
+- expo-file-system ~19.0.6 ✅
+- expo-constants ~18.0.5 ✅
+- react-native-ble-plx ^3.5.1 ✅
+- react-native-qrcode-svg ^6.3.21 ✅
+- @react-native-ml-kit/image-labeling ^2.0.0 ✅
+- @react-native-ml-kit/text-recognition ^2.0.0 ✅
+- expo-speech-recognition ^3.1.1 ✅
+- Supabase 🔄 à installer
+- React Navigation 🔄 à installer
+- Zustand 🔄 à installer
+- WiFi Direct libs ⏳ Phase 2-3
+```
+
+### Services implémentés (verifié dans le code)
+- **Onboarding/Auth** : Welcome, Language, Signup, Login, SMS, QR, PIN, Offline Modal
+- **Wallet** : Recharge, Send (QR/PIN/Scan), Receive (Request/Scan), History, Mode Points
+- **Loba** : ForYou, Following, Home, Feed, Record, Profile, Stories, Messages, Friends
+- **Marketplace** : Home, List, Category, ProductDetails, Cart, Checkout, OrderStatus, DeliveryTracking, Orders, SellerComparison, BlockedUser, SellerProfile, AddProduct, Favorites, History, Settings, Notifications, Contact
+- **Restaurant** : Home, Details, ItemDetails, Checkout, Orders, Tracking, Seller, SellerDashboard (Uber Eats style), SellerOrders, OrderDetail, AssignCourier, Notifications
+- **Hotels** : Home, Search, Details, RoomDetails, Booking, Payment, Reservation, MyBookings, Favorites, Profile, Notifications, History
+- **Services** : Home, Details, Booking, Checkout, Orders, Favorites, Notifications, Profile, Providers
+- **Immobilier** : Home, Details, Booking, Payment, Favorites, Search
+- **Pharmacie** : Home, Details, Cart, Checkout, Order, Profile
+- **Assistant IA** : Assistant, History, Settings
+- **Dating** : Home, Profile, Edit, Chat, Likes, Chats, Filtres
+- **Kiosque Admin** : Login, Dashboard, Recharge, Points, Assistance, Users, Stats, Validation, QR Scanner
+- **Super Admin** : 10 écrans + service
+
+### Fichiers de backup P2P
+- `mesfichiers/P2P/bluetooth/services/` contient les backups synchronisés de :
+  - P2PAutoSync.js
+  - WifiDirectService.js
+  - NearbyMeshService.js
+  - NetworkRailDetector.js
+
+### Convention de mise à jour chat.md
+- À chaque fin de tour (ou échange important)
+- Format : `[YYYY-MM-DD HH:MM:SS] SESSION - Titre`
+- Inclure : action effectuée, fichiers modifiés, syntaxe OK, statut, prochaine étape
+
+### Prochaine action
+- L'utilisateur va donner sa prochaine demande
+- Je dois : think deeper, présenter un PLAN (Étape 0), attendre validation, puis coder en vérifiant (`node --check`, etc.)
+
+---
+
+## [2026-06-05 04:26:07] SESSION - V3.11 BUG-041 Bidirectionnel initié par le Slave
+
+### Contexte
+L'ami reviewer a identifié 3 bugs dans la V3.10 qui cassent le bidirectionnel WiFi Direct. L'utilisateur a confirmé qu'on se concentre sur "ça marche" (pas d'optimisation du temps de connexion pour l'instant).
+
+### 3 bugs identifiés
+1. **BUG-041a** : `getClientAddress()` ne fonctionne JAMAIS → fallback SWAP permanent
+   - `WifiP2P.receiveMessage({meta:true})` côté GO reste bloqué car le Slave n'envoie jamais rien sur port 8000
+   - `clientIp = null` → branche `else { SWAP_ROLE_REQUEST }` toujours déclenchée
+
+2. **BUG-041b** : Clé Mesh `18_yabisso_dwazse` pollue les peers suivants
+   - `if (meshPeer) completeKeys.push(...)` : si `meshPeer` est null au moment du nettoyage, seule la clé WiFi Direct est supprimée
+   - L'imprimante `direct-d2-epson-8bea56` hérite du swap (clé Mesh stale)
+
+3. **BUG-041c** : Itel A50 met ~20s à se connecter (chipset Mediatek) vs 5s sur Xiaomi (Qualcomm)
+   - Race avec `_waitForSlaveConfirmation(peerName, 20000)` → handshake raté de justesse
+   - Fichiers arrivent bien sur Xiaomi mais le Master croit timeout
+
+### V3.11 - Stratégie "Transfer = Proof"
+- SUPPRESSION `getClientAddress()` (échouait toujours)
+- SUPPRESSION branche SWAP fallback
+- Le SLAVE initie sa Phase 2 depuis `_handleReceivedFile` via `sendFileTo('192.168.49.1')`
+- Le MASTER attend `_slavePhase2Received` (max 15s) au lieu d'envoyer activement
+- SYNC_COMPLETE → `_roleSwapQueue = {}` (vidage complet, pas ciblé)
+- Timeout `_waitForSlaveConfirmation` 20000 → 25000ms
+
+### 5 changements appliqués dans `P2PAutoSync.js`
+
+| # | Localisation | Changement |
+|---|---|---|
+| 1 | Constructor ligne 51 | Ajout `this._slavePhase2Received = false` |
+| 2 | Ligne 238 | Timeout `_waitForSlaveConfirmation` 20000 → 25000 |
+| 3 | Lignes 906-1005 | Refonte Phase 2 : suppression `getClientAddress()` + suppression SWAP + attente `_slavePhase2Received` 15s + SYNC_COMPLETE |
+| 4 | Lignes 999-1000 | SYNC_COMPLETE handler → `this._roleSwapQueue = {}` (vidage complet) |
+| 5 | Lignes 1118-1124 + 1150-1180 | Détection `metadata.phase === 'slave_phase2'` + Phase 2 SLAVE dans `_handleReceivedFile` |
+
+### Vérifications
+- `node --check` → 0 erreur ✅
+- `grep getClientAddress` → 0 occurrence active (uniquement dans commentaires) ✅
+- `grep SWAP_ROLE_REQUEST` (envoi) → 0 occurrence active (handler réception ligne 985 conservé = défensif) ✅
+- `grep _roleSwapQueue = {}` → 2 endroits (constructor + SYNC_COMPLETE handler) ✅
+
+### Backup
+- `mesfichiers/P2P/bluetooth/services/P2PAutoSync.js` synchronisé ✅
+
+### Documentation
+- `probleme.md` BUG-041 ajouté ✅
+- `solutionp2p.md` à régénérer (en cours)
+
+### Statut
+- Version : v0.0.21 (à commiter après tests)
+- En attente : HARD RELOAD par l'utilisateur + test sur les 2 phones
+- Signatures de log V3.11 attendues :
+  - Démarrage : `🚀 Orchestrateur démarré (V3.11 - Bidirectionnel initié par le Slave: ...)`
+  - Phase 1 Master → Slave : `📤 [V3.3] Envoi du Pack: ...` puis `✅ [V3.3] Pack Phase 1 envoyé !`
+  - Phase 2 Slave : `🚀 [V3.11] SLAVE: initiation Phase 2 (envoi mon pack vers GO 192.168.49.1)...`
+  - Phase 2 Master reçoit : `📥 [V3.11] Pack Phase 2 du Slave détecté (phase=slave_phase2)` puis `✅ [V3.11] Phase 2 du Slave reçue en XXXms !`
+  - SYNC_COMPLETE : `✅ [V3.11] SYNC_COMPLETE envoyé. Déconnexion dans 3s...`
+
+### Améliorations futures (non prioritaires)
+- Réduire le temps de connexion Mediatek (10-15s) via optimisation framework natif
+- Cache du GO group (5 min) pour que les Slaves suivants se connectent en 3-5s
+- Slave-initiated Phase 1 si Master n'a pas de contenu à envoyer
+
+---
+
+## [2026-06-05 04:27:00] SESSION - Régénération solutionp2p.md avec code V3.11
+
+### Action
+- Régénération de `mesfichiers/solutionp2p.md` avec le code P2P mis à jour (V3.11)
+- Fichier destiné à l'ami reviewer pour relecture
+- Code 100% complet (rien omis, rien résumé)
+
+### Fichiers à inclure
+1. `P2PAutoSync.js` (~1320 lignes, +V3.11)
+2. `NearbyMeshService.js` (~405 lignes)
+3. `WifiDirectService.js` (~604 lignes)
+
+### Outil
+- `mesfichiers/md_to_pdf.py` (Python 3.13 + reportlab)
+- Sortie : `mesfichiers/solutionp2p.pdf` (54 pages, ~104 KB)
+
+---
+
+## [2026-06-05 05:15:00] SESSION - V3.12 Étape 1 (Connexion WiFi Direct brute, 4 fixes ciblés)
+
+### Contexte
+- Tests précédents V3.11 montrent que la connexion est instable
+- Bascule en **Mode Agile 3 étapes** : (1) Connexion propre, (2) Envoi pack, (3) Vérif + unzip
+- **Étape 1 (cette session)** : stabiliser la connexion PHYSIQUE WiFi Direct sans toucher au transfert
+- 4 problèmes identifiés dans les logs :
+  1. **Double instance NearbyMesh** : score 73 ET score 18 sur le même device
+  2. **Slave arrive trop tard** : Master timeout 20s, Slave se connecte après
+  3. **`pendingContent=true` jamais reset** côté Slave (Phase 2 bloquée)
+  4. **itel A50 spamme les logs** toutes les 3s ("⏭️ ignoré")
+
+### 4 Fixes appliqués (ciblés, AUCUN changement sur la logique d'envoi)
+
+#### Fix A — Singleton strict NearbyMesh
+- **Fichier** : `app/src/features/bluetooth/services/NearbyMeshService.js`
+- **Localisation** : `startMesh()` ligne 83 (tout début)
+- **Code** :
+  ```js
+  if (NearbyMeshService._instance && NearbyMeshService._instance !== this) {
+    console.warn('[NearbyMesh] Instance dupliquée détectée — arrêt forcé');
+    return;
+  }
+  NearbyMeshService._instance = this;
+  ```
+
+#### Fix B — Slave déclenche connexion immédiatement
+- **Fichier** : `app/src/features/bluetooth/services/P2PAutoSync.js`
+- **Localisation** : `onPeerFound` (dans `start()`) ligne 444-451 (else branch = Slave)
+- **Avant** : `this._log(\`⏳ [V3.6 Slave] Connexion au Master dans 3s...\`)`
+- **Après** : ajoute `setTimeout(100ms)` → `_p2pSyncCycle()` immédiat
+- **Impact** : le Slave ne dépend plus du cycle 3s pour se connecter
+
+#### Fix C — Timeout Master 20s → 35s
+- **Fichier** : `app/src/features/bluetooth/services/P2PAutoSync.js`
+- **Localisation** : `onConnectionChange` (dans `start()`) ligne 523
+- **Code** : `_waitForSlaveConfirmation(peerName, 35000)` (était 20000)
+- **Impact** : marge confortable pour chipset Mediatek (Itel A50) qui met 15-20s
+
+#### Fix D — Throttle 60s sur peers ignorés
+- **Fichier** : `app/src/features/bluetooth/services/P2PAutoSync.js`
+- **Localisation** :
+  - Constructor ligne 53 : `this._ignoredPeers = new Map();`
+  - `onPeerFound` (dans `start()`) ligne 408-417 : check 60s avant le log "ignoré"
+- **Code** :
+  ```js
+  const lastIgnored = this._ignoredPeers.get(peerName);
+  if (lastIgnored && (now - lastIgnored) < 60000) {
+    return; // silence 60s pour ce peer
+  }
+  this._ignoredPeers.set(peerName, now);
+  ```
+- **Impact** : 1 log "⏭️ ignoré" par peer par minute (au lieu de 1 toutes les 3s)
+
+### Vérifications
+- `node --check` → 0 erreur sur les 3 fichiers
+- `grep _ignoredPeers` → 3 occurrences (constructor + get + set)
+- `grep _instance` → 3 occurrences (check + warn + set)
+- `grep 35000` → 1 occurrence (Fix C)
+- `grep "20000"` → 0 occurrence active (uniquement dans commentaire V3.8)
+
+### Fichiers modifiés
+- `app/src/features/bluetooth/services/NearbyMeshService.js` (Fix A)
+- `app/src/features/bluetooth/services/P2PAutoSync.js` (Fix B + C + D)
+
+### Backup P2P synchronisé
+- `mesfichiers/P2P/bluetooth/services/P2PAutoSync.js`
+- `mesfichiers/P2P/bluetooth/services/NearbyMeshService.js`
+- `mesfichiers/P2P/bluetooth/services/WifiDirectService.js`
+
+### Statut
+- 🔄 En test (2026-06-05) — Version v0.0.22 (V3.12 Étape 1)
+- **Action user** : HARD RELOAD. Tester UNIQUEMENT la connexion (pas de pack).
+  - Vérifier sur les 2 phones : Master (73) reste connecté, Slave (18) se connecte en <35s
+  - Vérifier : `⏭️ ignoré` ne spamme plus (1 par minute max par peer)
+  - Vérifier : aucun warning "Instance dupliquée détectée"
+- **Prochaine étape (si OK)** : Sprint 2 — Envoi du pack uniquement après connexion confirmée
+
+---
+
+## Session 2026-06-07 — Vérification globale du repo "mesfichiers"
+
+User: tu peux verifier tous les fichiers .md dans le repo "mesfichiers" qui se trouve ici: C:\Users\Utilisateur\Documents\Ben\myapp\yabisso\mesfichiers pour avoir le contexte de ce que nous faisons et aussi enregistrer automatiquement notre echange dans le fichier chat.md en temps reel que nous echangeons pour ne pas perdre l'historique, et aussi quand je te demande quelque chose prend le temps de "think deeper" avant de me repondre mais surtout reverifier et tester de ton cote pour verifier ce que tu viens d'implementer marche
+
+Assistant: J'ai lu tous les fichiers .md dans `mesfichiers` (24 fichiers .md identifiés + dossier `ui_screens/`). 
+
+**Contexte projet Yabisso (résumé exhaustif) :**
+- **Super-app offline-first africaine** (React Native + Expo SDK 54)
+- 5 rails de communication : QR Code, SMS Fallback, BLE Mesh, WiFi Direct, Internet
+- DB locale WatermelonDB + SQLite chiffré
+- Modules : Marketplace, Loba (vidéo), Wallet, Restaurants, Hôtels, Services, Dating, etc.
+- **État actuel** : UI complète, marché fonctionnel, Sprint 9 (Turbo P2P WiFi Direct)
+- **Dernier bug en cours** : BUG-042 (V3.12 Étape 1) — Stabilisation connexion WiFi Direct uniquement
+- **Toutes les features** sont détaillées dans `architecture.md`, `project_memory.md`, `task.md`, `probleme.md`
+
+**Engagement pour cette session :**
+- ✅ Enregistrement en temps réel de tous nos échanges dans `chat.md`
+- ✅ "Think deeper" — analyser les implications avant chaque réponse
+- ✅ Reverifier/tester toute implémentation avant de la déclarer terminée
+
+Prêt pour la suite. Que veux-tu faire ?
+
+
+---
+
+## Session 2026-06-07 — Implémentation V3.13 (Connexion WiFi synchronisée via Nearby)
+
+User: Les logs confirment le bug. Le Slave fait "🔗 [Trigger] Connexion à Xiaomi 11T (SLAVE)..." mais `🔄 Tentative SLAVE` puis rien. Timeout 35s, abandon. Pack envoyé dans le vide. Spam "Peer itel A50 ignoré : pas de pair Mesh pour arbitrer" ensuite.
+
+User: Valide Option A pour le matching. Plan V3.13 confirmé. GO pour implémentation.
+
+### Bug confirmé dans les logs :
+- `[P2PAutoSync] 🔗 [Trigger] Connexion à Xiaomi 11T (SLAVE)...` puis `🔄 Tentative SLAVE` puis RIEN
+- Master attend 35s pour HELLO → timeout → abandon
+- Master envoie pack dans le vide (pas de Slave connecté)
+- Slave côté : "Peer itel A50 ignoré : pas de pair Mesh pour arbitrer" en boucle infinie
+- Déconnexions multiples, Mesh se déconnecte aussi, scan WiFi Direct continue seul
+
+
+---
+
+### Implémentation V3.13 — Terminée (2026-06-07)
+
+**Modifications appliquées dans `P2PAutoSync.js` (1243 → 1420 lignes, +177) :**
+
+1. **Constructor (lignes 55-57)** : 3 nouveaux flags
+   - `_waitingForWifiGroupReady` : Slave attend le signal Mesh
+   - `_meshGroupReadyReceived` : signal reçu
+   - `_meshGroupReadyTimeoutHandle` : handle du timeout 15s fallback
+
+2. **3 nouveaux helpers (lignes 214-255)** :
+   - `_findSlavePeerId()` : Master trouve le peerId Nearby du Slave (match par score)
+   - `_findMasterPeerId()` : Slave trouve le peerId Nearby du Master
+   - `_fallbackWaitForSlave(peerName)` : sécurité si Mesh échoue (HELLO WiFi)
+
+3. **Refonte `_onWifiGroupReadyMesh()` (lignes 257-318)** :
+   - Reçoit le signal Mesh
+   - Annule le fallback timeout
+   - Trouve le peer WiFi Direct scanné
+   - Appelle `connectToPeer(targetPeer, 0, 'SLAVE')`
+
+4. **Refonte `onPeerFound` (ligne 542, branche SLAVE)** :
+   - AVANT : `setTimeout(100) → _p2pSyncCycle()` → connectToPeer immédiat
+   - MAINTENANT : log "j'attends le signal Mesh 15s" + `_waitingForWifiGroupReady=true` + timeout fallback 15s
+
+5. **Refonte `onConnectionChange` MASTER (lignes 632-663)** :
+   - Après 1500ms, envoie `NearbyMeshService.sendMeshMessage(slavePeerId, { type: 'wifi_group_ready', masterIp })`
+   - En parallèle lance `_fallbackWaitForSlave()` (sécurité)
+
+6. **Refonte `onConnectionChange` SLAVE (lignes 664-689)** :
+   - Après 500ms, envoie `NearbyMeshService.sendMeshMessage(masterPeerId, { type: 'slave_connected_confirmed' })`
+
+7. **Reset à la déconnexion (lignes 707-714)** : tous les flags V3.13 remis à 0
+
+8. **Log startup V3.13 (ligne 427)** : "🚀 Orchestrateur démarré (V3.13 - Connexion WiFi synchronisée via Nearby Mesh : ...)"
+
+**Vérifications :**
+- `node --check src/features/bluetooth/services/P2PAutoSync.js` → 0 erreur
+- `node --check src/features/bluetooth/services/NearbyMeshService.js` → 0 erreur
+- `node --check src/features/bluetooth/services/WifiDirectService.js` → 0 erreur
+- `grep V3.13` → 28 références cohérentes
+- Backup : `mesfichiers/P2P/bluetooth/services/P2PAutoSync.js` mis à jour
+- BUG-043 ajouté dans `probleme.md`
+
+**Action user** : HARD RELOAD + tester connexion.
+
