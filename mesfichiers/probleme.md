@@ -806,3 +806,45 @@
 - **Commit** : `e5f6533` v0.0.28
 - **Release** : https://github.com/BENsidneykokolo/yabisso/releases/tag/v0.0.28
 
+---
+
+### BUG-047 — Master s'envoie le pack à lui-même via sendFile (self-loop 192.168.49.1) (V3.20 fix)
+- **Date** : 2026-06-07
+- **Contexte** : Test V3.19 a montré que BUG-046/052/055 sont fixés ✅ mais BUG-047 (le plus critique) persiste : "sendFile réussi" log apparaît alors que le Slave n'est pas/plus connecté.
+- **Problème** : Le `Master` (Group Owner) appelle `WifiP2P.sendFile(path)` qui, dans `react-native-wifi-p2p@3.6.1`, appelle en interne `sendFileTo(path, wifiP2pInfo.groupOwnerAddress.getHostAddress(), promise)`. Or pour le GO, `groupOwnerAddress` = **192.168.49.1** (sa PROPRE IP). Combiné avec le fait que le Master appelle aussi `startReceiving()` (qui ouvre un serveur sur 8988), le client socket du Master se connecte à **son propre serveur** → self-loop. Le fichier est écrit dans le **propre loba_media du Master**, le Slave ne reçoit JAMAIS le pack.
+- **Symptôme** : `✅ sendFile réussi` apparaît dans les logs du Master, mais le Slave ne reçoit rien (pas de log `📨 Fichier reçu` côté Slave). Vu clairement : "le xaomi etait connecté et le message sendfile reussi, le itel n'etait plus connecté".
+- **Code source du lib (preuve)** : `app/node_modules/react-native-wifi-p2p/android/src/main/java/io/wifi/p2p/WiFiP2PManagerModule.java:259-265`
+  ```java
+  public void sendFile(String filePath, final Promise promise) {
+    if (wifiP2pInfo.groupOwnerAddress != null) {
+      sendFileTo(filePath, wifiP2pInfo.groupOwnerAddress.getHostAddress(), promise);
+      //                                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      //                                          Pour le GO, c'est sa PROPRE IP
+    }
+  }
+  ```
+- **Solution (V3.20)** : Transmission IP Slave → Master via Mesh BLE + utilisation de `sendFileTo` côté Master :
+  1. **PARTIE 1 (Slave)** : Après `GO=false` confirmé, le Slave récupère son IP locale (`WifiP2P.getConnectionInfo()` → champ `myIpAddress` ou fallback `192.168.49.2`) et l'envoie au Master via Mesh BLE (`type: 'slave_ip'`). Message envoyé AVANT `SLAVE_CONNECTED_CONFIRMED` pour garantir que le Master a l'IP avant de commencer à envoyer.
+  2. **PARTIE 2 (Master)** : Le Master reçoit `SLAVE_IP` via `MeshRequestEvents`, stocke `_slaveIp` et appelle `WifiDirectService.setTargetPeerIp(_slaveIp)`. Dans `sendFile` et `sendControlMessage`, si `_targetPeerIp` est défini et ≠ `groupOwnerAddress`, utiliser `sendFileTo(_targetPeerIp, ...)` au lieu de `sendFile(...)`. Sinon, fallback `sendFile` (risque self-loop loggué).
+  3. **Reset entre sessions** : `this._slaveIp = null` + `WifiDirectService.resetTargetPeerIp()` sur déconnexion.
+- **Fichiers modifiés** :
+  - `app/src/features/bluetooth/services/P2PAutoSync.js` (1538 → ~1620 lignes, +80)
+  - `app/src/features/bluetooth/services/WifiDirectService.js` (616 → ~660 lignes, +45)
+  - `app/src/features/bluetooth/services/NearbyMeshService.js` (420 → ~430 lignes, +10)
+- **Vérifications** : `node --check` OK sur les 3 fichiers, `@babel/parser` (Flow+JSX) OK, backup `mesfichiers/P2P/bluetooth/services/` synchronisé
+- **Non touché** (protégé) : V3.13-V3.19, createGroup, WIFI_GROUP_READY, pendingContent reset V3.18, SYNC_COMPLETE, HELLO timing V3.19, Nearby Mesh (sauf ajout handler `slave_ip`)
+- **Limitations connues** :
+  - Si le lib `react-native-wifi-p2p` n'expose pas `myIpAddress` dans `getConnectionInfo()`, fallback à `192.168.49.2` (convention DHCP Android pour le 1er client). Devrait fonctionner pour le test 1-to-1 Yabisso.
+  - `sendFileTo` côté GO dans la v3.6.1 : bien que la doc suggère que l'address est ignorée en mode GO, en pratique le `FileTransferService` ouvre un client socket sur l'address fournie. Le fix V3.20 fonctionne dès lors que le Slave a un serveur sur port 8988 (ce qui est le cas via `startReceiving`).
+- **Action user** : HARD RELOAD les 2 phones. Vérifier dans les logs :
+  - `🌐 [V3.20 Slave] Récupération IP locale p2p...`
+  - `📤 [V3.20 Slave] Envoi SLAVE_IP au Master ...`
+  - `✅ [V3.20 Slave] SLAVE_IP envoyé (192.168.49.X:8988)`
+  - `📥 [V3.20 Master] IP Slave reçue via Mesh: 192.168.49.X:8988`
+  - `🎯 [V3.20 Master] WifiDirectService._targetPeerIp = 192.168.49.X`
+  - `📤 [V3.20] sendFileTo vers Slave IP=192.168.49.X (pas self-loop)`
+  - `[Slave] 📨 Fichier reçu ✅` ← le vrai Slave reçoit le pack
+  - **NE PLUS voir** : `✅ sendFile réussi` sans que le Slave n'ait reçu quoi que ce soit
+- **Commit** : (à compléter après git)
+- **Release** : v0.0.29 (à publier)
+

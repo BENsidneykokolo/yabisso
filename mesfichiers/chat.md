@@ -7465,5 +7465,51 @@ HARD RELOAD les 2 phones. Tester et partager les logs. Vérifier dans les logs :
 - Sprint 2 (bidirectionnel) si HELLO + sendFile OK
 
 
+---
+
+## V3.20 (2026-06-07) — BUG-047 FIX : IP DU SLAVE VIA MESH BLE
+
+### Analyse user
+- Confirmation que `sendFile` du Master = self-loop (le fichier part vers 192.168.49.1 = sa propre IP)
+- Pattern : Master affiche "sendfile réussi" mais Slave affiche "Mesh Déconnecté" + aucun fichier reçu
+- Root cause : `react-native-wifi-p2p@3.6.1` ligne 259-265 : `sendFile` appelle `sendFileTo(filePath, groupOwnerAddress.getHostAddress(), promise)` → pour le GO c'est sa propre IP
+
+### Fix appliqué (V3.20)
+**3 fichiers modifiés** (~135 lignes ajoutées) :
+
+1. **`WifiDirectService.js`** (+45 lignes)
+   - Constructeur : `_localP2pIp` + `_targetPeerIp`
+   - `sendFile()` : si `_targetPeerIp` défini, utiliser `sendFileTo(_targetPeerIp, ...)` au lieu de `sendFile(...)`
+   - `sendControlMessage()` : même logique
+   - `setTargetPeerIp(ip)` : définit l'IP cible
+   - `getLocalP2pIp()` : récupère l'IP locale (via `getConnectionInfo().myIpAddress` ou fallback `192.168.49.2`)
+   - `resetTargetPeerIp()` : reset entre sessions
+
+2. **`P2PAutoSync.js`** (+80 lignes)
+   - Constructeur : `_slaveIp` + `_slavePort`
+   - Handler `SLAVE_IP` dans `MeshRequestEvents.subscribe` → store + `setTargetPeerIp`
+   - **Slave** : dans `onConnectionChange`, ÉTAPE 0 avant `SLAVE_CONNECTED_CONFIRMED` : `getLocalP2pIp()` + `sendMeshMessage({type: 'slave_ip', ip, port: 8988})`
+   - **Master** : dans `_p2pSyncCycle`, log pré-envoi "Cible envoi: Slave IP=X.X.X.X:8988"
+   - Reset dans la section déconnexion
+
+3. **`NearbyMeshService.js`** (+10 lignes)
+   - Handler `data.type === 'slave_ip'` dans `_handleDataReceived`
+   - Émet `MeshRequestEvents.emit({type: 'SLAVE_IP', peerId, ip, port})`
+
+### Vérifications
+- ✅ `node --check` OK sur les 3 fichiers
+- ✅ `@babel/parser` (Flow+JSX) OK sur les 3 fichiers
+- ✅ Backup `mesfichiers/P2P/bluetooth/services/` synchronisé
+- ✅ Documentation `probleme.md` BUG-047 entry ajoutée
+
+### Prochaine étape
+- HARD RELOAD les 2 phones (Xiaomi 11T + Itel A50)
+- Vérifier que :
+  1. `SLAVE_IP` apparaît bien dans les logs (Slave → Master)
+  2. Master log "sendFileTo vers Slave IP=X.X.X.X (pas self-loop)"
+  3. **Le Slave reçoit VRAIMENT le pack** (vidéos apparaissent dans le feed LOBA)
+- Si OK → Sprint 2 (bidirectionnel) validé ✅
+- Si KO → diagnostiquer avec les logs
+
 
 
