@@ -7259,3 +7259,69 @@ HARD RELOAD les 2 phones. Tester sur les 2 phones (Xiaomi 11T Master + Itel A50 
 - BUG-047 (sendFile IP destination 192.168.49.1 → 192.168.49.1) : à investiguer avec un test V3.17 (peut-être résolu par le timing)
 - BUG-051 (boucle sendFile après timeout HELLO) : peut-être résolu si HELLO arrive maintenant
 
+---
+
+## Test V3.17 — Résultats terrain (2026-06-07)
+
+### Constat : Sprint 1 + Sprint 2 validés ✅
+
+**User : "Le Sprint 1 (connexion) est validé. Le Sprint 2 (pack reçu) est validé."**
+
+Tous les markers V3.17 ont été observés dans les logs :
+- ✅ `📡 [V3.17 Master] Envoi WIFI_GROUP_READY au Slave IG6L AVANT createGroup (Mesh encore actif)`
+- ✅ `📤 [V3.6.4 Mesh] Message envoyé à IG6L: wifi_group_ready` (succès, Mesh encore vivant)
+- ✅ `📡 [V3.6.4 Mesh] WIFI_GROUP_READY reçu de NG3M (masterIp=192.168.49.1)`
+- ✅ `⏳ [V3.17 Slave] Attente 3000ms que le Master crée le groupe WiFi Direct...`
+- ✅ `🔗 [V3.13 Slave] Connexion WiFi Direct à xiaomi 11t (signal Mesh du Master 73_yabisso_k7gmhx)`
+- ✅ `✅ [V3.13] connectToPeer réussi.`
+- ✅ `✅ [V3.13 Slave] SLAVE_CONNECTED_CONFIRMED envoyé.`
+- ✅ `✅ [V3.6.4 Mesh] SLAVE_CONNECTED_CONFIRMED reçu de IG6L`
+- ✅ `📡 [V3.15 Master] Démarrage récepteur HELLO (Slave confirmé connecté via Mesh)`
+- ✅ `🤝 [Handshake] YABISSO_HELLO envoyé à unknown (score=18)`
+- ✅ `📤 sendFile (tentative 1/2)` → `✅ sendFile réussi (tentative 1)` ← **première fois en tentative 1 !**
+- ✅ `✅ [V3.3] Pack Phase 1 envoyé !`
+- ✅ `📨 Fichier reçu: /data/user/0/com.benksidney.yabisso/files/loba_media/p2p_xxx` (3 fichiers)
+- ✅ `📤 sendControlMessage: SYNC_COMPLETE` → `✅ sendControlMessage réussi`
+- ✅ `🛑 [V3.16] Récepteur TCP fermé après SYNC_COMPLETE (évite receiveFile timeout)`
+
+**BUG-046 définitivement résolu** ✅
+
+### Problèmes résiduels (2)
+
+**Problème 1** — `pendingContent=true` ne se reset JAMAIS côté Slave
+- `🔍 [V3.6.3] shouldSend=false, isMaster=false, myScore=18, peerScore=73, pendingContent=true, packSent=false`
+- Le Slave reçoit 3 fichiers mais ne les traite pas (ou le `_hasPendingDelta` ne se reset pas)
+- `pendingContent` reste `true` → cycle recommence à l'infini
+
+**Problème 2** — "framework busy" sur le 2ème cycle Slave
+- `🔗 [V3.6] Connexion à Xiaomi 11T (SLAVE) avec lock...`
+- `WARN Erreur connect (tentative 1/3): Operation failed because the framework is busy — retry dans 2000ms`
+- `WARN Erreur connect (tentative 2/3): framework is busy — retry dans 4000ms`
+- `WARN Erreur connect (tentative 3/3): framework is busy — abandon après 3 tentatives`
+- `⚠️ [V3.6.1] connectToPeer a échoué, lock libéré. Retry dans 10s (backoff).`
+- Le Slave tente une 2ème connexion parce que `pendingContent` n'est pas reseté
+
+**Les 2 problèmes sont liés** : si `_hasPendingDelta` se reset correctement après `unpackAndProcess`, le Slave ne retenterait pas.
+
+### Plan Sprint 3 (validé par user)
+- **Fix unique** : traiter le pack reçu + reset état dans `onFileReceived` / `_handleReceivedFile`
+- Reset obligatoire même si unzip échoue : `_hasPendingDelta=false`, `_pendingContent=false`, `_packSent=false`
+- ACK best-effort au Master via Nearby
+- **NE PAS TOUCHER** : connexion, WIFI_GROUP_READY, createGroup, HELLO, SYNC_COMPLETE, Nearby Mesh
+
+### Attendu après Sprint 3
+- Plus de retry "framework busy"
+- Le Slave ne retente plus de sync après réception
+
+### Plan Sprint 4 (à venir)
+- Vérifier que le contenu s'affiche dans le feed LOBA des 2 phones
+- Confirmer que `_pendingPostsCount` se met à jour après `unpackAndProcess`
+- Si OK → Sprint 2 (bidirectionnel) définitivement validé ✅
+
+### Backup état avant Sprint 3
+- Dernier commit : `c3b2564` (docs V3.17)
+- Dernier release : v0.0.26 (V3.17 BUG-046 fix)
+- Code V3.17 dans `app/src/features/bluetooth/services/P2PAutoSync.js` (1508 lignes)
+- Pas de changements code en attente
+
+

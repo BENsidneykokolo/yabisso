@@ -729,3 +729,30 @@
   - **NE PLUS voir** : `⚠️ Échec envoi message à ... : Failed to send text` (côté Master)
   - **NE PLUS voir** : `⏭️ [V3.13 Slave] Peer ... ignoré : pas de pair Mesh pour arbitrer` répété en boucle (côté Slave)
   - Commit : `cb1c5d6` v0.0.26. Release : https://github.com/BENsidneykokolo/yabisso/releases/tag/v0.0.26
+
+---
+
+### BUG-052 — Test V3.17 : 2 problèmes résiduels après fix BUG-046 (2026-06-07)
+- **Date** : 2026-06-07
+- **Contexte** : Premier test terrain de la V3.17. Sprint 1 (connexion) et Sprint 2 (pack reçu Master→Slave) validés ✅. Mais 2 problèmes résiduels côté Slave.
+- **Problème 1** : `pendingContent=true` ne se reset JAMAIS côté Slave après réception des fichiers
+  - **Symptôme** : Le Slave reçoit 3 fichiers (`📨 Fichier reçu: ...p2p_xxx` × 3), mais `_hasPendingDelta` ne se reset pas. Le log `🔍 [V3.6.3] shouldSend=false, isMaster=false, myScore=18, peerScore=73, pendingContent=true, packSent=false` est répété à chaque cycle. Le Slave re-tente une sync alors qu'il vient d'en recevoir une.
+  - **Cause** : Le `LobaPackService.unpackAndProcess(filePath)` côté Slave ne déclenche pas correctement la mise à jour de `_pendingPostsCount` (utilisé dans `hasPendingContent = this._pendingPostsCount > 0 || !!this._hasPendingDelta`). Soit le delta calculé n'est pas propagé, soit le reset post-unpack n'a pas lieu.
+- **Problème 2** : "framework busy" sur le 2ème cycle Slave
+  - **Symptôme** : `🔗 [V3.6] Connexion à Xiaomi 11T (SLAVE) avec lock...` → `WARN Erreur connect (tentative 1/3): framework is busy` × 3 → `Retry dans 10s (backoff)` → boucle infinie toutes les 10s.
+  - **Cause** : Lié au Problème 1. Le Slave voit `pendingContent=true` et veut renvoyer son pack, mais Android refuse car le groupe WiFi Direct est encore actif.
+- **Statut** : 🔄 En attente Sprint 3 (reset état post-réception) — non encore implémenté
+- **Sprint 3 planifié** (validé par user) :
+  - Dans `P2PAutoSync.js` handler `onFileReceived` / `_handleReceivedFile` :
+    ```js
+    try { await LobaPackService.unpackAndProcess(filePath); }
+    catch (err) { console.error('[Slave] ❌ Erreur unzip:', err); }
+    // Reset obligatoire MÊME si unzip échoue
+    this._hasPendingDelta = false;
+    this._pendingContent  = false;  // si existe
+    this._packSent        = false;
+    // ACK best-effort au Master via Nearby
+    try { await NearbyMeshService.sendMessage(this._masterEndpointId, {type: 'PACK_RECEIVED_OK'}); } catch (e) {}
+    ```
+- **Sprint 4 (à venir)** : Vérifier que le contenu s'affiche dans le feed LOBA des 2 phones (Sprint 2 bidirectionnel validé ✅)
+
