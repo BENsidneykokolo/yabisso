@@ -756,3 +756,22 @@
     ```
 - **Sprint 4 (à venir)** : Vérifier que le contenu s'affiche dans le feed LOBA des 2 phones (Sprint 2 bidirectionnel validé ✅)
 
+---
+
+### BUG-052 FIX — Sprint 3 V3.18 : reset `_hasPendingDelta` inconditionnel (2026-06-07)
+- **Date** : 2026-06-07
+- **Statut** : ✅ RÉSOLU
+- **Solution (V3.18)** : 2 modifications ciblées dans `_handleReceivedFile` (P2PAutoSync.js L1318-1340) :
+  1. **try/catch autour de `unpackAndProcess`** : capture les exceptions au lieu de laisser crasher la fonction.
+  2. **reset INCONDITIONNEL** : `_hasPendingDelta = false` déplacé HORS du `if (success)` → s'exécute toujours, succès ou échec. Élimine la boucle infinie.
+- **Fichiers modifiés** : `app/src/features/bluetooth/services/P2PAutoSync.js` (1508 → 1523 lignes, +15)
+- **Vérifications** : `node --check` OK, `@babel/parser` OK, backup `mesfichiers/P2P/bluetooth/services/P2PAutoSync.js` synchronisé
+- **Non touché** (protégé) : V3.13-V3.17, Nearby Mesh, createGroup, connectToPeer retry V3.14, sendFile, HELLO, SYNC_COMPLETE, ACK PACK_RECEIVED_OK
+- **Action user** : HARD RELOAD les 2 phones. Vérifier dans les logs :
+  - `🔄 [V3.18] Reset état post-réception (succès=true|false)` (apparaît toujours maintenant)
+  - **NE PLUS voir** : `🔍 shouldSend=true, pendingContent=true, packSent=false` en boucle
+  - **NE PLUS voir** : `WARN framework is busy` × 3 → `Retry dans 10s` en boucle
+- **Commit** : `f9f34b4` v0.0.27
+- **Release** : https://github.com/BENsidneykokolo/yabisso/releases/tag/v0.0.27
+- **Prochaine étape** : Sprint 4 — vérifier que le contenu s'affiche dans le feed LOBA des 2 phones
+

@@ -7324,4 +7324,66 @@ Tous les markers V3.17 ont été observés dans les logs :
 - Code V3.17 dans `app/src/features/bluetooth/services/P2PAutoSync.js` (1508 lignes)
 - Pas de changements code en attente
 
+---
+
+## Implémentation V3.18 — Sprint 3 (BUG-052 fix reset inconditionnel) (2026-06-07)
+
+User: "fait d'abord le backup avant d'implementer" + fourni le fix exact
+
+### Code appliqué dans `_handleReceivedFile` (P2PAutoSync.js L1318-1340)
+
+**AVANT (V3.16/V3.17)** : `const success = await unpackAndProcess(filePath); if (success) { reset }`
+- Si `unpackAndProcess` retourne `false` OU throw, le reset n'a PAS lieu
+- `_hasPendingDelta` reste à `true` → `shouldSend=true` à chaque cycle → boucle infinie
+
+**APRÈS (V3.18)** : try/catch + reset HORS du `if`
+```js
+let success = false;
+try {
+  success = await LobaPackService.unpackAndProcess(filePath);
+  if (success) { this._log('✅ Pack traité !'); this.stats.totalSyncedP2P++; }
+  else { this._log('⚠️ [V3.18] unpackAndProcess a retourné false'); }
+} catch (e) {
+  this._log(`❌ [V3.18] Erreur unzip catchée: ${e.message}`);
+  success = false;
+}
+// RESET INCONDITIONNEL — toujours exécuté
+this._hasPendingDelta = false;
+this._lastSentTo[peerName] = Date.now();
+this._log(`🔄 [V3.18] Reset état post-réception (succès=${success})`);
+```
+
+### Modifications
+- 1 fichier uniquement : `app/src/features/bluetooth/services/P2PAutoSync.js`
+- 1508 → 1523 lignes (+15)
+- L1318-1340 (zone `metadata.type === 'LOBA_PACK'`)
+
+### Vérifications
+- `node --check` → OK
+- `@babel/parser` (Flow + JSX) → OK (16 statements)
+- Backup `mesfichiers/P2P/bluetooth/services/P2PAutoSync.js` synchronisé
+
+### Non touché (protégé)
+- V3.13-V3.17
+- Nearby Mesh (WIFI_GROUP_READY, SLAVE_CONNECTED_CONFIRMED)
+- createGroup, connectToPeer retry V3.14
+- sendFile, HELLO, SYNC_COMPLETE
+- Logique de rôle, _fallbackWaitForSlave
+- ACK PACK_RECEIVED_OK (TCP via sendControlMessage — déjà existant, fonctionne)
+
+### Action user
+HARD RELOAD les 2 phones. Tester et partager les logs. Vérifier dans les logs :
+- `🔄 [V3.18] Reset état post-réception (succès=true|false)` (apparaît toujours maintenant)
+- **NE PLUS voir** : `🔍 shouldSend=true, pendingContent=true, packSent=false` en boucle
+- **NE PLUS voir** : `WARN framework is busy` × 3 → `Retry dans 10s` en boucle
+- **NE PLUS voir** : `[V3.16] Reset état post-réception` (remplacé par V3.18)
+
+### Commit
+- `f9f34b4` v0.0.27 V3.18 SPRINT 3 BUG-052 fix
+- Release : https://github.com/BENsidneykokolo/yabisso/releases/tag/v0.0.27
+
+### Prochaine étape (Sprint 4)
+Vérifier que le contenu s'affiche dans le feed LOBA des 2 phones. Si OK → Sprint 2 (bidirectionnel) définitivement validé ✅
+
+
 
