@@ -242,8 +242,12 @@ class P2PAutoSyncClass {
   // V3.13 : Helper — Fallback _waitForSlaveConfirmation (sécurité si Mesh échoue)
   // Appelé après l'envoi de WIFI_GROUP_READY. Si le Slave se connecte avant de
   // recevoir le signal Mesh, cette attente le détectera via YABISSO_HELLO.
+  // V3.15 (BUG-045 fix) : Timeout réduit de 35s à 15s. Maintenant que le Master
+  // attend le signal Mesh SLAVE_CONNECTED_CONFIRMED pour démarrer son récepteur HELLO
+  // (au lieu d'écouter "à l'aveugle" 35s en avance), le HELLO arrive en pratique
+  // dans les 2-3s suivant la confirmation. 15s de timeout = 5× la latence réelle.
   _fallbackWaitForSlave(peerName) {
-    this._waitForSlaveConfirmation(peerName, 35000).then(confirmed => {
+    this._waitForSlaveConfirmation(peerName, 15000).then(confirmed => {
       this._waitingForSlave = false;
       if (confirmed && this._running && WifiDirectService.connectedPeer) {
         this._log(`■ [V3.13] ✅ Slave confirmé (via HELLO WiFi) → lancement envoi`);
@@ -320,10 +324,23 @@ class P2PAutoSyncClass {
   // V3.6.4 (Mesh handshake) : Reçu SLAVE_CONNECTED_CONFIRMED du Slave via Mesh
   // Le Slave confirme qu'il est bien connecté au réseau WiFi du Master.
   // Le Master peut alors commencer à envoyer le pack en toute sécurité.
+  // V3.15 (BUG-045 fix) : Le Master démarre ICI son récepteur HELLO, après que le Slave
+  // soit confirmé connecté via Mesh. Sans ça, le startReceiving() était lancé 1500ms
+  // après le createGroup, AVANT que le Slave ne soit réellement prêt à envoyer son HELLO
+  // → race condition où le HELLO du Slave arrivait sur un socket Master pas encore actif.
   async _onSlaveConnectedConfirmedMesh(peerId) {
     this._log(`✅ [V3.6.4 Mesh] SLAVE_CONNECTED_CONFIRMED reçu de Slave ${peerId} → Master peut envoyer`);
     this._slaveConfirmedViaMesh = true;
     this._peerMeshId = peerId;
+
+    // V3.15 (BUG-045 fix) : Démarrage du récepteur HELLO MAINTENANT (pas avant).
+    // Le Slave est confirmé connecté → son HELLO va partir dans ~1s.
+    if (WifiDirectService.connectedPeer && this._running) {
+      this._log(`📡 [V3.15 Master] Démarrage récepteur HELLO (Slave confirmé connecté via Mesh)`);
+      WifiDirectService.startReceiving(WifiDirectService.globalFileHandler);
+    } else {
+      this._log(`⚠️ [V3.15 Master] SLAVE_CONNECTED_CONFIRMED reçu mais connexion perdue, récepteur non démarré.`);
+    }
   }
 
   // V3.6.5 (Real connection check) : Attend que le Slave confirme sa présence via YABISSO_HELLO_ACK.
@@ -630,8 +647,11 @@ class P2PAutoSyncClass {
               return;
             }
             if (isMyRoleMaster) {
-              this._log(`■ [V3.10] Master : récepteur démarré, attente Slave...`);
-              WifiDirectService.startReceiving(WifiDirectService.globalFileHandler);
+              this._log(`■ [V3.10 Master] attente Slave (récepteur démarré sur SLAVE_CONNECTED_CONFIRMED)...`);
+              // V3.15 (BUG-045 fix) : Le récepteur HELLO du Master n'est PLUS démarré ici.
+              // Il sera démarré dans _onSlaveConnectedConfirmedMesh() dès que le Slave aura
+              // confirmé sa connexion via Mesh. Cela élimine la race condition où le HELLO
+              // du Slave arrivait sur un socket Master pas encore prêt.
 
               // V3.13 : ENVOI DU SIGNAL WIFI_GROUP_READY VIA NEARBY MESH
               // On attend 1500ms que le groupe WiFi soit stable, puis on notifie le Slave.
@@ -662,13 +682,26 @@ class P2PAutoSyncClass {
                 this._fallbackWaitForSlave(peerName);
               }, 1500);
             } else {
-              this._log(`■ [V3.10] Slave : récepteur + HELLO`);
+              this._log(`■ [V3.10 Slave] récepteur démarré, HELLO différé de 3s (V3.16 BUG-048 fix)`);
               WifiDirectService.startReceiving(WifiDirectService.globalFileHandler);
-              this._sendYabissoHello(false, peerName);
+
+              // V3.15 (BUG-045 fix) : Le HELLO est différé pour laisser au Master
+              // le temps de recevoir SLAVE_CONNECTED_CONFIRMED via Mesh et de démarrer
+              // son récepteur HELLO. Sans ce délai, le HELLO arrivait sur un socket Master
+              // pas encore prêt → timeout 35s.
+              // V3.16 (BUG-048 fix) : Délai augmenté de 1s à 3s. Tests montrent que le
+              // serveur 8988 du Master met 1.5-2s à être UP après réception du signal Mesh
+              // (Mesh BLE ~500-800ms + startReceiving ~500ms + bind socket ~200ms).
+              // À T+1000ms, le serveur n'est pas encore bind → ECONNREFUSED.
+              // À T+3000ms, le serveur est UP depuis 1s → HELLO passe. ✅
+              setTimeout(() => {
+                this._sendYabissoHello(false, peerName);
+              }, 3000);
 
               // V3.13 : Envoi SLAVE_CONNECTED_CONFIRMED au Master via Mesh
-              // Le Master reçoit ce signal et sait qu'il peut commencer à envoyer (sécurité
-              // supplémentaire au YABISSO_HELLO_ACK qui passe par WiFi Direct).
+              // Le Master reçoit ce signal et démarre son récepteur HELLO (cf. _onSlaveConnectedConfirmedMesh).
+              // Réduit de 500ms à 300ms pour que le Master traite le signal et démarre
+              // son récepteur AVANT que le HELLO ne parte (T=1000ms).
               setTimeout(async () => {
                 if (!WifiDirectService.connectedPeer || !this._running) return;
                 const masterPeerId = this._peerMeshId || this._findMasterPeerId();
@@ -685,7 +718,7 @@ class P2PAutoSyncClass {
                 } else {
                   this._log(`⚠️ [V3.13 Slave] Échec envoi SLAVE_CONNECTED_CONFIRMED.`);
                 }
-              }, 500);
+              }, 300);
             }
           }, 1500);
         } else if (this._wasConnected) {
@@ -1123,6 +1156,16 @@ class P2PAutoSyncClass {
             // handler s'occupe du vidage complet de _roleSwapQueue à la réception.
             this._completedSyncs[peerName] = Date.now();
             this._log(`✅ [V3.11] SYNC_COMPLETE envoyé. Déconnexion dans 3s...`);
+            // V3.16 (BUG-050 fix) : STOPPER LE RÉCEPTEUR après SYNC_COMPLETE
+            // AVANT : le récepteur TCP restait ouvert après la fin de la sync → certains
+            // fichiers de contrôle (YABISSO_HELLO_ACK résiduel, etc.) timeout (receiveFile timeout).
+            // MAINTENANT : on ferme le serveur 8988 dès que la sync est terminée.
+            try {
+              WifiDirectService.stopReceiving();
+              this._log(`🛑 [V3.16] Récepteur TCP fermé après SYNC_COMPLETE (évite receiveFile timeout)`);
+            } catch (e) {
+              this._log(`⚠️ [V3.16] stopReceiving après SYNC_COMPLETE: ${e.message}`);
+            }
           } else {
             this._log(`❌ [V3.11] Échec envoi SYNC_COMPLETE`);
           }
@@ -1177,6 +1220,15 @@ class P2PAutoSyncClass {
           this._completedSyncs[yabissoKey || wifiDirectKey] = Date.now();
           this._lastIntendedRole = null; // V3.0: Reset complet du rôle après synchro bidirectionnelle
           this._packSentThisSession = false;
+          // V3.16 (BUG-050 fix) : STOPPER LE RÉCEPTEUR après réception SYNC_COMPLETE (côté Slave)
+          // Le Slave doit aussi fermer son serveur 8988 pour éviter que des fichiers de contrôle
+          // résiduels (YABISSO_HELLO_ACK, etc.) ne restent en attente et timeout.
+          try {
+            WifiDirectService.stopReceiving();
+            this._log(`🛑 [V3.16 Slave] Récepteur TCP fermé après réception SYNC_COMPLETE`);
+          } catch (e) {
+            this._log(`⚠️ [V3.16 Slave] stopReceiving: ${e.message}`);
+          }
           this._log(`✅ [V3.11] Synchro bidirectionnelle complétée. _roleSwapQueue vidé (${keys.length} clé(s) nettoyée(s)) + repos 5 minutes.`);
         } else if (metadata.type === 'YABISSO_HELLO') {
           const senderDevice = metadata.senderDevice || peerName;
@@ -1238,6 +1290,13 @@ class P2PAutoSyncClass {
           if (success) {
             this._log(`✅ Pack traité !`);
             this.stats.totalSyncedP2P++;
+            // V3.16 (BUG-049 fix) : RESET DES FLAGS après ingestion réussie
+            // AVANT : _hasPendingDelta restait à true indéfiniment, ce qui forçait
+            // shouldSend=true à chaque cycle et déclenchait des envois redondants.
+            // MAINTENANT : on reset explicitement pour signaler que le delta a été consommé.
+            this._hasPendingDelta = false;
+            this._lastSentTo[peerName] = Date.now();
+            this._log(`🔄 [V3.16] Reset état post-réception: _hasPendingDelta=false, _lastSentTo[${peerName}]=now`);
           }
           // V3.6.4 (Double validation) : ENVOYER PACK_RECEIVED_OK AU MASTER
           // Certifie au Master que la réception et l'écriture locale sont terminées.

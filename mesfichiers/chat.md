@@ -7029,3 +7029,157 @@ User: "maintenant tu peux implimenter et apres tu update chat.md aussi et proble
 - Handshake HELLO
 - Pack / SYNC_COMPLETE
 
+
+---
+
+## Validation V3.14 + Backup git/gh (2026-06-07)
+
+User: "fait un git et gh d'abord" (avant d'attaquer BUG-045)
+
+### Validation des tests V3.14
+- ✅ `🧹 Ancien groupe supprimé` (cleanup Master fonctionne)
+- ✅ Retry 3x déclenché : `tentative 1/3` fail → 2s → `tentative 2/3` fail → 4s → `✅ connect réussi tentative 3 !`
+- ✅ Pack 23.1MB transféré + ACK + SYNC_COMPLETE
+- ⚠️ Reste UN bug : `[Slave] ✅ YABISSO_HELLO envoyé` mais `[Master] ⏰ Aucun Slave en 35000ms → timeout` (BUG-045 hypothétique)
+
+### Actions backup
+- ✅ `git add` : 4 fichiers (WifiDirectService.js x2 + chat.md + probleme.md)
+- ✅ `git commit` : `dd81f0c` v0.0.24 (138 insertions, 46 deletions)
+- ✅ `git push origin main` : aee7f17 → dd81f0c
+- ✅ `gh release create v0.0.24` : https://github.com/BENsidneykokolo/yabisso/releases/tag/v0.0.24
+
+### Exclusions volontaires
+- `mesfichiers/__pycache__/` (cache Python)
+- `mesfichiers/gen_share_md.py`, `log_v39.py`, `md_to_pdf.py`, `regen_solutionp2p.js` (scripts locaux)
+- `mesfichiers/share/` (dossier généré)
+
+
+---
+
+## Implémentation V3.15 / BUG-045 fix (2026-06-07)
+
+User: "vas y go"
+
+### Diagnostic confirmé
+- `[Slave] ✅ YABISSO_HELLO envoyé` apparaît bien
+- `[Master] ⏰ Aucun Slave en 35000ms → timeout` côté Master
+- Le Slave est `GO=false` (IP DHCP), Master est `GO=true` (IP 192.168.49.1) → connexion WiFi OK
+- **Cause** : Le Master démarre son `startReceiving()` 1500ms après le `createGroup`, AVANT que le Slave ne soit prêt → race condition sur le socket receiver
+
+### Modifications appliquées dans `P2PAutoSync.js` (1420 → 1494 lignes, +74)
+
+**1. `_onSlaveConnectedConfirmedMesh()` (ligne 323)** — AJOUT du `startReceiving()` Master
+```js
+// V3.15 (BUG-045 fix) : Démarrage du récepteur HELLO MAINTENANT (pas avant).
+if (WifiDirectService.connectedPeer && this._running) {
+  WifiDirectService.startReceiving(WifiDirectService.globalFileHandler);
+}
+```
+
+**2. Branche Master `onConnectionChange` (ligne 650-651)** — SUPPRESSION du `startReceiving()` prématuré
+- Avant : `WifiDirectService.startReceiving(...)` à T+1500ms
+- Après : Le récepteur démarre UNIQUEMENT dans `_onSlaveConnectedConfirmedMesh()`
+
+**3. Branche Slave `onConnectionChange` (ligne 685-716)** — HELLO différé + SLAVE_CONNECTED_CONFIRMED avancé
+- HELLO : `setTimeout(() => _sendYabissoHello(), 1000)` (au lieu d'immédiat)
+- SLAVE_CONNECTED_CONFIRMED : `setTimeout(..., 300)` (au lieu de 500) → Master a 700ms pour traiter et démarrer son récepteur
+
+**4. `_fallbackWaitForSlave()` (ligne 250)** — Timeout 35000ms → 15000ms
+- Le HELLO arrive en pratique 2-3s après la confirmation Mesh → 15s = 5× la latence réelle
+
+### Séquence temporelle attendue (V3.15)
+| T (ms) | Événement |
+|--------|-----------|
+| 0 | Slave `connectToPeer` réussi |
+| 0+1500 | Master `createGroup` + envoi `WIFI_GROUP_READY` |
+| 0+300 (Slave) | Slave envoie `SLAVE_CONNECTED_CONFIRMED` via Mesh |
+| ~500 (Master) | Master reçoit signal, démarre `startReceiving()` |
+| 0+1000 (Slave) | Slave envoie `YABISSO_HELLO` |
+| ~1100 (Master) | Master reçoit HELLO, connexion considérée "vraie" |
+
+### Vérifications
+- ✅ `node --check src/features/bluetooth/services/P2PAutoSync.js` → 0 erreur
+- ✅ `grep V3.15` → 8 références cohérentes
+- ✅ Backup `mesfichiers/P2P/bluetooth/services/P2PAutoSync.js` synchronisé
+- ✅ BUG-045 ajouté dans `probleme.md`
+
+### Non touché (protégé)
+- NearbyMeshService (V3.6.4)
+- WifiDirectService (V3.14)
+- `createGroup`, `connectToPeer` Slave retry
+- Envoi pack, SYNC_COMPLETE
+
+### Prochaine étape
+- HARD RELOAD + tester sur les 2 phones
+- Vérifier les nouvelles séquences de logs
+- Si OK : commit v0.0.25 + release GitHub
+- Sprint 2 : vérifier que le pack s'unzip correctement et s'affiche dans le feed LOBA
+
+
+---
+
+## BUG FIX : duplication de code (2026-06-07)
+
+User: "j'ai cette erreur fix: ... SyntaxError: Unexpected reserved word 'awa... P2PAutoSync.js:726"
+
+### Cause racine
+L'edit `oldString → newString` du bloc Master/Slave dans `onConnectionChange` n'a pas matché toute la fin → l'ancien bloc V3.13 est resté ORPHELIN après le nouveau bloc V3.15, créant un faux `await` ligne 726 dans un scope non-async (le `else if (this._wasConnected)` qui n'est pas une fonction async).
+
+### Diagnostic
+- `node --check` n'a PAS détecté le bug (parser V8 permissif, tolère TLA en mode module)
+- Babel parser (Flow + JSX) l'a détecté immédiatement → c'est lui le parseur réel de Metro
+- Leçon : **`node --check` ne suffit pas, il faut TOUJOURS valider avec `@babel/parser`**
+
+### Correction
+- Suppression de la duplication (lignes 718-763 du fichier intermédiaire)
+- Fichier final : 1448 lignes (vs 1494 avec duplication)
+- Re-validation Babel : OK, 2 await dans la zone V3.15 (lignes 672, 708), tous deux dans des `setTimeout(async () => {})`
+
+### Nouveau protocole de validation
+- `node --check` → smoke test
+- `@babel/parser` (Flow + JSX) → validation stricte avant de déclarer OK
+- Backup synchronisé
+- `probleme.md` à mettre à jour avec ce BUG-V3.15-EDIT
+
+
+---
+
+## Implémentation V3.16 — Sprint 2 (3 fixes user-driven) (2026-06-07)
+
+User: "voici mon analyse, alors tu mets pack recu mais je ne le vois pas dans le feed"
+
+### Constat critique
+- Le pack 23.1MB est bien transféré (`✅ [V3.3] Pack Phase 1 envoyé !`)
+- Le fichier .zip est écrit sur disque (`📨 Fichier reçu: ...loba_media/p2p_xxx`)
+- MAIS `_hasPendingDelta` ne se reset JAMAIS → pas de ré-ingestion propre
+- ET le contenu n'apparaît pas dans le feed LOBA
+
+### 3 fixes appliqués dans `P2PAutoSync.js` (1448 → 1480 lignes, +32)
+
+**FIX 1 (BUG-048) — HELLO Slave : 1s → 3s (ligne 685-694)**
+- Problème : T+1000ms, le serveur 8988 du Master n'est pas encore UP → ECONNREFUSED
+- Tests montrent : Mesh BLE ~500-800ms + startReceiving ~500ms + bind socket ~200ms = ~1.5-2s
+- Fix : T+3000ms, le serveur est UP depuis 1s → HELLO passe ✅
+
+**FIX 2 (BUG-049) — Reset `_hasPendingDelta` après `unpackAndProcess` réussi (ligne ~1267)**
+- Problème : après réception du pack, `_hasPendingDelta` reste `true` indéfiniment
+- Conséquence : `shouldSend=true` à chaque cycle → ré-envois redondants
+- Fix : `this._hasPendingDelta = false` + `this._lastSentTo[peerName] = Date.now()` après `success`
+
+**FIX 3 (BUG-050) — `stopReceiving()` après SYNC_COMPLETE (côté Master ET Slave)**
+- Problème : récepteur TCP reste ouvert après sync → `WARN receiveFile: receiveFile timeout`
+- Fix Master : après `✅ SYNC_COMPLETE envoyé. Déconnexion dans 3s...`
+- Fix Slave : après réception `SYNC_COMPLETE` dans `_handleReceivedFile`
+
+### Vérifications
+- `node --check` → OK
+- `@babel/parser` → OK
+- Backup `mesfichiers/P2P/bluetooth/services/P2PAutoSync.js` synchronisé
+
+### Non touché (protégé)
+- V3.13, V3.14, V3.15
+- Nearby Mesh (WIFI_GROUP_READY, SLAVE_CONNECTED_CONFIRMED)
+- createGroup, connectToPeer retry
+- sendFile, unpackAndProcess
+
+

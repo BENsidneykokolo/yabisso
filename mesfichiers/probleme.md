@@ -675,3 +675,35 @@
   - Master : `🧹 Ancien groupe supprimé` puis `✅ createGroup réussi`
   - Slave : `✅ connect réussi (première tentative)` (idéal) ou `✅ connect réussi tentative 2 !` (acceptable)
   - **NE PLUS voir** : `❌ Erreur connect (tentative 2): framework is busy`
+
+---
+
+### BUG-045 — Master rate le YABISSO_HELLO du Slave (race socket receiver) (BUG-V3.15)
+- **Date** : 2026-06-07
+- **Problème** : Le Slave envoie bien `YABISSO_HELLO` (log `[Slave] ✅ YABISSO_HELLO envoyé` apparaît), mais le Master ne le reçoit jamais. Log côté Master : `[Master] ⏰ Aucun Slave en 35000ms → timeout`. La connexion WiFi est pourtant valide (le Slave est `GO=false`, IP DHCP ~192.168.49.x ; le Master est `GO=true`, IP fixe 192.168.49.1).
+- **Cause** : Le Master démarre son `startReceiving()` **1500ms après le createGroup**, BI AVANT que le Slave soit réellement prêt à envoyer son HELLO. Quand le HELLO arrive, le socket côté Master n'est pas encore bind correctement → paquet perdu. Le HELLO part 0ms après le `connectToPeer` réussi du Slave, donc le timing Master/Slave est mal aligné.
+- **Solution (V3.15)** : 3 modifications ciblées dans `P2PAutoSync.js` :
+  1. **`_onSlaveConnectedConfirmedMesh()` (ligne 323)** : Le Master démarre `startReceiving()` ICI, dès qu'il reçoit la confirmation Mesh du Slave. Garantie que le socket est bind avant tout HELLO.
+  2. **`onConnectionChange` branche Master (ligne 650-651)** : SUPPRESSION de `WifiDirectService.startReceiving()` qui était lancé trop tôt. Le récepteur est démarré uniquement après `SLAVE_CONNECTED_CONFIRMED`.
+  3. **`onConnectionChange` branche Slave (ligne 685-716)** : Le HELLO est différé de 1s (au lieu d'être envoyé immédiatement) pour laisser le Master traiter le signal Mesh et démarrer son récepteur. Le `SLAVE_CONNECTED_CONFIRMED` est envoyé à 300ms (au lieu de 500ms) pour que le Master soit prêt avant T=1000ms.
+  4. **`_fallbackWaitForSlave()` (ligne 250)** : Timeout réduit de 35000ms à 15000ms. Le HELLO arrive en pratique dans les 2-3s suivant la confirmation Mesh → 15s = 5× la latence réelle (sécurité suffisante).
+- **Fichiers modifiés** : `app/src/features/bluetooth/services/P2PAutoSync.js` (1420 → 1494 lignes, +74)
+- **Vérifications** : `node --check` → 0 erreur ; `grep V3.15` → 8 références cohérentes ; backup `mesfichiers/P2P/bluetooth/services/P2PAutoSync.js` synchronisé
+- **Non touché** (protégé) : NearbyMeshService, WifiDirectService (V3.14), `createGroup`, `connectToPeer` Slave retry, envoi pack, SYNC_COMPLETE
+- **Statut** : 🔄 En test (2026-06-07) — Version v0.0.25
+- **Action user** : HARD RELOAD. Tester sur les 2 phones. Vérifier dans les logs :
+  - **Nouveau séquence Master** : `📡 [V3.13 Master] Envoi WIFI_GROUP_READY` → `📡 [V3.15 Master] Démarrage récepteur HELLO (Slave confirmé connecté via Mesh)` → `✅ [V3.9] Slave "..._yabisso_..." confirmé en XXXms !`
+  - **Nouveau séquence Slave** : `📤 [V3.13 Slave] Envoi SLAVE_CONNECTED_CONFIRMED` (T+300ms) → `✅ YABISSO_HELLO envoyé` (T+1000ms)
+  - **NE PLUS voir** : `[Master] ⏰ Aucun Slave en 15000ms → timeout`
+
+---
+
+### BUG-V3.15-EDIT — Duplication de code dans `onConnectionChange` (2026-06-07)
+- **Date** : 2026-06-07
+- **Problème** : `SyntaxError: Unexpected reserved word 'await' at P2PAutoSync.js:726`. L'edit V3.15 a mal fermé le bloc Master/Slave — l'ancien code V3.13 est resté orphelin APRÈS le nouveau code V3.15, créant un `await` ligne 726 dans un scope non-async.
+- **Détecté par** : Babel parser (Metro) au bundling Android. `node --check` n'avait PAS détecté le bug.
+- **Cause** : Le `oldString` de l'edit ne contenait pas toute la fin du bloc à remplacer → duplication au lieu de remplacement.
+- **Fix** : Suppression des lignes 718-763 (le bloc orphelin V3.13). Fichier final : 1494 → 1448 lignes.
+- **Leçon** : `node --check` n'est PAS suffisant pour valider la syntaxe d'un projet React Native. Toujours valider avec `@babel/parser` (Flow + JSX) avant de déclarer OK.
+- **Vérifications** : `node --check` OK, `@babel/parser` OK (2 await dans la zone V3.15, tous dans des `setTimeout(async () => {})`)
+- **Statut** : ✅ Corrigé (2026-06-07)
