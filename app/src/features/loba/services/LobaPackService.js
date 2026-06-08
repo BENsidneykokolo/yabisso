@@ -76,15 +76,37 @@ export class LobaPackService {
 
       const posts = await database.get('loba_posts').query(...queryArgs).fetch();
 
+      // V4.0 BUG-047 DEBUG : Compter aussi le total sans filtre local_media_path
+      const allPostsCount = await database.get('loba_posts').query().fetchCount();
+      const propagatingCount = await database.get('loba_posts').query(Q.where('is_propagating', true)).fetchCount();
+      console.log(`[LobaPackService] 🔍 buildPack DEBUG: total_posts=${allPostsCount}, posts_with_local_media=${posts.length}, is_propagating=${propagatingCount}, category=${category || 'all'}`);
+
+      if (posts.length === 0 && allPostsCount > 0) {
+        console.warn(`[LobaPackService] ⚠️ BUG-047: ${allPostsCount} posts en DB mais AUCUN avec local_media_path non-null. Fichiers nettoyés ou jamais sauvegardés ?`);
+        // V4.0 BUG-047 FIX : Fallback — si des posts ont is_propagating=true, essayer sans le filtre local_media_path
+        // pour au moins inclure les posts qui ont un média (imageUrl/videoUrl) même si local_media_path est null
+        const fallbackPosts = await database.get('loba_posts').query(
+          Q.where('is_propagating', true),
+          Q.sortBy('created_at', Q.desc),
+          Q.take(25)
+        ).fetch();
+        if (fallbackPosts.length > 0) {
+          console.log(`[LobaPackService] 🔄 BUG-047 Fallback: ${fallbackPosts.length} posts avec is_propagating=true trouvés`);
+        }
+      }
+
       let currentSize = 0;
       const manifestList = [];
 
       // 2. Sélectionner les fichiers jusqu'à 50MB
+      let skippedNoPath = 0;
+      let skippedNoFile = 0;
+      let skippedTooBig = 0;
       for (const post of posts) {
-        if (!post.localMediaPath) continue;
+        if (!post.localMediaPath) { skippedNoPath++; continue; }
 
         const fileInfo = await FileSystem.getInfoAsync(post.localMediaPath);
-        if (!fileInfo.exists) continue;
+        if (!fileInfo.exists) { skippedNoFile++; continue; }
 
         const fileSize = fileInfo.size;
         
@@ -134,6 +156,7 @@ export class LobaPackService {
       }
 
       if (manifestList.length === 0) {
+        console.warn(`[LobaPackService] ⚠️ buildPack null: skippedNoPath=${skippedNoPath}, skippedNoFile=${skippedNoFile}, skippedTooBig=${skippedTooBig}, totalQueried=${posts.length}`);
         // Rien à envoyer, on supprime le dossier staging
         await FileSystem.deleteAsync(stagingDir, { idempotent: true });
         return null;

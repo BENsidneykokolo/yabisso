@@ -42,8 +42,8 @@ class WifiDirectServiceClass {
     this._wifiDirectName = null;
     this._nonYabissoPeers = new Map();
     this._peerLastAttempt = new Map();
-    this._localP2pIp = null; // V3.20 (BUG-047 fix): IP locale sur l'interface p2p (ex: 192.168.49.112)
-    this._targetPeerIp = null; // V3.20 (BUG-047 fix): IP cible pour sendFileTo (reçue du Slave via Mesh)
+    this._localP2pIp = null; // IP locale réelle sur l'interface p2p (ex: 192.168.49.112)
+    this._targetPeerIp = null; // IP cible pour sendFileTo (vraie IP du Slave)
   }
 
   isPeerBlacklisted(peerName) {
@@ -546,39 +546,52 @@ class WifiDirectServiceClass {
     console.log(`[WifiDirectService] 🎯 [V3.20] Target peer IP défini: ${ip || '(null)'}`);
   }
 
-  // V3.20 (BUG-047 fix) : Récupère l'IP locale sur l'interface p2p (côté Slave)
-  // Le lib ne fournit PAS directement l'IP locale du client.
-  // On utilise getConnectionInfo() (qui retourne groupOwnerAddress = IP du GO)
-  // combiné avec une heuristique : le client reçoit une IP du DHCP du GO en 192.168.49.x.
-  // Sans accès natif à NetworkInterface, on ne peut PAS récupérer l'IP locale précise.
-  // → On retourne null et P2PAutoSync utilisera un fallback 192.168.49.2.
+  // V3.21 (Option C / BUG-047 fix) : Récupère la VRAIE IP locale sur l'interface p2p.
+  // On appelle la méthode NATIVE getP2pIpAddress() (ajoutée dans WiFiP2PManagerModule.java)
+  // qui parcourt les NetworkInterface et retourne l'IP en 192.168.49.x.
+  // PLUS de fallback hardcodé 192.168.49.2 : une IP fausse provoquait EHOSTUNREACH côté
+  // Master (sendFileTo vers une adresse inexistante). Si la vraie IP est introuvable,
+  // on retourne null → le Master n'enverra PAS vers une adresse au hasard.
   async getLocalP2pIp() {
     if (!this._nativeReady || !WifiP2P) return null;
     try {
-      const info = await Promise.race([
-        WifiP2P.getConnectionInfo(),
-        new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 3000))
-      ]);
-      // Certains forks de react-native-wifi-p2p exposent myIpAddress
-      if (info && info.myIpAddress) {
-        this._localP2pIp = info.myIpAddress;
-        console.log(`[WifiDirectService] 🌐 [V3.20] IP locale p2p (myIpAddress): ${this._localP2pIp}`);
-        return this._localP2pIp;
+      // V4.0 BUG-047 FIX : Utiliser getP2pLocalIp (nouvelle méthode native)
+      // au lieu de getP2pIpAddress qui échoue sur l'itel A50 (Mediatek)
+      if (typeof WifiP2P.getP2pLocalIp === 'function') {
+        const ip = await Promise.race([
+          WifiP2P.getP2pLocalIp(),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 5000))
+        ]);
+        if (ip && typeof ip === 'string' && ip.startsWith('192.168.49.')) {
+          this._localP2pIp = ip;
+          console.log(`[WifiDirectService] 🌐 [V4.0] IP locale p2p (getP2pLocalIp): ${ip}`);
+          return ip;
+        }
+        console.warn(`[WifiDirectService] ⚠️ [V4.0] getP2pLocalIp retourné null/incorrect (retour=${ip}).`);
       }
-      if (info && info.myIp) {
-        this._localP2pIp = info.myIp;
-        console.log(`[WifiDirectService] 🌐 [V3.20] IP locale p2p (myIp): ${this._localP2pIp}`);
-        return this._localP2pIp;
+
+      // Fallback : ancienne méthode getP2pIpAddress
+      if (typeof WifiP2P.getP2pIpAddress === 'function') {
+        const ip = await Promise.race([
+          WifiP2P.getP2pIpAddress(),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 3000))
+        ]);
+        if (ip && typeof ip === 'string' && ip.startsWith('192.168.49.')) {
+          this._localP2pIp = ip;
+          console.log(`[WifiDirectService] 🌐 [V4.0] IP locale p2p (fallback getP2pIpAddress): ${ip}`);
+          return ip;
+        }
+        console.warn(`[WifiDirectService] ⚠️ [V4.0] getP2pIpAddress sans IP p2p (retour=${ip}).`);
+      } else {
+        console.warn(`[WifiDirectService] ⚠️ [V4.0] Aucune méthode native disponible (rebuild APK requis).`);
       }
-      // Pas d'IP locale dispo via le lib — fallback 192.168.49.2 (convention DHCP Android)
-      // Le 1er client reçoit typiquement 192.168.49.2 du DHCP du GO
-      console.warn('[WifiDirectService] ⚠️ [V3.20] getConnectionInfo ne retourne pas myIpAddress, fallback 192.168.49.2');
-      this._localP2pIp = '192.168.49.2';
-      return this._localP2pIp;
+
+      this._localP2pIp = null;
+      return null;
     } catch (e) {
-      console.warn(`[WifiDirectService] ⚠️ [V3.20] getLocalP2pIp échoué: ${e.message}`);
-      this._localP2pIp = '192.168.49.2';
-      return this._localP2pIp;
+      console.warn(`[WifiDirectService] ⚠️ [V4.0] getLocalP2pIp échoué: ${e.message}`);
+      this._localP2pIp = null;
+      return null;
     }
   }
 

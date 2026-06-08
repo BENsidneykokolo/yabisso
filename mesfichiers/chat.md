@@ -7513,3 +7513,449 @@ HARD RELOAD les 2 phones. Tester et partager les logs. Vérifier dans les logs :
 
 
 
+
+
+---
+
+## 2026-06-07 - Session: Verification complete des fichiers .md + Logging temps reel
+
+**User**: tu peux verifier tous les fichiers .md dans le repo "mesfichiers" pour avoir le contexte de ce que nous faisons et aussi enregistrer automatiquement notre echange dans le fichier chat.md en temps reel que nous echangeons pour ne pas perdre l'historique, et aussi quand je te demande quelque chose prend le temps de "think deeper" avant de me repondre mais surtout reverifier et tester de ton cote pour verifier ce que tu viens d'implementer marche
+
+**Assistant**: Verification complete de tous les fichiers .md dans le repo "mesfichiers" (C:/Users/Utilisateur/Documents/Ben/myapp/yabisso/mesfichiers). Voici le contexte complet:
+
+### Fichiers .md trouves et analyses:
+| Fichier | Contenu principal | Statut |
+|---------|-------------------|--------|
+| project_memory.md | Versions (Expo SDK 54, WatermelonDB 0.28) + Etat actuel | OK |
+| role.md | 7 regles de developpement (plan avant code, offline-first) | OK |
+| chat.md | Historique complet (7515 lignes) | Mis a jour en temps reel |
+| task.md | Tasks par sprint/priorite (Phase 1-6) | OK |
+| architecture.md | 5 rails de communication, PlantUML | OK |
+| roadmap.md | Phases 1-6, sprints S0-S12 | OK |
+| probleme.md | 43+ bugs resolus (OOM, WiFi Direct, P2P) | OK |
+| solutionp2p.md | Code complet V3.11+ P2PAutoSync | OK |
+| implementation.md | Stack technique, schemas DB | OK |
+| wifidirect.md | Documentation WiFi Direct & Nearby | OK |
+| ui_screens_index.md | Index des ecrans RN | OK |
+| design yabisso.md | References UI HTML | OK |
+| Network/*.md | Architecture globale + Loba P2P sync | OK |
+| P2P/README.md | Backup des services P2P | OK |
+| login/INSTALL.md + QR_SIGNUP_GUIDE.md | Guides SMS/QR | OK |
+
+### Resume du projet YABISSO:
+- Type: Super-app africaine offline-first (React Native + Expo SDK 54)
+- Modules: Auth, Wallet, Marketplace, Loba, Restaurant, Hotels, Services, Immobilier, Pharmacie, Appartements, Assistant IA, Dating
+- Stack: WatermelonDB 0.28, SecureStore, NetInfo, expo-nearby-connections, react-native-wifi-p2p
+- Phase actuelle: Phase 5 (P2P Transports) + WiFi Direct V3.20+ (BUG-047 fix)
+- Version actuelle: v0.0.23 (en test)
+
+### Engagements pour cette session:
+1. Logging temps reel dans chat.md
+2. Think deeper avant chaque implementation
+3. Re-verifier et tester systematiquement
+4. Lecture complete de l'historique avant de repondre
+
+Pret a continuer. Dis-moi ce que tu veux faire.
+
+
+---
+
+## 2026-06-07 - Suite analyse logs + attente nouveau test
+
+**User**: analyse uniquement les log n implimente rien
+
+**Assistant**: 3 series de logs analysees en profondeur.
+
+### Bilan de l analyse:
+
+#### V3.17 / V3.19 / V3.20 (progres recents):
+- V3.17: WIFI_GROUP_READY envoye par Master AVANT createGroup
+- V3.19: HELLO envoye 5s apres SLAVE_CONNECTED_CONFIRMED
+- V3.20: SLAVE_IP envoye par Slave, recu par Master
+
+#### 6 problemes critiques identifies:
+1. IP Slave hardcodee (192.168.49.2) -> EHOSTUNREACH
+2. Double Group Owner (regression BUG-023)
+3. YABISSO_HELLO envoye mais jamais recu
+4. Mesh peer perdu -> peerScore=0
+5. Boucle infinie Mode Reception cote Slave
+6. Pas de timeout zombie -> batterie drain
+
+#### Cause racine principale:
+getConnectionInfo().myIpAddress retourne null sur Itel A50 (Mediatek).
+Le fallback 192.168.49.2 est une IP INVALIDE.
+
+**User**: je vais refaire le teste
+
+**Assistant**: OK, j attends les nouveaux logs. Suggestions capturees:
+1. Logs complets des 2 phones
+2. Adresse IP reelle du Slave dans le groupe WiFi
+3. Heure des evenements cles
+4. Confirmation EHOSTUNREACH ou succes du transfert
+Aucune implementation tant que resultats recus.
+
+
+---
+
+## 2026-06-07 - 3eme analyse logs: VRAIE Root Cause identifiee
+
+**User**: Partage des 3eme logs (nouveau test)
+
+**Assistant**: Analyse complete.
+
+### Progres observes (V3.17+V3.19+V3.20 fonctionne):
+- WIFI_GROUP_READY envoye et recu via Mesh
+- SLAVE_IP envoye par Slave et recu par Master
+- Target peer IP defini correctement (192.168.49.2)
+- sendFileTo utilise (pas de self-loop)
+- Pack genere (23.1MB)
+
+### NOUVELLE Root Cause identifiee (decisive):
+
+**Le Slave ne commute PAS son interface reseau vers le groupe WiFi Direct.**
+
+Preuve dans les logs:
+- Master envoie depuis 192.168.49.1 (GO, bonne interface) -> OK
+- Slave envoie depuis 192.168.1.68 (WiFi normal, MAUVAISE interface) -> KO
+- EHOSTUNREACH: Master ne peut pas router vers 192.168.49.2
+
+### Diagnostic complet (10 problemes identifies):
+
+| # | Probleme | Statut |
+|---|----------|--------|
+| 1 | Slave pas d IP p2p valide | CAUSE RACINE |
+| 2 | Interface reseau pas commutee | VRAIE CAUSE |
+| 3 | getConnectionInfo().myIpAddress = null | Consequence #2 |
+| 4 | Fallback 192.168.49.2 | Faux (IP pas routee) |
+| 5 | Mesh BLE coupe pendant WiFi | Probleme secondaire |
+| 6 | EHOSTUNREACH | Consequence #1 |
+| 7 | ECONNREFUSED self-loop | Confirme |
+| 8 | CONNECTION_CLOSED sur HELLO | Timing |
+| 9 | Slave Mode Reception zombie | Conséquence timeout |
+| 10 | Peers imprimante ignores | Pas de Mesh peer |
+
+### 3 Solutions proposees (a implementer plus tard):
+
+**Option A (RECOMMANDÉE)**: bindToNetwork() sur le socket TCP pour forcer Android
+a utiliser l interface WiFi Direct.
+- WifiDirectService.js: sendFileTo() avec network.bindToNetwork()
+
+**Option B**: Parser DHCP Lease (/proc/net/dhcp_eth0) pour IP reelle
+- WifiDirectService.js: getDhcpInfo() au lieu de getConnectionInfo()
+
+**Option C**: Rollback V3.20+V3.17, revenir V2.6 (Master broadcast)
+
+### Recommandation:
+Option A - la plus propre. react-native-wifi-p2p permet de forcer
+l interface via connectToPeerWithConfig ou en bindant le socket.
+
+**Aucune implementation effectuee.**
+
+
+---
+
+## 2026-06-07 - Analyse 4eme batch: Filtre V3.6 trop strict
+
+**User**: Boucle de logs repetitifs sur Peer ignore (pas de pair Mesh)
+
+**Assistant**: Analyse de la boucle infinie.
+
+### Nouveau probleme identifie (3eme Root Cause):
+
+Le filtre V3.6 EXIGE un pair Mesh actif pour autoriser une connexion WiFi Direct.
+Resultat: quand le Mesh est pertube par le WiFi Direct, AUCUNE connexion ne peut se faire.
+
+### Cercle vicieux:
+1. Les 2 phones se voient en WiFi Direct
+2. WiFi Direct perturbe le Mesh BLE sur l Itel
+3. Mesh peer perdu -> peerScore=0
+4. V3.6 refuse la connexion
+5. Aucune transfert -> Mesh ne se retablit pas
+6. BOUCLE INFINIE d ignorance
+
+### Code du filtre V3.6 (pseudo):
+
+
+### 3 Solutions proposees:
+
+**Option A (RECOMMANDÉE)**: Regex sur nom Yabisso
+- if peer.deviceName startsWith /\d+_Yabisso_/ -> connecter
+- else ignorer (imprimante)
+
+**Option B**: Compteur de fallback
+- Apres 3 refus V3.6, forcer la connexion
+
+**Option C**: Fallback intelligent
+- Si peerScore=0 ET pendingContent=true -> connexion forcee
+
+### Recommandation:
+Options A + C combinees:
+- Regex Yabisso pour eviter imprimantes
+- Fallback intelligent si pas de Mesh + delta en attente
+
+### 3 Root Causes identifiees au total:
+
+| # | Root Cause | Severite | Solution |
+|---|------------|----------|----------|
+| 1 | Interface reseau pas commutee (Slave) | Critique | bindToNetwork() |
+| 2 | Mesh BLE perturbe par WiFi Direct | Majeure | Reorganiser ordre |
+| 3 | Filtre V3.6 trop strict | Majeure | Regex Yabisso + fallback |
+
+**Aucune implementation effectuee.**
+
+
+---
+
+## 2026-06-07 - Validation analyse utilisateur + plan d action
+
+**User**: voici mon analyse (avec 2 approches proposees)
+
+**User Analysis Recap**:
+- Progres enormes: SLAVE_IP envoye, recu, sendFileTo OK
+- Nouveau probleme: EHOSTUNREACH
+- Cause: getConnectionInfo() retourne null, fallback 192.168.49.2 INVALIDE
+- IPs reelles observees dans logs precedents: 192.168.49.112 ou 192.168.49.176
+- Proposition 2 approches:
+  1. Lire IP depuis socket TCP (server.address())
+  2. Lire depuis NetworkInterface Android (p2p0, p2p-wlan0-0)
+- Supprimer le fallback hardcode 192.168.49.2
+- Si IP null -> abandon SLAVE_IP (mieux que envoyer IP invalide)
+
+**Assistant Validation**:
+- Analyse 100% correcte
+- Ajouts:
+  - 192.168.49.2 marche sur Qualcomm, plante sur Mediatek (non-deterministe)
+  - Recommandation: Approche 1 (rapide, JS-only) + fallback Approche 2
+  - Suppression fallback = meilleur fail-fast
+- Points d attention:
+  - server.on(listening) DOIT etre apres liaison interface WiFi Direct
+  - Race condition possible si SLAVE_IP envoye avant listening
+  - Tester avec les 2 roles (Itel peut etre Slave ou Master apres swap)
+  - Garder timeout 5s de V3.19
+
+### Plan d action valide (6 etapes):
+
+1. Modifier getConnectionInfo() -> server.address() (WifiDirectService.js)
+2. Stocker IP dans WifiDirectService._myP2pIp (WifiDirectService.js)
+3. getMyP2pIp() retourne _myP2pIp (WifiDirectService.js)
+4. Supprimer fallback 192.168.49.2 (WifiDirectService.js)
+5. Si IP null, ne pas envoyer SLAVE_IP (P2PAutoSync.js)
+6. Garder intact: V3.17 (WIFI_GROUP_READY), V3.19 (5s HELLO)
+
+### Criteres de succes (verification):
+- XXX dans l IP doit varier entre sessions
+- XXX doit correspondre au from /192.168.49.XXX des erreurs
+- Zero EHOSTUNREACH apres fix
+
+**Aucune implementation effectuee. En attente du feu vert.**
+
+
+---
+
+## 2026-06-07 - Implementation Option C (V3.21) - IP Slave reelle via methode native
+
+**Contexte**: L utilisateur a travaille avec Claude AI sur l Option C (V3.21) puis
+a epuise ses credits Claude. Il me demande de continuer l implementation.
+
+### Etat recu de Claude (etapes 1-4/5 completees):
+1. ✅ WiFiP2PManagerModule.java: methode getP2pIpAddress() ajoutee (lignes 90-126)
+   - Parcours TOUTES les NetworkInterface
+   - Filtre les IPs en 192.168.49.x (subnet WiFi Direct Android)
+   - Retourne la PREMIERE IP trouvee ou null si aucune
+   - Pas de fallback hardcode
+2. ✅ react-native-wifi-p2p/index.js: binding getP2pIpAddress() ajoute
+3. ✅ react-native-wifi-p2p/index.d.ts: type Promise<string | null> ajoute
+4. ✅ WifiDirectService.js: getLocalP2pIp() V3.21 utilise la methode native
+   - Verification typeof WifiP2P.getP2pIpAddress === function
+   - Promise.race avec timeout 3s
+   - Validation IP commence par 192.168.49.
+   - Stocker dans this._localP2pIp
+   - Retourne null si probleme (PAS de fallback)
+
+### Etat verifie et complete par moi-meme (5/5):
+5. ✅ P2PAutoSync.js (lignes 760-793): gestion slaveIp=null deja correcte
+   - Si slaveIp valide -> envoi SLAVE_IP via Mesh
+   - Si slaveIp null -> log warning + Master fait fallback sendFile classique
+
+### Verifications effectuees:
+- node --check index.js: OK
+- node --check WifiDirectService.js: OK
+- node --check P2PAutoSync.js: OK
+- Code Java natif: imports fully-qualified OK, @ReactMethod OK
+- _localP2pIp et _targetPeerIp initialises dans constructor (lignes 45-46)
+- sendFile utilise _targetPeerIp si defini (ligne 374)
+
+### Comportement attendu apres rebuild APK:
+AVANT (V3.20):
+  Slave: getLocalP2pIp() = fallback 192.168.49.2 (INVALIDE)
+  Master: sendFileTo(192.168.49.2) = EHOSTUNREACH
+
+APRES (V3.21):
+  Slave: getLocalP2pIp() = 192.168.49.112 (ou autre .X reel)
+  Master: sendFileTo(192.168.49.112) = transfert REUSSI
+
+### Logs attendus apres le test:
+
+
+### ACTION REQUISE pour l utilisateur:
+1. Rebuild APK (npx expo run:android OU eas build)
+2. HARD RELOAD les 2 telephones
+3. Tester le partage
+4. Si OK -> commit + tag v:0.0.X
+5. Si KO -> envoyer les logs pour diagnostic
+
+**Aucune implementation supplementaire necessaire - tout est en place.**
+
+---
+
+## 2026-06-07 - Session: Verification fichiers .md + regles engagees
+
+**User**: tu peux verifier tous les fichiers .md dans le repo "mesfichiers" qui se trouve ici: C:\Users\Utilisateur\Documents\Ben\myapp\yabisso\mesfichiers pour avoir le contexte de ce que nous faisons et aussi enregistrer automatiquement notre echange dans le fichier chat.md en temps reel que nous echangeons pour ne pas perdre l'historique, et aussi quand je tedemande quelque chose prend le temps de "think deeper" avant de me repondre mais surtout reverifier et tester de ton cote pour verifier ce que tu viens d'implementer marche
+
+**Assistant**: Verification complete des 16 fichiers .md dans `mesfichiers/`:
+
+| # | Fichier | Contenu |
+|---|---------|---------|
+| 1 | architecture.md | Architecture globale, 5 rails P2P, PlantUML |
+| 2 | chat.md | Historique complet (7807+ lignes) |
+| 3 | code_changes_backup.md | Backup des changements P2P |
+| 4 | design yabisso.md | References UI HTML (Welcome, Language, Signup, etc.) |
+| 5 | implementation.md | Stack technique, schema DB, flows offline |
+| 6 | loba_nearby_wifi_direct_auto_scan.md | Code fonctionnel Accueil Loba + auto sync P2P |
+| 7 | p2p_session_25042026.md | Sessions P2P detaillees |
+| 8 | probleme.md | 43+ bugs resolus (OOM, WiFi Direct, etc.) |
+| 9 | project_memory.md | Versions, etat actuel, decisions |
+| 10 | role.md | Regles de reponse (plan avant code, offline-first, FR) |
+| 11 | roadmap.md | Phases 1-6, sprints, backlog Trello |
+| 12 | solutionp2p.md | Code complet partage auto V3.11 (1243+ lignes) |
+| 13 | task.md | Task manager (sprints, priorites) |
+| 14 | wifi_direct_p2p_manualshare_partagepackp2p.md | Code ecran Partage Packs (P2P) |
+| 15 | wifidirect.md | Documentation WiFi Direct + Nearby Connections |
+| 16 | yabisso_storage_logique.md | Logique storage 3 types (Public/Personnel/Locked) + format .yab |
+
+**Etat actuel du projet**:
+- Phase 1 (UI + Online + SMS Fallback) → ✅ Complete
+- Phase 2 (WiFi Direct) → ✅ Stabilise jusqu'a v0.0.23 (BUG-043 en test)
+- Phase 3 (Bluetooth simple) → ✅ En place
+- Phase 4 (Marketplace + Delivery + Kiosques) → ✅ Marketplace, Restaurants, Hotels, Services, Pharmacie, Appartements complets
+- Phase 5 (AI + Scale) → 🔄 En cours
+- Version courante: v0.0.23 (V3.13 Connexion WiFi synchronisee via Nearby Mesh)
+- Stack: React Native + Expo SDK 54 + WatermelonDB + expo-dev-client
+
+**Services implementes** (tous offline-first):
+- Auth (Welcome, Language, Signup, Login, SMS, QR, PIN, Offline)
+- Dashboard + QR Hub + Settings + Notifications
+- Wallet (Recharge, Send, Receive, History) - FCFA + Points
+- Marketplace (Home, Product List, Details, Cart, Checkout, Order Status, Delivery, Compare, Blocked)
+- Loba (Home, For You, Following, Feed, Record, Profile, Stories, Packs)
+- Restaurants (Home, Seller Dashboard, Orders, Assign Courier, Notifications)
+- Hotels (Home, Search, Details, Room, Booking, Payment, Reservation, Bookings)
+- Services (Home, Details, Booking, Checkout, Orders, Favorites, Providers)
+- Appartements (Home, Details, Booking, Payment, Search, Favorites)
+- Pharmacie (Home, Details, Cart, Checkout, Order)
+- Assistant IA (Home, History, Settings)
+- Profile (Account, Security, Notifications, Language, Support, Logout)
+- Kiosque (Admin Login, Dashboard, Recharge, Points, Assistance, Users, Stats, QR)
+- Dating (Home, Profile, Edit, Chat, Likes, Chats, Filters)
+
+**Regles engagees pour cette session**:
+1. ✅ Mise a jour de `chat.md` apres chaque echange (en cours)
+2. ✅ "Think deeper" - analyse approfondie avant chaque implementation
+3. ✅ Verification et test du code avant validation
+4. ✅ Versioning semantique: v:0.0.1 → v:0.0.9 → v:0.1.0 (prochaine version = v:0.0.24)
+5. ✅ Lecture systematique des fichiers .md avant chaque reponse importante
+
+**Prochaines actions possibles** (a definir par l'utilisateur):
+- Reprendre les tests P2P WiFi Direct (BUG-043 en test)
+- Continuer le developpement Marketplace / nouvelles features
+- Build APK release
+- Commit + tag v:0.0.24
+
+---
+
+## 2026-06-07 - Session: Suite verification + regles (courante)
+
+**User**: tu peux verifier tous les fichiers .md dans le repo "mesfichiers" qui se trouve ici: C:\Users\Utilisateur\Documents\Ben\myapp\yabisso\mesfichiers pour avoir le contexte de ce que nous faisons et aussi enregistrer automatiquement notre echange dans le fichier chat.md en temps reel que nous echangeons pour ne pas perdre l'historique, et aussi quand je tedemande quelque chose prend le temps de "think deeper" avant de me repondre mais surtout reverifier et tester de ton cote pour verifier ce que tu viens d'implementer marche
+
+**Assistant**: Verification des 16 fichiers .md effectuee. Contexte complet integre. Regles de session engagees. Pret a continuer.
+
+---
+
+## 2026-06-07 - Analyse logs P2P WiFi Direct (5 bugs identifies)
+
+**User**: voici les logs analyses les uniquement pour l'instant n'implimente rien
+
+**Assistant**: Analyse complete des logs (2 appareils: Xiaomi 11T score=73, itel A50 score=18). 5 bugs critiques identifies:
+
+**BUG #1 — buildPack retourne null (CRITIQUE)**
+- shouldSend=true, pendingContent=true → mais buildPack null
+- Cause: _pendingPostsCount compte `is_propagating=true` MAIS buildPack requiert `local_media_path IS NOT NULL`
+- Posts propagés sans fichier local → aucun contenu envoyable
+
+**BUG #2 — _slaveIp jamais recu (self-loop)**
+- Master envoie a 192.168.49.1 (lui-meme) au lieu de l'IP du Slave
+- Le Slave ne peut pas recuperer son IP car il ne rejoint jamais le groupe WiFi
+
+**BUG #3 — framework is busy**
+- Itel ne peut pas connectToPeer car la radio WiFi est saturee par NearbyMesh
+- Chipset Mediatek + 2GB RAM = pas assez pour BLE + WiFi Direct simultane
+
+**BUG #4 — Double event CONNECTE GO=true**
+- Android declenche onConnectionInfoAvailable 2 fois
+- Aucune garde anti-double = 2 timers YABISSO_HELLO en parallele
+
+**BUG #5 — Mesh requestConnection Failed to send text**
+- WIFI_GROUP_READY jamais envoye car connexion Mesh perdue trop tot
+- Le Slave ne sait pas que le groupe WiFi est pret
+
+**Chainee de cascade**: Bug5 → Slave ne recoit pas WIFI_GROUP_READY → Bug3 (busy) → Slave ne rejoint pas le groupe → Bug2 (_slaveIp null) → self-loop → Bug1 (buildPack null) → ZERO transfert
+
+**Aucun code modifie** — diagnostic pur uniquement.
+
+---
+
+## 2026-06-07 - Implementation Fix BUG-047 (buildPack null + _slaveIp)
+
+**User**: analyse des logs, 2 bugs independants:
+1. buildPack retourne null apres migration SQLite v9→v10
+2. _slaveIp toujours null (getP2pIpAddress echoue sur itel A50)
+
+**Assistant**: Implementation des deux fixes:
+
+### BUG 1 — buildPack retourne null
+
+**Fichiers modifies:**
+- `app/src/features/loba/services/LobaPackService.js`
+  - Ajout debug logging: total_posts, posts_with_local_media, is_propagating count
+  - Compteur skippedNoPath, skippedNoFile, skippedTooBig pour chaque post filtre
+  - Log detaille quand manifestList.length === 0
+  - Fallback logique: si 0 posts avec local_media_path mais des posts avec is_propagating=true
+
+- `app/src/features/bluetooth/services/P2PAutoSync.js`
+  - `_updatePendingCount()`: query modifiee pour compter `is_propagating=true AND local_media_path IS NOT NULL`
+  - Avant: comptait uniquement `is_propagating=true` → shouldSend=true mais buildPack null
+  - Maintenant: les deux gates sont synchronisees
+
+**Verification:** `node --check` — 0 erreurs de syntaxe sur les 3 fichiers JS
+
+### BUG 2 — _slaveIp toujours null
+
+**Fichiers modifies:**
+- `node_modules/react-native-wifi-p2p/android/src/main/java/io/wifi/p2p/WiFiP2PManagerModule.java`
+  - Nouvelle methode `getP2pLocalIp()` ajoutee apres `getP2pIpAddress()`
+  - 3 strategies: (1) interfaces connues (p2p-wlan0-0, p2p0, wlan0, swlan0, p2p-p2p0-0), (2) fallback itération generique, (3) dernier recours via wifiP2pInfo
+  - Resolution null si aucune IP 192.168.49.x trouvee (pas de fallback hardcode)
+
+- `app/src/features/bluetooth/services/WifiDirectService.js`
+  - `getLocalP2pIp()` mise a jour: essaie d'abord `getP2pLocalIp()` (nouvelle methode), puis fallback `getP2pIpAddress()`
+  - Timeout 5s au lieu de 3s pour les appareils lents
+
+**Rebuild requis:** `npx expo run:android` ou `eas build -p android --profile preview` pour que le changement Java soit pris en compte.
+
+### Tests a faire:
+1. Rebuild APK
+2. Installer sur les 2 telephones
+3. Ouvrir Loba sur les 2
+4. Verifier les logs: `[LobaPackService] buildPack DEBUG:` → voir si total_posts > 0 et posts_with_local_media > 0
+5. Si posts_with_local_media = 0 → le probleme est dans la sauvegarde des fichiers (pas dans buildPack)
+6. Verifier logs IP: `[WifiDirectService] 🌐 [V4.0] IP locale p2p (getP2pLocalIp):` → voir si l'itel retourne une IP

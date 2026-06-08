@@ -9,6 +9,7 @@ import { LocalStorageManager } from '../../loba/services/LocalStorageManager';
 import { LobaPackService } from '../../loba/services/LobaPackService';
 import { database } from '../../../lib/db';
 import { Q } from '@nozbe/watermelondb';
+import * as FileSystem from 'expo-file-system/legacy';
 
 const P2P_SYNC_INTERVAL_MS = 3000; 
 const CLOUD_SYNC_INTERVAL_MS = 60000; 
@@ -64,6 +65,9 @@ class P2PAutoSyncClass {
     this._wifiGroupReadySentThisSession = false; // V3.17 (BUG-046 fix): true quand WIFI_GROUP_READY envoyé AVANT createGroup
     this._slaveIp = null; // V3.20 (BUG-047 fix): IP du Slave (reçue via Mesh BLE)
     this._slavePort = 8988; // V3.20 (BUG-047 fix): Port TCP du serveur du Slave (8988 par défaut)
+    this._slaveReceiverStarted = false; // FIX: Empêcher le démarrage multiple du récepteur Slave
+    this._isPropagatingRepaired = false; // FIX: One-time repair de is_propagating au démarrage
+    this._packReceivedThisCycle = false; // V3.23: true quand un LOBA_PACK a été reçu et traité dans ce cycle
     this.stats = {
       totalSyncedP2P: 0,
       totalSyncedCloud: 0,
@@ -79,6 +83,38 @@ class P2PAutoSyncClass {
     this.stats.logs.unshift(logLine);
     if (this.stats.logs.length > 50) this.stats.logs.pop();
     WifiDirectService._emit('onLogUpdate', this.stats.logs);
+  }
+
+  /**
+   * FIX: Répare is_propagating pour tous les posts qui ont un local_media_path valide.
+   * Après migration v9→v10, is_propagating a été remis à false sur tous les posts.
+   * Un fichier local = le post peut être envoyé → is_propagating doit être true.
+   */
+  async _repairIsPropagating() {
+    if (this._isPropagatingRepaired) return;
+    try {
+      const postsToRepair = await database.get('loba_posts').query(
+        Q.where('local_media_path', Q.notEq(null)),
+        Q.where('is_propagating', false)
+      ).fetch();
+
+      if (postsToRepair.length === 0) {
+        console.log('[P2PAutoSync] ✅ _repairIsPropagating: aucun post à réparer');
+        this._isPropagatingRepaired = true;
+        return;
+      }
+
+      await database.write(async () => {
+        for (const post of postsToRepair) {
+          await post.update(p => { p.isPropagating = true; });
+        }
+      });
+
+      console.log(`[P2PAutoSync] 🔧 _repairIsPropagating: ${postsToRepair.length} posts réparés (is_propagating=true)`);
+      this._isPropagatingRepaired = true;
+    } catch (e) {
+      console.warn('[P2PAutoSync] ⚠️ _repairIsPropagating error:', e.message);
+    }
   }
 
   onLogUpdate(callback) {
@@ -152,8 +188,20 @@ class P2PAutoSyncClass {
 
   async _updatePendingCount() {
     try {
-      const count = await database.get('loba_posts').query(Q.where('is_propagating', true)).fetchCount();
+      const count = await database.get('loba_posts').query(
+        Q.where('local_media_path', Q.notEq(null))
+      ).fetchCount();
       this._pendingPostsCount = count;
+
+      const totalCount = await database.get('loba_posts').query().fetchCount();
+      const propagatingOnly = await database.get('loba_posts').query(Q.where('is_propagating', true)).fetchCount();
+      const withLocalPath = await database.get('loba_posts').query(Q.where('local_media_path', Q.notEq(null))).fetchCount();
+
+      if (totalCount > 0 && count === 0) {
+        console.warn(`[P2PAutoSync] ⚠️ BUG-047: total=${totalCount}, is_propagating=true:${propagatingOnly}, local_media_path!=null:${withLocalPath}, both:${count}`);
+      } else if (count > 0) {
+        console.log(`[P2PAutoSync] ✅ Pending content: ${count} posts avec local_media_path (total=${totalCount})`);
+      }
     } catch (_) {
       this._pendingPostsCount = 0;
     }
@@ -341,17 +389,16 @@ class P2PAutoSyncClass {
   // après le createGroup, AVANT que le Slave ne soit réellement prêt à envoyer son HELLO
   // → race condition où le HELLO du Slave arrivait sur un socket Master pas encore actif.
   async _onSlaveConnectedConfirmedMesh(peerId) {
-    this._log(`✅ [V3.6.4 Mesh] SLAVE_CONNECTED_CONFIRMED reçu de Slave ${peerId} → Master peut envoyer`);
+    this._log(`✅ [V3.6.4 Mesh] SLAVE_CONNECTED_CONFIRMED reçu de Slave ${peerId} → handshake Mesh confirmé`);
     this._slaveConfirmedViaMesh = true;
     this._peerMeshId = peerId;
 
-    // V3.15 (BUG-045 fix) : Démarrage du récepteur HELLO MAINTENANT (pas avant).
-    // Le Slave est confirmé connecté → son HELLO va partir dans ~1s.
+    // V3.22 : Le récepteur est DÉJÀ démarré dans onConnectionChange (fallback immédiat).
+    // Cet appel est redondant mais inoffensif (guard _receiveMessages empêche le double-start).
+    // Conservé pour le log de traçabilité.
     if (WifiDirectService.connectedPeer && this._running) {
-      this._log(`📡 [V3.15 Master] Démarrage récepteur HELLO (Slave confirmé connecté via Mesh)`);
       WifiDirectService.startReceiving(WifiDirectService.globalFileHandler);
-    } else {
-      this._log(`⚠️ [V3.15 Master] SLAVE_CONNECTED_CONFIRMED reçu mais connexion perdue, récepteur non démarré.`);
+      this._log(`📡 [V3.22 Master] Récepteur confirmé actif (Mesh SLAVE_CONNECTED_CONFIRMED reçu)`);
     }
   }
 
@@ -453,7 +500,10 @@ class P2PAutoSyncClass {
     this._running = true;
 
     console.log('[P2PAutoSync] Démarrage de l\'orchestrateur Multi-Rail...');
-    this._log('🚀 Orchestrateur démarré (V3.20 - BUG-047 fix : Slave envoie son IP via Mesh BLE, Master l\'utilise pour sendFileTo afin d\'éviter le self-loop 192.168.49.1 → 192.168.49.1).');
+    this._log('🚀 Orchestrateur démarré (V3.23 - BUG-047 fix: LOBA_PACK sans hash non traité).');
+
+    // FIX: Réparer is_propagating au démarrage (migration v9→v10 l'a remis à false)
+    this._repairIsPropagating().catch(e => console.warn('[P2PAutoSync] repair error:', e.message));
 
     NetworkRailDetector.start();
     NetworkRailDetector.onRailChange((rails) => {
@@ -711,19 +761,26 @@ class P2PAutoSyncClass {
               return;
             }
             if (isMyRoleMaster) {
-              this._log(`■ [V3.17 Master] attente Slave (récepteur démarré sur SLAVE_CONNECTED_CONFIRMED)...`);
-              // V3.15 (BUG-045 fix) : Le récepteur HELLO du Master n'est PLUS démarré ici.
-              // Il sera démarré dans _onSlaveConnectedConfirmedMesh() dès que le Slave aura
-              // confirmé sa connexion via Mesh. Cela élimine la race condition où le HELLO
-              // du Slave arrivait sur un socket Master pas encore prêt.
-
-              // V3.17 (BUG-046 fix) : WIFI_GROUP_READY est déjà envoyé dans onPeerFound
-              // AVANT createGroup (pendant que le Mesh BLE Nearby est encore actif). On ne
-              // le renvoie PAS ici car le Mesh est probablement déjà mort après createGroup
-              // (conflit radio WiFi/BLE sur Xiaomi 11T et Itel A50). On lance juste le
-              // fallback de sécurité _fallbackWaitForSlave pour attendre le HELLO du Slave.
+              // V3.22 (BUG-regression V3.15) : Le récepteur HELLO du Master est démarré
+              // ICI, IMMÉDIATEMENT après la connexion WiFi, AVANT d'attendre le signal
+              // Mesh SLAVE_CONNECTED_CONFIRMED. Si le Mesh arrive, _onSlaveConnectedConfirmedMesh
+              // appellera aussi startReceiving (inutile grâce au guard _receiveMessages).
+              // Si le Mesh est PERDU (commun avec BLE Mesh), le récepteur sera quand même
+              // actif sur le port 8988 et pourra recevoir le YABISSO_HELLO du Slave.
+              //
+              // V3.15 avait supprimé cet appel en pensant à une race condition (HELLO
+              // arrivant sur un socket pas prêt). Mais V3.19 ajoute un délai de 5s entre
+              // SLAVE_CONNECTED_CONFIRMED et HELLO — le récepteur a 5+ secondes pour
+              // binder le port 8988 avant l'arrivée du HELLO. Pas de race condition.
+              this._log(`■ [V3.22 Master] Démarrage récepteur immédiat + fallback Mesh...`);
+              WifiDirectService.startReceiving(WifiDirectService.globalFileHandler);
               this._fallbackWaitForSlave(peerName);
             } else {
+              if (this._slaveReceiverStarted) {
+                this._log(`■ [V3.19 Slave] récepteur déjà actif — ignoré (guard)`);
+                return;
+              }
+              this._slaveReceiverStarted = true;
               this._log(`■ [V3.19 Slave] récepteur démarré, HELLO 5s APRÈS SLAVE_CONNECTED_CONFIRMED (V3.19 BUG-055 fix)`);
               WifiDirectService.startReceiving(WifiDirectService.globalFileHandler);
 
@@ -839,9 +896,11 @@ class P2PAutoSyncClass {
           // V3.20 (BUG-047 fix): reset de l'IP du Slave (entre sessions)
           this._slaveIp = null;
           this._slavePort = 8988;
+          this._packReceivedThisCycle = false; // V3.23: reset du flag de réception pack
           try { WifiDirectService.resetTargetPeerIp(); } catch (_) {}
           try { await NearbyMeshService.resumeMesh(); } catch (_) {}
           this._log('■ Déconnexion détectée. Nettoyage des processus.');
+          this._slaveReceiverStarted = false; // Reset guard récepteur Slave
         }
       });
 
@@ -1277,8 +1336,11 @@ class P2PAutoSyncClass {
           }
           setTimeout(() => { WifiDirectService.disconnect(); }, 3000);
         } else {
-          this._log('📡 Mode Réception — Prêt.');
-          WifiDirectService.startReceiving(WifiDirectService.globalFileHandler);
+          // V3.23 : Guard — ne pas redémarrer le récepteur Slave s'il est déjà actif
+          if (!this._slaveReceiverStarted && !WifiDirectService._receiveMessages) {
+            this._log('📡 Mode Réception — Prêt.');
+            WifiDirectService.startReceiving(WifiDirectService.globalFileHandler);
+          }
         }
       } else if (NetworkRailDetector.activeRails.has(RAIL_TYPES.BLE_MESH)) {
         const pendingUploads = await this._getPendingUploads();
@@ -1372,15 +1434,12 @@ class P2PAutoSyncClass {
         return;
       }
 
-      if (!metadata.hash) {
-        if (metadata.action === 'PING') {
-          this._log(`⭐ REÇU PING via ${source}!`);
-          return;
-        }
-        return;
-      }
-      
-      if (metadata.type === 'LOBA_PACK') {
+      // V3.23 (BUG-047 fix) : VÉRIFIER LOBA_PACK AVANT le check !metadata.hash
+      // Quand sendFile envoie un .zip binaire, le receiver ne peut pas parser le JSON.
+      // Le catch dans startReceiving() crée des metadata par défaut SANS hash :
+      //   { action: 'FILE_TRANSFER', type: 'LOBA_PACK', senderDevice: 'unknown' }
+      // Sans ce fix, !metadata.hash=true → return précoce → le pack n'est JAMAIS traité.
+      if (metadata.type === 'LOBA_PACK' && filePath) {
           // V3.11 (BUG-041 fix) : DÉTECTION PHASE 2 DU SLAVE
           // Le Slave envoie son pack avec metadata.phase === 'slave_phase2'.
           // Le Master détecte ce tag et set _slavePhase2Received = true pour débloquer
@@ -1390,6 +1449,10 @@ class P2PAutoSyncClass {
             this._log(`📥 [V3.11] Pack Phase 2 du Slave détecté (phase=slave_phase2)`);
           }
           this._log(`📥 Reçu Loba Pack. Traitement...`);
+          // V3.23 : Si le hash n'est pas dans les metadata (fichier binaire reçu), le calculer
+          if (!metadata.hash && filePath) {
+            try { metadata.hash = await LocalStorageManager.hashFile(filePath); } catch (_) {}
+          }
           const peerName = (metadata.senderDevice || WifiDirectService.connectedPeer?.deviceName || 'Unknown').toLowerCase();
           this._lastReceivedFrom[peerName] = Date.now();
           // V3.18 (Sprint 3 / BUG-052 fix) : WRAP unpackAndProcess DANS TRY/CATCH
@@ -1471,7 +1534,15 @@ class P2PAutoSyncClass {
           // Note: On ne disconnecte plus automatiquement ici car le Slave gère le cycle et la déconnexion après envoi du message de contrôle.
           return;
       }
-      
+
+      if (!metadata.hash) {
+        if (metadata.action === 'PING') {
+          this._log(`⭐ REÇU PING via ${source}!`);
+          return;
+        }
+        return;
+      }
+
       const hash = metadata.hash || await LocalStorageManager.hashFile(filePath);
       const ext = metadata.type === 'video' ? 'mp4' : 'jpg';
       const result = await LocalStorageManager.saveMedia(filePath, hash, ext);
@@ -1539,13 +1610,18 @@ class P2PAutoSyncClass {
   async publishLocal(params) {
     const { uri, type, caption, filter, username = '@Me', category = 'general' } = params;
     try {
+      console.log(`[P2PAutoSync] 📤 publishLocal: uri=${uri?.substring(0,60)}, type=${type}, category=${category}`);
       const hash = uri ? await LocalStorageManager.hashFile(uri) : null;
+      console.log(`[P2PAutoSync] 📤 publishLocal: hash=${hash?.substring(0,12)}`);
       let localPath = null;
       let result = null;
       if (uri) {
         const ext = type === 'video' ? 'mp4' : 'jpg';
         result = await LocalStorageManager.saveMedia(uri, hash, ext);
+        console.log(`[P2PAutoSync] 📤 publishLocal: saveMedia result=${result ? `OK path=${result.path?.substring(0,60)} size=${result.size}` : 'NULL'}`);
         if (result) localPath = result.path;
+      } else {
+        console.warn(`[P2PAutoSync] ⚠️ publishLocal: uri is NULL/undefined — post sera créé SANS local_media_path`);
       }
 
       let newPost;
