@@ -27,6 +27,12 @@ const { width, height } = Dimensions.get('window');
 
 const userInterests = ['Food', 'Tech', 'Music', 'Fashion', 'Sports', 'Travel', 'Comedy', 'Education'];
 
+const toFileUri = (path) => {
+  if (!path || typeof path !== 'string') return path;
+  if (path.startsWith('http://') || path.startsWith('https://') || path.startsWith('file://')) return path;
+  return `file://${path}`;
+};
+
 const VideoPlayerItem = ({ source, shouldPlay, style }) => {
   const player = useVideoPlayer(source, p => {
     p.loop = true;
@@ -47,7 +53,7 @@ function LobaForYouScreen({ onBack, onNavigate, videos = [] }) {
       id: p.id,
       username: p.username,
       avatar: p.avatar,
-      video: p.videoUrl || p.imageUrl,
+      video: toFileUri(p.videoUrl || p.imageUrl),
       type: p.videoUrl ? 'video' : 'photo',
       caption: p.content,
       song: 'Original Sound - ' + p.username,

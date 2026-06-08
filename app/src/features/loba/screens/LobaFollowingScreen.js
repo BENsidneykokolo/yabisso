@@ -24,7 +24,11 @@ import { Q } from '@nozbe/watermelondb';
 
 const { width, height } = Dimensions.get('window');
 
-
+const toFileUri = (path) => {
+  if (!path || typeof path !== 'string') return path;
+  if (path.startsWith('http://') || path.startsWith('https://') || path.startsWith('file://')) return path;
+  return `file://${path}`;
+};
 
 const followedCreators = [
   { id: 1, name: 'Kofi Mensah', avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCpQKycPMLIcj6lEgT3yylEk1PYLRLRoGgntAftVcxpaZk_rZCjF9tJVB74QcDXaov6pXlQd0xJc3Hzn42A1xSh9sZDFM8PgyDRwaUsq2dn7Bf4d23hd1L-NEElMtyMOXIXKC3n95_TmtmOznJyFX7p_fI7-3ZxTpsj7scTO5mwqImoclkDwp9xyQN6RBUdjQBm_U_wSO1O_DvULR6bLmrYThfVtAvmsqTQJoZByFXdNIm-IThl8u4qx54KVUdJpCvlTLEejlGP', following: true },
@@ -54,7 +58,7 @@ function LobaFollowingScreen({ onBack, onNavigate, videos = [] }) {
       id: p.id,
       username: p.username,
       avatar: p.avatar,
-      video: p.videoUrl || p.imageUrl,
+      video: toFileUri(p.videoUrl || p.imageUrl),
       type: p.videoUrl ? 'video' : 'photo',
       caption: p.content,
       song: 'Original Sound - ' + p.username,

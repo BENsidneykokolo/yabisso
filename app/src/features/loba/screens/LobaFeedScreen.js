@@ -28,6 +28,12 @@ import withObservables from '@nozbe/with-observables';
 import { database } from '../../../lib/db';
 import { Q } from '@nozbe/watermelondb';
 
+const toFileUri = (path) => {
+  if (!path || typeof path !== 'string') return path;
+  if (path.startsWith('http://') || path.startsWith('https://') || path.startsWith('file://')) return path;
+  return `file://${path}`;
+};
+
 function LobaFeedScreen({ onBack, onNavigate, posts = [] }) {
   const [activeTabNav, setActiveTabNav] = React.useState('Loba');
   
@@ -40,7 +46,7 @@ function LobaFeedScreen({ onBack, onNavigate, posts = [] }) {
     },
     time: 'A l\'instant',
     content: p.content,
-    image: p.localMediaPath || p.imageUrl || p.videoUrl,
+    image: toFileUri(p.localMediaPath || p.imageUrl || p.videoUrl),
     hasLocalMedia: !!(p.localMediaPath || p.imageUrl || p.videoUrl),
     isVideo: !!p.videoUrl || (p.localMediaPath && p.localMediaPath.endsWith('.mp4')),
     videoDuration: '0:00',

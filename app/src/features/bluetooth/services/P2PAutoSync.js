@@ -1,6 +1,7 @@
 // app/src/features/bluetooth/services/P2PAutoSync.js
 import { NetworkRailDetector, RAIL_TYPES } from './NetworkRailDetector';
 import { NearbyMeshService } from './NearbyMeshService';
+import { MeshContentUpdateEvents } from './NearbyMeshService';
 import { WifiDirectService } from './WifiDirectService';
 import { ManifestService } from '../../loba/services/ManifestService';
 import { RecommendationEngine } from '../../loba/services/RecommendationEngine';
@@ -114,6 +115,45 @@ class P2PAutoSyncClass {
       this._isPropagatingRepaired = true;
     } catch (e) {
       console.warn('[P2PAutoSync] ⚠️ _repairIsPropagating error:', e.message);
+    }
+  }
+
+  /**
+   * V3.23 : Nettoyer les anciens fichiers p2p_*/ctrl_* dans loba_media/.
+   * Ces fichiers s'accumulent à chaque cycle P2P et ralentissent unpackAndProcess
+   * qui scanne tout le répertoire. On purge les fichiers de plus de 1 heure.
+   */
+  async _cleanupOldLobaMediaFiles() {
+    try {
+      const lobaMediaDir = `${FileSystem.documentDirectory}loba_media`;
+      const info = await FileSystem.getInfoAsync(lobaMediaDir);
+      if (!info.exists) return;
+
+      const files = await FileSystem.readDirectoryAsync(lobaMediaDir);
+      const now = Date.now();
+      const ONE_HOUR = 60 * 60 * 1000;
+      let deleted = 0;
+
+      for (const fileName of files) {
+        if (!fileName.startsWith('p2p_') && !fileName.startsWith('ctrl_')) continue;
+        try {
+          const filePath = `${lobaMediaDir}/${fileName}`;
+          const fileInfo = await FileSystem.getInfoAsync(filePath);
+          if (fileInfo.exists && fileInfo.modificationTime) {
+            const age = now - fileInfo.modificationTime;
+            if (age > ONE_HOUR) {
+              await FileSystem.deleteAsync(filePath, { idempotent: true });
+              deleted++;
+            }
+          }
+        } catch (_) {}
+      }
+
+      if (deleted > 0) {
+        this._log(`🧹 [V3.23] ${deleted} anciens fichiers p2p_*/ctrl_* purgés de loba_media/`);
+      }
+    } catch (e) {
+      console.warn('[P2PAutoSync] ⚠️ _cleanupOldLobaMediaFiles error:', e.message);
     }
   }
 
@@ -500,10 +540,11 @@ class P2PAutoSyncClass {
     this._running = true;
 
     console.log('[P2PAutoSync] Démarrage de l\'orchestrateur Multi-Rail...');
-    this._log('🚀 Orchestrateur démarré (V3.23 - BUG-047 fix: LOBA_PACK sans hash non traité).');
+    this._log('🚀 Orchestrateur démarré (V3.24 - file:// prefix fix + MeshContentUpdateEvents emit + loba_media cleanup).');
 
     // FIX: Réparer is_propagating au démarrage (migration v9→v10 l'a remis à false)
     this._repairIsPropagating().catch(e => console.warn('[P2PAutoSync] repair error:', e.message));
+    this._cleanupOldLobaMediaFiles().catch(e => console.warn('[P2PAutoSync] cleanup error:', e.message));
 
     NetworkRailDetector.start();
     NetworkRailDetector.onRailChange((rails) => {
@@ -1466,6 +1507,7 @@ class P2PAutoSyncClass {
             if (success) {
               this._log(`✅ Pack traité !`);
               this.stats.totalSyncedP2P++;
+              MeshContentUpdateEvents.emit({ count: 1, source: 'p2p' });
             } else {
               this._log(`⚠️ [V3.18] unpackAndProcess a retourné false (échec ingestion)`);
             }

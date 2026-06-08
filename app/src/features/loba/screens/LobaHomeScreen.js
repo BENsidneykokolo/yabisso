@@ -30,6 +30,12 @@ import { useWifiDirect } from '../hooks/useWifiDirect';
 import { Q } from '@nozbe/watermelondb';
 const { width, height } = Dimensions.get('window');
 
+const toFileUri = (path) => {
+  if (!path || typeof path !== 'string') return path;
+  if (path.startsWith('http://') || path.startsWith('https://') || path.startsWith('file://')) return path;
+  return `file://${path}`;
+};
+
 const VideoPlayerItem = ({ uri, shouldPlay, style }) => {
   // V2.6 FIX: Passer une primitive (string uri) évite la recréation de l'objet {uri: ...} 
   // à chaque render, ce qui causait le crash "player already released".
@@ -63,7 +69,7 @@ function LobaHomeScreen({ onBack, onNavigate, posts = [] }) {
   // Helper pour obtenir une URL media valide
   const getValidMediaUri = (post) => {
     if (post.localMediaPath && typeof post.localMediaPath === 'string' && post.localMediaPath.length > 0) {
-      return post.localMediaPath;
+      return toFileUri(post.localMediaPath);
     }
     if (post.videoUrl && typeof post.videoUrl === 'string' && post.videoUrl.length > 0) {
       return post.videoUrl;
@@ -126,7 +132,7 @@ function LobaHomeScreen({ onBack, onNavigate, posts = [] }) {
             id: p.id,
             username: p.username,
             avatar: p.avatar,
-            video: p.localMediaPath || p.videoUrl || p.imageUrl,
+            video: toFileUri(p.localMediaPath || p.videoUrl || p.imageUrl),
             hasMedia: !!(p.localMediaPath || p.videoUrl || p.imageUrl),
             type: p.videoUrl || (p.localMediaPath && p.localMediaPath.endsWith('.mp4')) ? 'video' : 'photo',
             caption: p.content,
@@ -284,9 +290,9 @@ function LobaHomeScreen({ onBack, onNavigate, posts = [] }) {
 
   const renderVideo = ({ item, index }) => {
     const hasLocalMedia = item.localMediaPath || item.video || item.videoUrl;
-    const videoUri = item.localMediaPath 
+    const videoUri = toFileUri(item.localMediaPath 
       ? item.localMediaPath 
-      : (item.videoUrl ? item.videoUrl : item.video);
+      : (item.videoUrl ? item.videoUrl : item.video));
 
     const isCloseToVisible = Math.abs(index - currentVideoIndex) <= 1;
     
