@@ -268,16 +268,34 @@ class P2PAutoSyncClass {
     if (!WifiDirectService.isGroupOwner) {
       localIp = WifiDirectService._localP2pIp || null;
     }
-    const sent = await WifiDirectService.sendControlMessage({
+
+    // V3.36 (FIX Mediatek 0B): Envoyer YABISSO_HELLO via BLE Mesh au lieu de WiFi Direct.
+    // Sur Mediatek (Itel A50), sendControlMessage écrit un fichier JSON puis le transfère
+    // via WiFi Direct TCP. Le fichier arrive toujours 0B (bug chipset Mediatek).
+    // Le canal BLE Mesh est déjà établi et fonctionne — on l'utilise pour le HELLO.
+    const masterMeshPeerId = this._findMasterPeerId();
+    const slaveMeshPeerId = this._findSlavePeerId();
+    const targetPeerId = isMasterSide ? slaveMeshPeerId : masterMeshPeerId;
+
+    const helloPayload = {
       type: 'YABISSO_HELLO',
       myScore,
       isMasterSide,
       senderIp: localIp,
-    });
-    if (sent) {
-      this._log(`🤝 [V3.29 Handshake] YABISSO_HELLO envoyé à ${peerName} (score=${myScore}, ip=${localIp || 'GO=true (auto)'})`);
+    };
+
+    if (targetPeerId) {
+      const sent = await NearbyMeshService.sendMeshMessage(targetPeerId, helloPayload);
+      if (sent) {
+        this._log(`🤝 [V3.36 Handshake] YABISSO_HELLO envoyé via BLE Mesh à ${peerName} (score=${myScore}, ip=${localIp || 'GO=true (auto)'})`);
+      } else {
+        this._log(`⚠️ [V3.36 Handshake] Échec envoi YABISSO_HELLO via Mesh à ${peerName}, fallback WiFi Direct`);
+        // Fallback: essayer quand même via WiFi Direct (pour les cas où BLE ne marche pas)
+        await WifiDirectService.sendControlMessage(helloPayload);
+      }
     } else {
-      this._log(`⚠️ [V3.29 Handshake] Échec envoi YABISSO_HELLO à ${peerName}`);
+      this._log(`⚠️ [V3.36 Handshake] Pas de peer Mesh trouvé, fallback WiFi Direct pour YABISSO_HELLO`);
+      await WifiDirectService.sendControlMessage(helloPayload);
     }
   }
 
@@ -428,11 +446,19 @@ class P2PAutoSyncClass {
     let targetPeer = null;
 
     if (detectedPeers.length > 0) {
-      // Filtrer : prendre le 1er peer qui n'est PAS dans notre blacklist
+      // V3.36 (FIX self-peer): Filtrer les peers — ignorer blacklist ET self-device
+      const myWifiName = (WifiDirectService.getWifiDirectName() || '').toLowerCase();
+      const myDeviceName = (WifiDirectService.getDeviceName() || '').toLowerCase();
       targetPeer = detectedPeers.find(p => {
         const name = (p.deviceName || '').toLowerCase();
-        return !WifiDirectService.isPeerBlacklisted(name);
-      }) || detectedPeers[0];
+        if (WifiDirectService.isPeerBlacklisted(name)) return false;
+        // Self-peer: même nom WiFi Direct OU même nom device
+        if (name && (name === myWifiName || name === myDeviceName)) {
+          this._log(`⛔ [V3.36] Self-peer WiFi Direct ignoré: ${p.deviceName}`);
+          return false;
+        }
+        return true;
+      }) || null;
     }
 
     if (!targetPeer) {
@@ -588,7 +614,7 @@ class P2PAutoSyncClass {
     this._running = true;
 
     console.log('[P2PAutoSync] Démarrage de l\'orchestrateur Multi-Rail...');
-    this._log('🚀 Orchestrateur démarré (V3.34 - GO=false forcé SLAVE + groupOwnerAddress parsing + HELLO vers 192.168.49.1).');
+    this._log('🚀 Orchestrateur démarré (V3.36 - self-peer filter + HELLO via BLE Mesh + sendText delay 800ms).');
 
     // FIX: Réparer is_propagating au démarrage (migration v9→v10 l'a remis à false)
     this._repairIsPropagating().catch(e => console.warn('[P2PAutoSync] repair error:', e.message));
@@ -627,6 +653,18 @@ class P2PAutoSyncClass {
           this._log(`🎯 [V3.20 Master] WifiDirectService._targetPeerIp = ${this._slaveIp} (sendFileTo l'utilisera)`);
         } catch (e) {
           this._log(`⚠️ [V3.20 Master] setTargetPeerIp échoué: ${e.message}`);
+        }
+      } else if (evt && evt.type === 'YABISSO_HELLO_VIA_MESH') {
+        // V3.36 (FIX Mediatek 0B): YABISSO_HELLO reçu via BLE Mesh.
+        // Même traitement que le HELLO reçu via WiFi Direct dans _handleReceivedFile.
+        const { peerId, payload } = evt;
+        const senderDevice = payload.senderDevice || peerId;
+        this._log(`🤝 [V3.36 Mesh] YABISSO_HELLO reçu de ${senderDevice} (score=${payload.myScore})`);
+        this._confirmYabissoHandshake(senderDevice, payload.myScore);
+        // Notifier le Master qu'un Slave est réellement connecté (débloque l'envoi)
+        if (this._packReceivedAckResolver) {
+          this._packReceivedAckResolver(true);
+          this._packReceivedAckResolver = null;
         }
       }
     });
@@ -675,6 +713,13 @@ class P2PAutoSyncClass {
         const peerName = (peer.deviceName || 'Unknown').toLowerCase();
 
         if (WifiDirectService.isPeerBlacklisted(peerName)) {
+          return;
+        }
+
+        // V3.36 (FIX self-peer): Ignorer mon propre device WiFi Direct
+        const myWifiName = (WifiDirectService.getWifiDirectName() || '').toLowerCase();
+        const myDeviceName = (WifiDirectService.getDeviceName() || '').toLowerCase();
+        if (peerName && (peerName === myWifiName || peerName === myDeviceName)) {
           return;
         }
 
