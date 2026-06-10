@@ -613,6 +613,25 @@ class P2PAutoSyncClass {
       }
     });
 
+    // V3.30 (BUG-068 fix) : Quand Mesh se déconnecte, le Slave doit essayer
+    // scan-based connect immédiatement au lieu d'attendre le timeout 15s.
+    // Le WIFI_GROUP_READY n'arrive JAMAIS si Mesh se déconnecte trop tôt.
+    const { MeshConnectionEvents } = require('./NearbyMeshService');
+    if (this._meshDisconnectUnsub) this._meshDisconnectUnsub();
+    this._meshDisconnectUnsub = MeshConnectionEvents.subscribe((state) => {
+      if (state && !state.isConnected && this._lastIntendedRole === 'SLAVE' && this._running) {
+        if (!WifiDirectService.connectedPeer && !WifiDirectService.isConnecting && this._waitingForWifiGroupReady) {
+          this._log(`🔌 [V3.30 Mesh] Mesh déconnecté — fallback scan-based connect immédiat`);
+          this._waitingForWifiGroupReady = false;
+          if (this._meshGroupReadyTimeoutHandle) {
+            clearTimeout(this._meshGroupReadyTimeoutHandle);
+            this._meshGroupReadyTimeoutHandle = null;
+          }
+          this._p2pSyncCycle();
+        }
+      }
+    });
+
     setTimeout(() => {
       if (this._running) {
         NearbyMeshService.startMesh().catch(e => {
@@ -1220,9 +1239,13 @@ class P2PAutoSyncClass {
         const peerScore = meshPeer ? meshPeer.score : 0;
         const isMyRoleMaster = this._lastIntendedRole === 'MASTER';
         const hasPendingContent = this._pendingPostsCount > 0 || !!this._hasPendingDelta;
-        // Le Master envoie ssi (a) il a du contenu OU (b) le delta Mesh dit qu'il doit pousser.
-        // Le Slave n'envoie PAS en Phase 1 (il fait la Phase 2 après swap ou via sendFileTo).
-        const iShouldSend = isMyRoleMaster && hasPendingContent;
+        // Le Master envoie SSI :
+        // (a) il a du contenu
+        // (b) le Slave est CONFIRMÉ connecté (HELLO reçu OU Mesh confirmé)
+        // V3.30 (BUG-068 fix) : NE PAS envoyer après timeout si le Slave n'a pas confirmé.
+        // AVANT : shouldSend=true même sans Slave → envoi vers 192.168.49.2 → EHOSTUNREACH.
+        const slaveConfirmed = this._isRealConnected || this._slaveConfirmedViaMesh || !!this._slaveIp;
+        const iShouldSend = isMyRoleMaster && hasPendingContent && slaveConfirmed;
         const shouldSend = iShouldSend;
         this._log(`🔍 [V3.6.3] shouldSend=${shouldSend}, isMaster=${isMyRoleMaster}, myScore=${myScore}, peerScore=${peerScore}, pendingContent=${hasPendingContent}, packSent=${this._packSentThisSession}`);
         if (shouldSend && !this._packSentThisSession) {
