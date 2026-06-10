@@ -252,10 +252,13 @@ class P2PAutoSyncClass {
   async _sendYabissoHello(isMasterSide, peerName) {
     if (!WifiDirectService.isConnected) return;
     const myScore = WifiDirectService.getPowerScore();
-    // V3.25 (BUG-061 fix) : Inclure l'IP locale P2P si disponible
-    // Le Master capturera cette IP pour cibler sendFileTo() vers le Slave
-    // au lieu de s'envoyer à lui-même (self-loop 192.168.49.1)
-    const localIp = WifiDirectService._localP2pIp || null;
+    // V3.29 (BUG-067 fix): Si GO=true, notre IP est 192.168.49.1 = IP du GO.
+    // L'envoyer au Master lui ferait croire que c'est SON IP → self-loop.
+    // On n'envoie senderIp QUE si on n'est PAS GO (= on est client avec IP .x).
+    let localIp = null;
+    if (!WifiDirectService.isGroupOwner) {
+      localIp = WifiDirectService._localP2pIp || null;
+    }
     const sent = await WifiDirectService.sendControlMessage({
       type: 'YABISSO_HELLO',
       myScore,
@@ -263,9 +266,9 @@ class P2PAutoSyncClass {
       senderIp: localIp,
     });
     if (sent) {
-      this._log(`🤝 [V3.25 Handshake] YABISSO_HELLO envoyé à ${peerName} (score=${myScore}, ip=${localIp || 'inconnue'})`);
+      this._log(`🤝 [V3.29 Handshake] YABISSO_HELLO envoyé à ${peerName} (score=${myScore}, ip=${localIp || 'GO=true (auto)'})`);
     } else {
-      this._log(`⚠️ [V3.25 Handshake] Échec envoi YABISSO_HELLO à ${peerName}`);
+      this._log(`⚠️ [V3.29 Handshake] Échec envoi YABISSO_HELLO à ${peerName}`);
     }
   }
 
@@ -1438,21 +1441,23 @@ class P2PAutoSyncClass {
           this._confirmYabissoHandshake(senderDevice, metadata.myScore);
           this._lastYabissoPeerSeen = Date.now();
 
-          // V3.25 (BUG-061 fix) : Capturer l'IP du Slave depuis les métadonnées HELLO.
+          // V3.29 (BUG-067 fix): Capturer l'IP du Slave depuis les métadonnées HELLO.
           // AVANT : _slaveIp jamais défini → sendFile() self-loop vers 192.168.49.1.
-          // MAINTENANT : le Slave inclut senderIp dans le HELLO → on le capture ici.
-          if (metadata.senderIp) {
+          // FIX : Si senderIp = 192.168.49.1 (IP GO = notre propre IP), l'ignorer
+          // et utiliser 192.168.49.2 (IP client typique du Slave).
+          if (metadata.senderIp && metadata.senderIp !== '192.168.49.1') {
             this._slaveIp = metadata.senderIp;
             this._slavePort = 8988;
             WifiDirectService.setTargetPeerIp(this._slaveIp);
-            this._log(`📍 [V3.25 Master] IP Slave capturée depuis HELLO: ${this._slaveIp} → _targetPeerIp défini`);
+            this._log(`📍 [V3.29 Master] IP Slave capturée depuis HELLO: ${this._slaveIp} → _targetPeerIp défini`);
           } else {
             // Fallback : le client WiFi Direct a toujours une IP dynamique dans 192.168.49.x
             // Le GO est 192.168.49.1, le 1er client est généralement 192.168.49.2
             this._slaveIp = '192.168.49.2';
             this._slavePort = 8988;
             WifiDirectService.setTargetPeerIp(this._slaveIp);
-            this._log(`📍 [V3.25 Master] IP Slave fallback: ${this._slaveIp} (senderIp non disponible dans HELLO)`);
+            const reason = metadata.senderIp === '192.168.49.1' ? 'senderIp=GO (self-loop évité)' : 'senderIp non disponible';
+            this._log(`📍 [V3.29 Master] IP Slave fallback: ${this._slaveIp} (${reason})`);
           }
 
           this._log(`🤝 [V3.8] YABISSO_HELLO reçu de ${senderDevice} (score=${metadata.myScore}) → handshake confirmé`);
