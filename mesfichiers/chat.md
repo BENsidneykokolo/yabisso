@@ -8135,3 +8135,113 @@ HARD RELOAD les 2 phones. Logs a verifier:
 - ✅ Verification syntaxe OK
 - ✅ chat.md mis a jour
 - ⏳ Attente test sur appareils
+
+---
+
+## 2026-06-10 - Session V3.28.1: Fix ROOT CAUSE double NearbyMesh
+
+### Contexte
+V3.28 a CASSE ce qui marchait (V3.27). L'utilisateur dit: "si ça ne passe pas on va repartir à v.3.27". Analyse des diffs V3.27→V3.28 identifie 4 changements problématiques.
+
+### Analyse des diffs V3.27→V3.28
+
+**V3.28 = 4 changements qui cassent :**
+1. `_started` singleton guard dans P2PAutoSync → OK, on garde (bonne défense)
+2. IP fallback dans `_sendYabissoHello` → Ne fonctionne JAMAIS car les 2 devices sont GO=true
+3. IP detection à la connexion dans WifiDirectService → Échoue sur Itel A50 (Mediatek: `WiFiP2PManager.getP2pIpAddress is not a function`)
+4. IP detection après receiveFile → Même échec Mediatek
+
+**V3.27 = tout ce qui marchait (on garde) :**
+- Timeout 15s→25s dans `_fallbackWaitForSlave`
+- Wait 3s→5s dans `_onWifiGroupReadyMesh`
+- Retry 3s→5s
+- Backoff 10s→15s sur échec `connectToPeer`
+- Batch propagation 50 max + `mesh_propagation_batch` handler
+
+**ROOT CAUSE réelle** : Double instance NearbyMesh sur Itel A50
+- Le guard V3.12 (`NearbyMeshService._instance !== this`) ne fonctionne PAS
+- `NearbyMeshService` EST déjà l'instance (export singleton `new NearbyMeshServiceClass()`)
+- Donc `NearbyMeshService._instance === this` est TOUJOURS vrai → le guard ne bloque JAMAIS
+- Résultat: `startMesh()` appelé 2× → 2 instances avec IDs différents (`73_Yabisso_ni9yl` ET `18_Yabisso_923hh1s`)
+
+### Corrections V3.28.1 (commit ac678b2, tag v0.0.35)
+
+**1. NearbyMeshService.js (ROOT CAUSE fix)**
+- Ajouté flag `_started` dans le constructeur (comme P2PAutoSync)
+- Guard dans `startMesh()`: `if (this._started) return`
+- Reset `_started = false` dans le catch (retry possible) et `stopMesh()` (redémarrage possible)
+- Supprimé le guard V3.12 cassé (`NearbyMeshService._instance`)
+
+**2. P2PAutoSync.js (révert V3.28)**
+- Révert IP fallback dans `_sendYabissoHello` → retour à V3.25 (`const localIp = WifiDirectService._localP2pIp || null`)
+- Gardé `_started` singleton guard (bonne défense)
+- Gardé toutes les fixes V3.27 (timing, batch propagation)
+
+**3. WifiDirectService.js (révert V3.28)**
+- Supprimé IP detection à la connexion (21 lignes)
+- Supprimé IP detection après receiveFile (18 lignes)
+- Supprimé event `localIpDetected` (jamais écouté)
+
+### Résumé des changements
+```
+NearbyMeshService.js: +16/-10 lignes (singleton guard fix)
+P2PAutoSync.js:       +5/-12 lignes (révert IP fallback)
+WifiDirectService.js: +0/-40 lignes (suppression code mort)
+Total:                +16/-58 lignes = -42 lignes net
+```
+
+### Statut
+- ✅ Backup branch `backup/v3.28-pre-revert` créée (commit adee7b7)
+- ✅ Analyse des diffs V3.27→V3.28 complète
+- ✅ ROOT CAUSE identifié: double instance NearbyMesh (guard V3.12 cassé)
+- ✅ Corrections V3.28.1 implémentées (3 fichiers)
+- ✅ Syntaxe vérifiée (node --check OK, pas d'ESLint config)
+- ✅ Commit: `ac678b2` — `v0.0.35: V3.28.1`
+- ✅ Tag: `v0.0.35`
+- ⏳ **Attente test sur 2 appareils** (Itel A50 + Xiaomi 11T)
+
+---
+
+## 2026-06-10 - Session V3.27-pure: Retour complet à V3.26 + fixes V3.27 uniquement
+
+### Utilisateur
+"Regarde les timestamps dans les logs — V3.27 marchait: `■ [V3.19 Slave] récepteur démarré`, `■ [V3.22 Master] Démarrage récepteur immédiat`. V3.28 ne marche plus: le récepteur Slave ne démarre pas. Revenir au commit V3.27."
+
+### Problème identifié
+V3.27 ET V3.28 sont MÉLANGÉS dans le même commit (`adee7b7`). Le code receiver est IDENTIQUE entre V3.26 et V3.28 — le vrai problème est que V3.28 casse la connexion WiFi Direct elle-même, donc `onConnectionChange` ne fire jamais → le receiver ne démarre jamais.
+
+### Solution
+Full revert vers V3.26 baseline (`a8e6fd6`), puis re-application UNIQUEMENT des fixes V3.27.
+
+### Corrections V3.27-pure (commit 9eee9ca, tag v0.0.36)
+
+**P2PAutoSync.js** — restauration V3.26 + 5 fixes V3.27 :
+1. `_fallbackWaitForSlave`: timeout 15s → 25s (Itel A50 Mediatek lent)
+2. `_onWifiGroupReadyMesh`: wait 3s → 5s (framework busy)
+3. `_onWifiGroupReadyMesh`: retry scan 3s → 5s
+4. `connectToPeer` failure: backoff 10s → 15s + extra setTimeout
+5. Batch propagation 50 max (au lieu de 233 messages individuels)
+
+**WifiDirectService.js** — restauration V3.26 (suppression totale V3.28 IP detection)
+
+**NearbyMeshService.js** — garde :
+- `_started` singleton guard (fix double instance V3.28.1)
+- `mesh_propagation_batch` handler (V3.27)
+
+### Logs attendus après test
+- `■ [V3.22 Master] Démarrage récepteur immédiat + fallback Mesh...`
+- `■ [V3.25 Slave] connecté → démarrage récepteur + HELLO immédiat`
+- `📡 [V3.27] Propagation batch: X items`
+- `⏳ [V3.27 Slave] Attente 5000ms que le Master crée le groupe WiFi Direct...`
+- `⚠️ [V3.27] connectToPeer a échoué (framework busy), lock libéré. Retry dans 15s`
+
+### Statut
+- ✅ Backup branch `backup/v3.28-pre-revert` disponible
+- ✅ P2PAutoSync.js restauré V3.26 + V3.27 fixes uniquement
+- ✅ WifiDirectService.js restauré V3.26 (aucun code V3.28)
+- ✅ NearbyMeshService.js: _started guard + batch handler
+- ✅ Syntaxe vérifiée (node --check OK)
+- ✅ Commit: `9eee9ca` — `v0.0.36: V3.27-pure`
+- ✅ Tag: `v0.0.36`
+- ⏳ **NE PAS RETOUCHER LE CODE** — tester d'abord que la sync refonctionne
+- ⏳ **Attente test sur 2 appareils** (Itel A50 + Xiaomi 11T)
