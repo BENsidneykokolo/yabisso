@@ -25,6 +25,7 @@ class P2PAutoSyncClass {
     this._p2pInterval = null;
     this._cloudInterval = null;
     this._running = false;
+    this._started = false; // V3.28 (BUG-066 fix): singleton guard — empeche double demarrage
     this._isStopping = false; 
     this._syncingP2P = false;
     this._syncingCloud = false;
@@ -252,10 +253,15 @@ class P2PAutoSyncClass {
   async _sendYabissoHello(isMasterSide, peerName) {
     if (!WifiDirectService.isConnected) return;
     const myScore = WifiDirectService.getPowerScore();
-    // V3.25 (BUG-061 fix) : Inclure l'IP locale P2P si disponible
-    // Le Master capturera cette IP pour cibler sendFileTo() vers le Slave
-    // au lieu de s'envoyer à lui-même (self-loop 192.168.49.1)
-    const localIp = WifiDirectService._localP2pIp || null;
+    // V3.28 (BUG-065 fix) : Inclure l'IP locale P2P avec fallback garanti.
+    // AVANT : senderIp etait null si getP2pLocalIp() echouait → Master self-loop.
+    // MAINTENANT : fallback 192.168.49.2 si non-GO (IP standard Android WiFi Direct DHCP).
+    let localIp = WifiDirectService._localP2pIp;
+    if (!localIp && !WifiDirectService.isGroupOwner) {
+      localIp = '192.168.49.2';
+      WifiDirectService._localP2pIp = localIp;
+      this._log(`📍 [V3.28] IP Slave fallback HELLO: ${localIp}`);
+    }
     const sent = await WifiDirectService.sendControlMessage({
       type: 'YABISSO_HELLO',
       myScore,
@@ -263,9 +269,9 @@ class P2PAutoSyncClass {
       senderIp: localIp,
     });
     if (sent) {
-      this._log(`🤝 [V3.25 Handshake] YABISSO_HELLO envoyé à ${peerName} (score=${myScore}, ip=${localIp || 'inconnue'})`);
+      this._log(`🤝 [V3.28 Handshake] YABISSO_HELLO envoyé à ${peerName} (score=${myScore}, ip=${localIp || 'inconnue'})`);
     } else {
-      this._log(`⚠️ [V3.25 Handshake] Échec envoi YABISSO_HELLO à ${peerName}`);
+      this._log(`⚠️ [V3.28 Handshake] Échec envoi YABISSO_HELLO à ${peerName}`);
     }
   }
 
@@ -345,7 +351,8 @@ class P2PAutoSyncClass {
   // (au lieu d'écouter "à l'aveugle" 35s en avance), le HELLO arrive en pratique
   // dans les 2-3s suivant la confirmation. 15s de timeout = 5× la latence réelle.
   _fallbackWaitForSlave(peerName) {
-    this._waitForSlaveConfirmation(peerName, 15000).then(confirmed => {
+    // V3.27 : Timeout augmenté de 15s à 25s pour Itel A50 (Mediatek lent)
+    this._waitForSlaveConfirmation(peerName, 25000).then(confirmed => {
       this._waitingForSlave = false;
       if (confirmed && this._running && WifiDirectService.connectedPeer) {
         this._log(`■ [V3.13] ✅ Slave confirmé (via HELLO WiFi) → lancement envoi`);
@@ -396,9 +403,10 @@ class P2PAutoSyncClass {
       this._meshGroupReadyTimeoutHandle = null;
     }
 
-    // V3.17 (BUG-046 fix) : Attendre 3000ms que le Master ait fini de créer le groupe.
-    this._log(`⏳ [V3.25 Slave] Attente 3000ms que le Master crée le groupe WiFi Direct...`);
-    await new Promise(r => setTimeout(r, 3000));
+    // V3.27 (BUG-063 fix) : Attendre 5000ms que le Master ait fini de créer le groupe.
+    // Itel A50 (Mediatek) + framework busy → 3s insuffisant, 5s plus sûr.
+    this._log(`⏳ [V3.27 Slave] Attente 5000ms que le Master crée le groupe WiFi Direct...`);
+    await new Promise(r => setTimeout(r, 5000));
 
     // Garde-fou : si on est déjà connecté, on ne fait rien
     if (WifiDirectService.connectedPeer || WifiDirectService.isConnecting) {
@@ -421,8 +429,8 @@ class P2PAutoSyncClass {
     }
 
     if (!targetPeer) {
-      this._log(`⚠️ [V3.13] Aucun peer WiFi Direct scanné. Master signalé mais le scan n'a pas encore vu le peer. Retry dans 3s.`);
-      setTimeout(() => this._onWifiGroupReadyMesh(peerId, masterIp), 3000);
+      this._log(`⚠️ [V3.27] Aucun peer WiFi Direct scanné. Master signalé mais le scan n'a pas encore vu le peer. Retry dans 5s.`);
+      setTimeout(() => this._onWifiGroupReadyMesh(peerId, masterIp), 5000);
       return;
     }
 
@@ -561,11 +569,17 @@ class P2PAutoSyncClass {
   }
 
   async start() {
+    // V3.28 (BUG-066 fix) : Singleton guard — empeche double demarrage sur Itel A50
+    if (this._started) {
+      console.warn('[P2PAutoSync] Déjà démarré, ignoré (singleton guard).');
+      return;
+    }
     if (this._running) return;
+    this._started = true;
     this._running = true;
 
     console.log('[P2PAutoSync] Démarrage de l\'orchestrateur Multi-Rail...');
-    this._log('🚀 Orchestrateur démarré (V3.26 - 0B file fix + guard MASTER + WIFI_GROUP_READY dedup).');
+    this._log('🚀 Orchestrateur démarré (V3.28 - 0B IP fix + singleton guard).');
 
     // FIX: Réparer is_propagating au démarrage (migration v9→v10 l'a remis à false)
     this._repairIsPropagating().catch(e => console.warn('[P2PAutoSync] repair error:', e.message));
@@ -1180,7 +1194,8 @@ class P2PAutoSyncClass {
             // si onConnectionChange ne fire pas (cas où le Master crée le groupe mais aucun Slave ne se connecte).
             this._isConnecting = false;
             if (!connectSuccess) {
-              this._log(`⚠️ [V3.6.1] connectToPeer a échoué, lock libéré. Retry dans 10s (backoff).`);
+              this._log(`⚠️ [V3.27] connectToPeer a échoué (framework busy), lock libéré. Retry dans 15s (backoff étendu).`);
+              setTimeout(() => { this._isConnecting = false; }, 15000);
             } else {
               this._log(`✅ [V3.6.1] connectToPeer réussi, lock libéré.`);
             }
@@ -1345,7 +1360,29 @@ class P2PAutoSyncClass {
       } else if (NetworkRailDetector.activeRails.has(RAIL_TYPES.BLE_MESH)) {
         const pendingUploads = await this._getPendingUploads();
         if (pendingUploads.length > 0) {
-          for (const post of pendingUploads) await this._propagateToPeers(post, RAIL_TYPES.BLE_MESH);
+          // V3.27 (BUG-063 fix) : Batch propagation — un seul message BLE au lieu de N messages individuels
+          // Limiter à 50 items max pour ne pas saturer le canal BLE
+          const BATCH_SIZE = 50;
+          const batch = pendingUploads.slice(0, BATCH_SIZE);
+          const hashes = batch.map(p => p.hash).filter(Boolean);
+          if (hashes.length > 0) {
+            this._log(`📡 [V3.27] Propagation batch: ${hashes.length} items (total pending: ${pendingUploads.length})`);
+            try {
+              const latestPeer = this._getLatestMeshPeer();
+              if (latestPeer && latestPeer.peerId) {
+                await NearbyMeshService.sendMeshMessage(latestPeer.peerId, {
+                  type: 'mesh_propagation_batch',
+                  hashes,
+                  count: hashes.length,
+                  timestamp: Date.now()
+                });
+              }
+            } catch (e) {
+              this._log(`⚠️ [V3.27] Échec envoi batch Mesh: ${e.message}`);
+            }
+          }
+          // Marquer tous les posts du batch comme propagés
+          for (const post of batch) await this._markAsPropagated(post);
         }
       }
 

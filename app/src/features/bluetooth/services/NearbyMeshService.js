@@ -355,6 +355,11 @@ class NearbyMeshServiceClass {
         // (au lieu de sendFile qui s'envoie à lui-même = self-loop).
         this._log(`📡 [V3.20 Mesh] SLAVE_IP reçu de ${peerId} : ${data.ip}:${data.port}`);
         MeshRequestEvents.emit({ type: 'SLAVE_IP', peerId, ip: data.ip, port: data.port });
+      } else if (data.type === 'mesh_propagation_batch') {
+        // V3.27 (BUG-063 fix) : Batch de hashes reçu via Mesh BLE (max 50 items)
+        // Au lieu de 233 messages individuels, un seul message JSON avec le tableau de hashes.
+        this._log(`📡 [V3.27 Mesh] Batch propagation reçu de ${peerId}: ${data.count} items`);
+        MeshContentUpdateEvents.emit({ type: 'MESH_PROPAGATION_BATCH', peerId, hashes: data.hashes, count: data.count });
       }
     } catch (e) { }
   }

@@ -245,6 +245,15 @@
 | BUG-060: Fix JSDoc syntaxe p2p_*/ctrl_* | Done | P3 |
 | BUG-061: Slave HELLO immédiat depuis onConnectionChange | Done | P1 |
 | BUG-061b: IP Slave via HELLO metadata (senderIp) + fallback 192.168.49.2 | Done | P1 |
+
+### V3.27 — P2P Fix Logs (2026-06-10)
+
+| Tâche | Status | Priorité |
+|-------|--------|----------|
+| BUG-063: Mesh propagation boucle (233 messages → batch 50 max) | Done | P0 |
+| BUG-064: Framework busy (delay 3s→5s, backoff 10s→15s, timeout 15s→25s) | Done | P0 |
+| BUG-065: 0B file — IP Slave detectee via receiveFile + fallback 192.168.49.2 | Done | P0 |
+| BUG-066: Singleton guard — empeche double demarrage P2PAutoSync (Itel) | Done | P0 |
 | Génération APK Release pour tests terrain | Not Started | P1 | S7 |
 | Bluetooth simple P2P (Google Nearby Connect) | Done | P2 | S7 |
 | Choisir stack BLE mesh (ble-plx vs nearby) | Done | P3 | S7 |

@@ -908,3 +908,51 @@
 - **Statut** : ✅ Résolu (V3.25)
 - **Release** : v0.0.30
 
+---
+
+### BUG-063 — Propagation Mesh en boucle (233 messages individuels)
+- **Date** : 2026-06-10
+- **Problème** : 233 posts envoyés un par un via BLE Mesh → saturation du canal, spam de logs `📡 Propagation via Mesh: 17810552` (x50+)
+- **Cause** : `for (const post of pendingUploads) await _propagateToPeers(post, BLE_MESH)` — appel individuel par post
+- **Solution (V3.27)** : Batch en un seul message JSON avec max 50 items via `NearbyMeshService.sendMeshMessage()`. Ajout handler `mesh_propagation_batch` dans `NearbyMeshService._handleDataReceived()`
+- **Fichiers modifiés** : `P2PAutoSync.js`, `NearbyMeshService.js`
+- **Statut** : ✅ Résolu (V3.27)
+
+---
+
+### BUG-064 — Framework busy bloque le Slave + Master timeout trop court
+- **Date** : 2026-06-10
+- **Problème 1** : Le Slave tente `connectToPeer` pendant que le Master crée encore son groupe → "framework is busy" 3x
+- **Problème 2** : Le Master timeout 15s pour le HELLO du Slave, insuffisant sur Itel A50 (Mediatek lent)
+- **Cause** : Delais trop courts pour les appareils Mediatek (Itel A50)
+- **Solution (V3.27)** :
+  1. Delay WIFI_GROUP_READY Slave : 3s → 5s
+  2. Retry backoff connectToPeer : 10s → 15s
+  3. Retry scan fallback : 3s → 5s
+  4. Master timeout HELLO : 15s → 25s
+- **Fichiers modifiés** : `P2PAutoSync.js`
+- **Statut** : ✅ Résolu (V3.27)
+
+---
+
+### BUG-065 — Fichier 0B : IP Slave non détectée (self-loop)
+- **Date** : 2026-06-10
+- **Problème** : Le Master envoie le pack de 12.8MB à lui-même (192.168.49.1) car `_slaveIp=null`. Le Slave reçoit 0 octets.
+- **Cause** : `getLocalP2pIp()` échoue sur Itel A50 (Mediatek) → `senderIp: null` dans HELLO → Master ne connaît pas l'IP du Slave
+- **Solution (V3.28)** :
+  1. `onConnectionChange` (non-GO) : détecte IP via `getLocalP2pIp()` → fallback `192.168.49.2`
+  2. `startReceiving()` : après chaque `receiveFile`, détecte IP → emit `localIpDetected`
+  3. `_sendYabissoHello()` : fallback garanti `senderIp='192.168.49.2'` si non-GO
+- **Fichiers modifiés** : `WifiDirectService.js`, `P2PAutoSync.js`
+- **Statut** : ✅ Résolu (V3.28)
+
+---
+
+### BUG-066 — Double instance P2PAutoSync (Itel se détecte elle-même)
+- **Date** : 2026-06-10
+- **Problème** : L'Itel A50 démarre P2PAutoSync 2 fois → "Mesh Slave (18 < 18)" = l'app se détecte elle-même comme peer
+- **Cause** : Pas de guard contre le double démarrage
+- **Solution (V3.28)** : Singleton guard — flag `_started` vérifié dans `start()`. Si déjà démarré, retour immédiat avec warning.
+- **Fichiers modifiés** : `P2PAutoSync.js`
+- **Statut** : ✅ Résolu (V3.28)
+

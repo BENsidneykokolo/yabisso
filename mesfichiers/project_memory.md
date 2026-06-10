@@ -169,6 +169,12 @@
   - **Fix Problème 2** : IP Slave capturee depuis metadata YABISSO_HELLO (senderIp) au lieu de getLocalP2pIp() (natif indispo sur Itel A50 Mediatek)
   - Guard `_onWifiGroupReadyMesh` : retourne si deja connecte WiFi Direct
   - Fallback IP: 192.168.49.2 si senderIp non disponible
+- Sprint 10 (V3.27 - BUG-063/064 fix - Mesh propagation boucle + framework busy):
+  - **BUG-063** : Mesh propagation en boucle (233 messages individuels → batch 50 max en un seul JSON)
+  - **BUG-064** : Framework busy (delay WIFI_GROUP_READY 3s→5s, retry backoff 10s→15s, Master timeout HELLO 15s→25s)
+- Sprint 10 (V3.28 - BUG-065/066 fix - 0B file + double instance):
+  - **BUG-065** : 0B file — IP Slave detectee via subscribeOnConnectionInfoUpdates + receiveFile. Fallback 192.168.49.2 pour non-GO. `_sendYabissoHello` inclut toujours `senderIp`.
+  - **BUG-066** : Singleton guard — `_started` flag empeche double demarrage P2PAutoSync sur Itel A50
 
 ## Decisions techniques additionnelles
 - Navigation: React Navigation (a installer)
@@ -184,4 +190,5 @@
 - WiFi Direct déconnexion: removeGroup() + relance scan après 3s pour permettre le swap de rôles
 - Budget devices (itel A50): ne jamais démarrer MessageServer sans connexion active (OOM), toujours stop→start pour discovery, délais de respiration hardware (100-300ms)
 - Cycle P2P: 3s (v1.0.2) pour maximiser les chances de transfert lors de rencontres brèves.
+- V3.27: Delais augmentés pour Itel A50 (WIFI_GROUP_READY 5s, retry 15s, timeout Master 25s). Batch Mesh BLE max 50 items.
 
