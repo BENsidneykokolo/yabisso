@@ -315,6 +315,32 @@ class WifiDirectServiceClass {
             } else {
               console.log('[WifiDirectService] ✅ connect réussi (première tentative)');
             }
+            // V3.33 (FIX 10): Forcer requestConnectionInfo() après connect() réussi.
+            // Sur Itel A50 (Mediatek), le broadcast WIFI_P2P_CONNECTION_CHANGED_ACTION
+            // ne se déclenche JAMAIS après connect() côté Slave → onConnectionChange ne fire jamais
+            // → récepteur jamais démarré → HELLO jamais envoyé → Master timeout.
+            // Solution : attendre 2s que Android lie la table de routage, puis appeler
+            // getConnectionInfo() manuellement pour déclencher le handler.
+            try {
+              await new Promise(r => setTimeout(r, 2000));
+              const info = await Promise.race([
+                WifiP2P.getConnectionInfo(),
+                new Promise((_, reject) => setTimeout(() => reject(new Error('getConnectionInfo timeout')), 5000))
+              ]);
+              if (info && info.groupFormed) {
+                // Déclencher manuellement le handler de connexion
+                this.connectedPeer = info;
+                this.isConnected = true;
+                this.isGroupOwner = !!info.isGroupOwner;
+                this.groupOwnerAddress = info.groupOwnerAddress === 'null' ? '192.168.49.1' : info.groupOwnerAddress;
+                console.log(`[WifiDirectService] ✅ [V3.33 FIX10] ConnectionInfo forcé: GO=${this.isGroupOwner}, addr=${this.groupOwnerAddress}`);
+                this._emit('onConnectionChange', { connected: true, isGroupOwner: this.isGroupOwner, info });
+              } else {
+                console.log('[WifiDirectService] ⚠️ [V3.33 FIX10] getConnectionInfo() retourne null ou groupFormed=false');
+              }
+            } catch (e) {
+              console.warn(`[WifiDirectService] ⚠️ [V3.33 FIX10] getConnectionInfo échoué: ${e.message}`);
+            }
             return true;
           } catch (e) {
             this.isConnecting = false;

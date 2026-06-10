@@ -580,7 +580,7 @@ class P2PAutoSyncClass {
     this._running = true;
 
     console.log('[P2PAutoSync] Démarrage de l\'orchestrateur Multi-Rail...');
-    this._log('🚀 Orchestrateur démarré (V3.32 - sans fallback 1-to-1 + WIFI_GROUP_READY immédiat + double-fire fix).');
+    this._log('🚀 Orchestrateur démarré (V3.33 - requestConnectionInfo forcé + guard Slave 15s + double-fire fix).');
 
     // FIX: Réparer is_propagating au démarrage (migration v9→v10 l'a remis à false)
     this._repairIsPropagating().catch(e => console.warn('[P2PAutoSync] repair error:', e.message));
@@ -1081,13 +1081,16 @@ class P2PAutoSyncClass {
         try {
           const ok = await WifiDirectService.connectToPeer(peer, 0, isMaster ? 'MASTER' : 'SLAVE');
           if (!isMaster) {
-            this._connectingAsSlave = false;
             if (!ok) {
-              this._log(`⚠️ [V3.31 Trigger] connectToPeer échoué, reset lock dans 5s.`);
-              setTimeout(() => { this._isConnecting = false; }, 5000);
+              // V3.33 (FIX 12): Garder _connectingAsSlave pendant 15s après échec
+              this._log(`⚠️ [V3.33 Trigger] connectToPeer échoué, lock maintenu 15s.`);
+              setTimeout(() => { this._isConnecting = false; this._connectingAsSlave = false; }, 15000);
             } else {
+              this._connectingAsSlave = false;
               this._isConnecting = false;
             }
+          } else {
+            this._isConnecting = false;
           }
         } catch (e) {
           this._connectingAsSlave = false;
@@ -1256,10 +1259,13 @@ class P2PAutoSyncClass {
             this._isConnecting = false;
             if (!isMaster) this._connectingAsSlave = false;
             if (!connectSuccess) {
-              this._log(`⚠️ [V3.31] connectToPeer a échoué (framework busy), lock libéré. Retry dans 15s.`);
-              setTimeout(() => { this._isConnecting = false; }, 15000);
+              // V3.33 (FIX 12): Garder _connectingAsSlave = true pendant 15s après échec
+              // pour éviter les tentatives en cascade (3 tentatives × 3 phones = framework busy).
+              if (!isMaster) this._connectingAsSlave = true;
+              this._log(`⚠️ [V3.33] connectToPeer a échoué (framework busy), lock libéré. Retry dans 15s.`);
+              setTimeout(() => { this._isConnecting = false; this._connectingAsSlave = false; }, 15000);
             } else {
-              this._log(`✅ [V3.31] connectToPeer réussi, lock libéré.`);
+              this._log(`✅ [V3.33] connectToPeer réussi, lock libéré.`);
             }
           } else {
             // V3.5 (BUG-057 fix) : SUPPRESSION DÉFINITIVE DU MASTER PROACTIF
