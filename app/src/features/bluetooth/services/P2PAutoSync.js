@@ -25,7 +25,6 @@ class P2PAutoSyncClass {
     this._p2pInterval = null;
     this._cloudInterval = null;
     this._running = false;
-    this._started = false; // V3.28 (BUG-066 fix): singleton guard — empeche double demarrage
     this._isStopping = false; 
     this._syncingP2P = false;
     this._syncingCloud = false;
@@ -254,7 +253,8 @@ class P2PAutoSyncClass {
     if (!WifiDirectService.isConnected) return;
     const myScore = WifiDirectService.getPowerScore();
     // V3.25 (BUG-061 fix) : Inclure l'IP locale P2P si disponible
-    // Le Master capturera cette IP pour cibler sendFileTo() au lieu de sendFile (self-loop)
+    // Le Master capturera cette IP pour cibler sendFileTo() vers le Slave
+    // au lieu de s'envoyer à lui-même (self-loop 192.168.49.1)
     const localIp = WifiDirectService._localP2pIp || null;
     const sent = await WifiDirectService.sendControlMessage({
       type: 'YABISSO_HELLO',
@@ -263,9 +263,9 @@ class P2PAutoSyncClass {
       senderIp: localIp,
     });
     if (sent) {
-      this._log(`🤝 [V3.27 Handshake] YABISSO_HELLO envoyé à ${peerName} (score=${myScore}, ip=${localIp || 'inconnue'})`);
+      this._log(`🤝 [V3.25 Handshake] YABISSO_HELLO envoyé à ${peerName} (score=${myScore}, ip=${localIp || 'inconnue'})`);
     } else {
-      this._log(`⚠️ [V3.27 Handshake] Échec envoi YABISSO_HELLO à ${peerName}`);
+      this._log(`⚠️ [V3.25 Handshake] Échec envoi YABISSO_HELLO à ${peerName}`);
     }
   }
 
@@ -563,17 +563,11 @@ class P2PAutoSyncClass {
   }
 
   async start() {
-    // V3.28 (BUG-066 fix) : Singleton guard — empeche double demarrage sur Itel A50
-    if (this._started) {
-      console.warn('[P2PAutoSync] Déjà démarré, ignoré (singleton guard).');
-      return;
-    }
     if (this._running) return;
-    this._started = true;
     this._running = true;
 
     console.log('[P2PAutoSync] Démarrage de l\'orchestrateur Multi-Rail...');
-    this._log('🚀 Orchestrateur démarré (V3.28.1 - singleton guard NearbyMesh + V3.27 timing).');
+    this._log('🚀 Orchestrateur démarré (V3.27-pure - batch propagation + timing delays).');
 
     // FIX: Réparer is_propagating au démarrage (migration v9→v10 l'a remis à false)
     this._repairIsPropagating().catch(e => console.warn('[P2PAutoSync] repair error:', e.message));
