@@ -446,15 +446,18 @@ class P2PAutoSyncClass {
     let targetPeer = null;
 
     if (detectedPeers.length > 0) {
-      // V3.36 (FIX self-peer): Filtrer les peers — ignorer blacklist ET self-device
+      // V3.37 (FIX self-peer): Filtrer les peers — ignorer blacklist ET self-device
+      // Les scans WiFi Direct retournent les noms Android natifs ("xiaomi 11t", "itel a50")
+      // PAS nos noms customisés "score_Yabisso_xxx". On compare avec Device.deviceName.
       const myWifiName = (WifiDirectService.getWifiDirectName() || '').toLowerCase();
       const myDeviceName = (WifiDirectService.getDeviceName() || '').toLowerCase();
+      const myAndroidName = WifiDirectService.getAndroidDeviceName();
       targetPeer = detectedPeers.find(p => {
         const name = (p.deviceName || '').toLowerCase();
         if (WifiDirectService.isPeerBlacklisted(name)) return false;
-        // Self-peer: même nom WiFi Direct OU même nom device
-        if (name && (name === myWifiName || name === myDeviceName)) {
-          this._log(`⛔ [V3.36] Self-peer WiFi Direct ignoré: ${p.deviceName}`);
+        // Self-peer: même nom WiFi Direct OU même nom device OU même nom Android
+        if (name && (name === myWifiName || name === myDeviceName || name === myAndroidName)) {
+          this._log(`⛔ [V3.37] Self-peer WiFi Direct ignoré: ${p.deviceName} (match: ${name === myAndroidName ? 'android' : 'custom'})`);
           return false;
         }
         return true;
@@ -655,13 +658,31 @@ class P2PAutoSyncClass {
           this._log(`⚠️ [V3.20 Master] setTargetPeerIp échoué: ${e.message}`);
         }
       } else if (evt && evt.type === 'YABISSO_HELLO_VIA_MESH') {
-        // V3.36 (FIX Mediatek 0B): YABISSO_HELLO reçu via BLE Mesh.
-        // Même traitement que le HELLO reçu via WiFi Direct dans _handleReceivedFile.
+        // V3.37 (FIX shouldSend): YABISSO_HELLO reçu via BLE Mesh.
+        // PROBLÈME V3.36: _confirmYabissoHandshake() seul ne suffit pas — _isRealConnected
+        // reste false car _waitForSlaveConfirmation a déjà timeout (25s) avant l'arrivée du HELLO.
+        // FIX: Définir _isRealConnected=true + _slaveIp ICI pour débloquer shouldSend.
         const { peerId, payload } = evt;
         const senderDevice = payload.senderDevice || peerId;
-        this._log(`🤝 [V3.36 Mesh] YABISSO_HELLO reçu de ${senderDevice} (score=${payload.myScore})`);
+        this._log(`🤝 [V3.37 Mesh] YABISSO_HELLO reçu de ${senderDevice} (score=${payload.myScore}) → déblocage shouldSend`);
         this._confirmYabissoHandshake(senderDevice, payload.myScore);
-        // Notifier le Master qu'un Slave est réellement connecté (débloque l'envoi)
+        // V3.37: Forcer _isRealConnected=true (le Slave est VRAIMENT connecté, il a répondu)
+        if (!this._isRealConnected) {
+          this._isRealConnected = true;
+          this._log(`✅ [V3.37] _isRealConnected=true (HELLO reçu via Mesh, débloque shouldSend)`);
+        }
+        // V3.37: Capturer l'IP du Slave depuis le HELLO Mesh
+        if (payload.senderIp && payload.senderIp !== '192.168.49.1') {
+          this._slaveIp = payload.senderIp;
+          this._slavePort = 8988;
+          WifiDirectService.setTargetPeerIp(this._slaveIp);
+          this._log(`📍 [V3.37] IP Slave via Mesh HELLO: ${this._slaveIp}`);
+        } else if (!this._slaveIp) {
+          this._slaveIp = '192.168.49.2';
+          this._slavePort = 8988;
+          WifiDirectService.setTargetPeerIp(this._slaveIp);
+          this._log(`📍 [V3.37] IP Slave fallback: 192.168.49.2`);
+        }
         if (this._packReceivedAckResolver) {
           this._packReceivedAckResolver(true);
           this._packReceivedAckResolver = null;
@@ -716,10 +737,11 @@ class P2PAutoSyncClass {
           return;
         }
 
-        // V3.36 (FIX self-peer): Ignorer mon propre device WiFi Direct
+        // V3.37 (FIX self-peer): Ignorer mon propre device WiFi Direct
         const myWifiName = (WifiDirectService.getWifiDirectName() || '').toLowerCase();
         const myDeviceName = (WifiDirectService.getDeviceName() || '').toLowerCase();
-        if (peerName && (peerName === myWifiName || peerName === myDeviceName)) {
+        const myAndroidName = WifiDirectService.getAndroidDeviceName();
+        if (peerName && (peerName === myWifiName || peerName === myDeviceName || peerName === myAndroidName)) {
           return;
         }
 

@@ -125,6 +125,17 @@ class WifiDirectServiceClass {
     return this.deviceName || this._cachedDeviceName || this._buildDeviceName();
   }
 
+  // V3.37: Retourne le nom Android réel de l'appareil (ex: "Xiaomi 11T", "itel A50").
+  // Utilisé pour le self-peer filter WiFi Direct car les scans retournent les noms
+  // Android natifs, pas nos noms customisés "score_Yabisso_xxx".
+  getAndroidDeviceName() {
+    try {
+      return (Device.deviceName || Device.modelName || '').toLowerCase();
+    } catch (_) {
+      return '';
+    }
+  }
+
   getWifiDirectName() {
     return this._wifiDirectName || this.getDeviceName();
   }

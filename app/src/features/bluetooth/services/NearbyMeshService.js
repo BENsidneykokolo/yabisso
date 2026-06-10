@@ -267,24 +267,34 @@ class NearbyMeshServiceClass {
         this._sendManifest(peer.peerId);
       }, 800);
 
-      // V3.36 (FIX sendText delay): Le socket BLE n'est PAS prêt immédiatement après
-      // onConnected. Sur Itel A50 (Mediatek), sendText() échoue "Failed to send text"
-      // si appelé < 500ms après onConnected. On attend 800ms que le socket se stabilise
-      // AVANT d'envoyer le WIFI_GROUP_READY en attente.
+      // V3.37 (FIX WIFI_GROUP_READY retry): Le socket BLE n'est PAS prêt immédiatement
+      // après onConnected. Sur Itel A50 (Mediatek), sendText() échoue même après 800ms.
+      // On retry avec backoff: 1s → 2s → 4s (3 tentatives max).
       if (this._pendingWifiGroupReady) {
         const { peerId, masterIp } = this._pendingWifiGroupReady;
         this._pendingWifiGroupReady = null;
-        setTimeout(() => {
-          sendText(peerId, JSON.stringify({
-            type: 'wifi_group_ready',
-            masterIp,
-          })).then(ok => {
-            if (ok) this._log(`✅ [V3.36] WIFI_GROUP_READY envoyé au Slave ${peerId} (800ms delay)`);
-            else this._log(`⚠️ [V3.36] Échec envoi WIFI_GROUP_READY (après delay)`);
-          }).catch(e => {
-            this._log(`⚠️ [V3.36] Exception envoi WIFI_GROUP_READY: ${e.message}`);
-          });
-        }, 800);
+        const msg = JSON.stringify({ type: 'wifi_group_ready', masterIp });
+        const delays = [1000, 2000, 4000];
+        const trySend = (attempt) => {
+          if (attempt > delays.length) {
+            this._log(`⚠️ [V3.37] WIFI_GROUP_READY échoué après ${delays.length} tentatives`);
+            return;
+          }
+          setTimeout(() => {
+            sendText(peerId, msg).then(ok => {
+              if (ok) {
+                this._log(`✅ [V3.37] WIFI_GROUP_READY envoyé au Slave ${peerId} (tentative ${attempt}/${delays.length})`);
+              } else {
+                this._log(`⚠️ [V3.37] WIFI_GROUP_READY tentative ${attempt}/${delays.length} échouée, retry...`);
+                trySend(attempt + 1);
+              }
+            }).catch(e => {
+              this._log(`⚠️ [V3.37] WIFI_GROUP_READY tentative ${attempt} exception: ${e.message}, retry...`);
+              trySend(attempt + 1);
+            });
+          }, attempt === 1 ? 800 : delays[attempt - 1]);
+        };
+        trySend(1);
       }
     }));
 
