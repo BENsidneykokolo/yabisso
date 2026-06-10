@@ -260,22 +260,31 @@ class NearbyMeshServiceClass {
       this._log(`✨ CONNECTÉ à: ${peer.name} (${peer.peerId})`);
       this.connectedPeers.add(peer.peerId);
       this._updateState();
-      this._sendManifest(peer.peerId);
 
-      // V3.35 (FIX WIFI_GROUP_READY): Si un envoi WIFI_GROUP_READY est en attente, l'envoyer MAINTENANT
-      // que le socket BLE Mesh est prêt. C'est ICI que le message est réellement transmis.
+      // V3.36 (FIX sendText delay): Attendre 800ms que le socket BLE se stabilise
+      // AVANT d'envoyer quoi que ce soit (manifest, WIFI_GROUP_READY, etc.)
+      setTimeout(() => {
+        this._sendManifest(peer.peerId);
+      }, 800);
+
+      // V3.36 (FIX sendText delay): Le socket BLE n'est PAS prêt immédiatement après
+      // onConnected. Sur Itel A50 (Mediatek), sendText() échoue "Failed to send text"
+      // si appelé < 500ms après onConnected. On attend 800ms que le socket se stabilise
+      // AVANT d'envoyer le WIFI_GROUP_READY en attente.
       if (this._pendingWifiGroupReady) {
         const { peerId, masterIp } = this._pendingWifiGroupReady;
         this._pendingWifiGroupReady = null;
-        sendText(peerId, JSON.stringify({
-          type: 'wifi_group_ready',
-          masterIp,
-        })).then(ok => {
-          if (ok) this._log(`✅ [V3.35] WIFI_GROUP_READY envoyé au Slave ${peerId} (onConnected)`);
-          else this._log(`⚠️ [V3.35] Échec envoi WIFI_GROUP_READY (onConnected)`);
-        }).catch(e => {
-          this._log(`⚠️ [V3.35] Exception envoi WIFI_GROUP_READY (onConnected): ${e.message}`);
-        });
+        setTimeout(() => {
+          sendText(peerId, JSON.stringify({
+            type: 'wifi_group_ready',
+            masterIp,
+          })).then(ok => {
+            if (ok) this._log(`✅ [V3.36] WIFI_GROUP_READY envoyé au Slave ${peerId} (800ms delay)`);
+            else this._log(`⚠️ [V3.36] Échec envoi WIFI_GROUP_READY (après delay)`);
+          }).catch(e => {
+            this._log(`⚠️ [V3.36] Exception envoi WIFI_GROUP_READY: ${e.message}`);
+          });
+        }, 800);
       }
     }));
 
@@ -398,6 +407,12 @@ class NearbyMeshServiceClass {
         // Au lieu de 233 messages individuels, un seul message JSON avec le tableau de hashes.
         this._log(`📡 [V3.27 Mesh] Batch propagation reçu de ${peerId}: ${data.count} items`);
         MeshContentUpdateEvents.emit({ type: 'MESH_PROPAGATION_BATCH', peerId, hashes: data.hashes, count: data.count });
+      } else if (data.type === 'YABISSO_HELLO') {
+        // V3.36 (FIX Mediatek 0B): YABISSO_HELLO reçu via BLE Mesh au lieu de WiFi Direct.
+        // Sur Mediatek (Itel A50), le transfert WiFi Direct retourne toujours 0B.
+        // Le HELLO est maintenant envoyé via Mesh BLE (canal fiable).
+        this._log(`🤝 [V3.36 Mesh] YABISSO_HELLO reçu de ${peerId} (score=${data.myScore})`);
+        MeshRequestEvents.emit({ type: 'YABISSO_HELLO_VIA_MESH', peerId, payload: data });
       }
     } catch (e) { }
   }
