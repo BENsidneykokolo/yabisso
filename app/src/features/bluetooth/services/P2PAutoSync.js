@@ -253,15 +253,9 @@ class P2PAutoSyncClass {
   async _sendYabissoHello(isMasterSide, peerName) {
     if (!WifiDirectService.isConnected) return;
     const myScore = WifiDirectService.getPowerScore();
-    // V3.28 (BUG-065 fix) : Inclure l'IP locale P2P avec fallback garanti.
-    // AVANT : senderIp etait null si getP2pLocalIp() echouait → Master self-loop.
-    // MAINTENANT : fallback 192.168.49.2 si non-GO (IP standard Android WiFi Direct DHCP).
-    let localIp = WifiDirectService._localP2pIp;
-    if (!localIp && !WifiDirectService.isGroupOwner) {
-      localIp = '192.168.49.2';
-      WifiDirectService._localP2pIp = localIp;
-      this._log(`📍 [V3.28] IP Slave fallback HELLO: ${localIp}`);
-    }
+    // V3.25 (BUG-061 fix) : Inclure l'IP locale P2P si disponible
+    // Le Master capturera cette IP pour cibler sendFileTo() au lieu de sendFile (self-loop)
+    const localIp = WifiDirectService._localP2pIp || null;
     const sent = await WifiDirectService.sendControlMessage({
       type: 'YABISSO_HELLO',
       myScore,
@@ -269,9 +263,9 @@ class P2PAutoSyncClass {
       senderIp: localIp,
     });
     if (sent) {
-      this._log(`🤝 [V3.28 Handshake] YABISSO_HELLO envoyé à ${peerName} (score=${myScore}, ip=${localIp || 'inconnue'})`);
+      this._log(`🤝 [V3.27 Handshake] YABISSO_HELLO envoyé à ${peerName} (score=${myScore}, ip=${localIp || 'inconnue'})`);
     } else {
-      this._log(`⚠️ [V3.28 Handshake] Échec envoi YABISSO_HELLO à ${peerName}`);
+      this._log(`⚠️ [V3.27 Handshake] Échec envoi YABISSO_HELLO à ${peerName}`);
     }
   }
 
@@ -579,7 +573,7 @@ class P2PAutoSyncClass {
     this._running = true;
 
     console.log('[P2PAutoSync] Démarrage de l\'orchestrateur Multi-Rail...');
-    this._log('🚀 Orchestrateur démarré (V3.28 - 0B IP fix + singleton guard).');
+    this._log('🚀 Orchestrateur démarré (V3.28.1 - singleton guard NearbyMesh + V3.27 timing).');
 
     // FIX: Réparer is_propagating au démarrage (migration v9→v10 l'a remis à false)
     this._repairIsPropagating().catch(e => console.warn('[P2PAutoSync] repair error:', e.message));

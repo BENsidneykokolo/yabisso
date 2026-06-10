@@ -36,7 +36,6 @@ class WifiDirectServiceClass {
       onTransferProgress: [],
       onLogUpdate: [],
       onSyncStatus: [],
-      localIpDetected: [],
     };
     this._nativeLock = false;
     this._nativeReady = false;
@@ -206,27 +205,6 @@ class WifiDirectServiceClass {
           this.groupOwnerAddress = info.groupOwnerAddress === 'null' ? '192.168.49.1' : info.groupOwnerAddress;
           this.isConnecting = false;
           console.log(`[WifiDirectService] ✅ CONNECTÉ: GO=${this.isGroupOwner}`);
-
-          // V3.28 (BUG-065 fix) : Detecter l'IP locale du Slave des la connexion.
-          // Le SLAVE (non-GO) a une IP dans la plage 192.168.49.x assignee par le GO.
-          // Si on n'est PAS le GO, on essaie getP2pLocalIp() puis fallback 192.168.49.2.
-          if (!this.isGroupOwner && !this._localP2pIp) {
-            this.getLocalP2pIp().then(ip => {
-              if (ip) {
-                console.log(`[WifiDirectService] 🌐 [V3.28] IP Slave detectee a la connexion: ${ip}`);
-                this._emit('localIpDetected', ip);
-              } else {
-                const fallbackIp = '192.168.49.2';
-                this._localP2pIp = fallbackIp;
-                console.log(`[WifiDirectService] 🌐 [V3.28] IP Slave fallback a la connexion: ${fallbackIp}`);
-                this._emit('localIpDetected', fallbackIp);
-              }
-            }).catch(() => {
-              this._localP2pIp = '192.168.49.2';
-              this._emit('localIpDetected', '192.168.49.2');
-            });
-          }
-
           this._emit('onConnectionChange', { connected: true, isGroupOwner: this.isGroupOwner, info });
         } else {
           const wasConnected = !!this.connectedPeer;
@@ -668,24 +646,6 @@ class WifiDirectServiceClass {
           new Promise((_, reject) => setTimeout(() => reject(new Error('receiveFile timeout')), 60000))
         ]);
         if (path) {
-          // V3.28 (BUG-065 fix) : Detecter l'IP locale APRES receiveFile (socket actif)
-          // Apres receiveFile, la connexion TCP est etablie → getLocalP2pIp() peut fonctionner.
-          // Fallback: si GO=192.168.49.1, le Slave est generalement 192.168.49.2
-          if (!this._localP2pIp) {
-            try {
-              const detectedIp = await this.getLocalP2pIp();
-              if (detectedIp) {
-                console.log(`[WifiDirectService] 🌐 [V3.28] IP detectee apres receiveFile: ${detectedIp}`);
-                this._emit('localIpDetected', detectedIp);
-              }
-            } catch (_) {}
-            if (!this._localP2pIp && !this.isGroupOwner) {
-              const fallbackIp = '192.168.49.2';
-              this._localP2pIp = fallbackIp;
-              console.log(`[WifiDirectService] 🌐 [V3.28] IP fallback Slave: ${fallbackIp} (GO ≠ local)`);
-              this._emit('localIpDetected', fallbackIp);
-            }
-          }
           console.log(`[WifiDirectService] 📨 Fichier reçu: ${path}`);
           try {
             const fileInfo = await FileSystem.getInfoAsync(path);

@@ -55,6 +55,7 @@ class NearbyMeshServiceClass {
     this._connectionMutex = false;
     this._isRunning = false;
     this._isStarting = false;
+    this._started = false; // V3.28.1 (BUG-066 fix): singleton guard
     this._failedPeers = new Set();
     this._discoveredNodes = new Map();
     this._currentRole = null;
@@ -81,19 +82,20 @@ class NearbyMeshServiceClass {
   }
 
   async startMesh() {
-    // V3.12 (Fix A) : Singleton strict — bloquer le double démarrage
-    // Évite que 2 instances de NearbyMeshService tournent en parallèle sur le même device
-    // (vu dans les logs : score 73 ET score 18 sur le même téléphone).
-    if (NearbyMeshService._instance && NearbyMeshService._instance !== this) {
-      console.warn('[NearbyMesh] Instance dupliquée détectée — arrêt forcé');
+    // V3.28.1 (BUG-066 fix): Singleton guard — empeche double demarrage sur Itel A50
+    // Le guard V3.12 (NearbyMeshService._instance) ne fonctionnait PAS car
+    // NearbyMeshService EST deja l'instance (export singleton). On utilise un flag _started
+    // identique a P2PAutoSync pour bloquer tout double appel.
+    if (this._started) {
+      console.warn('[NearbyMesh] Déjà démarré, ignoré (singleton guard).');
       return;
     }
-    NearbyMeshService._instance = this;
 
     if (this.isAdvertising || this.isDiscovering || this._isStarting) {
       this._log('Mesh déjà actif ou en démarrage (skip start).');
       return;
     }
+    this._started = true;
     this._isStarting = true;
 
     try {
@@ -139,6 +141,7 @@ class NearbyMeshServiceClass {
       this.isAdvertising = false;
       this.isDiscovering = false;
       this._isStarting = false;
+      this._started = false; // V3.28.1: reset pour permettre retry
     }
   }
 
@@ -309,6 +312,7 @@ class NearbyMeshServiceClass {
       this.connectedPeers.clear();
       this.isAdvertising = false;
       this.isDiscovering = false;
+      this._started = false; // V3.28.1: reset pour permettre redemarrage
       this._updateState();
       NetworkRailDetector.setBleAvailable(false);
       this._log('Mesh arrêté.');
