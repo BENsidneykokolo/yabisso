@@ -772,13 +772,10 @@ class P2PAutoSyncClass {
             setTimeout(() => { this._isConnecting = false; }, 5000);
           }
         } else {
-          // V3.13 : Le Slave NE TENTE PLUS de connectToPeer directement sur scan.
-          // - Race condition : le scan peut détecter le Master AVANT que createGroup() ne soit
-          //   visible côté Android (2-5s de délai), le Slave appelle connect() et timeout 8s.
-          // - Le Slave attend maintenant le signal Mesh WIFI_GROUP_READY du Master
-          //   (_onWifiGroupReadyMesh) qui garantit que le groupe est créé et visible.
-          // - Fallback : si aucun signal reçu en 15s, le Slave retente via scan (sécurité).
-          this._log(`⏳ [V3.13 Slave] Peer ${peerName} détecté — j'attends le signal Mesh WIFI_GROUP_READY du Master (max 15s)...`);
+          // V3.35 : Le Slave attend WIFI_GROUP_READY du Master via Mesh (5s).
+          // Si le message n'arrive pas (Mesh pas connecté à temps → "Failed to send text"),
+          // le Slave tente une connexion directe au lieu de rester bloqué.
+          this._log(`⏳ [V3.35 Slave] Peer ${peerName} détecté — j'attends WIFI_GROUP_READY du Master (max 5s)...`);
           this._setLogicalRole('SLAVE');
           WifiDirectService.recordPeerAttempt(peerName);
           this._waitingForWifiGroupReady = true;
@@ -789,11 +786,15 @@ class P2PAutoSyncClass {
           this._meshGroupReadyTimeoutHandle = setTimeout(() => {
             this._meshGroupReadyTimeoutHandle = null;
             if (this._running && !WifiDirectService.connectedPeer && !WifiDirectService.isConnecting && this._waitingForWifiGroupReady) {
-              this._log(`⏰ [V3.13 Slave] Aucun WIFI_GROUP_READY en 15s — fallback scan-based connect vers ${peerName}`);
+              this._log(`⏰ [V3.35 Slave] Aucun WIFI_GROUP_READY en 5s — fallback direct connect vers ${peerName}`);
               this._waitingForWifiGroupReady = false;
-              this._p2pSyncCycle();
+              // V3.35: Connexion DIRECTE au lieu de _p2pSyncCycle (qui est bloqué par le guard "attente Mesh peer")
+              WifiDirectService.connectToPeer(peer, 0, 'SLAVE').catch(e => {
+                this._log(`⚠️ [V3.35 Slave] Fallback connect échoué: ${e.message}`);
+                setTimeout(() => { this._isConnecting = false; this._connectingAsSlave = false; }, 5000);
+              });
             }
-          }, 15000);
+          }, 5000);
         }
       });
 
@@ -839,7 +840,12 @@ class P2PAutoSyncClass {
           // V3.6.5 (REAL CONNECTION CHECK) : à ce stade on est branché au réseau WiFi
           // mais on ne sait PAS encore si un Slave a réellement rejoint.
           this._isRealConnected = false;
-          this._slaveIpAddress = info?.groupOwnerAddress?.getHostAddress?.() || null;
+          // V3.35: groupOwnerAddress peut être un objet {address: "..."} ou un string
+          let rawGoAddr = info?.groupOwnerAddress;
+          if (rawGoAddr && typeof rawGoAddr === 'object') {
+            rawGoAddr = rawGoAddr.address || rawGoAddr.getHostAddress?.() || null;
+          }
+          this._slaveIpAddress = (typeof rawGoAddr === 'string' && rawGoAddr !== 'null') ? rawGoAddr : null;
 
           const isMyRoleMaster = this._lastIntendedRole === 'MASTER';
           const peerName = (info?.deviceName || WifiDirectService.connectedPeer?.deviceName || 'Unknown').toLowerCase();

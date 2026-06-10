@@ -60,6 +60,7 @@ class NearbyMeshServiceClass {
     this._discoveredNodes = new Map();
     this._currentRole = null;
     this._pendingMasterTimeouts = [];
+    this._pendingWifiGroupReady = null; // V3.35: { peerId, masterIp } — envoi différé après onConnected
     
     this.MeshLogEvents = MeshLogEvents;
     this.MeshConnectionEvents = MeshConnectionEvents;
@@ -199,39 +200,18 @@ class NearbyMeshServiceClass {
         WifiDirectService.createGroup().then(success => {
           if (success) {
             this._log(`✅ [V3.5] Groupe WiFi Direct créé par le Master. J'attends que le Slave se connecte...`);
-            // V3.32 (FIX 9): Envoyer WIFI_GROUP_READY AUSSI quand createGroup réussit.
-            // AVANT : WIFI_GROUP_READY n'était envoyé que dans le cycle P2PAutoSync (1500ms+).
-            // Problème : le Slave recevait le signal TARD → arrivait sur un groupe déjà prêt
-            // mais ne se connectait pas à temps → timeout.
-            // MAINTENANT : envoi immédiat depuis NearbyMesh (le Master sait que le groupe est prêt).
+            // V3.35 (FIX WIFI_GROUP_READY): AU lieu d'envoyer sendText() ICI (Mesh pas encore connecté),
+            // on stocke le message. Il sera envoyé dans onConnected() quand le socket BLE sera prêt.
             const masterIp = WifiDirectService.groupOwnerAddress || '192.168.49.1';
-            sendText(peer.peerId, JSON.stringify({
-              type: 'wifi_group_ready',
-              masterIp,
-            })).then(ok => {
-              if (ok) this._log(`✅ [V3.32 FIX9] WIFI_GROUP_READY envoyé au Slave ${peer.peerId} (groupe créé avec succès)`);
-              else this._log(`⚠️ [V3.32 FIX9] Échec envoi WIFI_GROUP_READY post-createGroup`);
-            }).catch(e => {
-              this._log(`⚠️ [V3.32 FIX9] Exception envoi WIFI_GROUP_READY: ${e.message}`);
-            });
+            this._pendingWifiGroupReady = { peerId: peer.peerId, masterIp };
+            this._log(`📡 [V3.35] WIFI_GROUP_READY en attente d'envoi (onConnected) pour ${peer.peerId}`);
           } else {
             // V3.31 (FIX 7): createGroup échoue = le groupe existe déjà (cas WiFi Direct créé avant Mesh).
             // Envoyer WIFI_GROUP_READY au Slave via Mesh pour qu'il puisse se connecter au groupe existant.
             this._log(`⚡ [V3.31 FIX7] Groupe WiFi existe déjà → envoi WIFI_GROUP_READY au Slave ${peer.peerId}`);
-            try {
-              const masterIp = WifiDirectService.groupOwnerAddress || '192.168.49.1';
-              sendText(peer.peerId, JSON.stringify({
-                type: 'wifi_group_ready',
-                masterIp,
-              })).then(ok => {
-                if (ok) this._log(`✅ [V3.31 FIX7] WIFI_GROUP_READY envoyé au Slave via Mesh (groupe existant)`);
-                else this._log(`⚠️ [V3.31 FIX7] Échec envoi WIFI_GROUP_READY`);
-              }).catch(e => {
-                this._log(`⚠️ [V3.31 FIX7] Exception envoi WIFI_GROUP_READY: ${e.message}`);
-              });
-            } catch (e) {
-              this._log(`⚠️ [V3.31 FIX7] Exception: ${e.message}`);
-            }
+            const masterIp = WifiDirectService.groupOwnerAddress || '192.168.49.1';
+            this._pendingWifiGroupReady = { peerId: peer.peerId, masterIp };
+            this._log(`📡 [V3.35] WIFI_GROUP_READY en attente d'envoi (onConnected) pour ${peer.peerId} (groupe existant)`);
           }
         }).catch(e => {
           this._log(`⚠️ [V3.5] createGroup exception: ${e.message}`);
@@ -281,6 +261,22 @@ class NearbyMeshServiceClass {
       this.connectedPeers.add(peer.peerId);
       this._updateState();
       this._sendManifest(peer.peerId);
+
+      // V3.35 (FIX WIFI_GROUP_READY): Si un envoi WIFI_GROUP_READY est en attente, l'envoyer MAINTENANT
+      // que le socket BLE Mesh est prêt. C'est ICI que le message est réellement transmis.
+      if (this._pendingWifiGroupReady) {
+        const { peerId, masterIp } = this._pendingWifiGroupReady;
+        this._pendingWifiGroupReady = null;
+        sendText(peerId, JSON.stringify({
+          type: 'wifi_group_ready',
+          masterIp,
+        })).then(ok => {
+          if (ok) this._log(`✅ [V3.35] WIFI_GROUP_READY envoyé au Slave ${peerId} (onConnected)`);
+          else this._log(`⚠️ [V3.35] Échec envoi WIFI_GROUP_READY (onConnected)`);
+        }).catch(e => {
+          this._log(`⚠️ [V3.35] Exception envoi WIFI_GROUP_READY (onConnected): ${e.message}`);
+        });
+      }
     }));
 
     this._listeners.push(onDisconnected(({ peerId }) => {

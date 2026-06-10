@@ -678,7 +678,12 @@ class WifiDirectServiceClass {
       ]);
       if (info && info.groupFormed) {
         this.isGroupOwner = !!info.isGroupOwner;
-        this.groupOwnerAddress = info.groupOwnerAddress === 'null' ? '192.168.49.1' : info.groupOwnerAddress;
+        // V3.35: groupOwnerAddress peut être un objet {address: "192.168.49.1"} sur certains chipsets
+        let rawAddr = info.groupOwnerAddress;
+        if (rawAddr && typeof rawAddr === 'object') {
+          rawAddr = rawAddr.address || rawAddr.getHostAddress?.() || '192.168.49.1';
+        }
+        this.groupOwnerAddress = (!rawAddr || rawAddr === 'null') ? '192.168.49.1' : rawAddr;
         console.log(`[WifiDirectService] 🔄 ConnectionInfo rafraîchi: GO=${this.isGroupOwner}, addr=${this.groupOwnerAddress}`);
         return true;
       }
@@ -710,8 +715,25 @@ class WifiDirectServiceClass {
         if (path) {
           console.log(`[WifiDirectService] 📨 Fichier reçu: ${path}`);
           try {
-            const fileInfo = await FileSystem.getInfoAsync(path);
-            const fileSize = fileInfo.size || 0;
+            let fileInfo = await FileSystem.getInfoAsync(path);
+            let fileSize = fileInfo.size || 0;
+
+            // V3.35 (Mediatek 0B bug): Sur chipsets Mediatek (Itel A50), le transfert TCP
+            // WiFi Direct retourne avant que le fichier soit flushé sur disque → 0B.
+            // Solution : relire après 1.5-3s max 2 fois avant d'abandonner.
+            if (fileSize === 0) {
+              for (let retry = 1; retry <= 2; retry++) {
+                const waitMs = retry * 1500;
+                console.log(`[WifiDirectService] ⏳ [V3.35] Fichier 0B — retry #${retry} dans ${waitMs}ms...`);
+                await new Promise(r => setTimeout(r, waitMs));
+                fileInfo = await FileSystem.getInfoAsync(path);
+                fileSize = fileInfo.size || 0;
+                if (fileSize > 0) {
+                  console.log(`[WifiDirectService] ✅ [V3.35] Retry #${retry} réussi: ${fileSize}B`);
+                  break;
+                }
+              }
+            }
 
             // V3.24 (BUG-056 fix): Fichiers < 5KB = messages de contrôle ou corrompus
             // Les vrais LOBA_PACK font au minimum plusieurs KB (même un seul post)
@@ -728,12 +750,14 @@ class WifiDirectServiceClass {
                     continue;
                   }
                 } else {
-                  // V3.26 : Fichier 0B ou vide — bug stat Android, supprimer silencieusement
-                  console.log(`[WifiDirectService] 🗑️ [V3.26] Fichier vide (${fileSize}B, content=${content?.length || 0}chars) — ignoré`);
+                  // Fichier 0B ou vide après retry — supprimer définitivement
+                  console.log(`[WifiDirectService] 🗑️ [V3.35] Fichier vide après retry (${fileSize}B, content=${content?.length || 0}chars) — ignoré`);
                   try { await FileSystem.deleteAsync(path, { idempotent: true }); } catch (_) {}
                   continue;
                 }
-              } catch (_) {}
+              } catch (e) {
+                console.log(`[WifiDirectService] ⚠️ [V3.35] Erreur lecture contrôle: ${e.message}`);
+              }
               // Fichier petit non-JSON → probablement un contrôle corrompu, on le supprime
               console.log(`[WifiDirectService] ⚠️ [V3.24] Petit fichier ignoré (${fileSize}B) — pas un LOBA_PACK`);
               try { await FileSystem.deleteAsync(path, { idempotent: true }); } catch (_) {}
