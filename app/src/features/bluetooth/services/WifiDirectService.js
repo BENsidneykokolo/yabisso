@@ -44,6 +44,7 @@ class WifiDirectServiceClass {
     this._peerLastAttempt = new Map();
     this._localP2pIp = null; // IP locale réelle sur l'interface p2p (ex: 192.168.49.112)
     this._targetPeerIp = null; // IP cible pour sendFileTo (vraie IP du Slave)
+    this._logicalRole = null; // V3.34 (FIX 15): 'MASTER' ou 'SLAVE' — rôle logique (pas hardware)
   }
 
   isPeerBlacklisted(peerName) {
@@ -202,9 +203,17 @@ class WifiDirectServiceClass {
           this.connectedPeer = info;
           this.isConnected = true;
           this.isGroupOwner = !!info.isGroupOwner;
-          this.groupOwnerAddress = info.groupOwnerAddress === 'null' ? '192.168.49.1' : info.groupOwnerAddress;
+          // V3.34 (FIX 14): groupOwnerAddress peut être un objet (Android) ou une string.
+          // Si c'est un objet avec .address ou .getHostAddress, on l'extrait.
+          // Sinon on compare à 'null' (cas natif react-native-wifi-p2p).
+          const rawAddr = info.groupOwnerAddress;
+          if (rawAddr && typeof rawAddr === 'object') {
+            this.groupOwnerAddress = rawAddr.address || rawAddr.getHostAddress?.() || '192.168.49.1';
+          } else {
+            this.groupOwnerAddress = rawAddr === 'null' || !rawAddr ? '192.168.49.1' : rawAddr;
+          }
           this.isConnecting = false;
-          console.log(`[WifiDirectService] ✅ CONNECTÉ: GO=${this.isGroupOwner}`);
+          console.log(`[WifiDirectService] ✅ CONNECTÉ: GO=${this.isGroupOwner}, addr=${this.groupOwnerAddress}`);
           this._emit('onConnectionChange', { connected: true, isGroupOwner: this.isGroupOwner, info });
         } else {
           const wasConnected = !!this.connectedPeer;
@@ -332,8 +341,21 @@ class WifiDirectServiceClass {
                 this.connectedPeer = info;
                 this.isConnected = true;
                 this.isGroupOwner = !!info.isGroupOwner;
-                this.groupOwnerAddress = info.groupOwnerAddress === 'null' ? '192.168.49.1' : info.groupOwnerAddress;
-                console.log(`[WifiDirectService] ✅ [V3.33 FIX10] ConnectionInfo forcé: GO=${this.isGroupOwner}, addr=${this.groupOwnerAddress}`);
+                // V3.34 (FIX 14): Parsing groupOwnerAddress (objet Android → string)
+                const rawAddr = info.groupOwnerAddress;
+                if (rawAddr && typeof rawAddr === 'object') {
+                  this.groupOwnerAddress = rawAddr.address || rawAddr.getHostAddress?.() || '192.168.49.1';
+                } else {
+                  this.groupOwnerAddress = rawAddr === 'null' || !rawAddr ? '192.168.49.1' : rawAddr;
+                }
+                // V3.34 (FIX 15): Forcer isGroupOwner=false si forceRole=SLAVE
+                // Sur Itel A50 Mediatek, getConnectionInfo() retourne toujours GO=true
+                if (forceRole === 'SLAVE') {
+                  this.isGroupOwner = false;
+                  console.log(`[WifiDirectService] ✅ [V3.34 FIX15] ConnectionInfo forcé: GO=false (forceRole=SLAVE), addr=${this.groupOwnerAddress}`);
+                } else {
+                  console.log(`[WifiDirectService] ✅ [V3.33 FIX10] ConnectionInfo forcé: GO=${this.isGroupOwner}, addr=${this.groupOwnerAddress}`);
+                }
                 this._emit('onConnectionChange', { connected: true, isGroupOwner: this.isGroupOwner, info });
               } else {
                 console.log('[WifiDirectService] ⚠️ [V3.33 FIX10] getConnectionInfo() retourne null ou groupFormed=false');
@@ -384,16 +406,17 @@ class WifiDirectServiceClass {
     // On se fie à la taille déjà loggée par LobaPackService (ex: "Pack généré: ... (9 items, 23.2MB)")
 
     // V3.29 (BUG-067 fix): Correction self-loop quand GO=true
-    // Quand le Slave est GO=true, Android lui donne IP 192.168.49.1 = meme IP que Master.
-    // sendFile() envoie vers groupOwnerAddress (192.168.49.1) = self-loop = 0B.
-    // FIX : Si GO=true, le peer est un client du groupe avec IP 192.168.49.x (souvent .2).
+    // V3.34 (FIX 15): Sur Itel A50 (Mediatek), GO=true même quand Slave → envoyer à 192.168.49.1
     let useAddress = null;
     if (this._targetPeerIp && this._targetPeerIp !== this.groupOwnerAddress) {
       useAddress = this._targetPeerIp;
       console.log(`[WifiDirectService] 📤 [V3.29] sendFileTo vers Slave IP=${useAddress} (pas self-loop)`);
+    } else if (this.isGroupOwner && this._logicalRole === 'SLAVE') {
+      // Itel A50 Mediatek: GO=true mais logiquement SLAVE → le vrai GO/Master est à .1
+      useAddress = '192.168.49.1';
+      console.log(`[WifiDirectService] 📤 [V3.34 FIX15] GO=true + SLAVE → Master IP=${useAddress}`);
     } else if (this.isGroupOwner) {
-      // On est GO=true — le peer est un client du groupe (IP 192.168.49.2 typiquement)
-      // groupOwnerAddress (192.168.49.1) = NOTRE propre IP → ne PAS envoyer vers .1
+      // On est GO=true MASTER — le peer est un client du groupe (IP 192.168.49.2 typiquement)
       useAddress = '192.168.49.2';
       console.log(`[WifiDirectService] 📤 [V3.29] GO=true, self-loop évité → sendFileTo vers client IP=${useAddress}`);
     } else {
@@ -535,11 +558,15 @@ class WifiDirectServiceClass {
       // Sans ça, le natif Android essaie d'ouvrir le fichier "file:///..." → NPE → crash app sur itel A50
       const cleanControlFile = controlFile.replace('file://', '');
       // V3.29 (BUG-067 fix): Correction self-loop quand GO=true
-      // Meme logique que sendFile() : si GO=true, envoyer vers le client (192.168.49.2)
-      // au lieu de groupOwnerAddress (192.168.49.1 = not propre IP)
+      // V3.34 (FIX 15): Sur Itel A50 (Mediatek), getConnectionInfo() retourne toujours GO=true
+      // même quand on est le Slave. Si _logicalRole === 'SLAVE', le Master est à 192.168.49.1.
       let useAddress = null;
       if (this._targetPeerIp && this._targetPeerIp !== this.groupOwnerAddress) {
         useAddress = this._targetPeerIp;
+      } else if (this.isGroupOwner && this._logicalRole === 'SLAVE') {
+        // Itel A50 Mediatek: GO=true mais on est logiquement SLAVE → le vrai GO est le Master
+        useAddress = '192.168.49.1';
+        console.log(`[WifiDirectService] 📤 [V3.34 FIX15] GO=true + SLAVE → Master IP=${useAddress}`);
       } else if (this.isGroupOwner) {
         useAddress = '192.168.49.2';
         console.log(`[WifiDirectService] 📤 [V3.29] sendControlMessage: GO=true → vers client IP=${useAddress}`);
@@ -571,6 +598,14 @@ class WifiDirectServiceClass {
   setTargetPeerIp(ip) {
     this._targetPeerIp = ip;
     console.log(`[WifiDirectService] 🎯 [V3.20] Target peer IP défini: ${ip || '(null)'}`);
+  }
+
+  // V3.34 (FIX 15) : Définit le rôle logique MASTER/SLAVE (basé sur le score Mesh)
+  // Sur Itel A50 (Mediatek), getConnectionInfo() retourne toujours GO=true même quand
+  // on est le Slave. Le rôle logique permet d'envoyer au bon destinataire.
+  setLogicalRole(role) {
+    this._logicalRole = role;
+    console.log(`[WifiDirectService] 🎯 [V3.34] Rôle logique défini: ${role}`);
   }
 
   // V3.21 (Option C / BUG-047 fix) : Récupère la VRAIE IP locale sur l'interface p2p.

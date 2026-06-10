@@ -169,6 +169,14 @@ class P2PAutoSyncClass {
     return parseInt(name.split('_')[0], 10) || 0;
   }
 
+  // V3.34 (FIX 15) : Helper — set le rôle logique sur WifiDirectService
+  // Pour que sendControlMessage/sendFile sachent vers qui envoyer
+  // quand getConnectionInfo() retourne GO=true (bug Mediatek Itel A50)
+  _setLogicalRole(role) {
+    this._lastIntendedRole = role;
+    try { WifiDirectService.setLogicalRole(role); } catch (_) {}
+  }
+
   _iAmMasterFor(peerName) {
     if (!peerName) return null;
     const key = peerName.toLowerCase();
@@ -436,7 +444,7 @@ class P2PAutoSyncClass {
     const targetName = (targetPeer.deviceName || 'Unknown').toLowerCase();
     this._log(`🔗 [V3.13 Slave] Connexion WiFi Direct à ${targetName} (signal Mesh du Master ${masterYabissoName || peerId})...`);
 
-    this._lastIntendedRole = 'SLAVE';
+    this._setLogicalRole('SLAVE');
     this._isConnecting = true;
     this._connectingAsSlave = true;
     try {
@@ -580,7 +588,7 @@ class P2PAutoSyncClass {
     this._running = true;
 
     console.log('[P2PAutoSync] Démarrage de l\'orchestrateur Multi-Rail...');
-    this._log('🚀 Orchestrateur démarré (V3.33 - requestConnectionInfo forcé + guard Slave 15s + double-fire fix).');
+    this._log('🚀 Orchestrateur démarré (V3.34 - GO=false forcé SLAVE + groupOwnerAddress parsing + HELLO vers 192.168.49.1).');
 
     // FIX: Réparer is_propagating au démarrage (migration v9→v10 l'a remis à false)
     this._repairIsPropagating().catch(e => console.warn('[P2PAutoSync] repair error:', e.message));
@@ -710,7 +718,7 @@ class P2PAutoSyncClass {
           }
         }
 
-        this._lastIntendedRole = isMaster ? 'MASTER' : 'SLAVE';
+        this._setLogicalRole(isMaster ? 'MASTER' : 'SLAVE');
         WifiDirectService.recordPeerAttempt(peerName);
 
         // V3.6: On ne pause PLUS le Mesh, il doit rester actif pour la découverte Yabisso
@@ -771,7 +779,7 @@ class P2PAutoSyncClass {
           //   (_onWifiGroupReadyMesh) qui garantit que le groupe est créé et visible.
           // - Fallback : si aucun signal reçu en 15s, le Slave retente via scan (sécurité).
           this._log(`⏳ [V3.13 Slave] Peer ${peerName} détecté — j'attends le signal Mesh WIFI_GROUP_READY du Master (max 15s)...`);
-          this._lastIntendedRole = 'SLAVE';
+          this._setLogicalRole('SLAVE');
           WifiDirectService.recordPeerAttempt(peerName);
           this._waitingForWifiGroupReady = true;
 
@@ -822,9 +830,9 @@ class P2PAutoSyncClass {
           const meshPeer = this._getLatestMeshPeer();
           const peerScore = meshPeer ? meshPeer.score : 0;
           if (myScore > 0 && peerScore > 0) {
-            this._lastIntendedRole = myScore > peerScore ? 'MASTER' : 'SLAVE';
+            this._setLogicalRole(myScore > peerScore ? 'MASTER' : 'SLAVE');
           } else {
-            this._lastIntendedRole = WifiDirectService.isGroupOwner ? 'MASTER' : 'SLAVE';
+            this._setLogicalRole(WifiDirectService.isGroupOwner ? 'MASTER' : 'SLAVE');
           }
           this._log(`■ [V3.7 Fix] Connexion Wi-Fi validée. myScore=${myScore}, peerScore=${peerScore} → Rôle logique affecté : ${this._lastIntendedRole}`);
 
@@ -997,7 +1005,7 @@ class P2PAutoSyncClass {
   async forceCreateGroup() {
     this._log('🔧 [V3.6] FORCE createGroup (mode debug/test 1 device, bypass élection Mesh)...');
     this._lastGroupCreatedAt = Date.now();
-    this._lastIntendedRole = 'MASTER';
+    this._setLogicalRole('MASTER');
     this._isConnecting = true;
     try {
       const ok = await WifiDirectService.createGroup();
@@ -1228,7 +1236,7 @@ class P2PAutoSyncClass {
               }
             }
 
-            this._lastIntendedRole = isMaster ? 'MASTER' : 'SLAVE';
+            this._setLogicalRole(isMaster ? 'MASTER' : 'SLAVE');
             WifiDirectService.recordPeerAttempt(peerKey);
 
             this._log(`🔗 [V3.31] Connexion à ${peer.deviceName} (${isMaster ? 'MASTER' : 'SLAVE'}) avec lock...`);
@@ -1497,7 +1505,7 @@ class P2PAutoSyncClass {
           // MAINTENANT (V3.11) : on reset TOUT le dictionnaire. Plus de clé Mesh stale possible.
           this._roleSwapQueue = {};
           this._completedSyncs[yabissoKey || wifiDirectKey] = Date.now();
-          this._lastIntendedRole = null; // V3.0: Reset complet du rôle après synchro bidirectionnelle
+          this._setLogicalRole(null); // V3.0: Reset complet du rôle après synchro bidirectionnelle
           this._packSentThisSession = false;
           // V3.16 (BUG-050 fix) : STOPPER LE RÉCEPTEUR après réception SYNC_COMPLETE (côté Slave)
           // Le Slave doit aussi fermer son serveur 8988 pour éviter que des fichiers de contrôle
