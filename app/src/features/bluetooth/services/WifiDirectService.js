@@ -657,10 +657,17 @@ class WifiDirectServiceClass {
             if (fileSize < 5120) {
               try {
                 const content = await FileSystem.readAsStringAsync(path);
-                const meta = JSON.parse(content);
-                if (meta.action === 'CONTROL_MESSAGE') {
-                  if (callback) callback(null, meta);
-                  console.log(`[WifiDirectService] ⭐ Contrôle reçu (${fileSize}B): ${meta.type}`);
+                if (content && content.length > 0) {
+                  const meta = JSON.parse(content);
+                  if (meta.action === 'CONTROL_MESSAGE') {
+                    if (callback) callback(null, meta);
+                    console.log(`[WifiDirectService] ⭐ Contrôle reçu (${fileSize}B): ${meta.type}`);
+                    try { await FileSystem.deleteAsync(path, { idempotent: true }); } catch (_) {}
+                    continue;
+                  }
+                } else {
+                  // V3.26 : Fichier 0B ou vide — bug stat Android, supprimer silencieusement
+                  console.log(`[WifiDirectService] 🗑️ [V3.26] Fichier vide (${fileSize}B, content=${content?.length || 0}chars) — ignoré`);
                   try { await FileSystem.deleteAsync(path, { idempotent: true }); } catch (_) {}
                   continue;
                 }

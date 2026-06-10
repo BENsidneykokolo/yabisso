@@ -67,6 +67,8 @@ class P2PAutoSyncClass {
     this._slaveIp = null; // V3.20 (BUG-047 fix): IP du Slave (reçue via Mesh BLE)
     this._slavePort = 8988; // V3.20 (BUG-047 fix): Port TCP du serveur du Slave (8988 par défaut)
     this._slaveReceiverStarted = false; // FIX: Empêcher le démarrage multiple du récepteur Slave
+    this._lastWifiGroupReadyPeer = null; // V3.26 (BUG-062 fix): peerId du dernier WIFI_GROUP_READY reçu
+    this._lastWifiGroupReadyAt = 0; // V3.26 (BUG-062 fix): timestamp du dernier WIFI_GROUP_READY reçu
     this._isPropagatingRepaired = false; // FIX: One-time repair de is_propagating au démarrage
     this._packReceivedThisCycle = false; // V3.23: true quand un LOBA_PACK a été reçu et traité dans ce cycle
     this.stats = {
@@ -361,12 +363,27 @@ class P2PAutoSyncClass {
   // - Annule le fallback timeout (scan-based)
   // - Appelle connectToPeer avec le rôle SLAVE
   async _onWifiGroupReadyMesh(peerId, masterIp) {
-    this._log(`📡 [V3.25 Mesh] WIFI_GROUP_READY reçu de Master ${peerId} (ip=${masterIp})`);
+    // V3.26 (BUG-062 fix) : Dédupliquer WIFI_GROUP_READY par peerId + timestamp 10s
+    // Nearby Connections rejoue les messages non acquittés → même signal reçu 4+ fois
+    const now = Date.now();
+    if (this._lastWifiGroupReadyPeer === peerId && now - this._lastWifiGroupReadyAt < 10000) {
+      this._log(`📡 [V3.26] WIFI_GROUP_READY de ${peerId} ignoré — doublon (${now - this._lastWifiGroupReadyAt}ms)`);
+      return;
+    }
+    this._lastWifiGroupReadyPeer = peerId;
+    this._lastWifiGroupReadyAt = now;
+
+    this._log(`📡 [V3.26 Mesh] WIFI_GROUP_READY reçu de Master ${peerId} (ip=${masterIp})`);
 
     // V3.25 (BUG-061 fix) : Si déjà connecté en WiFi Direct, ignorer ce signal
-    // (connexion déjà établie via onConnectionChange, HELLO déjà envoyé)
     if (WifiDirectService.isConnected) {
-      this._log(`⏭️ [V3.25] WIFI_GROUP_READY ignoré — déjà connecté en WiFi Direct`);
+      this._log(`⏭️ [V3.26] WIFI_GROUP_READY ignoré — déjà connecté en WiFi Direct`);
+      return;
+    }
+
+    // V3.26 : Si on est Master (GO), ignorer — on ne doit pas devenir Slave
+    if (this._lastIntendedRole === 'MASTER') {
+      this._log(`⏭️ [V3.26] WIFI_GROUP_READY ignoré — je suis MASTER, pas SLAVE`);
       return;
     }
 
@@ -548,7 +565,7 @@ class P2PAutoSyncClass {
     this._running = true;
 
     console.log('[P2PAutoSync] Démarrage de l\'orchestrateur Multi-Rail...');
-    this._log('🚀 Orchestrateur démarré (V3.25 - HELLO immédiat Slave + IP Slave via HELLO metadata, fix self-loop).');
+    this._log('🚀 Orchestrateur démarré (V3.26 - 0B file fix + guard MASTER + WIFI_GROUP_READY dedup).');
 
     // FIX: Réparer is_propagating au démarrage (migration v9→v10 l'a remis à false)
     this._repairIsPropagating().catch(e => console.warn('[P2PAutoSync] repair error:', e.message));
@@ -746,6 +763,11 @@ class P2PAutoSyncClass {
 
       WifiDirectService.on('onConnectionChange', async ({ connected, info }) => {
         if (connected && this._running) {
+          // V3.26 : Si on est en cours d'arrêt, ignorer la connexion (évite double groupe)
+          if (this._isStopping) {
+            this._log(`⏭️ [V3.26] Connexion ignorée — arrêt en cours`);
+            return;
+          }
           this._wasConnected = true;
           this._packSentThisSession = false; // V3.7: Reset de session
           NetworkRailDetector.setWifiDirectAvailable(true);
