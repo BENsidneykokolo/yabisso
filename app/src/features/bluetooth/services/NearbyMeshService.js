@@ -200,7 +200,24 @@ class NearbyMeshServiceClass {
           if (success) {
             this._log(`✅ [V3.5] Groupe WiFi Direct créé par le Master. J'attends que le Slave se connecte...`);
           } else {
-            this._log(`⚠️ [V3.5] Échec création groupe WiFi Direct`);
+            // V3.31 (FIX 7): createGroup échoue = le groupe existe déjà (cas WiFi Direct créé avant Mesh).
+            // Envoyer WIFI_GROUP_READY au Slave via Mesh pour qu'il puisse se connecter au groupe existant.
+            this._log(`⚡ [V3.31 FIX7] Groupe WiFi existe déjà → envoi WIFI_GROUP_READY au Slave ${peer.peerId}`);
+            try {
+              const { P2PAutoSync } = require('./P2PAutoSync');
+              const masterIp = WifiDirectService.groupOwnerAddress || '192.168.49.1';
+              sendText(peer.peerId, JSON.stringify({
+                type: 'wifi_group_ready',
+                masterIp,
+              })).then(ok => {
+                if (ok) this._log(`✅ [V3.31 FIX7] WIFI_GROUP_READY envoyé au Slave via Mesh (groupe existant)`);
+                else this._log(`⚠️ [V3.31 FIX7] Échec envoi WIFI_GROUP_READY`);
+              }).catch(e => {
+                this._log(`⚠️ [V3.31 FIX7] Exception envoi WIFI_GROUP_READY: ${e.message}`);
+              });
+            } catch (e) {
+              this._log(`⚠️ [V3.31 FIX7] Exception: ${e.message}`);
+            }
           }
         }).catch(e => {
           this._log(`⚠️ [V3.5] createGroup exception: ${e.message}`);

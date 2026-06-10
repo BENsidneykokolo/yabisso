@@ -799,6 +799,14 @@ class P2PAutoSyncClass {
             this._log(`⏭️ [V3.26] Connexion ignorée — arrêt en cours`);
             return;
           }
+          // V3.31 (FIX 6): Guard anti-double-fire Android
+          // Sur certains appareils (Itel A50), onConnectionChange fire 2× pour la même connexion.
+          // Le 2° fire recrée _waitingForSlave, relance _waitForSlaveConfirmation, etc.
+          // → double handler qui se bloque mutuellement.
+          if (this._wasConnected) {
+            this._log(`⏭️ [V3.31 FIX6] onConnectionChange double-fire ignoré (déjà connecté)`);
+            return;
+          }
           this._wasConnected = true;
           this._packSentThisSession = false; // V3.7: Reset de session
           NetworkRailDetector.setWifiDirectAvailable(true);
