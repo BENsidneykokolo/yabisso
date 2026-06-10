@@ -447,6 +447,12 @@ Retourne l'état du NearbyMeshService :
 | V1.0.17 | 2026-04 | Master crée le groupe |
 | V1.0.18 | 2026-04 | Fix deviceName |
 | V2.6 | 2026-04 | Stabilisation complète |
+| V3.11 | 2026-06 | Bidirectionnel initié par le Slave (sendFileTo) |
+| V3.13 | 2026-06 | WiFi Group Ready via Mesh |
+| V3.19 | 2026-06 | Séquence SLAVE_CONNECTED_CONFIRMED → 5s → HELLO |
+| V3.20 | 2026-06 | BUG-047 fix: self-loop (sendFileTo avec IP Slave via Mesh) |
+| V3.24 | 2026-06 | BUG-056-059: Filtre taille, staging isolé, cleanup |
+| **V3.25** | **2026-06** | **BUG-061: HELLO immédiat Slave + IP via HELLO metadata (fix self-loop sans native method)** |
 
 ---
 

@@ -233,6 +233,18 @@
 | WiFi Direct Transfert Auto (étape 2) | Not Started | P1 | S7 |
 | WiFi Direct Delta Trigger (étape 3) | Not Started | P1 | S7 |
 | WiFi Direct Test Terrain (étape 4) | Not Started | P1 | S7 |
+
+### V3.24-V3.25 — P2P Stabilisation (2026-06-10)
+
+| Tâche | Status | Priorité |
+|-------|--------|----------|
+| BUG-056: Filtre taille < 5KB dans startReceiving | Done | P1 |
+| BUG-057: InterestEngine staging directory isolé | Done | P1 |
+| BUG-058: Check taille minimum 5KB dans _handleReceivedFile | Done | P1 |
+| BUG-059: Cleanup periodique fichiers p2p_/ctrl_ | Done | P2 |
+| BUG-060: Fix JSDoc syntaxe p2p_*/ctrl_* | Done | P3 |
+| BUG-061: Slave HELLO immédiat depuis onConnectionChange | Done | P1 |
+| BUG-061b: IP Slave via HELLO metadata (senderIp) + fallback 192.168.49.2 | Done | P1 |
 | Génération APK Release pour tests terrain | Not Started | P1 | S7 |
 | Bluetooth simple P2P (Google Nearby Connect) | Done | P2 | S7 |
 | Choisir stack BLE mesh (ble-plx vs nearby) | Done | P3 | S7 |

@@ -1,31 +1,41 @@
-# SOLUTION P2P — CODE COMPLET DU PARTAGE AUTOMATIQUE (V3.11)
+# SOLUTION P2P — CODE COMPLET DU PARTAGE AUTOMATIQUE (V3.25)
 
-> **Date d'extraction** : 2026-06-05
-> **Version** : v0.0.21 (V3.11)
+> **Date d'extraction** : 2026-06-10
+> **Version** : v0.0.30 (V3.25)
 > **3 fichiers du partage automatique WiFi Direct + Mesh BLE** :
-> 1. `P2PAutoSync.js` (1243 lignes) — Orchestrateur central
-> 2. `NearbyMeshService.js` (411 lignes) — Service Mesh BLE (élection, handshake)
-> 3. `WifiDirectService.js` (604 lignes) — Wrapper natif WiFi Direct
+> 1. `P2PAutoSync.js` (~1685 lignes) — Orchestrateur central
+> 2. `NearbyMeshService.js` (~430 lignes) — Service Mesh BLE (élection, handshake)
+> 3. `WifiDirectService.js` (~750 lignes) — Wrapper natif WiFi Direct
 >
-> **Total** : 2258 lignes de code copiées-collées à 100% (rien d'omis, rien de résumé).
+> **Total** : ~2865 lignes de code.
 
 ---
 
-## 📋 Résumé des fixes V3.6 → V3.11
+## 📋 Résumé des fixes V3.6 → V3.25
 
 | Version | Commit | Fix |
 |---------|--------|-----|
-| V3.6    | v0.0.16 | BUG-058 — `isConnecting` lock + `_iAmMasterFor` retourne `null` si pas de Mesh peer (évite imprimantes) |
-| V3.6.1  | v0.0.17 | BUG-058 — Libère le lock `isConnecting` immédiatement après `connectToPeer` (catch ne fire jamais) |
-| V3.6.2  | v0.0.17 | BUG-059 — Hydrate `_lastIntendedRole` depuis `isGroupOwner` (vérité matérielle) + 1000ms pause Slave avant `startReceiving` |
+| V3.6    | v0.0.16 | BUG-058 — `isConnecting` lock + `_iAmMasterFor` retourne `null` si pas de Mesh peer |
+| V3.6.1  | v0.0.17 | BUG-058 — Libère le lock `isConnecting` immédiatement après `connectToPeer` |
+| V3.6.2  | v0.0.17 | BUG-059 — Hydrate `_lastIntendedRole` depuis `isGroupOwner` + 1000ms pause Slave |
 | V3.6.3  | v0.0.18 | BUG-060 — Corriger `shouldSend` inversé (Master=score haut) + hook delta manifeste |
-| V3.6.4  | v0.0.19 | DOUBLE VALIDATION — ACK `PACK_RECEIVED_OK` (Slave→Master) + Mesh handshake `WIFI_GROUP_READY` / `SLAVE_CONNECTED_CONFIRMED` |
-| V3.6.5  | v0.0.20 | REAL CONNECTION CHECK — Master attend confirmation Slave (`YABISSO_HELLO_ACK`) avant d'envoyer pack + flag `isRealConnected` exposé dans `getStats()` pour l'UI |
-| V3.7    | v0.0.20 | FIX UNILATÉRAL — Élection Mesh (score) prioritaire sur hardware `isGroupOwner` (corrige double-SLAVE sur Itel A50 lent) |
-| V3.8    | v0.0.20 | Timeout `_waitForSlaveConfirmation` étendu à 20s + recherche dans TOUTES les clés `_peerHandshakeConfirmed` |
-| V3.9    | v0.0.20 | BARRIÈRE `_waitingForSlave` + pattern `.then()` (pas d'`await` dans `setTimeout`) + reset handshake à chaque session |
-| V3.10   | v0.0.21 | FIX `_roleSwapQueue` ciblé (itération sur [key, meshKey] uniquement, plus `...Object.keys(...)`) + barrière `_waitingForSlave` synchrone |
-| **V3.11** | **v0.0.21** | **BUG-041** — BIDIRECTIONNEL INITIÉ PAR LE SLAVE : suppression `getClientAddress()` (échouait) + suppression SWAP fallback + `_roleSwapQueue = {}` complet sur SYNC_COMPLETE + Slave `sendFileTo('192.168.49.1')` dans `_handleReceivedFile` + Master attend `_slavePhase2Received` 15s + timeout slave wait 20s→25s |
+| V3.6.4  | v0.0.19 | DOUBLE VALIDATION — ACK `PACK_RECEIVED_OK` + Mesh handshake |
+| V3.6.5  | v0.0.20 | REAL CONNECTION CHECK — Master attend `YABISSO_HELLO_ACK` avant envoi pack |
+| V3.7    | v0.0.20 | FIX UNILATÉRAL — Élection Mesh (score) prioritaire sur hardware `isGroupOwner` |
+| V3.8    | v0.0.20 | Timeout `_waitForSlaveConfirmation` étendu à 20s |
+| V3.9    | v0.0.20 | BARRIÈRE `_waitingForSlave` + pattern `.then()` + reset handshake |
+| V3.10   | v0.0.21 | FIX `_roleSwapQueue` ciblé + barrière synchrone |
+| V3.11   | v0.0.21 | BUG-041 — BIDIRECTIONNEL INITIÉ PAR LE SLAVE : sendFileTo('192.168.49.1') |
+| V3.13   | v0.0.22 | WiFi Group Ready via Mesh + connexion séquentielle |
+| V3.15   | v0.0.23 | BUG-045 — startReceiving après SLAVE_CONNECTED_CONFIRMED |
+| V3.16   | v0.0.24 | BUG-050 — stopReceiving sur SYNC_COMPLETE |
+| V3.17   | v0.0.25 | BUG-046 — Attente 3s après WIFI_GROUP_READY avant connexion |
+| V3.18   | v0.0.26 | BUG-052 — Reset pendingContent post-réception |
+| V3.19   | v0.0.27 | BUG-055 — Séquence SLAVE_CONNECTED_CONFIRMED → 5s → HELLO |
+| V3.20   | v0.0.29 | BUG-047 — Self-loop fix: sendFileTo avec IP Slave via Mesh |
+| V3.22   | v0.0.29 | BUG-regression V3.15 — Récepteur Master démarré immédiatement |
+| V3.24   | v0.0.29 | BUG-056-059 — Filtre taille 5KB, staging isolé, cleanup periodique |
+| **V3.25** | **v0.0.30** | **BUG-061 — HELLO immédiat Slave (fix boucle WIFI_GROUP_READY) + IP Slave via HELLO metadata (fix self-loop sans native method)** |
 
 ### 🔥 Détails BUG-041 (V3.11)
 

@@ -7959,3 +7959,68 @@ APRES (V3.21):
 4. Verifier les logs: `[LobaPackService] buildPack DEBUG:` → voir si total_posts > 0 et posts_with_local_media > 0
 5. Si posts_with_local_media = 0 → le probleme est dans la sauvegarde des fichiers (pas dans buildPack)
 6. Verifier logs IP: `[WifiDirectService] 🌐 [V4.0] IP locale p2p (getP2pLocalIp):` → voir si l'itel retourne une IP
+
+---
+
+## Session 2026-06-10 — Verification fichiers .md + Reprise de contexte
+
+### Utilisateur
+"tu peux verifier tous les fichiers .md dans le repo 'mesfichiers' qui se trouve ici: C:\Users\Utilisateur\Documents\Ben\myapp\yabisso\mesfichiers pour avoir le contexte de ce que nous faisons et aussi enregistrer automatiquement notre echange dans le fichier chat.md en temps reel que nous echangeons pour ne pas perdre l'historique, et aussi quand je tedemande quelque chose prend le temps de 'think deeper' avant de me repondre mais surtout reverifier et tester de ton cote pour verifier ce que tu viens d'implementer marche"
+
+### Assistant
+J'ai verifie tous les fichiers .md dans le repo `mesfichiers` (24 fichiers .md au total). Voici le resume complet :
+
+| Fichier | Contenu |
+|---------|---------|
+| **project_memory.md** | Versions (Expo SDK 54, WatermelonDB 0.28.0), 27 services, etat actuel |
+| **architecture.md** | Architecture globale, 5 rails communication, PlantUML, stack technique |
+| **roadmap.md** | Phases 1-6, sprints S0-S15, backlog Trello |
+| **task.md** | Task manager (334 lignes, priorites P1-P3, statuts Done/InProgress/NotStarted) |
+| **role.md** | Regles de developpement (plan avant code, offline-first, francais, 100% fonctionnel) |
+| **implementation.md** | Stack technique, schemas DB, flows offline, diagramme Phase 1 |
+| **probleme.md** | 43+ bugs resolus (BUG-001 a BUG-055, dont OOM, WiFi Direct, collisions, NPE, etc.) |
+| **chat.md** | Historique complet (7961+ lignes — cette session) |
+| **yabisso_storage_logique.md** | 3 types de tiroirs (PUBLIC/PERSONAL/LOCKED), format .yab, manifest.db |
+| **wifidirect.md** | Documentation WiFi Direct, Nearby Mesh, score hardware, hooks |
+| **loba_nearby_wifi_direct_auto_scan.md** | Code LobaHomeScreen + P2PAutoSync + NearbyMeshService |
+| **wifi_direct_p2p_manualshare_partagepackp2p.md** | Code LobaPacksScreen (partage manuel) |
+| **p2p_session_25042026.md** | Session P2P detaillee, scores hardware |
+| **code_changes_backup.md** | Backup des changements NearbyMeshService + P2PAutoSync |
+| **design yabisso.md** | UI Welcome/Language/Signup en HTML (reference) |
+| **Network/*.md** | Architecture P2P sync Loba, schemas HTML |
+| **ui_screens/ui_screens_index.md** | Index UI, design system Stitch |
+| **login/QR_SIGNUP_GUIDE.md** | Guide signup QR via BLE |
+
+### Resume du projet Yabisso
+- **Type** : Super-app africaine offline-first
+- **Stack** : React Native + Expo SDK 54 + WatermelonDB + SecureStore
+- **Services** : 27 services implementes (Marketplace, Loba, Restaurant, Hotels, Services, Wallet, Taxi, Dating, Pharmacie, Appartements, Streaming, Formation, etc.)
+- **P2P** : WiFi Direct (principal, stabilise V3.25) + Nearby Mesh (backup) + Bluetooth LE
+- **Phase actuelle** : Phase 1 (UI + Online + SMS Fallback) completee + P2P WiFi Direct stabilise
+- **Derniere version** : v:0.0.30 (V3.25 — HELLO immediat Slave + IP via HELLO metadata)
+- **Dernier commit** : V3.25 BUG-061 fix (self-loop + HELLO never sent)
+
+### Etat Git
+- Branche : `main`
+- Derniere version : v:0.0.30
+- Prochaine version : v:0.0.31
+
+### Regles adoptees
+1. **Think deeper** : Analyser en profondeur avant chaque reponse
+2. **Tester & verifier** : Valider systematiquement ce qui est implemente
+3. **Versionnage Git** : v:0.0.X → v:0.0.X+1 (max 9 → v:0.1.0)
+4. **Logging temps reel** : Enregistrer chaque echange dans chat.md
+
+### Contexte P2P actuel (derniers bugs documentes)
+- **BUG-061 (V3.25)** : Slave n'envoyait JAMAIS le HELLO (attendait WIFI_GROUP_READY deja recu). Fix: HELLO immediat depuis onConnectionChange + guard `_onWifiGroupReadyMesh`.
+- **BUG-061b (V3.25)** : `_targetPeerIp` toujours null → self-loop. Fix: IP Slave capturee depuis les metadata du YABISSO_HELLO (senderIp) + fallback 192.168.49.2.
+- **BUG-056 (V3.24)** : Control messages traites comme LOBA_PACK (185B = fake posts). Fix: check taille < 5KB.
+- **BUG-057 (V3.24)** : InterestEngine scannait tout loba_media. Fix: staging directory isole.
+- **BUG-058 (V3.24)** : _handleReceivedFile sans check taille. Fix: minimum 5KB.
+- **BUG-059 (V3.24)** : Cleanup periodique only au demarrage. Fix: dans cycle P2P.
+- **BUG-047 (V3.20)** : Master s'envoyait le pack a lui-meme (self-loop). Fix: sendFileTo avec IP Slave.
+
+### Statut
+- ✅ Contexte charge
+- ✅ chat.md mis a jour
+- ✅ V3.25 implemente — attente test sur appareils

@@ -159,6 +159,16 @@
   - Turbo Mode: Délais WiFi Direct réduits (500ms post-connexion, retry 1s/2s)
   - Delta-Trigger: Trigger immédiat WiFi Direct après manifeste Nearby Mesh
   - Icon Fix: chatbubbles-outline -> message-text-outline
+- Sprint 10 (V3.24 - BUG-056-059 fixes):
+  - Filtre taille < 5KB dans startReceiving (control messages non traites comme LOBA_PACK)
+  - InterestEngine: staging directory isole pour unpackAndProcess
+  - Cleanup periodique des fichiers p2p_/ctrl_ dans loba_media
+  - _handleReceivedFile: check taille minimum 5KB avant traitement
+- Sprint 10 (V3.25 - BUG-061 fix - self-loop + HELLO jamais envoye):
+  - **Fix Problème 1** : Slave envoie HELLO immediatement depuis onConnectionChange (pas apres SLAVE_CONNECTED_CONFIRMED + 5s delay)
+  - **Fix Problème 2** : IP Slave capturee depuis metadata YABISSO_HELLO (senderIp) au lieu de getLocalP2pIp() (natif indispo sur Itel A50 Mediatek)
+  - Guard `_onWifiGroupReadyMesh` : retourne si deja connecte WiFi Direct
+  - Fallback IP: 192.168.49.2 si senderIp non disponible
 
 ## Decisions techniques additionnelles
 - Navigation: React Navigation (a installer)

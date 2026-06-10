@@ -848,3 +848,63 @@
 - **Commit** : (à compléter après git)
 - **Release** : v0.0.29 (à publier)
 
+---
+
+## Nouveaux bugs (V3.24-V3.25)
+
+### BUG-056 — Control messages traités comme LOBA_PACK (fake posts)
+- **Date** : 2026-06-09
+- **Problème** : Les messages contrôle JSON (~185 octets, ex: YABISSO_HELLO, PACK_RECEIVED_OK) étaient reçus par `startReceiving()` et traités comme de faux posts Loba (fake posts avec timestamps comme hashes)
+- **Cause** : `startReceiving()` n'avait aucun filtre de taille. Les fichiers contrôle étaient parsés comme JSON, le catch créait des metadata par défaut `{ type: 'LOBA_PACK' }`, puis `_handleReceivedFile` les traitait
+- **Solution (V3.24)** : 
+  1. `startReceiving()` : check taille < 5KB → lire comme JSON → si `action === 'CONTROL_MESSAGE'`, callback sans traiter comme pack
+  2. `_handleReceivedFile()` : check taille minimum 5KB avant traitement LOBA_PACK
+- **Statut** : ✅ Résolu (V3.24)
+
+### BUG-057 — InterestEngine scannait tout loba_media
+- **Date** : 2026-06-09
+- **Problème** : `unpackAndProcess()` traitait chaque fichier individuellement → scan de 100+ fichiers
+- **Cause** : Pas de répertoire isolé pour le staging
+- **Solution (V3.24)** : `unpackAndProcess()` copie le ZIP dans un répertoire staging isolé
+- **Statut** : ✅ Résolu (V3.24)
+
+### BUG-058 — _handleReceivedFile sans check taille
+- **Date** : 2026-06-09
+- **Problème** : Fichiers contrôle corrompus (~186 octets) traités comme LOBA_PACK
+- **Cause** : Pas de vérification de taille minimale
+- **Solution (V3.24)** : Ajout check `fileInfo.size < 5120` → return précoce
+- **Statut** : ✅ Résolu (V3.24)
+
+### BUG-059 — Cleanup periodique only au démarrage
+- **Date** : 2026-06-09
+- **Problème** : `_cleanupOldLobaMediaFiles()` ne tournait qu'au démarrage → accumulation de fichiers p2p_/ctrl_
+- **Cause** : Pas de cleanup dans le cycle P2P
+- **Solution (V3.24)** : Ajout cleanup dans `_p2pSyncCycle()`
+- **Statut** : ✅ Résolu (V3.24)
+
+### BUG-060 — JSDoc comment fermé prematurement
+- **Date** : 2026-06-09
+- **Problème** : `/** ... p2p_*/ctrl_* ... */` fermait le bloc comment prematurement
+- **Cause** : Syntaxe `p2p_*/ctrl_*` interpretee comme fermeture de comment `*/`
+- **Solution (V3.24)** : Changé en `p2p_* et ctrl_*`
+- **Statut** : ✅ Résolu (V3.24)
+
+### BUG-061 — Slave n'envoie JAMAIS le HELLO + _targetPeerIp toujours null (V3.25 fix)
+- **Date** : 2026-06-10
+- **Problème 1** : Le Slave se connecte WiFi Direct mais au lieu d'envoyer le YABISSO_HELLO, il entre dans une boucle d'attente WIFI_GROUP_READY qui arrive APRES la connexion. Résultat: HELLO jamais envoyé, Master timeout 15s → abandon.
+- **Problème 2** : `_slaveIp` jamais défini car `getP2pIpAddress()` natif indispo sur Itel A50 (Mediatek) → `_targetPeerIp` null → `sendFile()` self-loop vers 192.168.49.1
+- **Cause Problème 1** : Le code V3.19 attendait SLAVE_CONNECTED_CONFIRMED via Mesh + 5s delay avant d'envoyer HELLO. Mais le WIFI_GROUP_READY Mesh arrive après la connexion WiFi → deux chemins se marchent dessus.
+- **Cause Problème 2** : Les méthodes native `getP2pLocalIp()` et `getP2pIpAddress()` itèrent les NetworkInterface mais échouent sur Mediatek (nom d'interface P2P différent)
+- **Solution (V3.25)** :
+  1. **Fix Problème 1** : Slave envoie HELLO immédiatement depuis `onConnectionChange` (GO=false) avec délai 2s (IP binding). Guard ajouté dans `_onWifiGroupReadyMesh`: retourne si `WifiDirectService.isConnected` est true.
+  2. **Fix Problème 2** : `_sendYabissoHello()` inclut `senderIp: WifiDirectService._localP2pIp` dans les métadonnées. Le Master capture cette IP dans `_handleReceivedFile` → `this._slaveIp = metadata.senderIp` → `WifiDirectService.setTargetPeerIp()`. Fallback: `192.168.49.2` si senderIp non disponible.
+- **Fichiers modifiés** :
+  - `app/src/features/bluetooth/services/P2PAutoSync.js` (~1685 lignes)
+- **Vérifications** : `node --check` OK, structure vérifiée
+- **Action user** : HARD RELOAD les 2 phones. Logs à vérifier:
+  - `■ [V3.25 Slave] connecté → démarrage récepteur + HELLO immédiat`
+  - `📍 [V3.25 Master] IP Slave capturée depuis HELLO: 192.168.49.X`
+  - `📍 IP Slave capturée` AVANT `sendFile`
+- **Statut** : ✅ Résolu (V3.25)
+- **Release** : v0.0.30
+

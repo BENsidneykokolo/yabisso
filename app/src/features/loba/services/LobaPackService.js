@@ -287,27 +287,44 @@ export class LobaPackService {
         return successCount > 0;
 
       } else {
-        // FIX: Fichier individuel
-      console.log(`[LobaPackService] Fichier individuel détecté: ${zipPath}`);
-      const uriPath = normalizePath(zipPath);
-      const fileInfo = await FileSystem.getInfoAsync(uriPath);
-      if (!fileInfo.exists) {
-        console.error('[LobaPackService] Fichier individuel introuvable:', uriPath);
-        return false;
-      }
-      const singlePost = [{
-        hash: Date.now().toString(),
-        filename: zipPath.split('/').pop(),
-        type: zipPath.endsWith('.mp4') ? 'video' : 'image',
-        category: 'general',
-        username: 'P2P Peer',
-        content: 'Contenu reçu via WiFi Direct',
-        size: fileInfo.size,
-      }];
-      const parentDir = normalizePath(uriPath.substring(0, uriPath.lastIndexOf('/') + 1));
-      const successCount = await InterestEngine.processPackContent(parentDir, singlePost);
-      console.log(`[LobaPackService] Fichier individuel traité: ${successCount} posts conservés.`);
-      return successCount > 0;
+        // V3.24 (BUG-057 fix): Fichier individuel
+        // AVANT : on passait le parentDir (= loba_media/) a InterestEngine → scan de 100+ fichiers
+        // MAINTENANT : on copie le fichier dans un dossier temporaire isolé, puis on passe ce dossier
+        console.log(`[LobaPackService] Fichier individuel détecté: ${zipPath}`);
+        const uriPath = normalizePath(zipPath);
+        const fileInfo = await FileSystem.getInfoAsync(uriPath);
+        if (!fileInfo.exists) {
+          console.error('[LobaPackService] Fichier individuel introuvable:', uriPath);
+          return false;
+        }
+
+        // V3.24: Créer un dossier temporaire isolé pour ce seul fichier
+        const singleStagingDir = `${TEMP_UNPACK_DIR}single_${timestamp}/`;
+        await FileSystem.makeDirectoryAsync(normalizePath(singleStagingDir), { intermediates: true });
+
+        const fileName = zipPath.split('/').pop();
+        const destFile = `${singleStagingDir}${fileName}`;
+        await FileSystem.copyAsync({
+          from: uriPath,
+          to: normalizePath(destFile)
+        });
+
+        const singlePost = [{
+          hash: Date.now().toString(),
+          filename: fileName,
+          type: zipPath.endsWith('.mp4') ? 'video' : 'image',
+          category: 'general',
+          username: 'P2P Peer',
+          content: 'Contenu recu via WiFi Direct',
+          size: fileInfo.size,
+        }];
+        const successCount = await InterestEngine.processPackContent(normalizePath(singleStagingDir), singlePost);
+        console.log(`[LobaPackService] Fichier individuel traite: ${successCount} posts conserves.`);
+
+        // Nettoyage du staging temporaire
+        try { await FileSystem.deleteAsync(normalizePath(singleStagingDir), { idempotent: true }); } catch (_) {}
+
+        return successCount > 0;
       }
 
     } catch (e) {
