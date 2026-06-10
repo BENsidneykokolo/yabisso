@@ -154,21 +154,27 @@ class NearbyMeshServiceClass {
       
       // V3.10: Ignorer mon propre node pour éviter de s'enregistrer comme peer
       if (peer.name === this.deviceName) {
-        this._log(`⛔ [NearbyMesh] Mon propre node ignoré: ${peer.name}`);
+        this._log(`⛔ [NearbyMesh] Mon propre node ignoré (nom identique): ${peer.name}`);
+        return;
+      }
+      
+      // V3.31 (FIX 4): Guard SUPPLÉMENTAIRE — comparer le score extrait
+      // Sur certains appareils (Xiaomi), le peer.name peut différer de this.deviceName
+      // (encoding, espaces, casing) → le check nom échoue → self-discovery.
+      // Si le score du peer est IDENTIQUE au mien, c'est forcément moi-même.
+      const myScore = parseInt(this.deviceName?.split('_')[0] || '0', 10);
+      const peerScore = parseInt(peer.name?.split('_')[0] || '0', 10);
+      if (myScore > 0 && peerScore > 0 && myScore === peerScore) {
+        this._log(`⛔ [V3.31] Self-discovery détecté (score identique ${myScore}=${peerScore}), ignoré: ${peer.name}`);
         return;
       }
       
       // V3.5 (BUG-057 fix): Filtrer uniquement les pairs Yabisso (regex stricte)
-      // Sans ce filtre, des appareils Nearby aléatoires pourraient déclencher createGroup
       const isYabissoPeer = /^\d+_Yabisso_/i.test(peer.name || '');
       if (!isYabissoPeer) {
         this._log(`⛔ [V3.5] Peer non-Yabisso ignoré: ${peer.name}`);
         return;
       }
-      
-      // V1.0.16: Extraire le score numérique pour comparaison propre
-      const myScore = parseInt(this.deviceName?.split('_')[0] || '0', 10);
-      const peerScore = parseInt(peer.name?.split('_')[0] || '0', 10);
       
       // V1.0.17: Informer P2PAutoSync du peer Mesh pour le calcul de rôle WiFi Direct
       const isMeshMaster = myScore > peerScore;
@@ -208,13 +214,14 @@ class NearbyMeshServiceClass {
         });
       } else {
         this._log(`⏳ [V3.5] Mesh Slave (${myScore} < ${peerScore}) → j'attends que le Master crée le groupe WiFi Direct`);
-        // Le Slave ne fait rien. Le Master va créer le groupe, et le Slave le détectera
-        // via le WiFi Direct discovery déjà actif dans P2PAutoSync.start()
+        // V3.31: Le Slave ne fait RIEN ici — pas de triggerSync, pas de connexion.
+        // La connexion Slave est déclenchée UNIQUEMENT par WIFI_GROUP_READY ou scan fallback.
+        // Évite la double connexion (Delta Hook + onPeerFound = 2 instances simultanées → framework busy).
+        return;
       }
       
-      // 🚀 Déclencher aussi le WiFi Direct dès qu'un node est détecté
-      // Cela permet le transfert même si Nearby Mesh ne parvient pas à se connecter
-      this._log(`🚀 Déclenchement WiFi Direct pour transfert P2P...`);
+      // 🚀 Déclencher aussi le WiFi Direct dès qu'un node est détecté (MASTER uniquement)
+      this._log(`🚀 Déclenchement WiFi Direct (MASTER) pour transfert P2P...`);
       const { P2PAutoSync } = require('./P2PAutoSync');
       P2PAutoSync.triggerSync(null, true);
     }));

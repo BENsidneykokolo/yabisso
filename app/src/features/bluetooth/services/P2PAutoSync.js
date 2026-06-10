@@ -67,6 +67,7 @@ class P2PAutoSyncClass {
     this._slaveIp = null; // V3.20 (BUG-047 fix): IP du Slave (reçue via Mesh BLE)
     this._slavePort = 8988; // V3.20 (BUG-047 fix): Port TCP du serveur du Slave (8988 par défaut)
     this._slaveReceiverStarted = false; // FIX: Empêcher le démarrage multiple du récepteur Slave
+    this._connectingAsSlave = false; // V3.31 (BUG-069 fix): Guard anti-double-connexion Slave (framework busy)
     this._lastWifiGroupReadyPeer = null; // V3.26 (BUG-062 fix): peerId du dernier WIFI_GROUP_READY reçu
     this._lastWifiGroupReadyAt = 0; // V3.26 (BUG-062 fix): timestamp du dernier WIFI_GROUP_READY reçu
     this._isPropagatingRepaired = false; // FIX: One-time repair de is_propagating au démarrage
@@ -406,8 +407,9 @@ class P2PAutoSyncClass {
     await new Promise(r => setTimeout(r, 5000));
 
     // Garde-fou : si on est déjà connecté, on ne fait rien
-    if (WifiDirectService.connectedPeer || WifiDirectService.isConnecting) {
-      this._log(`⏭️ [V3.25] WIFI_GROUP_READY reçu mais déjà connecté/en cours, ignoré.`);
+    // V3.31: Ajout du guard _connectingAsSlave pour éviter double connexion
+    if (WifiDirectService.connectedPeer || WifiDirectService.isConnecting || this._connectingAsSlave) {
+      this._log(`⏭️ [V3.31] WIFI_GROUP_READY reçu mais déjà connecté/en cours, ignoré (connectingAsSlave=${this._connectingAsSlave})`);
       return;
     }
 
@@ -436,18 +438,20 @@ class P2PAutoSyncClass {
 
     this._lastIntendedRole = 'SLAVE';
     this._isConnecting = true;
+    this._connectingAsSlave = true;
     try {
       const ok = await WifiDirectService.connectToPeer(targetPeer, 0, 'SLAVE');
       if (!ok) {
-        this._log(`⚠️ [V3.13] connectToPeer a échoué. Reset lock dans 5s.`);
-        setTimeout(() => { this._isConnecting = false; }, 5000);
+        this._log(`⚠️ [V3.31] connectToPeer a échoué. Reset lock dans 5s.`);
+        setTimeout(() => { this._isConnecting = false; this._connectingAsSlave = false; }, 5000);
       } else {
-        this._log(`✅ [V3.13] connectToPeer réussi.`);
+        this._log(`✅ [V3.31] connectToPeer réussi.`);
         this._isConnecting = false;
+        this._connectingAsSlave = false;
       }
     } catch (e) {
-      this._log(`⚠️ [V3.13] connectToPeer exception: ${e.message}`);
-      setTimeout(() => { this._isConnecting = false; }, 5000);
+      this._log(`⚠️ [V3.31] connectToPeer exception: ${e.message}`);
+      setTimeout(() => { this._isConnecting = false; this._connectingAsSlave = false; }, 5000);
     }
   }
 
@@ -519,9 +523,15 @@ class P2PAutoSyncClass {
     this._hasPendingDelta = totalCount > 0;
     this._log(`✨ [V3.6.3 Delta Hook] Delta reçu: ${lobaCount} vidéos + ${productCount} produits = ${totalCount} items à pousser. _hasPendingDelta=${this._hasPendingDelta}`);
 
+    // V3.31 (FIX 3): Ne PAS déclencher si une connexion est déjà en cours
+    if (this._connectingAsSlave || this._isConnecting) {
+      this._log(`⏭️ [V3.31 Delta Hook] Connexion déjà en cours (${this._connectingAsSlave ? 'connectingAsSlave' : 'isConnecting'}) — skip trigger`);
+      return;
+    }
+
     // Si on a une connexion WiFi Direct active, forcer le cycle pour débloquer l'envoi
     if (WifiDirectService.connectedPeer && this._running) {
-      this._log(`🚀 [V3.6.3 Delta Hook] Connexion WiFi active → déclenchement cycle immédiat...`);
+      this._log(`🚀 [V3.31 Delta Hook] Connexion WiFi active → déclenchement cycle immédiat...`);
       // Petit délai 500ms pour laisser le temps au slave/peer d'ouvrir son socket
       setTimeout(() => {
         if (WifiDirectService.connectedPeer && this._running) {
@@ -570,7 +580,7 @@ class P2PAutoSyncClass {
     this._running = true;
 
     console.log('[P2PAutoSync] Démarrage de l\'orchestrateur Multi-Rail...');
-    this._log('🚀 Orchestrateur démarré (V3.27-pure - batch propagation + timing delays).');
+    this._log('🚀 Orchestrateur démarré (V3.31 - guard double Slave + receiver immédiat + self-discovery fix + fallback 1-to-1).');
 
     // FIX: Réparer is_propagating au démarrage (migration v9→v10 l'a remis à false)
     this._repairIsPropagating().catch(e => console.warn('[P2PAutoSync] repair error:', e.message));
@@ -684,19 +694,16 @@ class P2PAutoSyncClass {
         await this._updatePendingCount();
         // V3.6 (BUG-058 fix) : _iAmMasterFor retourne null pour les non-Mesh peers
         const roleResult = this._iAmMasterFor(peerName);
+        let isMaster;
         if (roleResult === null) {
-          // V3.12 (Fix D) : Throttle 60s pour le log "ignoré" du même peer
-          // Avant : l'itel A50 spamme les logs toutes les 3s ("⏭️ ignoré") pour le même peer
-          // Maintenant : silence 60s entre 2 logs pour le même peerName
-          const lastIgnored = this._ignoredPeers.get(peerName);
-          if (lastIgnored && (now - lastIgnored) < 60000) {
-            return; // silence 60s pour ce peer
-          }
-          this._ignoredPeers.set(peerName, now);
-          this._log(`⏭️ [V3.6 Peer] ${peerName} ignoré (pas de Mesh peer, probablement imprimante/tiers).`);
-          return;
+          // V3.31 (FIX 5): Fallback 1-to-1 — tenter même sans Mesh peer
+          const myScore = this._parseScore(WifiDirectService.getDeviceName());
+          const peerWifiScore = this._parseScore(peerName);
+          isMaster = peerWifiScore > 0 ? (myScore > peerWifiScore) : true;
+          this._log(`⚡ [V3.31 Peer Fallback] Pas de Mesh peer → tentative (isMaster=${isMaster})`);
+        } else {
+          isMaster = roleResult;
         }
-        const isMaster = roleResult;
 
         if (isMaster) {
           const timeSinceLastGroup = Date.now() - this._lastGroupCreatedAt;
@@ -828,7 +835,32 @@ class P2PAutoSyncClass {
           // le réseau du Master, c'est Android qui m'a confirmé).
           if (!isMyRoleMaster) {
             this._isRealConnected = true;
-            this._log(`■ [V3.7 Slave] Mode Client validé. Lancement automatique du récepteur.`);
+            this._log(`■ [V3.31 Slave] Mode Client validé. Lancement récepteur IMMÉDIAT + SLAVE_CONNECTED_CONFIRMED...`);
+            // V3.31 (FIX 2): Démarrer récepteur IMMÉDIATEMENT (pas après 1500ms)
+            // Le port 8988 doit être bindé dès que possible pour recevoir le pack du Master.
+            if (!this._slaveReceiverStarted) {
+              this._slaveReceiverStarted = true;
+              WifiDirectService.startReceiving(WifiDirectService.globalFileHandler);
+            }
+            // V3.31 (FIX 2): Envoyer SLAVE_CONNECTED_CONFIRMED via Mesh IMMÉDIATEMENT
+            // Le Master ne peut envoyer le pack que quand il a cette confirmation.
+            const slaveMeshPeer = this._getLatestMeshPeer();
+            if (slaveMeshPeer && slaveMeshPeer.peerId) {
+              NearbyMeshService.sendMeshMessage(slaveMeshPeer.peerId, {
+                type: 'slave_connected_confirmed',
+              }).then(ok => {
+                if (ok) this._log(`✅ [V3.31 Slave] SLAVE_CONNECTED_CONFIRMED envoyé au Master ${slaveMeshPeer.peerId}`);
+                else this._log(`⚠️ [V3.31 Slave] Échec envoi SLAVE_CONNECTED_CONFIRMED`);
+              }).catch(e => {
+                this._log(`⚠️ [V3.31 Slave] Exception SLAVE_CONNECTED_CONFIRMED: ${e.message}`);
+              });
+            }
+            // V3.31 (FIX 2): HELLO après 2s (laisser le Master binder son récepteur)
+            setTimeout(async () => {
+              if (!WifiDirectService.connectedPeer || !this._running) return;
+              this._log(`🤝 [V3.31 Slave] Envoi HELLO au Master...`);
+              this._sendYabissoHello(false, peerName);
+            }, 2000);
           } else {
             this._log(`🟡 [V3.6.5 Master] Groupe WiFi créé, en attente d'un vrai Slave...`);
           }
@@ -871,26 +903,10 @@ class P2PAutoSyncClass {
               WifiDirectService.startReceiving(WifiDirectService.globalFileHandler);
               this._fallbackWaitForSlave(peerName);
             } else {
-              if (this._slaveReceiverStarted) {
-                this._log(`■ [V3.25 Slave] récepteur déjà actif — ignoré (guard)`);
-                return;
-              }
-              this._slaveReceiverStarted = true;
-              this._log(`■ [V3.25 Slave] connecté → démarrage récepteur + HELLO immédiat`);
-              WifiDirectService.startReceiving(WifiDirectService.globalFileHandler);
-
-              // V3.25 (BUG-061 fix) : Envoyer HELLO immédiatement après connexion.
-              // AVANT (V3.19) : SLAVE_CONNECTED_CONFIRMED via Mesh → 5s delay → HELLO.
-              //   Problème : le WIFI_GROUP_READY Mesh arrivait APRÈS connexion WiFi,
-              //   le Slave entrait dans une boucle d'attente → HELLO jamais envoyé.
-              // MAINTENANT : on envoie HELLO directement depuis onConnectionChange.
-              //   Pas besoin du Mesh pour déclencher le HELLO. Le Master a déjà
-              //   démarré son récepteur (V3.22) et attend le HELLO.
-              setTimeout(async () => {
-                if (!WifiDirectService.connectedPeer || !this._running) return;
-                this._log(`🤝 [V3.25 Slave] Envoi HELLO immédiat au Master...`);
-                this._sendYabissoHello(false, peerName);
-              }, 2000);
+              // V3.31 (FIX 2): Récepteur + SLAVE_CONNECTED_CONFIRMED + HELLO déjà lancés
+              // IMMÉDIATEMENT dans la section ci-dessus (hors du setTimeout 1500ms).
+              // Ce bloc ne fait plus rien — gardé pour le log de traçabilité.
+              this._log(`■ [V3.31 Slave] Tout lancé immédiatement (receiver + confirmed + hello) — skip setTimeout`);
             }
           }, 1500);
         } else if (this._wasConnected) {
@@ -921,6 +937,7 @@ class P2PAutoSyncClass {
           this._slaveIp = null;
           this._slavePort = 8988;
           this._packReceivedThisCycle = false; // V3.23: reset du flag de réception pack
+          this._connectingAsSlave = false; // V3.31 (BUG-069 fix): reset guard double connexion
           try { WifiDirectService.resetTargetPeerIp(); } catch (_) {}
           try { await NearbyMeshService.resumeMesh(); } catch (_) {}
           this._log('■ Déconnexion détectée. Nettoyage des processus.');
@@ -997,6 +1014,12 @@ class P2PAutoSyncClass {
 
   async triggerSync(category = null, force = false) {
     if (!this._running) await this.start();
+    // V3.31 (BUG-069 fix): Guard anti-double-connexion Slave
+    // Si une connexion est déjà en cours (Delta Hook + onPeerFound simultanés), on ignore.
+    if (this._connectingAsSlave || this._isConnecting) {
+      this._log(`⏭️ [V3.31 Trigger] Déjà en cours de connexion — ignoré (force=${force})`);
+      return;
+    }
     this._manualTrigger = true;
     this._lastManualSync = Date.now();
     this._log(`⚡ Synchronisation forcée déclenchée...`);
@@ -1036,16 +1059,37 @@ class P2PAutoSyncClass {
 
         await this._updatePendingCount();
         const roleResult = this._iAmMasterFor(peer.deviceName);
+        let isMaster;
         if (roleResult === null) {
-          this._log(`⏭️ [V3.6 Trigger] Peer ${peer.deviceName} ignoré (pas de Mesh peer).`);
+          // V3.31 (FIX 5): Fallback 1-to-1 — tenter même sans Mesh peer
+          const myScore = this._parseScore(WifiDirectService.getDeviceName());
+          const peerWifiScore = this._parseScore(peer.deviceName);
+          isMaster = peerWifiScore > 0 ? (myScore > peerWifiScore) : true;
+          this._log(`⚡ [V3.31 Trigger Fallback] Pas de Mesh peer → tentative (isMaster=${isMaster})`);
+        } else {
+          isMaster = roleResult;
+        }
+        // V3.31 (BUG-069 fix): Double-check guard avant connexion Slave
+        if (!isMaster && (this._connectingAsSlave || this._isConnecting)) {
+          this._log(`⏭️ [V3.31 Trigger] Slave déjà en cours — ignoré`);
           return;
         }
-        const isMaster = roleResult;
         this._log(`🔗 [Trigger] Connexion à ${peer.deviceName} (${isMaster ? 'MASTER' : 'SLAVE'})...`);
         this._isConnecting = true;
+        if (!isMaster) this._connectingAsSlave = true;
         try {
-          await WifiDirectService.connectToPeer(peer, 0, isMaster ? 'MASTER' : 'SLAVE');
+          const ok = await WifiDirectService.connectToPeer(peer, 0, isMaster ? 'MASTER' : 'SLAVE');
+          if (!isMaster) {
+            this._connectingAsSlave = false;
+            if (!ok) {
+              this._log(`⚠️ [V3.31 Trigger] connectToPeer échoué, reset lock dans 5s.`);
+              setTimeout(() => { this._isConnecting = false; }, 5000);
+            } else {
+              this._isConnecting = false;
+            }
+          }
         } catch (e) {
+          this._connectingAsSlave = false;
           setTimeout(() => { this._isConnecting = false; }, 5000);
         }
       } else {
@@ -1163,12 +1207,27 @@ class P2PAutoSyncClass {
             // V3.6 (BUG-058 fix) : _iAmMasterFor peut retourner null
             // (peer WiFi Direct sans pair Mesh correspondant = imprimante ou téléphone tiers)
             const roleResult = this._iAmMasterFor(peer.deviceName);
+            let isMaster;
             if (roleResult === null) {
-              // Pas de pair Mesh pour arbitrer, on ignore ce peer et on attend Mesh
-              this._syncingP2P = false;
-              return;
+              // V3.31 (FIX 5): Fallback — en mode 1-to-1, si 1 seul peer WiFi Direct
+              // et pas de Mesh peer, on suppose qu'il est Yabisso et on essaie.
+              // Le handshake YABISSO_HELLO/ACK triera ensuite (blacklist si non-Yabisso).
+              const yabissoPeers = nonBlacklistedPeers.filter(p => /^\d+_Yabisso_/i.test(p.deviceName || ''));
+              if (nonBlacklistedPeers.length === 1 || yabissoPeers.length > 0) {
+                const myScore = this._parseScore(WifiDirectService.getDeviceName());
+                // Par défaut, on suppose qu'on est le Master (score plus élevé).
+                // Si le peer a un score plus haut dans son nom WiFi Direct, on l'utilise.
+                const peerWifiScore = this._parseScore(peer.deviceName);
+                isMaster = peerWifiScore > 0 ? (myScore > peerWifiScore) : true;
+                this._log(`⚡ [V3.31 Fallback] Pas de Mesh peer, 1 peer WiFi Direct → on tente (isMaster=${isMaster})`);
+              } else {
+                // Plusieurs peers → impossible de savoir lequel est Yabisso, on attend Mesh
+                this._syncingP2P = false;
+                return;
+              }
+            } else {
+              isMaster = roleResult;
             }
-            const isMaster = roleResult;
 
             if (isMaster) {
               const timeSinceLastGroup = Date.now() - this._lastGroupCreatedAt;
@@ -1182,11 +1241,18 @@ class P2PAutoSyncClass {
             this._lastIntendedRole = isMaster ? 'MASTER' : 'SLAVE';
             WifiDirectService.recordPeerAttempt(peerKey);
 
-            this._log(`🔗 [V3.6] Connexion à ${peer.deviceName} (${isMaster ? 'MASTER' : 'SLAVE'}) avec lock...`);
+            this._log(`🔗 [V3.31] Connexion à ${peer.deviceName} (${isMaster ? 'MASTER' : 'SLAVE'}) avec lock...`);
             if (isMaster) this._lastGroupCreatedAt = Date.now();
             
+            // V3.31 (BUG-069 fix): Guard anti-double-connexion Slave
+            if (!isMaster && this._connectingAsSlave) {
+              this._log(`⏭️ [V3.31 Cycle] Slave déjà en cours — ignoré`);
+              this._syncingP2P = false;
+              return;
+            }
             // V3.6 (BUG-058 fix) : ACTIVER LE LOCK avant d'envoyer la commande au framework
             this._isConnecting = true;
+            if (!isMaster) this._connectingAsSlave = true;
             let connectSuccess = false;
             try {
               // V3.6: On ne pause PLUS le Mesh pendant la connexion WiFi Direct.
@@ -1195,19 +1261,18 @@ class P2PAutoSyncClass {
             } catch (e) {
               // V3.6.1: Reset du lock après 5s en cas d'exception inattendue
               this._log(`⚠️ [V3.6.1] connectToPeer exception: ${e.message}, reset du lock dans 5s...`);
+              if (!isMaster) this._connectingAsSlave = false;
               setTimeout(() => { this._isConnecting = false; }, 5000);
               return;
             }
             // V3.6.1 (BUG-058 fix) : LIBÉRER LE LOCK IMMÉDIATEMENT après connectToPeer
-            // Bug critique : connectToPeer ne throw JAMAIS (il catch en interne et retourne true/false).
-            // Du coup le catch du V3.6 ne fire jamais, et le lock restait true pour toujours
-            // si onConnectionChange ne fire pas (cas où le Master crée le groupe mais aucun Slave ne se connecte).
             this._isConnecting = false;
+            if (!isMaster) this._connectingAsSlave = false;
             if (!connectSuccess) {
-              this._log(`⚠️ [V3.27] connectToPeer a échoué (framework busy), lock libéré. Retry dans 15s (backoff étendu).`);
+              this._log(`⚠️ [V3.31] connectToPeer a échoué (framework busy), lock libéré. Retry dans 15s.`);
               setTimeout(() => { this._isConnecting = false; }, 15000);
             } else {
-              this._log(`✅ [V3.6.1] connectToPeer réussi, lock libéré.`);
+              this._log(`✅ [V3.31] connectToPeer réussi, lock libéré.`);
             }
           } else {
             // V3.5 (BUG-057 fix) : SUPPRESSION DÉFINITIVE DU MASTER PROACTIF
