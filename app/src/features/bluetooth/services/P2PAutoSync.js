@@ -580,7 +580,7 @@ class P2PAutoSyncClass {
     this._running = true;
 
     console.log('[P2PAutoSync] Démarrage de l\'orchestrateur Multi-Rail...');
-    this._log('🚀 Orchestrateur démarré (V3.31 - guard double Slave + receiver immédiat + self-discovery fix + fallback 1-to-1).');
+    this._log('🚀 Orchestrateur démarré (V3.32 - sans fallback 1-to-1 + WIFI_GROUP_READY immédiat + double-fire fix).');
 
     // FIX: Réparer is_propagating au démarrage (migration v9→v10 l'a remis à false)
     this._repairIsPropagating().catch(e => console.warn('[P2PAutoSync] repair error:', e.message));
@@ -694,16 +694,13 @@ class P2PAutoSyncClass {
         await this._updatePendingCount();
         // V3.6 (BUG-058 fix) : _iAmMasterFor retourne null pour les non-Mesh peers
         const roleResult = this._iAmMasterFor(peerName);
-        let isMaster;
         if (roleResult === null) {
-          // V3.31 (FIX 5): Fallback 1-to-1 — tenter même sans Mesh peer
-          const myScore = this._parseScore(WifiDirectService.getDeviceName());
-          const peerWifiScore = this._parseScore(peerName);
-          isMaster = peerWifiScore > 0 ? (myScore > peerWifiScore) : true;
-          this._log(`⚡ [V3.31 Peer Fallback] Pas de Mesh peer → tentative (isMaster=${isMaster})`);
-        } else {
-          isMaster = roleResult;
+          // V3.32 (FIX 8): PAS de fallback — on attend le Mesh peer pour arbitrer.
+          // Créer un groupe sans Mesh peer = groupe prématuré → WIFI_GROUP_READY jamais envoyé.
+          this._log(`⏭️ [V3.32 Peer] ${peerName} ignoré — attente Mesh peer pour arbitrer.`);
+          return;
         }
+        const isMaster = roleResult;
 
         if (isMaster) {
           const timeSinceLastGroup = Date.now() - this._lastGroupCreatedAt;
@@ -1067,16 +1064,12 @@ class P2PAutoSyncClass {
 
         await this._updatePendingCount();
         const roleResult = this._iAmMasterFor(peer.deviceName);
-        let isMaster;
         if (roleResult === null) {
-          // V3.31 (FIX 5): Fallback 1-to-1 — tenter même sans Mesh peer
-          const myScore = this._parseScore(WifiDirectService.getDeviceName());
-          const peerWifiScore = this._parseScore(peer.deviceName);
-          isMaster = peerWifiScore > 0 ? (myScore > peerWifiScore) : true;
-          this._log(`⚡ [V3.31 Trigger Fallback] Pas de Mesh peer → tentative (isMaster=${isMaster})`);
-        } else {
-          isMaster = roleResult;
+          // V3.32 (FIX 8): PAS de fallback — on attend le Mesh peer pour arbitrer.
+          this._log(`⏭️ [V3.32 Trigger] ${peer.deviceName} ignoré — attente Mesh peer.`);
+          return;
         }
+        const isMaster = roleResult;
         // V3.31 (BUG-069 fix): Double-check guard avant connexion Slave
         if (!isMaster && (this._connectingAsSlave || this._isConnecting)) {
           this._log(`⏭️ [V3.31 Trigger] Slave déjà en cours — ignoré`);
@@ -1215,27 +1208,13 @@ class P2PAutoSyncClass {
             // V3.6 (BUG-058 fix) : _iAmMasterFor peut retourner null
             // (peer WiFi Direct sans pair Mesh correspondant = imprimante ou téléphone tiers)
             const roleResult = this._iAmMasterFor(peer.deviceName);
-            let isMaster;
             if (roleResult === null) {
-              // V3.31 (FIX 5): Fallback — en mode 1-to-1, si 1 seul peer WiFi Direct
-              // et pas de Mesh peer, on suppose qu'il est Yabisso et on essaie.
-              // Le handshake YABISSO_HELLO/ACK triera ensuite (blacklist si non-Yabisso).
-              const yabissoPeers = nonBlacklistedPeers.filter(p => /^\d+_Yabisso_/i.test(p.deviceName || ''));
-              if (nonBlacklistedPeers.length === 1 || yabissoPeers.length > 0) {
-                const myScore = this._parseScore(WifiDirectService.getDeviceName());
-                // Par défaut, on suppose qu'on est le Master (score plus élevé).
-                // Si le peer a un score plus haut dans son nom WiFi Direct, on l'utilise.
-                const peerWifiScore = this._parseScore(peer.deviceName);
-                isMaster = peerWifiScore > 0 ? (myScore > peerWifiScore) : true;
-                this._log(`⚡ [V3.31 Fallback] Pas de Mesh peer, 1 peer WiFi Direct → on tente (isMaster=${isMaster})`);
-              } else {
-                // Plusieurs peers → impossible de savoir lequel est Yabisso, on attend Mesh
-                this._syncingP2P = false;
-                return;
-              }
-            } else {
-              isMaster = roleResult;
+              // V3.32 (FIX 8): PAS de fallback — on attend le Mesh peer pour arbitrer.
+              this._log(`⏭️ [V3.32 Cycle] ${peer.deviceName} ignoré — attente Mesh peer.`);
+              this._syncingP2P = false;
+              return;
             }
+            const isMaster = roleResult;
 
             if (isMaster) {
               const timeSinceLastGroup = Date.now() - this._lastGroupCreatedAt;

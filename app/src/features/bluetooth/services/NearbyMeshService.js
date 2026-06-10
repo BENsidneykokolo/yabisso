@@ -199,12 +199,26 @@ class NearbyMeshServiceClass {
         WifiDirectService.createGroup().then(success => {
           if (success) {
             this._log(`✅ [V3.5] Groupe WiFi Direct créé par le Master. J'attends que le Slave se connecte...`);
+            // V3.32 (FIX 9): Envoyer WIFI_GROUP_READY AUSSI quand createGroup réussit.
+            // AVANT : WIFI_GROUP_READY n'était envoyé que dans le cycle P2PAutoSync (1500ms+).
+            // Problème : le Slave recevait le signal TARD → arrivait sur un groupe déjà prêt
+            // mais ne se connectait pas à temps → timeout.
+            // MAINTENANT : envoi immédiat depuis NearbyMesh (le Master sait que le groupe est prêt).
+            const masterIp = WifiDirectService.groupOwnerAddress || '192.168.49.1';
+            sendText(peer.peerId, JSON.stringify({
+              type: 'wifi_group_ready',
+              masterIp,
+            })).then(ok => {
+              if (ok) this._log(`✅ [V3.32 FIX9] WIFI_GROUP_READY envoyé au Slave ${peer.peerId} (groupe créé avec succès)`);
+              else this._log(`⚠️ [V3.32 FIX9] Échec envoi WIFI_GROUP_READY post-createGroup`);
+            }).catch(e => {
+              this._log(`⚠️ [V3.32 FIX9] Exception envoi WIFI_GROUP_READY: ${e.message}`);
+            });
           } else {
             // V3.31 (FIX 7): createGroup échoue = le groupe existe déjà (cas WiFi Direct créé avant Mesh).
             // Envoyer WIFI_GROUP_READY au Slave via Mesh pour qu'il puisse se connecter au groupe existant.
             this._log(`⚡ [V3.31 FIX7] Groupe WiFi existe déjà → envoi WIFI_GROUP_READY au Slave ${peer.peerId}`);
             try {
-              const { P2PAutoSync } = require('./P2PAutoSync');
               const masterIp = WifiDirectService.groupOwnerAddress || '192.168.49.1';
               sendText(peer.peerId, JSON.stringify({
                 type: 'wifi_group_ready',
