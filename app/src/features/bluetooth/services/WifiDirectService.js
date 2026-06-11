@@ -198,6 +198,13 @@ class WifiDirectServiceClass {
 
       if (!nativeReady) {
         console.warn('[WifiDirectService] ⚠️ getName() a échoué mais on continue quand même...');
+        // V3.38: Fallback — utiliser Device.deviceName comme nom WiFi Direct
+        // Sur Android, le nom WiFi Direct = nom Bluetooth (défini par l'utilisateur).
+        // Device.deviceName retourne ce nom si la permission BLUETOOTH_CONNECT est accordée.
+        if (!this._wifiDirectName && Device.deviceName) {
+          this._wifiDirectName = Device.deviceName;
+          console.log(`[WifiDirectService] 📱 [V3.38] WiFi Direct name depuis Device: ${Device.deviceName}`);
+        }
       }
 
       this._nativeReady = true;
