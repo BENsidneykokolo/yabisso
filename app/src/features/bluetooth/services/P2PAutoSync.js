@@ -446,22 +446,29 @@ class P2PAutoSyncClass {
     let targetPeer = null;
 
     if (detectedPeers.length > 0) {
-      // V3.37 (FIX self-peer): Filtrer les peers — ignorer blacklist ET self-device
-      // Les scans WiFi Direct retournent les noms Android natifs ("xiaomi 11t", "itel a50")
-      // PAS nos noms customisés "score_Yabisso_xxx". On compare avec Device.deviceName.
-      const myWifiName = (WifiDirectService.getWifiDirectName() || '').toLowerCase();
-      const myDeviceName = (WifiDirectService.getDeviceName() || '').toLowerCase();
-      const myAndroidName = WifiDirectService.getAndroidDeviceName();
-      targetPeer = detectedPeers.find(p => {
-        const name = (p.deviceName || '').toLowerCase();
-        if (WifiDirectService.isPeerBlacklisted(name)) return false;
-        // Self-peer: même nom WiFi Direct OU même nom device OU même nom Android
-        if (name && (name === myWifiName || name === myDeviceName || name === myAndroidName)) {
-          this._log(`⛔ [V3.37] Self-peer WiFi Direct ignoré: ${p.deviceName} (match: ${name === myAndroidName ? 'android' : 'custom'})`);
-          return false;
-        }
-        return true;
-      }) || null;
+      // V3.38 (FIX self-peer): Utiliser isGroupOwner pour trouver le Master.
+      // Le Master a créé un groupe WiFi Direct → son peer a isGroupOwner=true.
+      // C'est PLUS FIABLE que le self-peer name matching (qui échoue quand
+      // Device.deviceName est null sur API 34 sans BLUETOOTH_CONNECT permission).
+      //
+      // Étape 1: Trouver le GO (Group Owner = Master)
+      targetPeer = detectedPeers.find(p => p.isGroupOwner === true) || null;
+      
+      if (targetPeer) {
+        this._log(`🔗 [V3.38 Slave] GO trouvé: ${targetPeer.deviceName} (${targetPeer.deviceAddress})`);
+      }
+      
+      // Étape 2: Fallback — filtrer par exclusion (pas blacklist + pas self)
+      if (!targetPeer) {
+        const myAndroidName = WifiDirectService.getAndroidDeviceName();
+        const myDeviceName = (WifiDirectService.getDeviceName() || '').toLowerCase();
+        targetPeer = detectedPeers.find(p => {
+          const name = (p.deviceName || '').toLowerCase();
+          if (WifiDirectService.isPeerBlacklisted(name)) return false;
+          if (name && (name === myAndroidName || name === myDeviceName)) return false;
+          return true;
+        }) || null;
+      }
     }
 
     if (!targetPeer) {
@@ -617,7 +624,7 @@ class P2PAutoSyncClass {
     this._running = true;
 
     console.log('[P2PAutoSync] Démarrage de l\'orchestrateur Multi-Rail...');
-    this._log('🚀 Orchestrateur démarré (V3.36 - self-peer filter + HELLO via BLE Mesh + sendText delay 800ms).');
+    this._log('🚀 Orchestrateur démarré (V3.38 - GO peer filter + HELLO via Mesh + shouldSend unlock).');
 
     // FIX: Réparer is_propagating au démarrage (migration v9→v10 l'a remis à false)
     this._repairIsPropagating().catch(e => console.warn('[P2PAutoSync] repair error:', e.message));
@@ -853,10 +860,16 @@ class P2PAutoSyncClass {
           this._meshGroupReadyTimeoutHandle = setTimeout(() => {
             this._meshGroupReadyTimeoutHandle = null;
             if (this._running && !WifiDirectService.connectedPeer && !WifiDirectService.isConnecting && this._waitingForWifiGroupReady) {
-              this._log(`⏰ [V3.35 Slave] Aucun WIFI_GROUP_READY en 5s — fallback direct connect vers ${peerName}`);
+              this._log(`⏰ [V3.35 Slave] Aucun WIFI_GROUP_READY en 5s — fallback direct connect`);
               this._waitingForWifiGroupReady = false;
-              // V3.35: Connexion DIRECTE au lieu de _p2pSyncCycle (qui est bloqué par le guard "attente Mesh peer")
-              WifiDirectService.connectToPeer(peer, 0, 'SLAVE').catch(e => {
+              // V3.38: Trouver le GO (Group Owner = Master) au lieu d'utiliser le peer du scan
+              // Le peer du scan peut être notre propre device (self-peer bug Xiaomi/Itel)
+              const allPeers = WifiDirectService.peers || [];
+              const goPeer = allPeers.find(p => p.isGroupOwner === true) || null;
+              const fallbackPeer = goPeer || peer;
+              const peerLabel = goPeer ? `${goPeer.deviceName} (GO)` : `${peerName} (scan)`;
+              this._log(`🔗 [V3.38 Slave] Fallback connect vers ${peerLabel}`);
+              WifiDirectService.connectToPeer(fallbackPeer, 0, 'SLAVE').catch(e => {
                 this._log(`⚠️ [V3.35 Slave] Fallback connect échoué: ${e.message}`);
                 setTimeout(() => { this._isConnecting = false; this._connectingAsSlave = false; }, 5000);
               });
