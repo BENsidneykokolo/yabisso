@@ -72,6 +72,8 @@ class P2PAutoSyncClass {
     this._lastWifiGroupReadyAt = 0; // V3.26 (BUG-062 fix): timestamp du dernier WIFI_GROUP_READY reçu
     this._isPropagatingRepaired = false; // FIX: One-time repair de is_propagating au démarrage
     this._packReceivedThisCycle = false; // V3.23: true quand un LOBA_PACK a été reçu et traité dans ce cycle
+    this._peerScoreFromHello = 0; // V3.39: Score du pair reçu via YABISSO_HELLO (fallback si _meshPeers expire)
+    this._lastConnectedAt = 0; // V3.39: Timestamp connexion WiFi Direct (délai avant 1er envoi)
     this.stats = {
       totalSyncedP2P: 0,
       totalSyncedCloud: 0,
@@ -209,6 +211,12 @@ class P2PAutoSyncClass {
     const myScore = this._parseScore(WifiDirectService.getDeviceName());
 
     if (!meshPeer) {
+      // V3.39: Fallback — si on a reçu un YABISSO_HELLO avec un score, l'utiliser
+      // pour l'arbitrage même si _meshPeers a expiré (120s timeout).
+      if (this._peerScoreFromHello > 0 && myScore > 0) {
+        this._log(`🕸️ [V3.39] Arbitrage via HELLO fallback: Mon Score (${myScore}) vs Score Distant (${this._peerScoreFromHello}) → ${myScore > this._peerScoreFromHello ? 'MASTER' : 'SLAVE'}`);
+        return myScore > this._peerScoreFromHello;
+      }
       // V3.6: Pas de pair Mesh connu, on ne peut pas arbitrer en sécurité.
       // Retourner null pour que le caller IGNORE ce peer (imprimante, etc.).
       this._log(`⏭️ [V3.6] Peer "${peerName}" ignoré : pas de pair Mesh pour arbitrer (imprimante ou téléphone tiers ?)`);
@@ -261,12 +269,19 @@ class P2PAutoSyncClass {
   async _sendYabissoHello(isMasterSide, peerName) {
     if (!WifiDirectService.isConnected) return;
     const myScore = WifiDirectService.getPowerScore();
-    // V3.29 (BUG-067 fix): Si GO=true, notre IP est 192.168.49.1 = IP du GO.
-    // L'envoyer au Master lui ferait croire que c'est SON IP → self-loop.
-    // On n'envoie senderIp QUE si on n'est PAS GO (= on est client avec IP .x).
+    // V3.39 (FIX): Utiliser _logicalRole au lieu de isGroupOwner (bug Mediatek).
+    // Sur Itel A50/Xiaomi, isGroupOwner retourne GO=true même quand on est SLAVE.
+    // _logicalRole est la source de vérité (basée sur le score Mesh).
+    // On n'envoie senderIp QUE si on est logiquement SLAVE (= on est client avec IP .x).
     let localIp = null;
-    if (!WifiDirectService.isGroupOwner) {
+    if (this._lastIntendedRole !== 'MASTER') {
+      // Tenter de récupérer la vraie IP P2P
       localIp = WifiDirectService._localP2pIp || null;
+      if (!localIp) {
+        try {
+          localIp = await WifiDirectService.getLocalP2pIp();
+        } catch (_) {}
+      }
     }
 
     // V3.36 (FIX Mediatek 0B): Envoyer YABISSO_HELLO via BLE Mesh au lieu de WiFi Direct.
@@ -624,7 +639,7 @@ class P2PAutoSyncClass {
     this._running = true;
 
     console.log('[P2PAutoSync] Démarrage de l\'orchestrateur Multi-Rail...');
-    this._log('🚀 Orchestrateur démarré (V3.38 - GO peer filter + HELLO via Mesh + shouldSend unlock).');
+    this._log('🚀 Orchestrateur démarré (V3.39 - peerScore HELLO fallback + SLAVE removeGroup + warmup delay + logicalRole IP).');
 
     // FIX: Réparer is_propagating au démarrage (migration v9→v10 l'a remis à false)
     this._repairIsPropagating().catch(e => console.warn('[P2PAutoSync] repair error:', e.message));
@@ -665,30 +680,34 @@ class P2PAutoSyncClass {
           this._log(`⚠️ [V3.20 Master] setTargetPeerIp échoué: ${e.message}`);
         }
       } else if (evt && evt.type === 'YABISSO_HELLO_VIA_MESH') {
-        // V3.37 (FIX shouldSend): YABISSO_HELLO reçu via BLE Mesh.
+        // V3.39 (FIX shouldSend): YABISSO_HELLO reçu via BLE Mesh.
         // PROBLÈME V3.36: _confirmYabissoHandshake() seul ne suffit pas — _isRealConnected
         // reste false car _waitForSlaveConfirmation a déjà timeout (25s) avant l'arrivée du HELLO.
         // FIX: Définir _isRealConnected=true + _slaveIp ICI pour débloquer shouldSend.
         const { peerId, payload } = evt;
         const senderDevice = payload.senderDevice || peerId;
-        this._log(`🤝 [V3.37 Mesh] YABISSO_HELLO reçu de ${senderDevice} (score=${payload.myScore}) → déblocage shouldSend`);
+        this._log(`🤝 [V3.39 Mesh] YABISSO_HELLO reçu de ${senderDevice} (score=${payload.myScore}) → déblocage shouldSend`);
         this._confirmYabissoHandshake(senderDevice, payload.myScore);
+        // V3.39: Stocker le score du pair pour shouldSend (fallback si _meshPeers expire)
+        if (payload.myScore > 0) {
+          this._peerScoreFromHello = payload.myScore;
+        }
         // V3.37: Forcer _isRealConnected=true (le Slave est VRAIMENT connecté, il a répondu)
         if (!this._isRealConnected) {
           this._isRealConnected = true;
-          this._log(`✅ [V3.37] _isRealConnected=true (HELLO reçu via Mesh, débloque shouldSend)`);
+          this._log(`✅ [V3.39] _isRealConnected=true (HELLO reçu via Mesh, débloque shouldSend)`);
         }
-        // V3.37: Capturer l'IP du Slave depuis le HELLO Mesh
+        // V3.39: Capturer l'IP du Slave depuis le HELLO Mesh
         if (payload.senderIp && payload.senderIp !== '192.168.49.1') {
           this._slaveIp = payload.senderIp;
           this._slavePort = 8988;
           WifiDirectService.setTargetPeerIp(this._slaveIp);
-          this._log(`📍 [V3.37] IP Slave via Mesh HELLO: ${this._slaveIp}`);
+          this._log(`📍 [V3.39] IP Slave via Mesh HELLO: ${this._slaveIp}`);
         } else if (!this._slaveIp) {
           this._slaveIp = '192.168.49.2';
           this._slavePort = 8988;
           WifiDirectService.setTargetPeerIp(this._slaveIp);
-          this._log(`📍 [V3.37] IP Slave fallback: 192.168.49.2`);
+          this._log(`📍 [V3.39] IP Slave fallback: 192.168.49.2`);
         }
         if (this._packReceivedAckResolver) {
           this._packReceivedAckResolver(true);
@@ -895,6 +914,7 @@ class P2PAutoSyncClass {
           }
           this._wasConnected = true;
           this._packSentThisSession = false; // V3.7: Reset de session
+          this._lastConnectedAt = Date.now(); // V3.39: Timestamp pour délai warmup
           NetworkRailDetector.setWifiDirectAvailable(true);
           // V3.6 (BUG-058 fix) : Libérer le lock dès que la connexion est établie
           this._isConnecting = false;
@@ -1037,6 +1057,8 @@ class P2PAutoSyncClass {
           this._slavePort = 8988;
           this._packReceivedThisCycle = false; // V3.23: reset du flag de réception pack
           this._connectingAsSlave = false; // V3.31 (BUG-069 fix): reset guard double connexion
+          this._peerScoreFromHello = 0; // V3.39: reset score pair entre sessions
+          this._lastConnectedAt = 0; // V3.39: reset warmup delay
           try { WifiDirectService.resetTargetPeerIp(); } catch (_) {}
           try { await NearbyMeshService.resumeMesh(); } catch (_) {}
           this._log('■ Déconnexion détectée. Nettoyage des processus.');
@@ -1388,7 +1410,8 @@ class P2PAutoSyncClass {
         //   Le Slave reçoit en Phase 1 puis devient émetteur en Phase 2 (V3.3).
         const myScore = this._parseScore(WifiDirectService.getDeviceName());
         const meshPeer = this._getLatestMeshPeer();
-        const peerScore = meshPeer ? meshPeer.score : 0;
+        // V3.39: Fallback peerScore depuis YABISSO_HELLO si _meshPeers expire (120s timeout)
+        const peerScore = meshPeer ? meshPeer.score : (this._peerScoreFromHello || 0);
         const isMyRoleMaster = this._lastIntendedRole === 'MASTER';
         const hasPendingContent = this._pendingPostsCount > 0 || !!this._hasPendingDelta;
         // Le Master envoie SSI :
@@ -1397,9 +1420,11 @@ class P2PAutoSyncClass {
         // V3.30 (BUG-068 fix) : NE PAS envoyer après timeout si le Slave n'a pas confirmé.
         // AVANT : shouldSend=true même sans Slave → envoi vers 192.168.49.2 → EHOSTUNREACH.
         const slaveConfirmed = this._isRealConnected || this._slaveConfirmedViaMesh || !!this._slaveIp;
-        const iShouldSend = isMyRoleMaster && hasPendingContent && slaveConfirmed;
+        // V3.39: Délai 3s après connexion avant 1er envoi (laisser la route WiFi Direct se stabiliser)
+        const warmupOk = this._lastConnectedAt === 0 || (Date.now() - this._lastConnectedAt > 3000);
+        const iShouldSend = isMyRoleMaster && hasPendingContent && slaveConfirmed && warmupOk;
         const shouldSend = iShouldSend;
-        this._log(`🔍 [V3.6.3] shouldSend=${shouldSend}, isMaster=${isMyRoleMaster}, myScore=${myScore}, peerScore=${peerScore}, pendingContent=${hasPendingContent}, packSent=${this._packSentThisSession}`);
+        this._log(`🔍 [V3.39] shouldSend=${shouldSend}, isMaster=${isMyRoleMaster}, myScore=${myScore}, peerScore=${peerScore}${meshPeer ? '' : ' (from HELLO)'}, pendingContent=${hasPendingContent}, slaveConfirmed=${slaveConfirmed}, warmupOk=${warmupOk}, packSent=${this._packSentThisSession}`);
         if (shouldSend && !this._packSentThisSession) {
           this._log('🟢 Envoi du pack (Phase 1: émetteur → récepteur)...');
           // V3.20 (BUG-047 fix) : VÉRIFICATION PRÉ-ENVOI que le Slave est VRAIMENT connecté
@@ -1615,6 +1640,10 @@ class P2PAutoSyncClass {
           // V3.8 : le YABISSO_HELLO du Slave débloque le _waitForSlaveConfirmation du Master
           this._confirmYabissoHandshake(senderDevice, metadata.myScore);
           this._lastYabissoPeerSeen = Date.now();
+          // V3.39: Stocker le score du pair (fallback si _meshPeers expire)
+          if (metadata.myScore > 0) {
+            this._peerScoreFromHello = metadata.myScore;
+          }
 
           // V3.29 (BUG-067 fix): Capturer l'IP du Slave depuis les métadonnées HELLO.
           // AVANT : _slaveIp jamais défini → sendFile() self-loop vers 192.168.49.1.
@@ -1644,6 +1673,10 @@ class P2PAutoSyncClass {
           const senderDevice = metadata.senderDevice || peerName;
           this._confirmYabissoHandshake(senderDevice, metadata.myScore);
           this._lastYabissoPeerSeen = Date.now();
+          // V3.39: Stocker le score du pair (fallback si _meshPeers expire)
+          if (metadata.myScore > 0) {
+            this._peerScoreFromHello = metadata.myScore;
+          }
           this._log(`✅ [Handshake] ${senderDevice} a répondu ACK (score=${metadata.myScore}).`);
         } else if (metadata.type === 'PACK_RECEIVED_OK') {
           // V3.6.4 (Double validation) : Le Slave certifie avoir reçu et traité le LOBA_PACK.

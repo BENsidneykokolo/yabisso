@@ -320,8 +320,11 @@ class WifiDirectServiceClass {
           return false;
         }
       } else {
-        // SLAVE: PAS de nettoyage — on se connecte directement au groupe du Master
-        // Petit délai de sécurité pour les appareils bas de gamme (Itel)
+        // V3.39 (FIX): Nettoyer un éventuel groupe stale AVANT de se connecter au Master.
+        // Sur certains appareils (Xiaomi, Itel), un ancien groupe WiFi Direct bloque
+        // le nouveau connect() avec "framework is busy".
+        console.log('[WifiDirectService] 🧹 [V3.39] SLAVE: removeGroup cleanup avant connect...');
+        try { await WifiP2P.removeGroup(); } catch (_) {}
         await new Promise(r => setTimeout(r, 500));
 
         // V3.14 (BUG-044 fix) : 3 TENTATIVES avec BACKOFF EXPONENTIEL
