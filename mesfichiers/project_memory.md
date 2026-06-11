@@ -175,6 +175,113 @@
 - Sprint 10 (V3.28 - BUG-065/066 fix - 0B file + double instance):
   - **BUG-065** : 0B file — IP Slave detectee via subscribeOnConnectionInfoUpdates + receiveFile. Fallback 192.168.49.2 pour non-GO. `_sendYabissoHello` inclut toujours `senderIp`.
   - **BUG-066** : Singleton guard — `_started` flag empeche double demarrage P2PAutoSync sur Itel A50
+- Sprint 11 (V3.39 - peerScore=0, SLAVE removeGroup, warmup delay):
+  - **peerScore=0** : Store peer score from YABISSO_HELLO in `_peerScoreFromHello`, fallback in `shouldSend` and `_iAmMasterFor`
+  - **EHOSTUNREACH warmup** : Added 3s warmup delay (`_lastConnectedAt`) before first send
+  - **SLAVE framework busy** : Added `removeGroup()` before `connect()` in SLAVE path
+  - **Mediatek GO=true bug** : `_sendYabissoHello` uses `_logicalRole` instead of buggy `isGroupOwner`
+  - **_iAmMasterFor fallback** : Using `_peerScoreFromHello` when meshPeers empty
+- Sprint 12 (V4.1 - race condition, framework busy, connectToPeer fix):
+  - **Race WiFi/Mesh** : `_pendingPeerForArbitrage` + 5s timer — when WiFi peer found but no Mesh peer yet, wait 5s instead of ignoring
+  - **WIFI_GROUP_READY retries** : Increased delays from [1s,2s,4s] to [2s,4s,8s]
+  - **connectToPeer fix** : Returns `false` when `getConnectionInfo()` fails (was always returning `true`)
+  - **stopPeerDiscovery** : Added `stopPeerDiscovery()` + increased delay to 1s before SLAVE connect
+  - **getP2pLocalIp export** : Exported from JS bridge in `node_modules/react-native-wifi-p2p/index.js`
+  - **clientList mapper** : Added `clientList` array to `getGroupInfo()` in `WiFiP2PDeviceMapper.java`
+- Sprint 13 (V4.2 - disconnect protection during reception):
+  - **_isReceiving flag** : Block `disconnect()` during file reception — WiFi Direct stays alive while receiving
+  - **EHOSTUNREACH root cause identified** : Slave IP `192.168.49.2` is hardcoded fallback, wrong on Mediatek — APK rebuild required for `getP2pLocalIp`
+
+## 🔴 BUG CRITIQUE EN COURS : EHOSTUNREACH
+- **Problème** : Le Master envoie vers `192.168.49.2` (hardcodé) mais le Slave a une IP dynamique différente
+- **Cause** : `getP2pLocalIp` échoue car l'APK n'a pas été reconstruit après patch `node_modules`
+- **Preuve** : `sendFile from /192.168.49.1` (WiFi Direct OK) → `to /192.168.49.2` → EHOSTUNREACH
+- **Fix requis** : Rebuild APK (`npx expo run:android`) pour activer `getP2pLocalIp`
+- **Status** : En attente du rebuild APK
+
+## 📋 PROCEDURE REBUILD APK + FIX EHOSTUNREACH
+
+### Étape 1 : Rebuild APK
+```bash
+# Option A (recommandé)
+npx expo run:android
+
+# Option B (EAS Cloud)
+eas build --platform android --profile preview
+```
+
+### Étape 2 : Vérifier que getP2pLocalIp fonctionne
+Après le rebuild, chercher dans les logs Logcat (filtre `P2P`):
+```
+🌐 [V4.0] IP locale p2p (getP2pLocalIp): 192.168.49.X
+```
+Si cette ligne apparaît → fix racine OK, EHOSTUNREACH résolu.
+
+### Étape 3 : Vérifier que le Slave envoie son IP au Master
+Logs attendus côté Slave:
+```
+📍 [V4.3] IP Slave détectée: 192.168.49.X
+📤 [V4.3] SLAVE_IP envoyé au Master via Mesh
+```
+Logs attendus côté Master:
+```
+🎯 [V4.3] IP Slave reçue via Mesh: 192.168.49.X
+```
+
+### Étape 4 : Vérifier que le pack s'envoie
+```
+📤 [V3.29] sendFileTo vers Slave IP=192.168.49.X (pas self-loop)
+✅ sendFile réussi (tentative 1)
+```
+
+### Fallback si getP2pLocalIp échoue encore
+Si malgré le rebuild, `getP2pLocalIp` ne marche pas:
+1. Vérifier que `node_modules/react-native-wifi-p2p/index.js` contient bien l'export `getP2pLocalIp`
+2. Vérifier que `WiFiP2PManagerModule.java` contient bien la méthode `@ReactMethod getP2pLocalIp()`
+3. Utiliser le Fallback 2 : `discoverSlaveIpViaGroupInfo()` (déjà en place, ligne 704)
+4. Utiliser le Fallback 3 : Slave détecte son IP via `getLocalP2pIp()` et l'envoie au Master via Mesh
+
+### Champs modifiés dans le code
+| Fichier | Ligne | Modification |
+|---------|-------|-------------|
+| `WifiDirectService.js` | 48 | `this._isReceiving = false` — flag protection disconnect |
+| `WifiDirectService.js` | 650-690 | `getLocalP2pIp()` — tentative native getP2pLocalIp |
+| `WifiDirectService.js` | 704-728 | `discoverSlaveIpViaGroupInfo()` — fallback groupInfo |
+| `WifiDirectService.js` | 862-866 | `disconnect()` — bloqué si `_isReceiving=true` |
+| `P2PAutoSync.js` | 688 | Handler `SLAVE_IP` — reçoit IP Slave via Mesh |
+| `NearbyMeshService.js` | 274-306 | WIFI_GROUP_READY retry 2s/4s/8s |
+| `node_modules/react-native-wifi-p2p/index.js` | 119 | Export `getP2pLocalIp` (patch non persistant) |
+| `WiFiP2PManagerModule.java` | 134 | `@ReactMethod getP2pLocalIp()` (existe déjà) |
+| `WiFiP2PDeviceMapper.java` | getGroupInfo | `clientList` ajouté au mapper |
+
+### ⚠️ IMPORTANT : patch-package
+Le patch `node_modules/react-native-wifi-p2p/index.js` (export getP2pLocalIp) est perdu au prochain `npm install`. Pour le persister:
+```bash
+npx patch-package react-native-wifi-p2p
+```
+Cela crée `patches/react-native-wifi-p2p+3.6.1.patch` qui sera appliqué automatiquement.
+
+---
+
+## 🔮 PROCHAINES ÉTAPES (après rebuild APK)
+
+### TODO immédiat (demain)
+1. **Rebuild APK** → `npx expo run:android`
+2. **Installer sur les 2 téléphones** (itel A50 + Xiaomi 11T)
+3. **Lancer l'app** et capturer les logs Logcat (filtre `P2P`)
+4. **Vérifier** que `getP2pLocalIp` fonctionne → log `🌐 [V4.0] IP locale p2p`
+5. **Vérifier** que le pack s'envoie sans EHOSTUNREACH
+
+### Si EHOSTUNREACH persiste après rebuild
+1. Vérifier que `getP2pLocalIp` est bien exposé dans le natif
+2. Appliquer l'**APPROCHE 1** (socket TCP) : le Slave lit son IP depuis le socket accepté dans `startReceiving()`
+3. Implémenter l'envoi `SLAVE_IP` via Mesh vers le Master
+4. Implémenter le handler `SLAVE_IP` côté Master pour mettre à jour `_targetPeerIp`
+
+### TODO secondaire
+- **patch-package** : Persister le patch `react-native-wifi-p2p` (export getP2pLocalIp)
+- **Nettoyage code** : Supprimer les fallbacks `192.168.49.2` hardcodés une fois la discovery fiable
+- **Tests** : Tester sur 3+ appareils (itel A50 Mediatek, Xiaomi 11T, Samsung)
 
 ## Decisions techniques additionnelles
 - Navigation: React Navigation (a installer)
@@ -191,4 +298,6 @@
 - Budget devices (itel A50): ne jamais démarrer MessageServer sans connexion active (OOM), toujours stop→start pour discovery, délais de respiration hardware (100-300ms)
 - Cycle P2P: 3s (v1.0.2) pour maximiser les chances de transfert lors de rencontres brèves.
 - V3.27: Delais augmentés pour Itel A50 (WIFI_GROUP_READY 5s, retry 15s, timeout Master 25s). Batch Mesh BLE max 50 items.
+- V4.1: `node_modules/react-native-wifi-p2p` patché (getP2pLocalIp export + clientList mapper). APK rebuild requis pour activer.
+- V4.2: Flag `_isReceiving` protège la connexion WiFi Direct pendant la réception. `disconnect()` ignoré si réception active.
 

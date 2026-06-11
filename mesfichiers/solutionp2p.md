@@ -1,17 +1,17 @@
-# SOLUTION P2P — CODE COMPLET DU PARTAGE AUTOMATIQUE (V3.25)
+# SOLUTION P2P — CODE COMPLET DU PARTAGE AUTOMATIQUE (V4.2)
 
-> **Date d'extraction** : 2026-06-10
-> **Version** : v0.0.30 (V3.25)
+> **Date d'extraction** : 2026-06-11
+> **Version** : v0.0.52 (V4.2)
 > **3 fichiers du partage automatique WiFi Direct + Mesh BLE** :
-> 1. `P2PAutoSync.js` (~1685 lignes) — Orchestrateur central
-> 2. `NearbyMeshService.js` (~430 lignes) — Service Mesh BLE (élection, handshake)
-> 3. `WifiDirectService.js` (~750 lignes) — Wrapper natif WiFi Direct
+> 1. `P2PAutoSync.js` (~1973 lignes) — Orchestrateur central
+> 2. `NearbyMeshService.js` (~494 lignes) — Service Mesh BLE (élection, handshake)
+> 3. `WifiDirectService.js` (~913 lignes) — Wrapper natif WiFi Direct
 >
-> **Total** : ~2865 lignes de code.
+> **Total** : ~3380 lignes de code.
 
 ---
 
-## 📋 Résumé des fixes V3.6 → V3.25
+## 📋 Résumé des fixes V3.6 → V4.2
 
 | Version | Commit | Fix |
 |---------|--------|-----|
@@ -35,7 +35,56 @@
 | V3.20   | v0.0.29 | BUG-047 — Self-loop fix: sendFileTo avec IP Slave via Mesh |
 | V3.22   | v0.0.29 | BUG-regression V3.15 — Récepteur Master démarré immédiatement |
 | V3.24   | v0.0.29 | BUG-056-059 — Filtre taille 5KB, staging isolé, cleanup periodique |
-| **V3.25** | **v0.0.30** | **BUG-061 — HELLO immédiat Slave (fix boucle WIFI_GROUP_READY) + IP Slave via HELLO metadata (fix self-loop sans native method)** |
+| V3.25   | v0.0.30 | BUG-061 — HELLO immédiat Slave + IP Slave via HELLO metadata |
+| V3.39   | v0.0.50 | peerScore=0 HELLO fallback + SLAVE removeGroup + warmup delay 3s + logicalRole IP |
+| V4.1    | v0.0.51 | Race WiFi/Mesh pendingPeer 5s + stopPeerDiscovery + connectToPeer false on fail + WIFI_GROUP_READY delays 2s/4s/8s |
+| **V4.2** | **v0.0.52** | **Block disconnect() pendant réception (_isReceiving flag) + getLocalP2pIp() + discoverSlaveIpViaGroupInfo()** |
+
+---
+
+## 🔮 PLAN V4.3 — FIX EHOSTUNREACH (après rebuild APK)
+
+### Problème
+Le Master envoie vers `192.168.49.2` (hardcodé) mais le Slave a une IP dynamique différente.
+`getP2pLocalIp` échoue car l'APK n'a pas été reconstruit après patch `node_modules`.
+
+### Solution : Découverte IP Slave via Mesh
+Après le rebuild APK, `getP2pLocalIp` devrait fonctionner. Si ce n'est pas le cas, implémenter :
+
+**APPROCHE 1 (socket TCP) — dans `startReceiving()` de WifiDirectService.js :**
+```javascript
+// Lire l'IP du socket TCP accepté
+server.on('connection', (socket) => {
+  const slaveIp = socket.localAddress;
+  console.log('[V4.3] IP locale socket:', slaveIp);
+  this._emit('localIpDetected', slaveIp);
+});
+```
+
+**APPROCHE 2 (native) — dans P2PAutoSync.js :**
+```javascript
+// Slave envoie son IP au Master via Mesh
+this._nearbyMesh.sendMessage(masterPeerId, {
+  type: 'SLAVE_IP',
+  ip: slaveIp
+});
+
+// Master reçoit l'IP du Slave
+this._targetPeerIp = msg.ip;
+console.log('[Master] IP Slave reçue:', msg.ip);
+```
+
+### Fichiers à modifier
+| Fichier | Modification |
+|---------|-------------|
+| `WifiDirectService.js` | `startReceiving()` — ajouter détection IP socket |
+| `P2PAutoSync.js` | Handler `SLAVE_IP` — recevoir IP Slave via Mesh |
+| `NearbyMeshService.js` | Envoi `SLAVE_IP` après connexion |
+
+### NE PAS TOUCHER
+- `buildPack`, `feed`, `InterestEngine`
+
+---
 
 ### 🔥 Détails BUG-041 (V3.11)
 
