@@ -74,6 +74,8 @@ class P2PAutoSyncClass {
     this._packReceivedThisCycle = false; // V3.23: true quand un LOBA_PACK a été reçu et traité dans ce cycle
     this._peerScoreFromHello = 0; // V3.39: Score du pair reçu via YABISSO_HELLO (fallback si _meshPeers expire)
     this._lastConnectedAt = 0; // V3.39: Timestamp connexion WiFi Direct (délai avant 1er envoi)
+    this._pendingPeerForArbitrage = null; // V4.1: Peer WiFi Direct en attente de Mesh peer pour arbitrer
+    this._pendingPeerTimer = null; // V4.1: Timer 5s pour le pending peer
     this.stats = {
       totalSyncedP2P: 0,
       totalSyncedCloud: 0,
@@ -352,6 +354,19 @@ class P2PAutoSyncClass {
     });
     this._lastYabissoPeerSeen = Date.now();
     this._log(`🕸️ [Mesh] Peer enregistré: ${name} (score=${score}, MeshMaster=${isMeshMaster})`);
+
+    // V4.1 (FIX 1 - Race WiFi/Mesh): Si un peer WiFi Direct est en attente d'arbitrage
+    // et qu'un Mesh peer vient d'arriver, relancer le cycle pour traiter le pending peer.
+    if (this._pendingPeerForArbitrage && this._running) {
+      if (this._pendingPeerTimer) {
+        clearTimeout(this._pendingPeerTimer);
+        this._pendingPeerTimer = null;
+      }
+      this._pendingPeerForArbitrage = null;
+      this._log(`🕸️ [V4.1] Mesh peer arrive → relancement cycle pour pending peer WiFi Direct`);
+      // Relancer le cycle immediatement
+      setTimeout(() => this._p2pSyncCycle(), 500);
+    }
   }
 
   // V3.13 : Helper — Trouve le peerId Nearby du Slave (côté Master)
@@ -639,7 +654,7 @@ class P2PAutoSyncClass {
     this._running = true;
 
     console.log('[P2PAutoSync] Démarrage de l\'orchestrateur Multi-Rail...');
-    this._log('🚀 Orchestrateur démarré (V3.39 - peerScore HELLO fallback + SLAVE removeGroup + warmup delay + logicalRole IP).');
+    this._log('🚀 Orchestrateur démarré (V4.1 - EHOSTUNREACH fix: getP2pLocalIp export + groupInfo fallback + race condition fix + framework busy + connectToPeer fix).');
 
     // FIX: Réparer is_propagating au démarrage (migration v9→v10 l'a remis à false)
     this._repairIsPropagating().catch(e => console.warn('[P2PAutoSync] repair error:', e.message));
@@ -796,9 +811,20 @@ class P2PAutoSyncClass {
         // V3.6 (BUG-058 fix) : _iAmMasterFor retourne null pour les non-Mesh peers
         const roleResult = this._iAmMasterFor(peerName);
         if (roleResult === null) {
-          // V3.32 (FIX 8): PAS de fallback — on attend le Mesh peer pour arbitrer.
-          // Créer un groupe sans Mesh peer = groupe prématuré → WIFI_GROUP_READY jamais envoyé.
-          this._log(`⏭️ [V3.32 Peer] ${peerName} ignoré — attente Mesh peer pour arbitrer.`);
+          // V4.1 (FIX 1 - Race WiFi/Mesh): Au lieu d'ignorer le peer immediatement,
+          // le stocker comme pending et relancer le cycle dans 5s.
+          // Le Mesh peer peut arriver pendant ce temps → on pourra then arbitrer.
+          if (!this._pendingPeerForArbitrage) {
+            this._pendingPeerForArbitrage = peer;
+            this._log(`⏳ [V4.1] Peer ${peerName} en attente Mesh peer pour arbitrer (5s)...`);
+            this._pendingPeerTimer = setTimeout(() => {
+              if (this._pendingPeerForArbitrage && this._running) {
+                this._log(`⏰ [V4.1] Timeout 5s — peer ${peerName} ignoré (Mesh peer pas arrive)`);
+                this._pendingPeerForArbitrage = null;
+                this._pendingPeerTimer = null;
+              }
+            }, 5000);
+          }
           return;
         }
         const isMaster = roleResult;
@@ -1059,6 +1085,8 @@ class P2PAutoSyncClass {
           this._connectingAsSlave = false; // V3.31 (BUG-069 fix): reset guard double connexion
           this._peerScoreFromHello = 0; // V3.39: reset score pair entre sessions
           this._lastConnectedAt = 0; // V3.39: reset warmup delay
+          this._pendingPeerForArbitrage = null; // V4.1: reset pending peer
+          if (this._pendingPeerTimer) { clearTimeout(this._pendingPeerTimer); this._pendingPeerTimer = null; }
           try { WifiDirectService.resetTargetPeerIp(); } catch (_) {}
           try { await NearbyMeshService.resumeMesh(); } catch (_) {}
           this._log('■ Déconnexion détectée. Nettoyage des processus.');

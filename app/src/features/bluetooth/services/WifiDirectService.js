@@ -320,12 +320,15 @@ class WifiDirectServiceClass {
           return false;
         }
       } else {
-        // V3.39 (FIX): Nettoyer un éventuel groupe stale AVANT de se connecter au Master.
+        // V3.39 (FIX): Nettoyer un eventuel groupe stale AVANT de se connecter au Master.
         // Sur certains appareils (Xiaomi, Itel), un ancien groupe WiFi Direct bloque
         // le nouveau connect() avec "framework is busy".
         console.log('[WifiDirectService] 🧹 [V3.39] SLAVE: removeGroup cleanup avant connect...');
         try { await WifiP2P.removeGroup(); } catch (_) {}
-        await new Promise(r => setTimeout(r, 500));
+        // V3.39 (FIX 3): Arreter la decouverte AVANT connect pour liberer le framework
+        console.log('[WifiDirectService] 📡 [V3.39] SLAVE: stopDiscoveringPeers avant connect...');
+        try { await WifiP2P.stopPeerDiscovery(() => {}); } catch (_) {}
+        await new Promise(r => setTimeout(r, 1000));
 
         // V3.14 (BUG-044 fix) : 3 TENTATIVES avec BACKOFF EXPONENTIEL
         // Problème : "framework is busy" sur les appareils lents (Itel A50 Mediatek)
@@ -380,9 +383,17 @@ class WifiDirectServiceClass {
                 this._emit('onConnectionChange', { connected: true, isGroupOwner: this.isGroupOwner, info });
               } else {
                 console.log('[WifiDirectService] ⚠️ [V3.33 FIX10] getConnectionInfo() retourne null ou groupFormed=false');
+                // V4.1 (FIX 4): Si getConnectionInfo echoue, la connexion n'est pas fiable
+                // Ne PAS retourner true ici → eviter EHOSTUNREACH quand le Master envoie
+                this.isConnecting = false;
+                this.isConnected = false;
+                return false;
               }
             } catch (e) {
               console.warn(`[WifiDirectService] ⚠️ [V3.33 FIX10] getConnectionInfo échoué: ${e.message}`);
+              this.isConnecting = false;
+              this.isConnected = false;
+              return false;
             }
             return true;
           } catch (e) {
@@ -683,6 +694,36 @@ class WifiDirectServiceClass {
     this._targetPeerIp = null;
     this._localP2pIp = null;
     console.log('[WifiDirectService] 🧹 [V3.20] Target peer IP reset');
+  }
+
+  // V4.1 (BUG-047 fix) : Decouvrir l'IP reelle du Slave depuis le cote GO (Master).
+  // Apres qu'un client se connecte au groupe WiFi Direct, le GO peut appeler
+  // getGroupInfo() pour obtenir la liste des clients. Le mapper expose maintenant
+  // clientList. On utilise cette info pour definir _targetPeerIp.
+  async discoverSlaveIpViaGroupInfo() {
+    if (!this._nativeReady || !WifiP2P) return null;
+    if (!this.isGroupOwner) return null;
+    try {
+      const groupInfo = await Promise.race([
+        WifiP2P.getGroupInfo(),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 3000))
+      ]);
+      if (groupInfo && groupInfo.clientList && groupInfo.clientList.length > 0) {
+        console.log(`[WifiDirectService] 🌐 [V4.1] getGroupInfo: ${groupInfo.clientList.length} client(s) connecte(s)`);
+        // Le GO est 192.168.49.1, le premier client est typiquement 192.168.49.2
+        // On ne peut pas lire l'IP exacte depuis le mapper (pas d'IP dans clientList)
+        // mais on sait qu'un client EST connecte → 192.168.49.2 est le meilleur guess
+        if (!this._targetPeerIp || this._targetPeerIp === this.groupOwnerAddress) {
+          this._targetPeerIp = '192.168.49.2';
+          console.log(`[WifiDirectService] 🎯 [V4.1] Slave IP via groupInfo: ${this._targetPeerIp}`);
+          return this._targetPeerIp;
+        }
+        return this._targetPeerIp;
+      }
+    } catch (e) {
+      console.warn(`[WifiDirectService] ⚠️ [V4.1] discoverSlaveIpViaGroupInfo echoue: ${e.message}`);
+    }
+    return null;
   }
 
   // V3.1 (BUG-053 fix): Force la mise à jour de `wifiP2pInfo` côté natif Android

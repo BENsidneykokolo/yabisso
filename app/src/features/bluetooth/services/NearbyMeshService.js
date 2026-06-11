@@ -267,32 +267,41 @@ class NearbyMeshServiceClass {
         this._sendManifest(peer.peerId);
       }, 800);
 
-      // V3.37 (FIX WIFI_GROUP_READY retry): Le socket BLE n'est PAS prêt immédiatement
-      // après onConnected. Sur Itel A50 (Mediatek), sendText() échoue même après 800ms.
-      // On retry avec backoff: 1s → 2s → 4s (3 tentatives max).
+      // V4.1 (FIX 2): Le socket BLE n'est PAS pret immediatement apres onConnected.
+      // Sur Itel A50 (Mediatek) ET Xiaomi 11T, sendText() echoue meme apres 800ms.
+      // On augmente les delais: 2s → 4s → 8s (3 tentatives max).
+      // IMPORTANT: verifier que le peer est dans connectedPeers AVANT d'envoyer.
       if (this._pendingWifiGroupReady) {
         const { peerId, masterIp } = this._pendingWifiGroupReady;
         this._pendingWifiGroupReady = null;
         const msg = JSON.stringify({ type: 'wifi_group_ready', masterIp });
-        const delays = [1000, 2000, 4000];
+        const delays = [2000, 4000, 8000];
         const trySend = (attempt) => {
           if (attempt > delays.length) {
-            this._log(`⚠️ [V3.37] WIFI_GROUP_READY échoué après ${delays.length} tentatives`);
+            this._log(`⚠️ [V4.1] WIFI_GROUP_READY echoue apres ${delays.length} tentatives`);
+            return;
+          }
+          // V4.1: Verifier que le peer est connecte AVANT d'envoyer
+          if (!this.connectedPeers.has(peerId)) {
+            this._log(`⚠️ [V4.1] WIFI_GROUP_READY tentative ${attempt}/${delays.length}: peer ${peerId} pas encore dans connectedPeers, retry...`);
+            if (attempt < delays.length) {
+              setTimeout(() => trySend(attempt + 1), delays[attempt - 1]);
+            }
             return;
           }
           setTimeout(() => {
             sendText(peerId, msg).then(ok => {
               if (ok) {
-                this._log(`✅ [V3.37] WIFI_GROUP_READY envoyé au Slave ${peerId} (tentative ${attempt}/${delays.length})`);
+                this._log(`✅ [V4.1] WIFI_GROUP_READY envoye au Slave ${peerId} (tentative ${attempt}/${delays.length})`);
               } else {
-                this._log(`⚠️ [V3.37] WIFI_GROUP_READY tentative ${attempt}/${delays.length} échouée, retry...`);
+                this._log(`⚠️ [V4.1] WIFI_GROUP_READY tentative ${attempt}/${delays.length} echouee, retry...`);
                 trySend(attempt + 1);
               }
             }).catch(e => {
-              this._log(`⚠️ [V3.37] WIFI_GROUP_READY tentative ${attempt} exception: ${e.message}, retry...`);
+              this._log(`⚠️ [V4.1] WIFI_GROUP_READY tentative ${attempt} exception: ${e.message}, retry...`);
               trySend(attempt + 1);
             });
-          }, attempt === 1 ? 800 : delays[attempt - 1]);
+          }, attempt === 1 ? 1000 : delays[attempt - 1]);
         };
         trySend(1);
       }
