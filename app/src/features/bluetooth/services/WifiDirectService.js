@@ -45,6 +45,7 @@ class WifiDirectServiceClass {
     this._localP2pIp = null; // IP locale réelle sur l'interface p2p (ex: 192.168.49.112)
     this._targetPeerIp = null; // IP cible pour sendFileTo (vraie IP du Slave)
     this._logicalRole = null; // V3.34 (FIX 15): 'MASTER' ou 'SLAVE' — rôle logique (pas hardware)
+    this._isReceiving = false; // V4.2: Bloquer disconnect() pendant réception
   }
 
   isPeerBlacklisted(peerName) {
@@ -759,6 +760,7 @@ class WifiDirectServiceClass {
   async startReceiving(callback) {
     if (this._receiveMessages) return;
     this._receiveMessages = true;
+    this._isReceiving = true; // V4.2: Empêcher disconnect() pendant réception
     
     const mediaDir = `${FileSystem.documentDirectory}loba_media/`.replace('file://', '');
     const dirInfo = await FileSystem.getInfoAsync(`${FileSystem.documentDirectory}loba_media/`);
@@ -853,9 +855,15 @@ class WifiDirectServiceClass {
 
   stopReceiving() {
     this._receiveMessages = false;
+    this._isReceiving = false; // V4.2: Réceptacle terminé, disconnect() autorisé
   }
 
   async disconnect() {
+    // V4.2: Ne pas déconnecter pendant qu'on reçoit des fichiers
+    if (this._isReceiving) {
+      console.log('[WifiDirectService] ⏭️ [V4.2] disconnect() ignoré — réception en cours');
+      return;
+    }
     try { if (WifiP2P && this._nativeReady) await WifiP2P.removeGroup(); } catch (_) {}
     this.connectedPeer = null;
     this.isConnected = false;
