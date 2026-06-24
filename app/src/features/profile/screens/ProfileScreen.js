@@ -29,7 +29,6 @@ export default function ProfileScreen({
   onOpenEditProfile,
   onOpenBlockedUser,
   onNavigate,
-  onOpenKioskAdmin,
 }) {
   const [activeTab, setActiveTab] = useState('Compte');
   const { isDark, theme, toggleTheme } = useTheme();
@@ -158,22 +157,6 @@ export default function ProfileScreen({
             <MaterialCommunityIcons name="harddisk" size={20} color="#60A5FA" />
           </View>
           <Text style={styles.settingLabel}>Gestion du Stockage</Text>
-          <Ionicons name="chevron-forward" size={18} color="#6B7280" />
-        </Pressable>
-
-        <Pressable style={styles.settingRow} onPress={onOpenKioskAdmin}>
-          <View style={[styles.settingIcon, { backgroundColor: 'rgba(245, 158, 11, 0.2)' }]}>
-            <MaterialCommunityIcons name="shield-crown" size={20} color="#f59e0b" />
-          </View>
-          <Text style={styles.settingLabel}>Admin Kiosque</Text>
-          <Ionicons name="chevron-forward" size={18} color="#6B7280" />
-        </Pressable>
-
-        <Pressable style={styles.settingRow} onPress={() => onNavigate('super_admin_login')}>
-          <View style={[styles.settingIcon, { backgroundColor: 'rgba(43, 238, 121, 0.2)' }]}>
-            <MaterialCommunityIcons name="crown" size={20} color="#2BEE79" />
-          </View>
-          <Text style={styles.settingLabel}>Super Admin</Text>
           <Ionicons name="chevron-forward" size={18} color="#6B7280" />
         </Pressable>
 

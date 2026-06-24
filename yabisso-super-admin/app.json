@@ -1,0 +1,50 @@
+{
+  "expo": {
+    "name": "Yabisso Super Admin",
+    "slug": "yabisso-super-admin",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "newArchEnabled": false,
+    "devClient": true,
+    "packagerOpts": {
+      "hostType": "lan",
+      "lanType": "ip",
+      "port": 8082
+    },
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#000000"
+    },
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#000000"
+      },
+      "package": "com.benksidney.yabisso.superadmin",
+      "permissions": []
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "owner": "benksidney",
+    "plugins": [
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "minSdkVersion": 24,
+            "targetSdkVersion": 35,
+            "compileSdkVersion": 35
+          }
+        }
+      ],
+      "./plugins/withRemoveBundleCompression"
+    ]
+  }
+}

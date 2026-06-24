@@ -16,8 +16,6 @@ export default function SignupScreen({
   onOfflineSms,
   onOfflineQr,
   onOfflineBle,
-  onKioskMode,
-  onKioskProductMode,
 }) {
   const [showOfflineChoice, setShowOfflineChoice] = useState(false);
   const [selectedRole, setSelectedRole] = useState('user');
@@ -134,38 +132,6 @@ export default function SignupScreen({
           <Pressable
             style={[
               styles.roleCard,
-              selectedRole === 'kiosk' && styles.roleCardActive,
-            ]}
-            onPress={() => setSelectedRole('kiosk')}
-          >
-            <View style={[styles.roleBadge, styles.roleBadgeKiosk]}>
-              <Text style={styles.roleBadgeText}>Kiosque User</Text>
-            </View>
-            <Text style={styles.roleCardTitle}>Kiosque Inscription</Text>
-            <Text style={styles.roleCardDesc}>
-              Pour valider les nouveaux utilisateurs offline et recharger des points.
-            </Text>
-          </Pressable>
-
-          <Pressable
-            style={[
-              styles.roleCard,
-              selectedRole === 'kiosk_product' && styles.roleCardActive,
-            ]}
-            onPress={() => setSelectedRole('kiosk_product')}
-          >
-            <View style={[styles.roleBadge, styles.roleBadgeKiosk, {backgroundColor: 'rgba(77, 159, 255, 0.18)'}]}>
-              <Text style={styles.roleBadgeText}>Kiosque Marche</Text>
-            </View>
-            <Text style={styles.roleCardTitle}>Kiosque Marché</Text>
-            <Text style={styles.roleCardDesc}>
-              Pour valider les produits des vendeurs et les rendre public sur le marché.
-            </Text>
-          </Pressable>
-
-          <Pressable
-            style={[
-              styles.roleCard,
               selectedRole === 'affiliate' && styles.roleCardActive,
             ]}
             onPress={() => setSelectedRole('affiliate')}
@@ -187,21 +153,9 @@ export default function SignupScreen({
 
         <Pressable
           style={styles.primaryButton}
-          onPress={() => {
-            if (selectedRole === 'kiosk') {
-              if (onKioskMode) onKioskMode();
-              else setShowOfflineChoice(true);
-            } else if (selectedRole === 'kiosk_product') {
-              if (onKioskProductMode) onKioskProductMode();
-              else setShowOfflineChoice(true);
-            } else {
-              setShowOfflineChoice(true);
-            }
-          }}
+          onPress={() => setShowOfflineChoice(true)}
         >
-          <Text style={styles.primaryButtonText}>
-            {selectedRole.startsWith('kiosk') ? 'Activer Mode Kiosque' : "S'inscrire"}
-          </Text>
+          <Text style={styles.primaryButtonText}>{"S'inscrire"}</Text>
         </Pressable>
 
         <View style={styles.divider}>
@@ -467,9 +421,6 @@ const styles = StyleSheet.create({
   },
   roleBadgePartner: {
     backgroundColor: 'rgba(234, 179, 8, 0.18)',
-  },
-  roleBadgeKiosk: {
-    backgroundColor: 'rgba(239, 68, 68, 0.18)',
   },
   roleBadgeAffiliate: {
     backgroundColor: 'rgba(34, 197, 94, 0.18)',
