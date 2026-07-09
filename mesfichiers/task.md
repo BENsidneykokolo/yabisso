@@ -1,355 +1,113 @@
-# TASK MANAGER
-
-## APK Build
-- **Chemin** : `app/android/app/build/outputs/apk/debug/app-debug.apk`
-- **Taille** : ~249 MB
-- **Date** : 14 mars 2026 à 23:45
-- **Statut** : ✅ Créé
+# TASK MANAGER — YABISSO BUSINESS
 
 ## Légende
 - **Priorité** : P1 (critique) > P2 (important) > P3 (optionnel)
-- **Sprint** : S0=Setup, S1=Auth+SMS, S2=Wallet+Sync, S3=Flutterwave+Loba, S4=Media+Marketplace, S5=Négociation, S6=WiFi Direct, S7=Bluetooth, S8-S11=Delivery+Kiosque+AI, S12=Security+Pilot
 
 ---
 
-## Phase 1 — Online + SMS Fallback + UI (MVP)
-
-| Tâche | Status | Priorité | Sprint |
-|-------|--------|----------|--------|
-| Setup React Native + Expo | Done | P1 | S0 |
-| Installer expo-dev-client | Done | P1 | S0 |
-| Installer EAS CLI | Done | P1 | S0 |
-| Configurer EAS dev client + build Android | Done | P1 | S0 |
-| Configurer build local Android (Correction SDK/NDK) | Done | P1 | S0 |
-| Fix WatermelonDB adapter import (SQLiteAdapter) | Done | P1 | S0 |
-| Local storage init (WatermelonDB + SecureStore) | Done | P1 | S0 |
-| Migration Marketplace vers WatermelonDB (Offline-First) | Done | P1 | S4 |
-| - SellerProfileScreen (Reactivité avecObservables) | Done | P1 | S4 |
-| - NewArrivalsScreen (Filtrage validation) | Done | P1 | S4 |
-| - MarketplaceHomeScreen (Filtrage validation) | Done | P1 | S4 |
-| - AddProductScreen (Persistance locale) | Done | P1 | S4 |
-| Prodecure de Validation Kiosque (Produits) | Done | P1 | S10 |
-| - Generation QR Code Vendeur | Done | P1 | S10 |
-| - Scanner & Approbation Kiosque | Done | P1 | S10 |
-
-| Design system de base (YScreen/YText/YButton/YInput) | Not Started | P1 | S0 |
-| UI base (login/signup + screens de base) | Done | P1 | S1 |
-| Creer WelcomeScreen (bienvenue) | Done | P1 | S1 |
-| Creer LanguageScreen | Done | P1 | S1 |
-| Creer SignupScreen | Done | P1 | S1 |
-| Creer SmsSignupScreen | Done | P1 | S1 |
-| Creer QrSignupScreen | Done | P1 | S1 |
-| Creer PinSignupScreen | Done | P1 | S1 |
-| Implémenter le choix de statut (Utilisateur, Partner, Kiosque, Affilier) | Done | P1 | S1 |
-| Creer LoginScreen | Done | P1 | S1 |
-| Creer HomeScreen (dashboard) | Done | P1 | S1 |
-| Creer FloatingNav (bouton flottant) | Done | P1 | S1 |
-| Creer WalletScreen | Done | P1 | S1 |
-| Creer AssistantScreen | Done | P1 | S1 |
-| Creer ProfileScreen | Done | P1 | S1 |
-| Creer pages Profil (Compte, Securite, Langue, Support, Deconnexion) | Done | P1 | S1 |
-| Creer HomeSettingsScreen | Done | P1 | S1 |
-| Creer HomeNotificationsScreen | Done | P1 | S1 |
-| Creer QrHubScreen | Done | P1 | S1 |
-| Creer MarketplaceHomeScreen | Done | P1 | S1 |
-| Creer ProductListScreen | Done | P1 | S1 |
-| Creer CategoryPageScreen | Done | P1 | S1 |
-| Creer ProductDetailsScreen | Done | P1 | S4 |
-| Creer CartScreen | Done | P1 | S4 |
-| Creer CheckoutScreen | Done | P1 | S4 |
-| Creer OrderStatusScreen | Done | P1 | S4 |
-| Creer DeliveryTrackingScreen | Done | P1 | S4 |
-| Creer SellerComparisonScreen | Done | P1 | S4 |
-| Creer LobaForYouScreen (Pour Toi) | Done | P2 | S5 |
-| Creer LobaFollowingScreen (Abonnements) | Done | P2 | S5 |
-| Posts counter dynamique sur profil | Done | P2 | S5 |
-| Creer BlockedUserScreen | Done | P1 | S4 |
-| Creer CartContext (state management) | Done | P1 | S4 |
-| Ajouter bouton comparer dans ProductDetails | Done | P1 | S4 |
-| Ajouter bouton comparer dans ProductList | Done | P1 | S4 |
-| Ajouter bouton statut marketplace dans Profile | Done | P1 | S4 |
-| Branchement parcours complet marketplace | Done | P1 | S4 |
-| FloatingNav remonter (bottom: 120) | Done | P1 | S1 |
-| Link BottomNav Boutique vers MarketplaceHomeScreen | Done | P1 | S1 |
-| Creer structure dossiers complete | Done | P1 | S0 |
-| Signup online (Supabase OTP) | Not Started | P1 | S1 |
-| SMS fallback automatique (user/super admin) | In Progress | P1 | S1 |
-| Configuration SMS (Africa's Talking) | Not Started | P1 | S1 |
-| Definir stack SMS fallback (Android only) | Done | P1 | S1 |
-| Configurer permissions BLE/WiFi/SMS Android | Done | P1 | S1 |
-| Offline Signup (flow complet) | Done | P1 | S1 |
-| QR kiosque (scan/validate Users) | Not Started | P1 | S1 |
-| QR kiosque (scan/validate Produits) | Done | P1 | S10 |
-| Auth kiosque offline (QR activation locale) | Not Started | P1 | S1 |
-| Secure local DB (SQLite chiffré) | Not Started | P1 | S1 |
-| Schema SQL Supabase complet | Not Started | P1 | S1 |
-| RLS policies + audit_log insert-only | Not Started | P1 | S1 |
-| SyncEngine + conflictResolver | Not Started | P1 | S2 |
-| Supabase Sync minimal | Not Started | P1 | S2 |
-| Wallet - Recharger Screen | Done | P1 | S1 |
-| Wallet - Kiosque QR Screen | Done | P1 | S1 |
-| Wallet - Kiosque PIN Screen | Done | P1 | S1 |
-| Wallet - Envoyer Screen (popup 3 options) | Done | P1 | S1 |
-| Wallet - Envoyer QR Generate (Step 1) | Done | P1 | S1 |
-| Wallet - Envoyer PIN/Select Beneficiaire | Done | P1 | S1 |
-| Wallet - Envoyer Scan QR (Step 3) | Done | P1 | S1 |
-| Wallet - Recevoir Screen | Done | P1 | S1 |
-| Wallet - Recevoir Scan QR | Done | P1 | S1 |
-| Wallet - Recevoir Notifications | Done | P1 | S1 |
-| Wallet - Recevoir Request Payment | Done | P1 | S1 |
-| Wallet - Historique Screen | Done | P1 | S1 |
-| Wallet - Mode Points & Conversion 1:1 | Done | P1 | S1 |
-| Marketplace - Menu drawer avec Profil | Done | P1 | S4 |
-| Marketplace - Notifications fonctionnel | Done | P1 | S4 |
-| Notifications - Navigation Promotion -> Liste promo | Done | P1 | S4 |
-| Notifications - Navigation Nouveauté -> new_arrivals | Done | P1 | S4 |
-| Notifications - Navigation Commande -> orders | Done | P1 | S4 |
-| Notifications - Navigation Paiement -> wallet | Done | P1 | S4 |
-| AddAddress - Bouton enregistre avec categorie sans nom | Done | P1 | S4 |
-| AddAddress - Fix zone systeme (paddingBottom: 60) | Done | P1 | S4 |
-| Checkout - Moi affiche details profil inscription | Done | P1 | S4 |
-| Profile - Nom cliquable vers ecran Compte | Done | P1 | S4 |
-| Menu Boutique - Remplace Accueil par Profil | Done | P1 | S4 |
-| Restaurant - Categories filterables (African, Burger, Healthy, Pizza) | Done | P2 | S4 |
-| Restaurant - Barre de recherche fonctionnelle (nom + categorie) | Done | P2 | S4 |
-| Restaurant - Filtres "Mieux notés" et "Plus rapides" | Done | P2 | S4 |
-| Restaurant - Ecran Favoris avec RestaurantFavoritesContext | Done | P2 | S4 |
-| Restaurant - Ecran Commandes avec RestaurantOrdersContext | Done | P2 | S4 |
-| Restaurant - Bottom navigation alignee avec dashboard | Done | P2 | S4 |
-| Restaurant - Header simplifie (menu gauche, favoris droite) | Done | P2 | S4 |
-| Restaurant - Integration adresse checkout vers profil | Done | P2 | S4 |
-| Restaurant - Fix syntax errors RestaurantHomeScreen.js | Done | P2 | S4 |
-| Restaurant - Ajouter plusieurs plats (modal + images 5 max) | Done | P2 | S4 |
-| Marketplace - SellerProfileScreen (gestion produits, edit, delete) | Done | P1 | S4 |
-| Marketplace - AddProductScreen (photos, categories, validation, publish/draft) | Done | P1 | S4 |
-| Marketplace - Upload photo profil et banniere boutique | Done | P1 | S4 |
-| Marketplace - Menu "Vendre" vers profil vendeur | Done | P1 | S4 |
-| Marketplace - Affichage produits cree (boutique, categories, recherche) | Done | P1 | S4 |
-| Marketplace - Workflow achat complet (panier -> checkout -> commande) | Done | P1 | S4 |
-| Marketplace - Navigation produit details -> panier -> checkout | Done | P1 | S4 |
-| Marketplace - Affichage details produit (image, prix, marque, description) | Done | P1 | S4 |
-| Loba - Feed auto-refresh après réception pack P2P | Done | P1 | S6 |
-| Loba - Support fichiers individuels (hors pack ZIP) | Done | P1 | S6 |
-| Loba - Appel telephonique depuis Messages | Done | P2 | S5 |
-| Marketplace - Favoris fonctionnel (ajout/retrait, stockage SecureStore) | Done | P1 | S5 |
-| Marketplace - Favoris s'affichent dans l'ecran Favoris | Done | P1 | S5 |
-| Marketplace - Comparaison de prix avec le meme produit (match par ID/nom) | Done | P1 | S5 |
-| Marketplace - Navigation comparaison -> details produit (choix vendeur) | Done | P1 | S5 |
-| Marketplace - Confirmation reception commande (commentaire + photo) | Done | P1 | S5 |
-| Marketplace - Signalement probleme commande avec upload image | Done | P1 | S5 |
-| Marketplace - SellerProfile sans onglet "Avis" (mockups supprimes) | Done | P1 | S5 |
-| Marketplace - SellerDashboard (stats, alertes, ventes, actions rapides) | Done | P1 | S5 |
-| Marketplace - SellerOrdersScreen (liste, filtre, detail, actions statut) | Done | P1 | S5 |
-| Marketplace - SellerNotificationsScreen (notifications vendeur, badges) | Done | P1 | S5 |
-| Marketplace - SellerAnalyticsScreen (revenus, periode, top produits, chart) | Done | P1 | S5 |
-| Marketplace - Lien menu "Vendre" -> SellerDashboard | Done | P1 | S5 |
-| Marketplace - Bouton Dashboard dans SellerProfileScreen | Done | P1 | S5 |
-| Restaurant - Persistence offline (useEffect + WatermelonDB) | Done | P1 | S5 |
-| Restaurant - Sync queue pour Supabase | Done | P1 | S5 |
-| Restaurant - Seller Dashboard (stats, revenus, actions) | Done | P1 | S5 |
-| Restaurant - Seller Orders (filtres tabs, badges) | Done | P1 | S5 |
-| Restaurant - Seller Order Detail (timeline, actions) | Done | P1 | S5 |
-| Restaurant - Seller Assign Courier (liste, sélection) | Done | P1 | S5 |
-| Restaurant - Seller Notifications (temps réel) | Done | P1 | S5 |
-| Restaurant - Fix database null (getDatabase fallback) | Done | P1 | S5 |
-| Services - SellerScreen avec persistence offline | Done | P2 | S5 |
-| Services - SyncService avec sync queue | Done | P2 | S5 |
-| Validation - OfflineValidationService (creation, QR, approve/reject) | Done | P1 | S5 |
-| Validation - ProductValidationScreen (scanner, pending, confirme) | Done | P1 | P1 |
-| Validation - Integration Restaurant/Services vers validation | Done | P1 | S5 |
-| Validation - Reception via P2P (WiFi/BLE) | Done | P2 | S6 |
-| - Handshake Google Nearby (Auto-Connect) | Done | P1 | S7 |
-| - Logging Mesh Temps Réel | Done | P2 | S7 |
-
----
-
-## Dating (Rencontre)
-
-| Tâche | Status | Priorité | Sprint |
-|-------|--------|----------|--------|
-| Dating - Home (swipe profils) | Done | P2 | S5 |
-| Dating - Profile (vue détaillée) | Done | P2 | S5 |
-| Dating - Edit Profile (creation/edition) | Done | P2 | S5 |
-| Dating - Chat (messagerie) | Done | P2 | S5 |
-| Dating - Likes (liste des likes) | Done | P2 | S5 |
-| Dating - Chats (liste conversations) | Done | P2 | S5 |
-| Dating - Filtres | Done | P2 | S5 |
-
----
-
-## Phase 2 — Wallet Core & Sync
-
-| Tâche | Status | Priorité | Sprint |
-|-------|--------|----------|--------|
-| Wallet core (argent + points) | Not Started | P1 | S2 |
-| Flutterwave sandbox integration | Not Started | P1 | S3 |
-
----
-
-## Phase 3 — Loba & Media
-
-| Tâche | Status | Priorité | Sprint |
-|-------|--------|----------|--------|
-| Loba feed v1 (vertical + cache + filters) | Done | P2 | S3 |
-| Media pipeline (compression + mosaïque) | Not Started | P2 | S4 |
-
----
-
-## Phase 4 — Marketplace & Delivery
-
-| Tâche | Status | Priorité | Sprint |
-|-------|--------|----------|--------|
-| Marketplace offline catalog | Done | P2 | S4 |
-| Negotiation module (min_price rules) | Done | P2 | S5 |
-| Purchase flow + SMS fallback | Done | P2 | S5 |
-| Order Re-entry & Modification (cancelled orders) | Done | P2 | S5 |
-| Recipient Info Popup (Not Me option) | Done | P2 | S5 |
-| Order lifecycle (En cours, Livré, Annulé) | Done | P2 | S5 |
-| Marketplace Pricing & Seller Details | Done | P1 | S5 |
-| Swap QR/Scan | Not Started | P2 | S6 |
-| Courier signup & KYC | Not Started | P2 | S8 |
-| Dispatch engine v1 | Not Started | P2 | S8 |
-| QR & PIN validation delivery | Not Started | P2 | S9 |
-| YAB-Pack builder + import | Not Started | P2 | S10 |
-| Kiosk USB key flow | Not Started | P2 | S10 |
-
----
-
-## Phase 5 — P2P Transports
-
-| Tâche | Status | Priorité | Sprint |
-|-------|--------|----------|--------|
-| WiFi Direct P2P setup | Done | P2 | S6 |
-| WiFi Direct timeout adaptatif (120s pour gros fichiers) | Done | P2 | S6 |
-| WiFi Direct OOM-Fix (receiveFile au lieu de receiveMessage) | Done | P1 | S6 |
-| WiFi Direct Stabilisation (Anti-collision MAC + Master/Slave v1.0.10) | Done | P1 | S7 |
-| WiFi Direct Auto-Retry on 95% hang | Done | P1 | S7 |
-| WiFi Direct Master-Wait & Slave-Silent (v1.0.10) | Done | P1 | S7 |
-| WiFi Direct Hardware Score v1.0.15 (RAM × 10) | Done | P1 | S7 |
-| WiFi Direct Score Comparison Fix v1.0.16 (parseInt) | Done | P1 | S7 |
-| WiFi Direct Master Creates Group v1.0.17 | Done | P1 | S7 |
-| WiFi Direct deviceName Fix v1.0.18 | Done | P1 | S7 |
-| WiFi Direct Auto-Connexion (étape 1) | Testing | P1 | S7 |
-| WiFi Direct Transfert Auto (étape 2) | Not Started | P1 | S7 |
-| WiFi Direct Delta Trigger (étape 3) | Not Started | P1 | S7 |
-| WiFi Direct Test Terrain (étape 4) | Not Started | P1 | S7 |
-
-### V3.24-V3.25 — P2P Stabilisation (2026-06-10)
+## Phase 1 — Setup + UI Auth + Dashboard
 
 | Tâche | Status | Priorité |
 |-------|--------|----------|
-| BUG-056: Filtre taille < 5KB dans startReceiving | Done | P1 |
-| BUG-057: InterestEngine staging directory isolé | Done | P1 |
-| BUG-058: Check taille minimum 5KB dans _handleReceivedFile | Done | P1 |
-| BUG-059: Cleanup periodique fichiers p2p_/ctrl_ | Done | P2 |
-| BUG-060: Fix JSDoc syntaxe p2p_*/ctrl_* | Done | P3 |
-| BUG-061: Slave HELLO immédiat depuis onConnectionChange | Done | P1 |
-| BUG-061b: IP Slave via HELLO metadata (senderIp) + fallback 192.168.49.2 | Done | P1 |
+| Setup React Native + Expo | Done | P1 |
+| Installer expo-dev-client | Done | P1 |
+| Installer EAS CLI | Done | P1 |
+| Configurer EAS dev client | Done | P1 |
+| Local storage (WatermelonDB + SecureStore) | Done | P1 |
+| WelcomeScreen | Done | P1 |
+| LanguageScreen | Done | P1 |
+| SignupScreen | Done | P1 |
+| LoginScreen | Done | P1 |
+| Dashboard/HomeScreen | In Progress | P1 |
+| Navigation vers les 11 apps | Not Started | P1 |
 
-### V3.27 — P2P Fix Logs (2026-06-10)
+---
+
+## Phase 2 — Apps Core
 
 | Tâche | Status | Priorité |
 |-------|--------|----------|
-| BUG-063: Mesh propagation boucle (233 messages → batch 50 max) | Done | P0 |
-| BUG-064: Framework busy (delay 3s→5s, backoff 10s→15s, timeout 15s→25s) | Done | P0 |
-| BUG-065: 0B file — IP Slave detectee via receiveFile + fallback 192.168.49.2 | Done | P0 |
-| BUG-066: Singleton guard — empeche double demarrage P2PAutoSync (Itel) | Done | P0 |
-| Génération APK Release pour tests terrain | Not Started | P1 | S7 |
-| Bluetooth simple P2P (Google Nearby Connect) | Done | P2 | S7 |
-| Choisir stack BLE mesh (ble-plx vs nearby) | Done | P3 | S7 |
-| Bluetooth Mesh (multi-hop) | Not Started | P3 | Post-MVP |
-| Mesh orchestrator POC | Not Started | P3 | Post-MVP |
-| Definir mesh routing BLE (multi-hop) | Not Started | P3 | Post-MVP |
+| **Yabisso Kassa** | | |
+| KassaHomeScreen | Not Started | P1 |
+| KassaCaisseScreen (terminal de vente) | Not Started | P1 |
+| KassaStockScreen | Not Started | P2 |
+| KassaRapportsScreen | Not Started | P2 |
+| **Employé** | | |
+| EmployeHomeScreen | Not Started | P1 |
+| EmployeListScreen | Not Started | P1 |
+| EmployeDetailScreen | Not Started | P2 |
+| EmployePlanningScreen | Not Started | P2 |
+| **Mon App** | | |
+| MonAppHomeScreen (profil) | Not Started | P1 |
+| MonAppSettingsScreen | Not Started | P2 |
+| MonAppHistoriqueScreen | Not Started | P3 |
 
 ---
 
-## Phase 6 — AI, Sécurité & Pilot
+## Phase 3 — Apps Admin
 
-| Tâche | Status | Priorité | Sprint |
-|-------|--------|----------|--------|
-| AI ingest pipeline (Loba) | Not Started | P2 | S11 |
-| Offline Chat | Done | P2 | S3 |
-| KMS & key rotation | Not Started | P1 | S12 |
-| Pilot deployment (1 city) | Not Started | P2 | S12 |
-| Stabilisation P2P WiFi Direct (V2.6) | Done | P1 | S6 |
-| - Fix hardware collision (Nearby Mesh Pause) | Done | P1 | S6 |
-| - Fix Internal Error (Role-based initialization) | Done | P1 | S6 |
-| - Fix native crash (sendMessage GO NPE) | Done | P1 | S6 |
-| - Fix UI crash (expo-video released player) | Done | P1 | S6 |
-| Kiosque Yabisso Admin QR Scanner | Done | P1 | S13 |
-| - Boutons QR dans 4 écrans (Validation, Recharge, Points, Users) | Done | P1 | S13 |
-| - Scanner QR universel (KioskQRScreen.js) | Done | P1 | S13 |
-| - Fix MeshRequestEvents.addListener error | Done | P1 | S13 |
-| - Fix route.params undefined | Done | P1 | S13 |
-| - Fix SafeAreaView deprecated | Done | P1 | S13 |
-| - Fix renderError manquant | Done | P1 | S13 |
-| - Centrer QR code dans modal | Done | P1 | S13 |
-| - Descendre boutons header pour zone système | Done | P1 | S13 |
-| - Validation produit avec vérification | In Progress | P1 | S13 |
+| Tâche | Status | Priorité |
+|-------|--------|----------|
+| **Yabisso Admin Dashboard ("Travail")** | | |
+| AdminDashboardScreen | Not Started | P1 |
+| AdminStatsScreen | Not Started | P2 |
+| AdminGestionAppsScreen | Not Started | P2 |
+| **CRM** | | |
+| CrmHomeScreen | Not Started | P1 |
+| CrmContactsScreen | Not Started | P1 |
+| CrmDetailScreen | Not Started | P2 |
+| CrmPipelineScreen | Not Started | P2 |
 
 ---
 
-## Implémentation Services (Tous écrans)
+## Phase 4 — Apps Métier
 
-| Tâche | Status | Sprint |
-|-------|--------|--------|
-| Services - ServiceDetailsScreen (prestataire, photos, avis) | Done | S14 |
-| Services - ServiceBookingScreen (réservation, date, heure, adresse) | Done | S14 |
-| Services - ServiceCheckoutScreen (confirmation, paiement) | Done | S14 |
-| Services - ServicesOrdersScreen (réservations, filtres, stats) | Done | S14 |
-| Services - ServicesFavoritesScreen (favoris, supprimer) | Done | S14 |
-| Services - ServicesNotificationsScreen (notifications) | Done | S14 |
-| Services - ServicesProfileScreen (profil, paramètres) | Done | S14 |
-| Services - ServicesProvidersScreen (liste providers, filtres) | Done | S14 |
-| Services - Toutes routes + imports dans App.js | Done | S14 |
-
----
-
-## Implémentation Pharmacie (Tous écrans)
-
-| Tâche | Status | Sprint |
-|-------|--------|--------|
-| Pharmacie - PharmacyHomeScreen (navigation + bottom nav) | Done | S14 |
-| Pharmacie - PharmacyDetailsScreen (détail produit, posologie) | Done | S14 |
-| Pharmacie - PharmacyCartScreen (panier, quantité, total) | Done | S14 |
-| Pharmacie - PharmacyCheckoutScreen (commande, paiement) | Done | S14 |
-| Pharmacie - PharmacyOrderScreen (suivi commande, timeline) | Done | S14 |
-| Pharmacie - Toutes routes + imports dans App.js | Done | S14 |
+| Tâche | Status | Priorité |
+|-------|--------|----------|
+| **Yabisso Hotel** | | |
+| HotelHomeScreen | Not Started | P1 |
+| HotelChambresScreen | Not Started | P1 |
+| HotelReservationsScreen | Not Started | P1 |
+| HotelClientsScreen | Not Started | P2 |
+| **Restaurant** | | |
+| RestaurantHomeScreen | Not Started | P1 |
+| RestaurantMenuScreen | Not Started | P1 |
+| RestaurantCommandesScreen | Not Started | P1 |
+| RestaurantCuisineScreen | Not Started | P2 |
+| **École** | | |
+| EcoleHomeScreen | Not Started | P1 |
+| EcoleElevesScreen | Not Started | P1 |
+| EcoleNotesScreen | Not Started | P2 |
+| EcoleEmploiDuTempsScreen | Not Started | P2 |
 
 ---
 
-## Implémentation Appartements (Tous écrans)
+## Phase 5 — Apps Comptabilité
 
-| Tâche | Status | Sprint |
-|-------|--------|--------|
-| Appartements - RealEstateHomeScreen (réécrit en français) | Done | S14 |
-| Appartements - ApartmentDetailsScreen (photos, équipements, avis) | Done | S14 |
-| Appartements - ApartmentBookingScreen (réservation, durée, paiement) | Done | S14 |
-| Appartements - ApartmentPaymentScreen (paiement, confirmation) | Done | S14 |
-| Appartements - ApartmentFavoritesScreen (favoris) | Done | S14 |
-| Appartements - ApartmentSearchScreen (recherche, filtres) | Done | S14 |
-| Appartements - Toutes routes + imports dans App.js | Done | S14 |
+| Tâche | Status | Priorité |
+|-------|--------|----------|
+| **Facture** | | |
+| FactureHomeScreen | Not Started | P1 |
+| FactureCreerScreen | Not Started | P1 |
+| FactureListeScreen | Not Started | P1 |
+| FactureDetailScreen | Not Started | P2 |
+| **Compta** | | |
+| ComptaHomeScreen | Not Started | P1 |
+| ComptaEcrituresScreen | Not Started | P1 |
+| ComptaBalanceScreen | Not Started | P2 |
+| **Dépense** | | |
+| DepenseHomeScreen | Not Started | P1 |
+| DepenseAjouterScreen | Not Started | P1 |
+| DepenseListeScreen | Not Started | P1 |
+| DepenseBudgetScreen | Not Started | P2 |
 
 ---
 
-## Implémentation Assistant IA (Écrans additionnels)
+## Phase 6 — Polish + Tests
 
-| Tâche | Status | Sprint |
-|-------|--------|--------|
-| IA - AssistantHistoryScreen (historique conversations) | Done | S14 |
-| IA - AssistantSettingsScreen (paramètres IA) | Done | S14 |
-| IA - Navigation menu → history & settings | Done | S14 |
-| IA - Toutes routes + imports dans App.js | Done | S14 |
-
-## Session S15 — 2026-05-11
-
-| Tâche | Status | Sprint |
-|-------|--------|--------|
-| Pharmacie - PharmacyProfileScreen (profil, historique, paramètres) | Done | S15 |
-| Appartements - ApartmentProfileScreen (profil gestionnaire, biens) | Done | S15 |
-| Appartements - ApartmentListingsScreen (liste annonces, stats) | Done | S15 |
-| Restaurant - RestaurantSellerMenuScreen (gestion livreurs) | Done | S15 |
-| Dating - Routes corrigées en snake_case (dating_profile, dating_chat, etc.) | Done | S15 |
-| Dating - Noms de composants corrigés (DatingHomeScreen → DatingHome, etc.) | Done | S15 |
-| Dating - Toutes routes + imports dans App.js (7 écrans) | Done | S15 |
-| Navigation dead-ends résolus (pharmacy_profile, apartment_profile, apartment_listings, restaurant_seller_couriers) | Done | S15 |
+| Tâche | Status | Priorité |
+|-------|--------|----------|
+| Tests unitaires | Not Started | P2 |
+| Tests d'intégration | Not Started | P2 |
+| Optimisation performance | Not Started | P3 |
+| Déploiement | Not Started | P1 |
