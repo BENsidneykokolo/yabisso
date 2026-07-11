@@ -361,3 +361,44 @@ Dès qu'une IP répond → transfert réussi + _targetPeerIp mis à jour
 - `app/src/features/bluetooth/services/WifiDirectService.js` (_sendFileToWithFallback + sendFile + sendControlMessage + startReceiving)
 - `app/src/features/bluetooth/services/P2PAutoSync.js` (onSlaveIpKnown handler + SLAVE_IP handler)
 
+---
+
+## Session 2026-07-11 — Diagnostic V4.4 + Fix V4.5
+
+### Diagnostic V4.4
+Les logs du test V4.4 montrent que :
+1. ✅ Le fix IP confident fonctionne — le Slave n'envoie plus de fausse IP
+2. ❌ Le fallback multi-IP (.2→.6) échoue sur TOUTES les IPs → EHOSTUNREACH
+3. ✅ Le fallback `sendFile` (sans IP) RÉUSSIT — le framework WiFi Direct gère le routing
+4. ❌ Le fichier reçu est **0B** (bug Mediatek — flush TCP retardé)
+5. ❌ Le retry 0B échoue car le fichier disparaît pendant l'attente
+
+**Cause racine confirmée** : `sendFileTo(path, ip)` échoue sur Mediatek car la table de routage P2P n'est pas configurée. `sendFile(path)` (routing natif WiFi Direct) fonctionne parfaitement.
+
+### Fix V4.5 implémenté
+
+**Changement 1 : Skip sendFileTo si IP non confiante (économie ~60s)**
+- `WifiDirectService.js` : Ajout `_targetPeerIpConfident` flag
+- `sendFile()` et `sendControlMessage()` : Si `_targetPeerIpConfident=false`, on utilise `sendFile` (routing natif) au lieu de `sendFileTo`
+- `P2PAutoSync.js` : Suppression du fallback `192.168.49.2` dans le handler HELLO — on laisse `_targetPeerIp=null` pour forcer l'utilisation de `sendFile`
+
+**Changement 2 : Fix bug Mediatek 0B**
+- `startReceiving()` : Augmenté de 2 retries (1.5s/3s) à 3 retries (2s/4s/8s)
+- Fichiers 0B après retries : NE PLUS les supprimer (skip sans delete) — le fichier peut être un LOBA_PACK dont le flush est lent
+
+### Flow corrigé (V4.4 → V4.5)
+
+**AVANT (V4.4) — 60s gaspillées :**
+```
+Master sendFileTo(192.168.49.2) → EHOSTUNREACH (5s)
+Master sendFileTo(192.168.49.3) → EHOSTUNREACH (5s)
+... (6 IPs × 2 × 5s = 60s) ...
+Master sendFile(sans IP) → ✅ réussi → Slave reçoit 0B → retry échoue
+```
+
+**APRÈS (V4.5) — instantané :**
+```
+Master: _targetPeerIpConfident=false → skip sendFileTo
+Master sendFile(sans IP) → ✅ réussi → Slave reçoit 0B → retry 3× (2s/4s/8s) → file flushed
+```
+

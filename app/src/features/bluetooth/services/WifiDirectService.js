@@ -48,6 +48,7 @@ class WifiDirectServiceClass {
     this._peerLastAttempt = new Map();
     this._localP2pIp = null; // IP locale réelle sur l'interface p2p (ex: 192.168.49.112)
     this._targetPeerIp = null; // IP cible pour sendFileTo (vraie IP du Slave)
+    this._targetPeerIpConfident = false; // V4.5: true si IP confirmée par natif ou Mesh SLAVE_IP confiant
     this._logicalRole = null; // V3.34 (FIX 15): 'MASTER' ou 'SLAVE' — rôle logique (pas hardware)
     this._isReceiving = false; // V4.2: Bloquer disconnect() pendant réception
   }
@@ -444,20 +445,24 @@ class WifiDirectServiceClass {
 
     // V3.29 (BUG-067 fix): Correction self-loop quand GO=true
     // V3.34 (FIX 15): Sur Itel A50 (Mediatek), GO=true même quand Slave → envoyer à 192.168.49.1
+    // V4.5: Si _targetPeerIp n'est PAS confiant (deviné par isGroupOwner ou NetInfo non-P2P),
+    // on laisse useAddress = null pour utiliser sendFile (routing natif WiFi Direct) qui fonctionne
+    // même sur Mediatek. sendFileTo avec une IP fausse provoque EHOSTUNREACH.
     let useAddress = null;
-    if (this._targetPeerIp && this._targetPeerIp !== this.groupOwnerAddress) {
+    if (this._targetPeerIp && this._targetPeerIp !== this.groupOwnerAddress && this._targetPeerIpConfident) {
       useAddress = this._targetPeerIp;
-      console.log(`[WifiDirectService] 📤 [V3.29] sendFileTo vers Slave IP=${useAddress} (pas self-loop)`);
+      console.log(`[WifiDirectService] 📤 [V4.5] sendFileTo vers Slave IP=${useAddress} (IP confiante)`);
     } else if (this.isGroupOwner && this._logicalRole === 'SLAVE') {
       // Itel A50 Mediatek: GO=true mais logiquement SLAVE → le vrai GO/Master est à .1
       useAddress = '192.168.49.1';
       console.log(`[WifiDirectService] 📤 [V3.34 FIX15] GO=true + SLAVE → Master IP=${useAddress}`);
-    } else if (this.isGroupOwner) {
-      // On est GO=true MASTER — le peer est un client du groupe (IP 192.168.49.2 typiquement)
-      useAddress = '192.168.49.2';
-      console.log(`[WifiDirectService] 📤 [V3.29] GO=true, self-loop évité → sendFileTo vers client IP=${useAddress}`);
+    } else if (this.isGroupOwner && this._targetPeerIp && !this._targetPeerIpConfident) {
+      // V4.5: IP disponible mais non confiante → on l'utilise quand même (meilleur guess)
+      // mais on log un warning
+      useAddress = this._targetPeerIp;
+      console.log(`[WifiDirectService] ⚠️ [V4.5] sendFileTo avec IP non confiante: ${useAddress}`);
     } else {
-      console.log(`[WifiDirectService] ⚠️ [V3.29] _targetPeerIp non défini — fallback sendFile`);
+      console.log(`[WifiDirectService] 📤 [V4.5] Pas d'IP confiante — utilisation sendFile (routing natif)`);
     }
 
     // V2.17 (BUG-047 fix): Retry 2x si échec
@@ -608,15 +613,17 @@ class WifiDirectServiceClass {
       // V3.34 (FIX 15): Sur Itel A50 (Mediatek), getConnectionInfo() retourne toujours GO=true
       // même quand on est le Slave. Si _logicalRole === 'SLAVE', le Master est à 192.168.49.1.
       let useAddress = null;
-      if (this._targetPeerIp && this._targetPeerIp !== this.groupOwnerAddress) {
+      // V4.5: Même logique que sendFile — skip sendFileTo si IP non confiante
+      if (this._targetPeerIp && this._targetPeerIp !== this.groupOwnerAddress && this._targetPeerIpConfident) {
         useAddress = this._targetPeerIp;
       } else if (this.isGroupOwner && this._logicalRole === 'SLAVE') {
-        // Itel A50 Mediatek: GO=true mais on est logiquement SLAVE → le vrai GO est le Master
         useAddress = '192.168.49.1';
         console.log(`[WifiDirectService] 📤 [V3.34 FIX15] GO=true + SLAVE → Master IP=${useAddress}`);
-      } else if (this.isGroupOwner) {
-        useAddress = '192.168.49.2';
-        console.log(`[WifiDirectService] 📤 [V3.29] sendControlMessage: GO=true → vers client IP=${useAddress}`);
+      } else if (this.isGroupOwner && this._targetPeerIp && !this._targetPeerIpConfident) {
+        useAddress = this._targetPeerIp;
+        console.log(`[WifiDirectService] ⚠️ [V4.5] sendControlMessage avec IP non confiante: ${useAddress}`);
+      } else {
+        console.log(`[WifiDirectService] 📤 [V4.5] sendControlMessage: routing natif (pas d'IP confiante)`);
       }
       // V4.4: Utilise _sendFileToWithFallback pour les messages de contrôle aussi
       if (useAddress) {
@@ -659,9 +666,11 @@ class WifiDirectServiceClass {
   }
 
   // V3.20 (BUG-047 fix) : Définit l'IP cible pour sendFileTo (Slave IP reçue via Mesh)
-  setTargetPeerIp(ip) {
+  // V4.5: Ajout flag confident — si false, sendFile utilisera le routing natif au lieu de sendFileTo
+  setTargetPeerIp(ip, confident = false) {
     this._targetPeerIp = ip;
-    console.log(`[WifiDirectService] 🎯 [V3.20] Target peer IP défini: ${ip || '(null)'}`);
+    this._targetPeerIpConfident = confident;
+    console.log(`[WifiDirectService] 🎯 [V4.5] Target peer IP défini: ${ip || '(null)'} (confiant=${confident})`);
   }
 
   // V3.34 (FIX 15) : Définit le rôle logique MASTER/SLAVE (basé sur le score Mesh)
@@ -893,24 +902,36 @@ class WifiDirectServiceClass {
 
             // V3.35 (Mediatek 0B bug): Sur chipsets Mediatek (Itel A50), le transfert TCP
             // WiFi Direct retourne avant que le fichier soit flushé sur disque → 0B.
-            // Solution : relire après 1.5-3s max 2 fois avant d'abandonner.
+            // V4.5: Augmenté de 2 retries (1.5s/3s) à 3 retries (2s/4s/8s) pour Mediatek lent.
             if (fileSize === 0) {
-              for (let retry = 1; retry <= 2; retry++) {
-                const waitMs = retry * 1500;
-                console.log(`[WifiDirectService] ⏳ [V3.35] Fichier 0B — retry #${retry} dans ${waitMs}ms...`);
+              for (let retry = 1; retry <= 3; retry++) {
+                const waitMs = retry * 2000;
+                console.log(`[WifiDirectService] ⏳ [V4.5] Fichier 0B — retry #${retry}/3 dans ${waitMs}ms...`);
                 await new Promise(r => setTimeout(r, waitMs));
-                fileInfo = await FileSystem.getInfoAsync(path);
-                fileSize = fileInfo.size || 0;
+                try {
+                  fileInfo = await FileSystem.getInfoAsync(path);
+                  fileSize = fileInfo.size || 0;
+                } catch (fileErr) {
+                  // Fichier supprimé entre-temps (cleanup Android ou autre)
+                  console.log(`[WifiDirectService] ⚠️ [V4.5] Fichier disparu pendant retry: ${fileErr.message}`);
+                  fileSize = -1; // Marreur "fichier disparu"
+                  break;
+                }
                 if (fileSize > 0) {
-                  console.log(`[WifiDirectService] ✅ [V3.35] Retry #${retry} réussi: ${fileSize}B`);
+                  console.log(`[WifiDirectService] ✅ [V4.5] Retry #${retry} réussi: ${fileSize}B`);
                   break;
                 }
               }
             }
 
             // V3.24 (BUG-056 fix): Fichiers < 5KB = messages de contrôle ou corrompus
-            // Les vrais LOBA_PACK font au minimum plusieurs KB (même un seul post)
-            // Les messages contrôle (PACK_RECEIVED_OK, YABISSO_HELLO, etc.) font 100-500 octets
+            // V4.5: Fichier 0B après 3 retries = Mediatek 0B bug. Ne PAS supprimer immédiatement
+            // (le fichier peut être un LOBA_PACK dont le flush est très lent). On le saute.
+            if (fileSize === 0 || fileSize === -1) {
+              // Fichier 0B ou disparu — Mediatek 0B bug, on skip sans supprimer
+              console.log(`[WifiDirectService] ⏭️ [V4.5] Fichier 0B/disparu après retries — skip (Mediatek 0B bug)`);
+              continue;
+            }
             if (fileSize < 5120) {
               try {
                 const content = await FileSystem.readAsStringAsync(path);
@@ -922,17 +943,12 @@ class WifiDirectServiceClass {
                     try { await FileSystem.deleteAsync(path, { idempotent: true }); } catch (_) {}
                     continue;
                   }
-                } else {
-                  // Fichier 0B ou vide après retry — supprimer définitivement
-                  console.log(`[WifiDirectService] 🗑️ [V3.35] Fichier vide après retry (${fileSize}B, content=${content?.length || 0}chars) — ignoré`);
-                  try { await FileSystem.deleteAsync(path, { idempotent: true }); } catch (_) {}
-                  continue;
                 }
               } catch (e) {
-                console.log(`[WifiDirectService] ⚠️ [V3.35] Erreur lecture contrôle: ${e.message}`);
+                console.log(`[WifiDirectService] ⚠️ [V4.5] Erreur lecture fichier petit: ${e.message}`);
               }
-              // Fichier petit non-JSON → probablement un contrôle corrompu, on le supprime
-              console.log(`[WifiDirectService] ⚠️ [V3.24] Petit fichier ignoré (${fileSize}B) — pas un LOBA_PACK`);
+              // Fichier petit non-contrôle → probablement corrompu, on le supprime
+              console.log(`[WifiDirectService] ⚠️ [V4.5] Petit fichier ignoré (${fileSize}B) — pas un LOBA_PACK`);
               try { await FileSystem.deleteAsync(path, { idempotent: true }); } catch (_) {}
               continue;
             }

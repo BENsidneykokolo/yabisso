@@ -692,13 +692,13 @@ class P2PAutoSyncClass {
         this._log(`📥 [V4.4 Master] IP Slave reçue via Mesh: ${this._slaveIp}:${this._slavePort} (confiante=${isConfident})`);
         if (isConfident && this._slaveIp) {
           try {
-            WifiDirectService.setTargetPeerIp(this._slaveIp);
-            this._log(`🎯 [V4.4 Master] WifiDirectService._targetPeerIp = ${this._slaveIp} (IP confiante)`);
+            WifiDirectService.setTargetPeerIp(this._slaveIp, true);
+            this._log(`🎯 [V4.5 Master] WifiDirectService._targetPeerIp = ${this._slaveIp} (IP confiante)`);
           } catch (e) {
-            this._log(`⚠️ [V4.4 Master] setTargetPeerIp échoué: ${e.message}`);
+            this._log(`⚠️ [V4.5 Master] setTargetPeerIp échoué: ${e.message}`);
           }
         } else {
-          this._log(`⚠️ [V4.4 Master] IP non confiante — le fallback multi-IP s'en chargera au moment de l'envoi`);
+          this._log(`⚠️ [V4.5 Master] IP non confiante — sendFile utilisera le routing natif WiFi Direct`);
         }
       } else if (evt && evt.type === 'YABISSO_HELLO_VIA_MESH') {
         // V3.39 (FIX shouldSend): YABISSO_HELLO reçu via BLE Mesh.
@@ -719,16 +719,16 @@ class P2PAutoSyncClass {
           this._log(`✅ [V3.39] _isRealConnected=true (HELLO reçu via Mesh, débloque shouldSend)`);
         }
         // V3.39: Capturer l'IP du Slave depuis le HELLO Mesh
+        // V4.5: NE PAS fallback sur 192.168.49.2 — cette IP est devinée et fausse sur Mediatek.
+        // Si le HELLO n'a pas d'IP valide, on laisse _targetPeerIp = null → sendFile utilisera
+        // le routing natif WiFi Direct (sendFile sans IP) qui fonctionne même sur Mediatek.
         if (payload.senderIp && payload.senderIp !== '192.168.49.1') {
           this._slaveIp = payload.senderIp;
           this._slavePort = 8988;
-          WifiDirectService.setTargetPeerIp(this._slaveIp);
-          this._log(`📍 [V3.39] IP Slave via Mesh HELLO: ${this._slaveIp}`);
-        } else if (!this._slaveIp) {
-          this._slaveIp = '192.168.49.2';
-          this._slavePort = 8988;
-          WifiDirectService.setTargetPeerIp(this._slaveIp);
-          this._log(`📍 [V3.39] IP Slave fallback: 192.168.49.2`);
+          WifiDirectService.setTargetPeerIp(this._slaveIp, true);
+          this._log(`📍 [V4.5] IP Slave via Mesh HELLO: ${this._slaveIp} (confiante)`);
+        } else {
+          this._log(`📍 [V4.5] HELLO sans IP valide — sendFile utilisera le routing natif WiFi Direct`);
         }
         if (this._packReceivedAckResolver) {
           this._packReceivedAckResolver(true);
@@ -1116,8 +1116,8 @@ class P2PAutoSyncClass {
       }
       this._slaveIp = ip;
       this._slavePort = 8988;
-      this._log(`🌐 [V4.4 Slave] IP Slave: ${ip} (confiante=${confident}) → envoi au Master via Mesh`);
-      WifiDirectService.setTargetPeerIp(ip);
+      this._log(`🌐 [V4.5 Slave] IP Slave: ${ip} (confiante=${confident}) → envoi au Master via Mesh`);
+      WifiDirectService.setTargetPeerIp(ip, confident);
       // Envoyer au Master via Mesh BLE
       const masterPeerId = this._findMasterPeerId();
       if (masterPeerId) {
