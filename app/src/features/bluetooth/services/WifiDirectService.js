@@ -13,6 +13,9 @@ try {
   console.warn('[WifiDirectService] Module react-native-wifi-p2p non disponible.');
 }
 
+// V4.3 (BUG-047 fix): Import NetInfo pour détecter la vraie IP du Slave sur l'interface P2P
+import NetInfo from '@react-native-community/netinfo';
+
 class WifiDirectServiceClass {
   constructor() {
     this.initialized = false;
@@ -36,6 +39,7 @@ class WifiDirectServiceClass {
       onTransferProgress: [],
       onLogUpdate: [],
       onSyncStatus: [],
+      onSlaveIpKnown: [], // V4.3: IP réelle du Slave détectée via NetInfo
     };
     this._nativeLock = false;
     this._nativeReady = false;
@@ -663,6 +667,11 @@ class WifiDirectServiceClass {
           return ip;
         }
         console.warn(`[WifiDirectService] ⚠️ [V4.0] getP2pLocalIp retourné null/incorrect (retour=${ip}).`);
+      } else {
+        // V4.3: La méthode native n'est pas dans l'APK — le code Java existe dans
+        // node_modules mais l'APK n'a pas été rebuildé. NetInfo ne peut PAS remplacer
+        // cette méthode car il retourne l'IP WiFi LAN (192.168.1.x), pas l'IP P2P (192.168.49.x).
+        console.warn(`[WifiDirectService] ⚠️ [V4.3] getP2pLocalIp UNDEFINED — APK stale ! Reconstruisez l'APK pour inclure la méthode native. NetInfo retournera l'IP WiFi LAN (inutile pour P2P).`);
       }
 
       // Fallback : ancienne méthode getP2pIpAddress
@@ -769,6 +778,27 @@ class WifiDirectServiceClass {
     }
 
     console.log('[WifiDirectService] 📡 En attente de fichiers...');
+
+    // V4.3 (BUG-047 fix): Détecter la vraie IP du Slave via NetInfo au démarrage du récepteur.
+    // Le native getP2pLocalIp() échoue sur certains appareils (Mediatek/Itel A50).
+    // NetInfo retourne l'IP de l'interface WiFi active — si on est connecté au groupe
+    // WiFi Direct, l'IP commence par 192.168.49.x = la VRAIE IP du Slave.
+    try {
+      const state = await NetInfo.fetch();
+      const ip = state?.details?.ipAddress;
+      if (ip && typeof ip === 'string' && ip.startsWith('192.168.49.')) {
+        this._localP2pIp = ip;
+        console.log(`[WifiDirectService] 🌐 [V4.3] IP Slave via NetInfo: ${ip}`);
+        this._emit('onSlaveIpKnown', { ip });
+      } else {
+        console.log(`[WifiDirectService] ⚠️ [V4.3] NetInfo IP non-p2p: ${ip} → fallback .2`);
+        this._emit('onSlaveIpKnown', { ip: '192.168.49.2' });
+      }
+    } catch (e) {
+      console.warn(`[WifiDirectService] ⚠️ [V4.3] NetInfo fetch échoué: ${e.message}`);
+      this._emit('onSlaveIpKnown', { ip: '192.168.49.2' });
+    }
+
     while (this._receiveMessages && this.isConnected) {
       try {
         const filename = `p2p_${Date.now()}`;

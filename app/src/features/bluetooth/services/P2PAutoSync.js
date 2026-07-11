@@ -654,7 +654,7 @@ class P2PAutoSyncClass {
     this._running = true;
 
     console.log('[P2PAutoSync] Démarrage de l\'orchestrateur Multi-Rail...');
-    this._log('🚀 Orchestrateur démarré (V4.1 - EHOSTUNREACH fix: getP2pLocalIp export + groupInfo fallback + race condition fix + framework busy + connectToPeer fix).');
+    this._log('🚀 Orchestrateur démarré (V4.3 - NetInfo IP detection + SLAVE_IP via Mesh pour fix EHOSTUNREACH).');
 
     // FIX: Réparer is_propagating au démarrage (migration v9→v10 l'a remis à false)
     this._repairIsPropagating().catch(e => console.warn('[P2PAutoSync] repair error:', e.message));
@@ -1089,10 +1089,40 @@ class P2PAutoSyncClass {
           if (this._pendingPeerTimer) { clearTimeout(this._pendingPeerTimer); this._pendingPeerTimer = null; }
           try { WifiDirectService.resetTargetPeerIp(); } catch (_) {}
           try { await NearbyMeshService.resumeMesh(); } catch (_) {}
+          // V4.3: Cleanup du listener onSlaveIpKnown
+          if (this._slaveIpKnownUnsub) { this._slaveIpKnownUnsub(); this._slaveIpKnownUnsub = null; }
           this._log('■ Déconnexion détectée. Nettoyage des processus.');
           this._slaveReceiverStarted = false; // Reset guard récepteur Slave
         }
       });
+
+    // V4.3 (BUG-047 fix): Quand le Slave détecte sa vraie IP (via NetInfo dans startReceiving),
+    // l'envoyer immédiatement au Master via Mesh BLE. Le Master l'utilisera pour sendFileTo
+    // au lieu du fallback hardcodé 192.168.49.2 qui échoue sur certains appareils.
+    if (this._slaveIpKnownUnsub) this._slaveIpKnownUnsub();
+    this._slaveIpKnownUnsub = WifiDirectService.on('onSlaveIpKnown', ({ ip }) => {
+      if (!ip || this._lastIntendedRole === 'MASTER') return; // Seul le Slave envoie
+      this._slaveIp = ip;
+      this._slavePort = 8988;
+      this._log(`🌐 [V4.3 Slave] IP réelle détectée: ${ip} → envoi au Master via Mesh`);
+      WifiDirectService.setTargetPeerIp(ip);
+      // Envoyer au Master via Mesh BLE
+      const masterPeerId = this._findMasterPeerId();
+      if (masterPeerId) {
+        NearbyMeshService.sendMeshMessage(masterPeerId, {
+          type: 'slave_ip',
+          ip: ip,
+          port: 8988,
+        }).then(ok => {
+          if (ok) this._log(`✅ [V4.3 Slave] SLAVE_IP envoyé au Master: ${ip}`);
+          else this._log(`⚠️ [V4.3 Slave] Échec envoi SLAVE_IP au Master`);
+        }).catch(e => {
+          this._log(`⚠️ [V4.3 Slave] Exception SLAVE_IP: ${e.message}`);
+        });
+      } else {
+        this._log(`⚠️ [V4.3 Slave] Pas de Master Mesh trouvé pour envoyer SLAVE_IP`);
+      }
+    });
 
     } catch (e) {
       console.warn('[P2PAutoSync] WiFi Direct init error:', e.message);

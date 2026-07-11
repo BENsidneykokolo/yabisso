@@ -290,16 +290,13 @@ class NearbyMeshServiceClass {
             return;
           }
           setTimeout(() => {
-            sendText(peerId, msg).then(ok => {
+            this.sendMeshMessage(peerId, { type: 'wifi_group_ready', masterIp }).then(ok => {
               if (ok) {
                 this._log(`✅ [V4.1] WIFI_GROUP_READY envoye au Slave ${peerId} (tentative ${attempt}/${delays.length})`);
               } else {
                 this._log(`⚠️ [V4.1] WIFI_GROUP_READY tentative ${attempt}/${delays.length} echouee, retry...`);
                 trySend(attempt + 1);
               }
-            }).catch(e => {
-              this._log(`⚠️ [V4.1] WIFI_GROUP_READY tentative ${attempt} exception: ${e.message}, retry...`);
-              trySend(attempt + 1);
             });
           }, attempt === 1 ? 1000 : delays[attempt - 1]);
         };
