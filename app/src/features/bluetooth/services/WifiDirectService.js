@@ -461,34 +461,44 @@ class WifiDirectServiceClass {
     }
 
     // V2.17 (BUG-047 fix): Retry 2x si échec
-    const MAX_RETRIES = 2;
-    for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
-      try {
-        if (filePath) {
-          const cleanPath = filePath.replace('file://', '');
-          console.log(`[WifiDirectService] 📤 sendFile (tentative ${attempt}/${MAX_RETRIES}): ${cleanPath}`);
-          if (useAddress) {
-            // V3.20 : envoyer au Slave (vrai destinataire)
-            await Promise.race([
-              WifiP2P.sendFileTo(cleanPath, useAddress),
-              new Promise((_, reject) => setTimeout(() => reject(new Error('sendFileTo timeout')), 120000))
-            ]);
-          } else {
-            // Fallback : comportement legacy (risque self-loop)
-            await Promise.race([
-              WifiP2P.sendFile(cleanPath),
-              new Promise((_, reject) => setTimeout(() => reject(new Error('sendFile timeout')), 120000))
-            ]);
-          }
-          console.log(`[WifiDirectService] ✅ sendFile réussi (tentative ${attempt})`);
+    // V4.4: Utilise _sendFileToWithFallback pour essayer .2→.3→.4→.5→.6 sur EHOSTUNREACH
+    if (filePath) {
+      const cleanPath = filePath.replace('file://', '');
+      console.log(`[WifiDirectService] 📤 sendFile: ${cleanPath}`);
+
+      if (useAddress) {
+        const sent = await this._sendFileToWithFallback(cleanPath, useAddress, 120000);
+        if (sent) {
           this._emit('onTransferProgress', { hash: metadata.hash, progress: 100, status: 'complete' });
           this._isSending = false;
           return true;
         }
-      } catch (e) {
-        console.warn(`[WifiDirectService] ❌ sendFile error (tentative ${attempt}): ${e.message}`);
-        if (attempt < MAX_RETRIES) {
-          await new Promise(r => setTimeout(r, 3000));
+        // Fallback: essayer sendFile sans adresse spécifique
+        try {
+          console.log(`[WifiDirectService] 📤 [V4.4] sendFile fallback (sans adresse)`);
+          await Promise.race([
+            WifiP2P.sendFile(cleanPath),
+            new Promise((_, reject) => setTimeout(() => reject(new Error('sendFile timeout')), 120000))
+          ]);
+          console.log(`[WifiDirectService] ✅ [V4.4] sendFile fallback réussi`);
+          this._emit('onTransferProgress', { hash: metadata.hash, progress: 100, status: 'complete' });
+          this._isSending = false;
+          return true;
+        } catch (e) {
+          console.warn(`[WifiDirectService] ❌ [V4.4] sendFile fallback error: ${e.message}`);
+        }
+      } else {
+        try {
+          await Promise.race([
+            WifiP2P.sendFile(cleanPath),
+            new Promise((_, reject) => setTimeout(() => reject(new Error('sendFile timeout')), 120000))
+          ]);
+          console.log(`[WifiDirectService] ✅ sendFile réussi`);
+          this._emit('onTransferProgress', { hash: metadata.hash, progress: 100, status: 'complete' });
+          this._isSending = false;
+          return true;
+        } catch (e) {
+          console.warn(`[WifiDirectService] ❌ sendFile error: ${e.message}`);
         }
       }
     }
@@ -608,16 +618,33 @@ class WifiDirectServiceClass {
         useAddress = '192.168.49.2';
         console.log(`[WifiDirectService] 📤 [V3.29] sendControlMessage: GO=true → vers client IP=${useAddress}`);
       }
+      // V4.4: Utilise _sendFileToWithFallback pour les messages de contrôle aussi
       if (useAddress) {
-        await Promise.race([
-          WifiP2P.sendFileTo(cleanControlFile, useAddress),
-          new Promise((_, reject) => setTimeout(() => reject(new Error('sendControlMessageTo timeout')), 15000))
-        ]);
+        const sent = await this._sendFileToWithFallback(cleanControlFile, useAddress, 15000);
+        if (!sent) {
+          // Fallback: essayer sendFile sans adresse
+          try {
+            await Promise.race([
+              WifiP2P.sendFile(cleanControlFile),
+              new Promise((_, reject) => setTimeout(() => reject(new Error('sendControlMessage timeout')), 15000))
+            ]);
+          } catch (e) {
+            console.warn(`[WifiDirectService] ❌ sendControlMessage error: ${e.message}`);
+            this._isSending = false;
+            return false;
+          }
+        }
       } else {
-        await Promise.race([
-          WifiP2P.sendFile(cleanControlFile),
-          new Promise((_, reject) => setTimeout(() => reject(new Error('sendControlMessage timeout')), 15000))
-        ]);
+        try {
+          await Promise.race([
+            WifiP2P.sendFile(cleanControlFile),
+            new Promise((_, reject) => setTimeout(() => reject(new Error('sendControlMessage timeout')), 15000))
+          ]);
+        } catch (e) {
+          console.warn(`[WifiDirectService] ❌ sendControlMessage error: ${e.message}`);
+          this._isSending = false;
+          return false;
+        }
       }
       console.log(`[WifiDirectService] ✅ sendControlMessage réussi${useAddress ? ` (vers ${useAddress})` : ''}`);
       // V1.0.18: Nettoyer le fichier de contrôle après envoi
@@ -643,6 +670,47 @@ class WifiDirectServiceClass {
   setLogicalRole(role) {
     this._logicalRole = role;
     console.log(`[WifiDirectService] 🎯 [V3.34] Rôle logique défini: ${role}`);
+  }
+
+  // V4.4 (EHOSTUNREACH fix) : Envoi multi-IP avec fallback automatique.
+  // Quand le Slave change d'IP entre la détection NetInfo et le vrai transfert,
+  // on essaie les IPs alternatives (.2 → .3 → .4 → .5 → .6) automatiquement.
+  async _sendFileToWithFallback(cleanPath, primaryIp, timeoutMs = 120000) {
+    const ipsToTry = [];
+    if (primaryIp && primaryIp.startsWith('192.168.49.')) {
+      const parts = primaryIp.split('.');
+      const base = parts.slice(0, 3).join('.') + '.';
+      const primaryNum = parseInt(parts[3], 10);
+      ipsToTry.push(primaryIp);
+      for (let i = 2; i <= 6; i++) {
+        if (i !== primaryNum) ipsToTry.push(`${base}${i}`);
+      }
+    } else if (primaryIp) {
+      ipsToTry.push(primaryIp);
+    }
+
+    for (const ip of ipsToTry) {
+      for (let attempt = 1; attempt <= 2; attempt++) {
+        try {
+          console.log(`[WifiDirectService] 📤 [V4.4] sendFileTo ${ip} (tentative ${attempt}/2)`);
+          await Promise.race([
+            WifiP2P.sendFileTo(cleanPath, ip),
+            new Promise((_, reject) => setTimeout(() => reject(new Error('sendFileTo timeout')), timeoutMs))
+          ]);
+          console.log(`[WifiDirectService] ✅ [V4.4] sendFileTo réussi vers ${ip}`);
+          if (ip !== primaryIp) {
+            this._targetPeerIp = ip;
+            console.log(`[WifiDirectService] 🎯 [V4.4] IP Slave corrigée: ${ip} (était ${primaryIp})`);
+          }
+          return true;
+        } catch (e) {
+          console.warn(`[WifiDirectService] ❌ [V4.4] sendFileTo ${ip} erreur (tentative ${attempt}): ${e.message}`);
+          if (e.message.includes('EHOSTUNREACH') && attempt === 2) break;
+          if (attempt < 2) await new Promise(r => setTimeout(r, 2000));
+        }
+      }
+    }
+    return false;
   }
 
   // V3.21 (Option C / BUG-047 fix) : Récupère la VRAIE IP locale sur l'interface p2p.
@@ -780,23 +848,34 @@ class WifiDirectServiceClass {
     console.log('[WifiDirectService] 📡 En attente de fichiers...');
 
     // V4.3 (BUG-047 fix): Détecter la vraie IP du Slave via NetInfo au démarrage du récepteur.
-    // Le native getP2pLocalIp() échoue sur certains appareils (Mediatek/Itel A50).
-    // NetInfo retourne l'IP de l'interface WiFi active — si on est connecté au groupe
-    // WiFi Direct, l'IP commence par 192.168.49.x = la VRAIE IP du Slave.
+    // V4.4: Si NetInfo retourne une IP non-P2P, on N'ENVOIE PAS le fallback .2 (qui est faux).
+    // Le Master utilisera _sendFileToWithFallback pour découvrir la vraie IP.
     try {
       const state = await NetInfo.fetch();
       const ip = state?.details?.ipAddress;
       if (ip && typeof ip === 'string' && ip.startsWith('192.168.49.')) {
         this._localP2pIp = ip;
-        console.log(`[WifiDirectService] 🌐 [V4.3] IP Slave via NetInfo: ${ip}`);
-        this._emit('onSlaveIpKnown', { ip });
+        console.log(`[WifiDirectService] 🌐 [V4.4] IP Slave via NetInfo: ${ip} (confiante)`);
+        this._emit('onSlaveIpKnown', { ip, confident: true });
       } else {
-        console.log(`[WifiDirectService] ⚠️ [V4.3] NetInfo IP non-p2p: ${ip} → fallback .2`);
-        this._emit('onSlaveIpKnown', { ip: '192.168.49.2' });
+        console.log(`[WifiDirectService] ⚠️ [V4.4] NetInfo IP non-p2p: ${ip} — tentative getP2pLocalIp() natif...`);
+        // V4.4: Essayer le natif même si undefined (sera undefined si APK stale)
+        let detectedIp = null;
+        try {
+          detectedIp = await this.getLocalP2pIp();
+        } catch (_) {}
+        if (detectedIp) {
+          this._localP2pIp = detectedIp;
+          console.log(`[WifiDirectService] 🌐 [V4.4] IP Slave via natif: ${detectedIp} (confiante)`);
+          this._emit('onSlaveIpKnown', { ip: detectedIp, confident: true });
+        } else {
+          console.log(`[WifiDirectService] ⚠️ [V4.4] IP Slave inconnue — Master devra découvrir via fallback multi-IP`);
+          this._emit('onSlaveIpKnown', { ip: null, confident: false });
+        }
       }
     } catch (e) {
-      console.warn(`[WifiDirectService] ⚠️ [V4.3] NetInfo fetch échoué: ${e.message}`);
-      this._emit('onSlaveIpKnown', { ip: '192.168.49.2' });
+      console.warn(`[WifiDirectService] ⚠️ [V4.4] NetInfo fetch échoué: ${e.message}`);
+      this._emit('onSlaveIpKnown', { ip: null, confident: false });
     }
 
     while (this._receiveMessages && this.isConnected) {

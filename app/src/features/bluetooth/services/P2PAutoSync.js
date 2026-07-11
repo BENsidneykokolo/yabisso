@@ -683,16 +683,22 @@ class P2PAutoSyncClass {
         this._onSlaveConnectedConfirmedMesh(evt.peerId);
       } else if (evt && evt.type === 'SLAVE_IP') {
         // V3.20 (BUG-047 fix) : Le Slave a envoyé son IP via Mesh BLE.
-        // On la stocke et on la passe à WifiDirectService pour que sendFile/sendControlMessage
-        // ciblent le Slave au lieu de s'envoyer à soi-même (192.168.49.1 self-loop).
+        // V4.4: Flag confident indique si l'IP est fiable (NetInfo P2P) ou devinée (fallback .2).
+        // Si confident=false, le Master ne fait PAS confiance à l'IP et utilisera
+        // le fallback multi-IP dans _sendFileToWithFallback() au moment de l'envoi.
         this._slaveIp = evt.ip;
         this._slavePort = evt.port || 8988;
-        this._log(`📥 [V3.20 Master] IP Slave reçue via Mesh: ${this._slaveIp}:${this._slavePort}`);
-        try {
-          WifiDirectService.setTargetPeerIp(this._slaveIp);
-          this._log(`🎯 [V3.20 Master] WifiDirectService._targetPeerIp = ${this._slaveIp} (sendFileTo l'utilisera)`);
-        } catch (e) {
-          this._log(`⚠️ [V3.20 Master] setTargetPeerIp échoué: ${e.message}`);
+        const isConfident = evt.confident !== false; // défaut true pour compat V4.3
+        this._log(`📥 [V4.4 Master] IP Slave reçue via Mesh: ${this._slaveIp}:${this._slavePort} (confiante=${isConfident})`);
+        if (isConfident && this._slaveIp) {
+          try {
+            WifiDirectService.setTargetPeerIp(this._slaveIp);
+            this._log(`🎯 [V4.4 Master] WifiDirectService._targetPeerIp = ${this._slaveIp} (IP confiante)`);
+          } catch (e) {
+            this._log(`⚠️ [V4.4 Master] setTargetPeerIp échoué: ${e.message}`);
+          }
+        } else {
+          this._log(`⚠️ [V4.4 Master] IP non confiante — le fallback multi-IP s'en chargera au moment de l'envoi`);
         }
       } else if (evt && evt.type === 'YABISSO_HELLO_VIA_MESH') {
         // V3.39 (FIX shouldSend): YABISSO_HELLO reçu via BLE Mesh.
@@ -1099,12 +1105,18 @@ class P2PAutoSyncClass {
     // V4.3 (BUG-047 fix): Quand le Slave détecte sa vraie IP (via NetInfo dans startReceiving),
     // l'envoyer immédiatement au Master via Mesh BLE. Le Master l'utilisera pour sendFileTo
     // au lieu du fallback hardcodé 192.168.49.2 qui échoue sur certains appareils.
+    // V4.4: Si confident=false (NetInfo a donné une IP LAN, pas P2P), on N'ENVOIE PAS
+    // l'IP au Master — il utilisera le fallback multi-IP dans _sendFileToWithFallback().
     if (this._slaveIpKnownUnsub) this._slaveIpKnownUnsub();
-    this._slaveIpKnownUnsub = WifiDirectService.on('onSlaveIpKnown', ({ ip }) => {
-      if (!ip || this._lastIntendedRole === 'MASTER') return; // Seul le Slave envoie
+    this._slaveIpKnownUnsub = WifiDirectService.on('onSlaveIpKnown', ({ ip, confident }) => {
+      if (this._lastIntendedRole === 'MASTER') return; // Seul le Slave envoie
+      if (!ip) {
+        this._log(`⚠️ [V4.4 Slave] IP Slave non détectée — le Master utilisera le fallback multi-IP`);
+        return;
+      }
       this._slaveIp = ip;
       this._slavePort = 8988;
-      this._log(`🌐 [V4.3 Slave] IP réelle détectée: ${ip} → envoi au Master via Mesh`);
+      this._log(`🌐 [V4.4 Slave] IP Slave: ${ip} (confiante=${confident}) → envoi au Master via Mesh`);
       WifiDirectService.setTargetPeerIp(ip);
       // Envoyer au Master via Mesh BLE
       const masterPeerId = this._findMasterPeerId();
@@ -1113,14 +1125,15 @@ class P2PAutoSyncClass {
           type: 'slave_ip',
           ip: ip,
           port: 8988,
+          confident: confident,
         }).then(ok => {
-          if (ok) this._log(`✅ [V4.3 Slave] SLAVE_IP envoyé au Master: ${ip}`);
-          else this._log(`⚠️ [V4.3 Slave] Échec envoi SLAVE_IP au Master`);
+          if (ok) this._log(`✅ [V4.4 Slave] SLAVE_IP envoyé au Master: ${ip} (confiant=${confident})`);
+          else this._log(`⚠️ [V4.4 Slave] Échec envoi SLAVE_IP au Master`);
         }).catch(e => {
-          this._log(`⚠️ [V4.3 Slave] Exception SLAVE_IP: ${e.message}`);
+          this._log(`⚠️ [V4.4 Slave] Exception SLAVE_IP: ${e.message}`);
         });
       } else {
-        this._log(`⚠️ [V4.3 Slave] Pas de Master Mesh trouvé pour envoyer SLAVE_IP`);
+        this._log(`⚠️ [V4.4 Slave] Pas de Master Mesh trouvé pour envoyer SLAVE_IP`);
       }
     });
 

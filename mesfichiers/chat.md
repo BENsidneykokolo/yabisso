@@ -314,3 +314,50 @@ Tous les APK ont été copiés dans `C:\Users\Utilisateur\Documents\Ben\Kassa\ap
 - `git commit` → `e91584d` — `chore: update .env IP 192.168.1.75 + V4.3 P2P fixes + chat.md history`
 - `git push` → ✅ Pushé sur `origin/main` (https://github.com/BENsidneykokolo/yabisso.git)
 
+---
+
+## Session 2026-07-11 — Fix V4.4 : EHOSTUNREACH Multi-IP Fallback
+
+### Échange
+**Utilisateur** : Logs P2P montrent que le Master envoie le pack à 192.168.49.2 (IP fallback) mais le Slave reçoit `receiveFile timeout`. Le native `getP2pLocalIp()` est undefined. NetInfo retourne l'IP WiFi LAN (192.168.1.66), pas l'IP P2P. Demande de fix.
+
+**Assistant** : Analyse complète des logs. Le flow Mesh → WiFi Direct → Handshake fonctionne, mais le transfert TCP échoue avec EHOSTUNREACH car l'IP 192.168.49.2 est un fallback deviné, pas la vraie IP du Slave sur le réseau WiFi Direct.
+
+### Cause racine
+- `getP2pLocalIp()` natif = `undefined` (APK stale)
+- NetInfo retourne `192.168.1.66` (IP LAN) au lieu de l'IP P2P (192.168.49.x)
+- Fallback hardcodé `192.168.49.2` → IP incorrecte → **EHOSTUNREACH** silencieux
+
+### Fix V4.4 implémenté
+
+**Fichier 1 : WifiDirectService.js**
+1. ✅ Nouvelle méthode `_sendFileToWithFallback(cleanPath, primaryIp, timeoutMs)` — essaie .2→.3→.4→.5→.6 automatiquement sur EHOSTUNREACH
+2. ✅ `sendFile()` utilise `_sendFileToWithFallback()` au lieu du retry simple
+3. ✅ `sendControlMessage()` utilise aussi `_sendFileToWithFallback()` 
+4. ✅ `startReceiving()` : si NetInfo retourne IP non-P2P, tente `getP2pLocalIp()` natif, sinon émet `onSlaveIpKnown` avec `ip=null, confident=false` (au lieu du fallback .2 faux)
+
+**Fichier 2 : P2PAutoSync.js**
+5. ✅ Listener `onSlaveIpKnown` : si `ip=null` (non confiant), n'envoie PAS SLAVE_IP au Master — le fallback multi-IP s'en chargera
+6. ✅ Handler `SLAVE_IP` côté Master : si `confident=false`, ne définit PAS `_targetPeerIp` — laisse le fallback multi-IP gérer
+
+### Flow corrigé (avant → après)
+
+**AVANT (bugué) :**
+```
+Slave startReceiving() → NetInfo=192.168.1.66 (LAN) → fallback .2
+Slave envoie SLAVE_IP=192.168.49.2 (faux) au Master
+Master sendFileTo(192.168.49.2) → EHOSTUNREACH → abandon
+```
+
+**APRÈS (fixé) :**
+```
+Slave startReceiving() → NetInfo=192.168.1.66 (LAN) → ip=null, confident=false
+Slave N'ENVOIE PAS SLAVE_IP (IP non fiable)
+Master sendFileTo(IP primaire) → EHOSTUNREACH → essaie .3 → .4 → .5 → .6
+Dès qu'une IP répond → transfert réussi + _targetPeerIp mis à jour
+```
+
+### Fichiers modifiés
+- `app/src/features/bluetooth/services/WifiDirectService.js` (_sendFileToWithFallback + sendFile + sendControlMessage + startReceiving)
+- `app/src/features/bluetooth/services/P2PAutoSync.js` (onSlaveIpKnown handler + SLAVE_IP handler)
+
