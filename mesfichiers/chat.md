@@ -303,3 +303,14 @@ Tous les APK ont été copiés dans `C:\Users\Utilisateur\Documents\Ben\Kassa\ap
 1. ✅ **NearbyMeshService.js** : Modification de la fonction `onConnected` pour utiliser `this.sendMeshMessage` au lieu de `sendText` direct. Cela corrige l'erreur où `ok` était `undefined` (interprété comme un échec), stoppant les boucles de retry intempestives de `WIFI_GROUP_READY`.
 2. 🔄 **Rebuild requis** : Lancement ou recommandation de la commande `npm run android` pour compiler le nouveau binaire de développement incluant la méthode native `getP2pLocalIp()`.
 
+---
+
+## Session 2026-07-11 — Backup Git + GitHub
+
+### Échange
+**Utilisateur** : Faire un backup git et github
+**Assistant** : 
+- `git add` → 5 fichiers (.env, NearbyMeshService.js, P2PAutoSync.js, WifiDirectService.js, chat.md)
+- `git commit` → `e91584d` — `chore: update .env IP 192.168.1.75 + V4.3 P2P fixes + chat.md history`
+- `git push` → ✅ Pushé sur `origin/main` (https://github.com/BENsidneykokolo/yabisso.git)
+
