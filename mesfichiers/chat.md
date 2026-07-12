@@ -402,3 +402,49 @@ Master: _targetPeerIpConfident=false → skip sendFileTo
 Master sendFile(sans IP) → ✅ réussi → Slave reçoit 0B → retry 3× (2s/4s/8s) → file flushed
 ```
 
+---
+
+## Session 2026-07-12 — V4.6 : Fix crash natif NPE + patch-package
+
+### Échange
+**Utilisateur** : Logs du test V4.5 montrent un crash Java :
+```
+java.lang.NullPointerException: Attempt to invoke virtual method 'int java.io.InputStream.read(byte[])' on a null object reference
+  io.wifi.p2p.Utils.copyBytes(Utils.java:17)
+  io.wifi.p2p.FileTransferService.onHandleIntent(FileTransferService.java:75)
+```
+
+**Diagnostic** : `FileTransferService.java` — `InputStream is` reste null si `openInputStream()` échoue (`FileNotFoundException`), puis `copyBytes(null, stream)` → NPE crash. Le fichier était purgé avant le transfert.
+
+**Autre constat** : `getP2pLocalIp()` est déjà dans le code Java mais l'APK est stale — il fallait rebuild.
+
+### Fix V4.6 implémenté
+
+**Fichiers Java patchés (via patch-package) :**
+
+| Fichier | Bug | Fix |
+|---------|-----|-----|
+| `FileTransferService.java` | L75: `copyBytes(null, stream)` si fichier purgé | Null check `is` avant `copyBytes`, erreur envoyée via `rec` |
+| `FileTransferService.java` | `rec.send()` si rec null | Null check `rec` avant `send()` |
+| `MessageTransferService.java` | `rec.send()` si rec null | Null check `rec` avant `send()` |
+| `FileServerAsyncTask.java` | Pas de null check InputStream + ServerSocket leak | Null check + finally block pour fermer ServerSocket |
+| `Utils.java` | `copyBytes(null, ...)` → NPE | Null guard + retourne false |
+
+**Ajouts inclus dans le patch :**
+- `WiFiP2PManagerModule.java` : `getP2pIpAddress()` + `getP2pLocalIp()` (déjà écrits, maintenant inclus dans l'APK)
+- `WiFiP2PDeviceMapper.java` : `clientList` exposé dans le groupe info
+- `index.js` + `index.d.ts` : exports JS pour les nouvelles méthodes
+
+**Infrastructure patch-package :**
+- `patches/react-native-wifi-p2p+3.6.1.patch` créée (429 lignes)
+- `postinstall: "patch-package"` ajouté dans `package.json`
+- `patch-package` ajouté en devDependency
+
+### Commits
+- `81e144d` — fix: patch react-native-wifi-p2p — null InputStream crash + getP2pLocalIp
+
+### Build EAS
+- Tentatives échouées : `ECONNRESET` sur `api.expo.dev` (Node.js IPv6 instable)
+- Code pushé et prêt — build à relancer quand le réseau sera stable
+- Commande : `npx eas-cli build --profile preview --platform android --non-interactive`
+
