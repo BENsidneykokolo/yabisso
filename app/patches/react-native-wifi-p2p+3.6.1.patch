@@ -1,0 +1,429 @@
+diff --git a/node_modules/react-native-wifi-p2p/android/.classpath b/node_modules/react-native-wifi-p2p/android/.classpath
+new file mode 100644
+index 0000000..0a3280e
+--- /dev/null
++++ b/node_modules/react-native-wifi-p2p/android/.classpath
+@@ -0,0 +1,6 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<classpath>
++	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-21/"/>
++	<classpathentry kind="con" path="org.eclipse.buildship.core.gradleclasspathcontainer"/>
++	<classpathentry kind="output" path="bin/default"/>
++</classpath>
+diff --git a/node_modules/react-native-wifi-p2p/android/.gradle/8.9/checksums/checksums.lock b/node_modules/react-native-wifi-p2p/android/.gradle/8.9/checksums/checksums.lock
+new file mode 100644
+index 0000000..3e357eb
+Binary files /dev/null and b/node_modules/react-native-wifi-p2p/android/.gradle/8.9/checksums/checksums.lock differ
+diff --git a/node_modules/react-native-wifi-p2p/android/.gradle/8.9/checksums/md5-checksums.bin b/node_modules/react-native-wifi-p2p/android/.gradle/8.9/checksums/md5-checksums.bin
+new file mode 100644
+index 0000000..57c72ba
+Binary files /dev/null and b/node_modules/react-native-wifi-p2p/android/.gradle/8.9/checksums/md5-checksums.bin differ
+diff --git a/node_modules/react-native-wifi-p2p/android/.gradle/8.9/checksums/sha1-checksums.bin b/node_modules/react-native-wifi-p2p/android/.gradle/8.9/checksums/sha1-checksums.bin
+new file mode 100644
+index 0000000..deeaab0
+Binary files /dev/null and b/node_modules/react-native-wifi-p2p/android/.gradle/8.9/checksums/sha1-checksums.bin differ
+diff --git a/node_modules/react-native-wifi-p2p/android/.gradle/8.9/dependencies-accessors/gc.properties b/node_modules/react-native-wifi-p2p/android/.gradle/8.9/dependencies-accessors/gc.properties
+new file mode 100644
+index 0000000..e69de29
+diff --git a/node_modules/react-native-wifi-p2p/android/.gradle/8.9/fileChanges/last-build.bin b/node_modules/react-native-wifi-p2p/android/.gradle/8.9/fileChanges/last-build.bin
+new file mode 100644
+index 0000000..f76dd23
+Binary files /dev/null and b/node_modules/react-native-wifi-p2p/android/.gradle/8.9/fileChanges/last-build.bin differ
+diff --git a/node_modules/react-native-wifi-p2p/android/.gradle/8.9/fileHashes/fileHashes.lock b/node_modules/react-native-wifi-p2p/android/.gradle/8.9/fileHashes/fileHashes.lock
+new file mode 100644
+index 0000000..f2dc1b9
+Binary files /dev/null and b/node_modules/react-native-wifi-p2p/android/.gradle/8.9/fileHashes/fileHashes.lock differ
+diff --git a/node_modules/react-native-wifi-p2p/android/.gradle/8.9/gc.properties b/node_modules/react-native-wifi-p2p/android/.gradle/8.9/gc.properties
+new file mode 100644
+index 0000000..e69de29
+diff --git a/node_modules/react-native-wifi-p2p/android/.gradle/buildOutputCleanup/buildOutputCleanup.lock b/node_modules/react-native-wifi-p2p/android/.gradle/buildOutputCleanup/buildOutputCleanup.lock
+new file mode 100644
+index 0000000..9826e84
+Binary files /dev/null and b/node_modules/react-native-wifi-p2p/android/.gradle/buildOutputCleanup/buildOutputCleanup.lock differ
+diff --git a/node_modules/react-native-wifi-p2p/android/.gradle/buildOutputCleanup/cache.properties b/node_modules/react-native-wifi-p2p/android/.gradle/buildOutputCleanup/cache.properties
+new file mode 100644
+index 0000000..772427c
+--- /dev/null
++++ b/node_modules/react-native-wifi-p2p/android/.gradle/buildOutputCleanup/cache.properties
+@@ -0,0 +1,2 @@
++#Mon Apr 20 01:33:01 CEST 2026
++gradle.version=8.9
+diff --git a/node_modules/react-native-wifi-p2p/android/.gradle/vcs-1/gc.properties b/node_modules/react-native-wifi-p2p/android/.gradle/vcs-1/gc.properties
+new file mode 100644
+index 0000000..e69de29
+diff --git a/node_modules/react-native-wifi-p2p/android/.project b/node_modules/react-native-wifi-p2p/android/.project
+new file mode 100644
+index 0000000..91bea42
+--- /dev/null
++++ b/node_modules/react-native-wifi-p2p/android/.project
+@@ -0,0 +1,34 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<projectDescription>
++	<name>react-native-wifi-p2p</name>
++	<comment>Project react-native-wifi-p2p created by Buildship.</comment>
++	<projects>
++	</projects>
++	<buildSpec>
++		<buildCommand>
++			<name>org.eclipse.jdt.core.javabuilder</name>
++			<arguments>
++			</arguments>
++		</buildCommand>
++		<buildCommand>
++			<name>org.eclipse.buildship.core.gradleprojectbuilder</name>
++			<arguments>
++			</arguments>
++		</buildCommand>
++	</buildSpec>
++	<natures>
++		<nature>org.eclipse.jdt.core.javanature</nature>
++		<nature>org.eclipse.buildship.core.gradleprojectnature</nature>
++	</natures>
++	<filteredResources>
++		<filter>
++			<id>1775663729485</id>
++			<name></name>
++			<type>30</type>
++			<matcher>
++				<id>org.eclipse.core.resources.regexFilterMatcher</id>
++				<arguments>node_modules|\.git|__CREATED_BY_JAVA_LANGUAGE_SERVER__</arguments>
++			</matcher>
++		</filter>
++	</filteredResources>
++</projectDescription>
+diff --git a/node_modules/react-native-wifi-p2p/android/.settings/org.eclipse.buildship.core.prefs b/node_modules/react-native-wifi-p2p/android/.settings/org.eclipse.buildship.core.prefs
+new file mode 100644
+index 0000000..1675490
+--- /dev/null
++++ b/node_modules/react-native-wifi-p2p/android/.settings/org.eclipse.buildship.core.prefs
+@@ -0,0 +1,2 @@
++connection.project.dir=../../../android
++eclipse.preferences.version=1
+diff --git a/node_modules/react-native-wifi-p2p/android/src/main/java/io/wifi/p2p/FileServerAsyncTask.java b/node_modules/react-native-wifi-p2p/android/src/main/java/io/wifi/p2p/FileServerAsyncTask.java
+index 8d4d55c..81d6e0a 100644
+--- a/node_modules/react-native-wifi-p2p/android/src/main/java/io/wifi/p2p/FileServerAsyncTask.java
++++ b/node_modules/react-native-wifi-p2p/android/src/main/java/io/wifi/p2p/FileServerAsyncTask.java
+@@ -41,8 +41,9 @@ public class FileServerAsyncTask extends AsyncTask<Void, Void, String> {
+ 
+   @Override
+   protected String doInBackground(Void... params) {
++    ServerSocket serverSocket = null;
+     try {
+-      ServerSocket serverSocket = new ServerSocket(8988);
++      serverSocket = new ServerSocket(8988);
+       Log.i(TAG, "Server: Socket opened");
+       Socket client = serverSocket.accept();
+       Log.i(TAG, "Server: connection done");
+@@ -52,12 +53,25 @@ public class FileServerAsyncTask extends AsyncTask<Void, Void, String> {
+       f.createNewFile();
+       Log.i(TAG, "Server: copying files " + f.toString());
+       InputStream inputstream = client.getInputStream();
+-      copyBytes(inputstream, new FileOutputStream(f));
++      if (inputstream == null) {
++        Log.e(TAG, "Server: InputStream is null — client may have disconnected");
++        client.close();
++        return null;
++      }
++      boolean ok = copyBytes(inputstream, new FileOutputStream(f));
++      if (!ok) {
++        Log.e(TAG, "Server: copyBytes failed for " + f.toString());
++      }
++      client.close();
+       serverSocket.close();
+       return f.getAbsolutePath();
+     } catch (IOException e) {
+       Log.e(TAG, e.getMessage());
+       return null;
++    } finally {
++      if (serverSocket != null) {
++        try { serverSocket.close(); } catch (IOException ignored) {}
++      }
+     }
+   }
+   /*
+diff --git a/node_modules/react-native-wifi-p2p/android/src/main/java/io/wifi/p2p/FileTransferService.java b/node_modules/react-native-wifi-p2p/android/src/main/java/io/wifi/p2p/FileTransferService.java
+index 101df11..d0678b5 100644
+--- a/node_modules/react-native-wifi-p2p/android/src/main/java/io/wifi/p2p/FileTransferService.java
++++ b/node_modules/react-native-wifi-p2p/android/src/main/java/io/wifi/p2p/FileTransferService.java
+@@ -69,7 +69,15 @@ public class FileTransferService extends IntentService {
+         try {
+           is = cr.openInputStream(Uri.parse(fileUri));
+         } catch (FileNotFoundException e) {
+-          Log.e(TAG, e.getMessage());
++          Log.e(TAG, "File not found: " + fileUri + " — " + e.getMessage());
++        }
++
++        if (is == null) {
++          Log.e(TAG, "InputStream is null — file may have been deleted: " + fileUri);
++          bundle.putString("error", "File not found or inaccessible: " + fileUri);
++          if (rec != null) rec.send(1, bundle);
++          socket.close();
++          return;
+         }
+ 
+         copyBytes(is, stream);
+@@ -79,12 +87,12 @@ public class FileTransferService extends IntentService {
+         bundle.putLong("time", time);
+         bundle.putString("file", fileUri);
+ 
+-        rec.send(0, bundle);
++        if (rec != null) rec.send(0, bundle);
+       } catch (IOException e) {
+         Log.e(TAG, e.getMessage());
+ 
+         bundle.putString("error", e.getMessage());
+-        rec.send(1, bundle);
++        if (rec != null) rec.send(1, bundle);
+       } finally {
+         if (socket != null) {
+           if (socket.isConnected()) {
+diff --git a/node_modules/react-native-wifi-p2p/android/src/main/java/io/wifi/p2p/MessageServer.java b/node_modules/react-native-wifi-p2p/android/src/main/java/io/wifi/p2p/MessageServer.java
+index 79edec0..4bb6e4e 100644
+--- a/node_modules/react-native-wifi-p2p/android/src/main/java/io/wifi/p2p/MessageServer.java
++++ b/node_modules/react-native-wifi-p2p/android/src/main/java/io/wifi/p2p/MessageServer.java
+@@ -81,10 +81,19 @@ public class MessageServer {
+   protected String convertStreamToString(InputStream is) throws IOException {
+     StringBuilder sb = new StringBuilder(Math.max(16, is.available()));
+     char[] tmp = new char[4096];
++    int totalRead = 0;
++    final int MAX_SIZE = 512 * 1024; // 512 KB limit to prevent OOM
+ 
+     try {
+       InputStreamReader reader = new InputStreamReader(is, CHARSET);
+-      for (int cnt; (cnt = reader.read(tmp)) > 0; ) sb.append(tmp, 0, cnt);
++      for (int cnt; (cnt = reader.read(tmp)) > 0; ) {
++        totalRead += cnt;
++        if (totalRead > MAX_SIZE) {
++          Log.e(TAG, "Message size exceeded 512KB limit! Aborting to prevent OOM.");
++          break; // Stop reading to save memory
++        }
++        sb.append(tmp, 0, cnt);
++      }
+     } finally {
+       is.close();
+     }
+diff --git a/node_modules/react-native-wifi-p2p/android/src/main/java/io/wifi/p2p/MessageTransferService.java b/node_modules/react-native-wifi-p2p/android/src/main/java/io/wifi/p2p/MessageTransferService.java
+index b6cb31a..b58f93c 100644
+--- a/node_modules/react-native-wifi-p2p/android/src/main/java/io/wifi/p2p/MessageTransferService.java
++++ b/node_modules/react-native-wifi-p2p/android/src/main/java/io/wifi/p2p/MessageTransferService.java
+@@ -64,12 +64,12 @@ public class MessageTransferService extends IntentService {
+         bundle.putLong("time", time);
+         bundle.putString("message", message);
+ 
+-        rec.send(0, bundle);
++        if (rec != null) rec.send(0, bundle);
+       } catch (IOException e) {
+         Log.e(TAG, e.getMessage());
+ 
+         bundle.putString("error", e.getMessage());
+-        rec.send(1, bundle);
++        if (rec != null) rec.send(1, bundle);
+       } finally {
+         if (socket != null) {
+           if (socket.isConnected()) {
+diff --git a/node_modules/react-native-wifi-p2p/android/src/main/java/io/wifi/p2p/Utils.java b/node_modules/react-native-wifi-p2p/android/src/main/java/io/wifi/p2p/Utils.java
+index 811f77c..f3913eb 100644
+--- a/node_modules/react-native-wifi-p2p/android/src/main/java/io/wifi/p2p/Utils.java
++++ b/node_modules/react-native-wifi-p2p/android/src/main/java/io/wifi/p2p/Utils.java
+@@ -11,7 +11,11 @@ public class Utils {
+   private static final String TAG = "RNWiFiP2P";
+ 
+   public static boolean copyBytes(InputStream inputStream, OutputStream out) {
+-    byte buf[] = new byte[1024];
++    if (inputStream == null) {
++      Log.e(TAG, "copyBytes: inputStream is null — aborting");
++      return false;
++    }
++    byte buf[] = new byte[65536]; // Increased buffer size to 64KB for much faster transfers
+     int len;
+     try {
+       while ((len = inputStream.read(buf)) != -1) {
+diff --git a/node_modules/react-native-wifi-p2p/android/src/main/java/io/wifi/p2p/WiFiP2PDeviceMapper.java b/node_modules/react-native-wifi-p2p/android/src/main/java/io/wifi/p2p/WiFiP2PDeviceMapper.java
+index baefdf6..34eb90d 100644
+--- a/node_modules/react-native-wifi-p2p/android/src/main/java/io/wifi/p2p/WiFiP2PDeviceMapper.java
++++ b/node_modules/react-native-wifi-p2p/android/src/main/java/io/wifi/p2p/WiFiP2PDeviceMapper.java
+@@ -89,6 +89,18 @@ public class WiFiP2PDeviceMapper {
+       params.putNull("owner");
+     }
+ 
++    // V4.0 BUG-047 FIX: Exposer la liste des clients avec leur IP
++    // Permet au GO de decouvrir l'IP reelle du Slave (192.168.49.x)
++    java.util.List<WifiP2pDevice> clientList = group.getClientList();
++    WritableArray clients = Arguments.createArray();
++    for (WifiP2pDevice client : clientList) {
++      WritableMap clientInfo = Arguments.createMap();
++      clientInfo.putString("deviceAddress", client.deviceAddress);
++      clientInfo.putString("deviceName", client.deviceName);
++      clients.pushMap(clientInfo);
++    }
++    params.putArray("clientList", clients);
++
+     return params;
+   }
+ 
+diff --git a/node_modules/react-native-wifi-p2p/android/src/main/java/io/wifi/p2p/WiFiP2PManagerModule.java b/node_modules/react-native-wifi-p2p/android/src/main/java/io/wifi/p2p/WiFiP2PManagerModule.java
+index f296f79..3168b98 100644
+--- a/node_modules/react-native-wifi-p2p/android/src/main/java/io/wifi/p2p/WiFiP2PManagerModule.java
++++ b/node_modules/react-native-wifi-p2p/android/src/main/java/io/wifi/p2p/WiFiP2PManagerModule.java
+@@ -87,6 +87,123 @@ public class WiFiP2PManagerModule extends ReactContextBaseJavaModule
+         });
+   }
+ 
++  /**
++   * Retourne la VRAIE IP locale de cet appareil sur l'interface Wi-Fi Direct.
++   * La lib ne l'expose pas (getConnectionInfo ne renvoie que groupOwnerAddress).
++   * On parcourt TOUTES les interfaces et on prend celle dont l'IP est dans le
++   * subnet Wi-Fi Direct Android (192.168.49.x). Marche quel que soit le nom
++   * d'interface (p2p-wlan0-0, p2p0, etc. — variable selon le constructeur).
++   * Résout null si aucune IP p2p trouvée → le JS décide quoi faire (PAS de fallback hardcodé).
++   */
++  @ReactMethod
++  public void getP2pIpAddress(final Promise promise) {
++    try {
++      String found = null;
++      java.util.Enumeration<java.net.NetworkInterface> ifaces =
++          java.net.NetworkInterface.getNetworkInterfaces();
++      while (ifaces != null && ifaces.hasMoreElements()) {
++        java.net.NetworkInterface iface = ifaces.nextElement();
++        java.util.Enumeration<java.net.InetAddress> addrs = iface.getInetAddresses();
++        while (addrs.hasMoreElements()) {
++          java.net.InetAddress addr = addrs.nextElement();
++          if (addr.isLoopbackAddress()) continue;
++          String ip = addr.getHostAddress();
++          if (ip == null) continue;
++          // Le subnet Wi-Fi Direct d'Android est toujours 192.168.49.0/24
++          if (ip.startsWith("192.168.49.")) {
++            found = ip;
++            Log.i(TAG, "getP2pIpAddress: " + ip + " sur " + iface.getName());
++            break;
++          }
++        }
++        if (found != null) break;
++      }
++      promise.resolve(found);
++    } catch (Exception e) {
++      Log.e(TAG, "getP2pIpAddress error: " + e.getMessage());
++      promise.resolve(null);
++    }
++  }
++
++  /**
++   * V4.0 (BUG-047 fix) : Version améliorée de getP2pIpAddress.
++   * L'itel A50 (Mediatek) ne retourne pas toujours l'IP via l'itération générique.
++   * On essaie d'abord les noms d'interfaces connus, puis fallback sur l'itération générique.
++   * Retourne l'IP locale de l'appareil sur le subnet WiFi Direct (192.168.49.x).
++   */
++  @ReactMethod
++  public void getP2pLocalIp(final Promise promise) {
++    try {
++      String found = null;
++
++      // 1. Essayer les interfaces P2P connues ( Mediatek, Qualcomm, etc.)
++      String[] knownInterfaces = {"p2p-wlan0-0", "p2p0", "wlan0", "swlan0", "p2p-p2p0-0"};
++      for (String ifName : knownInterfaces) {
++        try {
++          java.net.NetworkInterface nif = java.net.NetworkInterface.getByName(ifName);
++          if (nif == null) continue;
++          java.util.Enumeration<java.net.InetAddress> addrs = nif.getInetAddresses();
++          while (addrs.hasMoreElements()) {
++            java.net.InetAddress addr = addrs.nextElement();
++            if (addr.isLoopbackAddress()) continue;
++            String ip = addr.getHostAddress();
++            if (ip == null) continue;
++            if (ip.startsWith("192.168.49.")) {
++              found = ip;
++              Log.i(TAG, "getP2pLocalIp (known iface " + ifName + "): " + ip);
++              break;
++            }
++          }
++          if (found != null) break;
++        } catch (Exception ignored) {}
++      }
++
++      // 2. Fallback : itérer toutes les interfaces (comme getP2pIpAddress)
++      if (found == null) {
++        java.util.Enumeration<java.net.NetworkInterface> ifaces =
++            java.net.NetworkInterface.getNetworkInterfaces();
++        while (ifaces != null && ifaces.hasMoreElements()) {
++          java.net.NetworkInterface iface = ifaces.nextElement();
++          java.util.Enumeration<java.net.InetAddress> addrs = iface.getInetAddresses();
++          while (addrs.hasMoreElements()) {
++            java.net.InetAddress addr = addrs.nextElement();
++            if (addr.isLoopbackAddress()) continue;
++            String ip = addr.getHostAddress();
++            if (ip == null) continue;
++            if (ip.startsWith("192.168.49.")) {
++              found = ip;
++              Log.i(TAG, "getP2pLocalIp (fallback iface " + iface.getName() + "): " + ip);
++              break;
++            }
++          }
++          if (found != null) break;
++        }
++      }
++
++      // 3. Dernier recours : lire depuis WifiP2pInfo si disponible
++      if (found == null && wifiP2pInfo != null && wifiP2pInfo.groupOwnerAddress != null) {
++        String goIp = wifiP2pInfo.groupOwnerAddress.getHostAddress();
++        if (goIp != null && goIp.startsWith("192.168.49.")) {
++          // On est peut-être le GO nous-même — dans ce cas l'IP GO est la nôtre
++          if (wifiP2pInfo.isGroupOwner) {
++            found = goIp;
++            Log.i(TAG, "getP2pLocalIp (isGroupOwner, GO addr): " + goIp);
++          } else {
++            // On est le client — l'IP du GO n'est pas la nôtre, mais on peut essayer
++            // de deviner notre IP en soustrayant la différence connue
++            Log.i(TAG, "getP2pLocalIp: GO=" + goIp + " mais on est client, IP locale inconnue");
++          }
++        }
++      }
++
++      Log.i(TAG, "getP2pLocalIp result: " + (found != null ? found : "NULL"));
++      promise.resolve(found);
++    } catch (Exception e) {
++      Log.e(TAG, "getP2pLocalIp error: " + e.getMessage());
++      promise.resolve(null);
++    }
++  }
++
+   @ReactMethod
+   public void init(Promise promise) {
+     if (manager != null) { // prevent reinitialization
+diff --git a/node_modules/react-native-wifi-p2p/index.d.ts b/node_modules/react-native-wifi-p2p/index.d.ts
+index 3cba843..e325614 100644
+--- a/node_modules/react-native-wifi-p2p/index.d.ts
++++ b/node_modules/react-native-wifi-p2p/index.d.ts
+@@ -71,6 +71,7 @@ export const createGroup: () => Promise<void>
+ export const removeGroup: () => Promise<void>
+ export const getConnectionInfo: () => Promise<WifiP2pInfo>
+ export const getGroupInfo: () => Promise<GroupInfo>
++export const getP2pIpAddress: () => Promise<string | null>
+ export const sendFile: (pathToFile: string) => Promise<{ time: number, file: string }>
+ export const sendFileTo: (pathToFile: string, address: string) => Promise<{ time: number, file: string }>
+ export const receiveFile: (folder: string, fileName: string, forceToScanGallery?: boolean) => Promise<string>
+diff --git a/node_modules/react-native-wifi-p2p/index.js b/node_modules/react-native-wifi-p2p/index.js
+index aff6b9c..e91fd7d 100644
+--- a/node_modules/react-native-wifi-p2p/index.js
++++ b/node_modules/react-native-wifi-p2p/index.js
+@@ -115,6 +115,12 @@ const getConnectionInfo = () => WiFiP2PManager.getConnectionInfo();
+ 
+ const getGroupInfo = () => WiFiP2PManager.getGroupInfo();
+ 
++// Retourne la vraie IP locale sur l'interface Wi-Fi Direct (192.168.49.x) ou null.
++const getP2pIpAddress = () => WiFiP2PManager.getP2pIpAddress();
++
++// V4.0 BUG-047 FIX : Version amelioree (Mediatek itel A50/Xiaomi)
++const getP2pLocalIp = () => WiFiP2PManager.getP2pLocalIp();
++
+ export {
+     // public methods
+     initialize,
+@@ -134,6 +140,8 @@ export {
+     removeGroup,
+     getConnectionInfo,
+     getGroupInfo,
++    getP2pIpAddress,
++    getP2pLocalIp,
+     sendFile,
+     sendFileTo,
+     receiveFile,
