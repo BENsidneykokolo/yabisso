@@ -1,54 +1,19 @@
-# Ignorer les dossiers de build natifs
+node_modules/
+.expo/
+dist/
 android/
 ios/
-
-# Ignorer les dépendances (EAS les installe lui-même)
-node_modules/
-
-# Ignorer les dossiers de cache
-.expo/
-.next/
-dist/
 build/
-
-# Ignorer les fichiers médias lourds
 *.mp4
 *.zip
 *.apk
 *.tar.gz
-
-# Ignorer les assets lourds non nécessaires au build
-app/src/assets/videos/
-app/src/assets/audio/
-
-# Ignorer les logs et fichiers temporaires
+*.backup
+*.bak
 *.log
 .DS_Store
 .env.local
-
-# Ignorer les fichiers de documentation/mémoire
-mesfichiers/
-*.backup
-*.bak
-
-# Ignorer les configs non nécessaires
 .vscode/
 .idea/
-*.iml
-
-# Ignorer les données de test
 __tests__/
-*.test.js
-*.test.ts
-*.spec.js
-*.spec.ts
-
-# Ignorer les fichiers gradle cache (dans le module wifi-p2p)
-node_modules/react-native-wifi-p2p/android/.gradle/
-node_modules/react-native-wifi-p2p/android/.classpath
-node_modules/react-native-wifi-p2p/android/.project
-node_modules/react-native-wifi-p2p/android/.settings/
-
-# Ignorer les dossiers de build Android (si persistants)
-android/
-app/android/
+mesfichiers/
