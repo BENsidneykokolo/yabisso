@@ -28,6 +28,12 @@ import withObservables from '@nozbe/with-observables';
 import { database } from '../../../lib/db';
 import { Q } from '@nozbe/watermelondb';
 
+const toFileUri = (path) => {
+  if (!path || typeof path !== 'string') return path;
+  if (path.startsWith('http://') || path.startsWith('https://') || path.startsWith('file://')) return path;
+  return `file://${path}`;
+};
+
 function LobaFeedScreen({ onBack, onNavigate, posts = [] }) {
   const [activeTabNav, setActiveTabNav] = React.useState('Loba');
   
@@ -40,7 +46,7 @@ function LobaFeedScreen({ onBack, onNavigate, posts = [] }) {
     },
     time: 'A l\'instant',
     content: p.content,
-    image: p.localMediaPath || p.imageUrl || p.videoUrl,
+    image: toFileUri(p.localMediaPath || p.imageUrl || p.videoUrl),
     hasLocalMedia: !!(p.localMediaPath || p.imageUrl || p.videoUrl),
     isVideo: !!p.videoUrl || (p.localMediaPath && p.localMediaPath.endsWith('.mp4')),
     videoDuration: '0:00',
@@ -121,6 +127,13 @@ function LobaFeedScreen({ onBack, onNavigate, posts = [] }) {
         </ScrollView>
       </View>
 
+      {feedPosts.length === 0 ? (
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#101922' }}>
+          <MaterialCommunityIcons name="image-off-outline" size={64} color="rgba(255,255,255,0.1)" />
+          <Text style={{ color: 'rgba(255,255,255,0.4)', marginTop: 16, fontSize: 16 }}>Aucune publication pour le moment</Text>
+          <Text style={{ color: 'rgba(255,255,255,0.2)', marginTop: 8, fontSize: 12 }}>Les nouveaux uploads apparaîtront ici</Text>
+        </View>
+      ) : (
       <FlatList
         data={feedPosts}
         keyExtractor={(item) => item.id.toString()}
@@ -140,6 +153,7 @@ function LobaFeedScreen({ onBack, onNavigate, posts = [] }) {
         windowSize={5}
         removeClippedSubviews={true}
       />
+      )}
 
       <Pressable style={styles.fab}>
         <MaterialCommunityIcons name="pencil" size={28} color="#fff" />
@@ -556,6 +570,7 @@ const styles = StyleSheet.create({
 
 const enhance = withObservables([], () => ({
   posts: database.get('loba_posts').query(
+    Q.where('local_media_path', Q.notEq(null)),
     Q.sortBy('created_at', Q.desc),
     Q.take(30)
   ).observe(),

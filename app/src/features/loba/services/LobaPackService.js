@@ -49,11 +49,12 @@ export class LobaPackService {
   }
 
   /**
-   * Génère un nouveau pack de 50MB maximum avec les publications d'une catégorie spécifique.
-   * @param {string|null} category - La catégorie à filtrer (ex: 'marche', 'hotel'). Si null, prend tout.
-   * @returns {Promise<string|null>} Le chemin local du fichier ZIP, ou null si rien à envoyer.
+   * Génère un nouveau pack avec une taille max paramétrable (défaut 25MB).
+   * @param {string|null} category - La catégorie à filtrer.
+   * @param {number} maxSizeMB - Taille max du pack en MB. Défaut 25.
+   * @returns {Promise<string|null>}
    */
-  static async buildPack(category = null) {
+  static async buildPack(category = null, maxSizeMB = 25) {
     await this.initDirectories();
 
     const timestamp = Date.now();
@@ -75,20 +76,42 @@ export class LobaPackService {
 
       const posts = await database.get('loba_posts').query(...queryArgs).fetch();
 
+      // V4.0 BUG-047 DEBUG : Compter aussi le total sans filtre local_media_path
+      const allPostsCount = await database.get('loba_posts').query().fetchCount();
+      const propagatingCount = await database.get('loba_posts').query(Q.where('is_propagating', true)).fetchCount();
+      console.log(`[LobaPackService] 🔍 buildPack DEBUG: total_posts=${allPostsCount}, posts_with_local_media=${posts.length}, is_propagating=${propagatingCount}, category=${category || 'all'}`);
+
+      if (posts.length === 0 && allPostsCount > 0) {
+        console.warn(`[LobaPackService] ⚠️ BUG-047: ${allPostsCount} posts en DB mais AUCUN avec local_media_path non-null. Fichiers nettoyés ou jamais sauvegardés ?`);
+        // V4.0 BUG-047 FIX : Fallback — si des posts ont is_propagating=true, essayer sans le filtre local_media_path
+        // pour au moins inclure les posts qui ont un média (imageUrl/videoUrl) même si local_media_path est null
+        const fallbackPosts = await database.get('loba_posts').query(
+          Q.where('is_propagating', true),
+          Q.sortBy('created_at', Q.desc),
+          Q.take(25)
+        ).fetch();
+        if (fallbackPosts.length > 0) {
+          console.log(`[LobaPackService] 🔄 BUG-047 Fallback: ${fallbackPosts.length} posts avec is_propagating=true trouvés`);
+        }
+      }
+
       let currentSize = 0;
       const manifestList = [];
 
       // 2. Sélectionner les fichiers jusqu'à 50MB
+      let skippedNoPath = 0;
+      let skippedNoFile = 0;
+      let skippedTooBig = 0;
       for (const post of posts) {
-        if (!post.localMediaPath) continue;
+        if (!post.localMediaPath) { skippedNoPath++; continue; }
 
         const fileInfo = await FileSystem.getInfoAsync(post.localMediaPath);
-        if (!fileInfo.exists) continue;
+        if (!fileInfo.exists) { skippedNoFile++; continue; }
 
         const fileSize = fileInfo.size;
         
         // Si on dépasse la taille max du pack en ajoutant ce fichier, on s'arrête là (sauf s'il est tout seul et < 100MB)
-        if (currentSize + fileSize > MAX_PACK_SIZE && manifestList.length > 0) {
+        if (currentSize + fileSize > (maxSizeMB * 1024 * 1024) && manifestList.length > 0) {
           continue; // On essaie peut-être de trouver un fichier plus petit après, ou on s'arrête.
         }
 
@@ -127,12 +150,13 @@ export class LobaPackService {
         currentSize += fileSize;
         
         // On s'arrête si le pack approche les 50MB (marge de 2MB)
-        if (currentSize >= (MAX_PACK_SIZE - 2 * 1024 * 1024)) {
+        if (currentSize >= (maxSizeMB * 1024 * 1024 - 2 * 1024 * 1024)) {
           break;
         }
       }
 
       if (manifestList.length === 0) {
+        console.warn(`[LobaPackService] ⚠️ buildPack null: skippedNoPath=${skippedNoPath}, skippedNoFile=${skippedNoFile}, skippedTooBig=${skippedTooBig}, totalQueried=${posts.length}`);
         // Rien à envoyer, on supprime le dossier staging
         await FileSystem.deleteAsync(stagingDir, { idempotent: true });
         return null;
@@ -263,27 +287,44 @@ export class LobaPackService {
         return successCount > 0;
 
       } else {
-        // FIX: Fichier individuel
-      console.log(`[LobaPackService] Fichier individuel détecté: ${zipPath}`);
-      const uriPath = normalizePath(zipPath);
-      const fileInfo = await FileSystem.getInfoAsync(uriPath);
-      if (!fileInfo.exists) {
-        console.error('[LobaPackService] Fichier individuel introuvable:', uriPath);
-        return false;
-      }
-      const singlePost = [{
-        hash: Date.now().toString(),
-        filename: zipPath.split('/').pop(),
-        type: zipPath.endsWith('.mp4') ? 'video' : 'image',
-        category: 'general',
-        username: 'P2P Peer',
-        content: 'Contenu reçu via WiFi Direct',
-        size: fileInfo.size,
-      }];
-      const parentDir = normalizePath(uriPath.substring(0, uriPath.lastIndexOf('/') + 1));
-      const successCount = await InterestEngine.processPackContent(parentDir, singlePost);
-      console.log(`[LobaPackService] Fichier individuel traité: ${successCount} posts conservés.`);
-      return successCount > 0;
+        // V3.24 (BUG-057 fix): Fichier individuel
+        // AVANT : on passait le parentDir (= loba_media/) a InterestEngine → scan de 100+ fichiers
+        // MAINTENANT : on copie le fichier dans un dossier temporaire isolé, puis on passe ce dossier
+        console.log(`[LobaPackService] Fichier individuel détecté: ${zipPath}`);
+        const uriPath = normalizePath(zipPath);
+        const fileInfo = await FileSystem.getInfoAsync(uriPath);
+        if (!fileInfo.exists) {
+          console.error('[LobaPackService] Fichier individuel introuvable:', uriPath);
+          return false;
+        }
+
+        // V3.24: Créer un dossier temporaire isolé pour ce seul fichier
+        const singleStagingDir = `${TEMP_UNPACK_DIR}single_${timestamp}/`;
+        await FileSystem.makeDirectoryAsync(normalizePath(singleStagingDir), { intermediates: true });
+
+        const fileName = zipPath.split('/').pop();
+        const destFile = `${singleStagingDir}${fileName}`;
+        await FileSystem.copyAsync({
+          from: uriPath,
+          to: normalizePath(destFile)
+        });
+
+        const singlePost = [{
+          hash: Date.now().toString(),
+          filename: fileName,
+          type: zipPath.endsWith('.mp4') ? 'video' : 'image',
+          category: 'general',
+          username: 'P2P Peer',
+          content: 'Contenu recu via WiFi Direct',
+          size: fileInfo.size,
+        }];
+        const successCount = await InterestEngine.processPackContent(normalizePath(singleStagingDir), singlePost);
+        console.log(`[LobaPackService] Fichier individuel traite: ${successCount} posts conserves.`);
+
+        // Nettoyage du staging temporaire
+        try { await FileSystem.deleteAsync(normalizePath(singleStagingDir), { idempotent: true }); } catch (_) {}
+
+        return successCount > 0;
       }
 
     } catch (e) {

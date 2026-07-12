@@ -55,10 +55,12 @@ class NearbyMeshServiceClass {
     this._connectionMutex = false;
     this._isRunning = false;
     this._isStarting = false;
+    this._started = false; // V3.28.1 (BUG-066 fix): singleton guard
     this._failedPeers = new Set();
     this._discoveredNodes = new Map();
     this._currentRole = null;
     this._pendingMasterTimeouts = [];
+    this._pendingWifiGroupReady = null; // V3.35: { peerId, masterIp } — envoi différé après onConnected
     
     this.MeshLogEvents = MeshLogEvents;
     this.MeshConnectionEvents = MeshConnectionEvents;
@@ -81,10 +83,20 @@ class NearbyMeshServiceClass {
   }
 
   async startMesh() {
+    // V3.28.1 (BUG-066 fix): Singleton guard — empeche double demarrage sur Itel A50
+    // Le guard V3.12 (NearbyMeshService._instance) ne fonctionnait PAS car
+    // NearbyMeshService EST deja l'instance (export singleton). On utilise un flag _started
+    // identique a P2PAutoSync pour bloquer tout double appel.
+    if (this._started) {
+      console.warn('[NearbyMesh] Déjà démarré, ignoré (singleton guard).');
+      return;
+    }
+
     if (this.isAdvertising || this.isDiscovering || this._isStarting) {
       this._log('Mesh déjà actif ou en démarrage (skip start).');
       return;
     }
+    this._started = true;
     this._isStarting = true;
 
     try {
@@ -130,6 +142,7 @@ class NearbyMeshServiceClass {
       this.isAdvertising = false;
       this.isDiscovering = false;
       this._isStarting = false;
+      this._started = false; // V3.28.1: reset pour permettre retry
     }
   }
 
@@ -140,9 +153,29 @@ class NearbyMeshServiceClass {
     this._listeners.push(onPeerFound((peer) => {
       this._log(`🔍 Node trouvé: ${peer.name} (${peer.peerId})`);
       
-      // V1.0.16: Extraire le score numérique pour comparaison propre
+      // V3.10: Ignorer mon propre node pour éviter de s'enregistrer comme peer
+      if (peer.name === this.deviceName) {
+        this._log(`⛔ [NearbyMesh] Mon propre node ignoré (nom identique): ${peer.name}`);
+        return;
+      }
+      
+      // V3.31 (FIX 4): Guard SUPPLÉMENTAIRE — comparer le score extrait
+      // Sur certains appareils (Xiaomi), le peer.name peut différer de this.deviceName
+      // (encoding, espaces, casing) → le check nom échoue → self-discovery.
+      // Si le score du peer est IDENTIQUE au mien, c'est forcément moi-même.
       const myScore = parseInt(this.deviceName?.split('_')[0] || '0', 10);
       const peerScore = parseInt(peer.name?.split('_')[0] || '0', 10);
+      if (myScore > 0 && peerScore > 0 && myScore === peerScore) {
+        this._log(`⛔ [V3.31] Self-discovery détecté (score identique ${myScore}=${peerScore}), ignoré: ${peer.name}`);
+        return;
+      }
+      
+      // V3.5 (BUG-057 fix): Filtrer uniquement les pairs Yabisso (regex stricte)
+      const isYabissoPeer = /^\d+_Yabisso_/i.test(peer.name || '');
+      if (!isYabissoPeer) {
+        this._log(`⛔ [V3.5] Peer non-Yabisso ignoré: ${peer.name}`);
+        return;
+      }
       
       // V1.0.17: Informer P2PAutoSync du peer Mesh pour le calcul de rôle WiFi Direct
       const isMeshMaster = myScore > peerScore;
@@ -151,25 +184,55 @@ class NearbyMeshServiceClass {
         P2PAutoSync.setMeshPeer(peer.peerId, peer.name, peerScore, isMeshMaster);
       } catch (_) {}
 
-      // Master = score le plus élevé
+      // V3.5 (BUG-057 fix): ÉLECTION MESH STRICTE
+      // L'élection Master/Slave WiFi Direct se fait ICI, au moment exact de la découverte.
+      // Plus de "createGroup proactif" dans le cycle P2PAutoSync (qui causait le double MASTER).
+      // Le WiFi Direct reste TOTALEMENT PASSIF tant qu'un pair n'est pas découvert par le Mesh.
       if (myScore > peerScore) {
-        this._log(`🤝 [Master] Envoi requête de connexion vers ${peer.peerId}...`);
+        this._log(`👑 [V3.5] Mesh Master détecté (${myScore} > ${peerScore}) → création du groupe WiFi Direct`);
         
         // Anti-spam: ne pas reconnecter si échec récent (< 30s)
         if (this._failedPeers.has(peer.peerId)) return;
 
+        // V3.5: Créer le groupe WiFi Direct ICI (pas dans le cycle)
+        // C'est le SEUL endroit où createGroup() est appelé en mode normal.
+        const { WifiDirectService } = require('./WifiDirectService');
+        WifiDirectService.createGroup().then(success => {
+          if (success) {
+            this._log(`✅ [V3.5] Groupe WiFi Direct créé par le Master. J'attends que le Slave se connecte...`);
+            // V3.35 (FIX WIFI_GROUP_READY): AU lieu d'envoyer sendText() ICI (Mesh pas encore connecté),
+            // on stocke le message. Il sera envoyé dans onConnected() quand le socket BLE sera prêt.
+            const masterIp = WifiDirectService.groupOwnerAddress || '192.168.49.1';
+            this._pendingWifiGroupReady = { peerId: peer.peerId, masterIp };
+            this._log(`📡 [V3.35] WIFI_GROUP_READY en attente d'envoi (onConnected) pour ${peer.peerId}`);
+          } else {
+            // V3.31 (FIX 7): createGroup échoue = le groupe existe déjà (cas WiFi Direct créé avant Mesh).
+            // Envoyer WIFI_GROUP_READY au Slave via Mesh pour qu'il puisse se connecter au groupe existant.
+            this._log(`⚡ [V3.31 FIX7] Groupe WiFi existe déjà → envoi WIFI_GROUP_READY au Slave ${peer.peerId}`);
+            const masterIp = WifiDirectService.groupOwnerAddress || '192.168.49.1';
+            this._pendingWifiGroupReady = { peerId: peer.peerId, masterIp };
+            this._log(`📡 [V3.35] WIFI_GROUP_READY en attente d'envoi (onConnected) pour ${peer.peerId} (groupe existant)`);
+          }
+        }).catch(e => {
+          this._log(`⚠️ [V3.5] createGroup exception: ${e.message}`);
+        });
+
+        // Mesh connection (pour échanger manifestes, MAC, etc.)
         requestConnection(peer.peerId).catch(err => {
           this._log(`❌ Échec requestConnection vers ${peer.peerId}: ${err.message}`);
           this._failedPeers.add(peer.peerId);
           setTimeout(() => this._failedPeers.delete(peer.peerId), 30000);
         });
       } else {
-        this._log(`⏳ [Slave] Attente de l'invitation de ${peer.name}...`);
+        this._log(`⏳ [V3.5] Mesh Slave (${myScore} < ${peerScore}) → j'attends que le Master crée le groupe WiFi Direct`);
+        // V3.31: Le Slave ne fait RIEN ici — pas de triggerSync, pas de connexion.
+        // La connexion Slave est déclenchée UNIQUEMENT par WIFI_GROUP_READY ou scan fallback.
+        // Évite la double connexion (Delta Hook + onPeerFound = 2 instances simultanées → framework busy).
+        return;
       }
       
-      // 🚀 Déclencher aussi le WiFi Direct dès qu'un node est détecté
-      // Cela permet le transfert même si Nearby Mesh ne parvient pas à se connecter
-      this._log(`🚀 Déclenchement WiFi Direct pour transfert P2P...`);
+      // 🚀 Déclencher aussi le WiFi Direct dès qu'un node est détecté (MASTER uniquement)
+      this._log(`🚀 Déclenchement WiFi Direct (MASTER) pour transfert P2P...`);
       const { P2PAutoSync } = require('./P2PAutoSync');
       P2PAutoSync.triggerSync(null, true);
     }));
@@ -197,7 +260,48 @@ class NearbyMeshServiceClass {
       this._log(`✨ CONNECTÉ à: ${peer.name} (${peer.peerId})`);
       this.connectedPeers.add(peer.peerId);
       this._updateState();
-      this._sendManifest(peer.peerId);
+
+      // V3.36 (FIX sendText delay): Attendre 800ms que le socket BLE se stabilise
+      // AVANT d'envoyer quoi que ce soit (manifest, WIFI_GROUP_READY, etc.)
+      setTimeout(() => {
+        this._sendManifest(peer.peerId);
+      }, 800);
+
+      // V4.1 (FIX 2): Le socket BLE n'est PAS pret immediatement apres onConnected.
+      // Sur Itel A50 (Mediatek) ET Xiaomi 11T, sendText() echoue meme apres 800ms.
+      // On augmente les delais: 2s → 4s → 8s (3 tentatives max).
+      // IMPORTANT: verifier que le peer est dans connectedPeers AVANT d'envoyer.
+      if (this._pendingWifiGroupReady) {
+        const { peerId, masterIp } = this._pendingWifiGroupReady;
+        this._pendingWifiGroupReady = null;
+        const msg = JSON.stringify({ type: 'wifi_group_ready', masterIp });
+        const delays = [2000, 4000, 8000];
+        const trySend = (attempt) => {
+          if (attempt > delays.length) {
+            this._log(`⚠️ [V4.1] WIFI_GROUP_READY echoue apres ${delays.length} tentatives`);
+            return;
+          }
+          // V4.1: Verifier que le peer est connecte AVANT d'envoyer
+          if (!this.connectedPeers.has(peerId)) {
+            this._log(`⚠️ [V4.1] WIFI_GROUP_READY tentative ${attempt}/${delays.length}: peer ${peerId} pas encore dans connectedPeers, retry...`);
+            if (attempt < delays.length) {
+              setTimeout(() => trySend(attempt + 1), delays[attempt - 1]);
+            }
+            return;
+          }
+          setTimeout(() => {
+            this.sendMeshMessage(peerId, { type: 'wifi_group_ready', masterIp }).then(ok => {
+              if (ok) {
+                this._log(`✅ [V4.1] WIFI_GROUP_READY envoye au Slave ${peerId} (tentative ${attempt}/${delays.length})`);
+              } else {
+                this._log(`⚠️ [V4.1] WIFI_GROUP_READY tentative ${attempt}/${delays.length} echouee, retry...`);
+                trySend(attempt + 1);
+              }
+            });
+          }, attempt === 1 ? 1000 : delays[attempt - 1]);
+        };
+        trySend(1);
+      }
     }));
 
     this._listeners.push(onDisconnected(({ peerId }) => {
@@ -267,6 +371,7 @@ class NearbyMeshServiceClass {
       this.connectedPeers.clear();
       this.isAdvertising = false;
       this.isDiscovering = false;
+      this._started = false; // V3.28.1: reset pour permettre redemarrage
       this._updateState();
       NetworkRailDetector.setBleAvailable(false);
       this._log('Mesh arrêté.');
@@ -297,22 +402,75 @@ class NearbyMeshServiceClass {
       } else if (data.type === 'validation_request') {
         this._log(`📩 Requête de validation reçue de ${peerId}`);
         MeshRequestEvents.emit({ peerId, request: data.payload });
+      } else if (data.type === 'wifi_group_ready') {
+        // V3.6.4 (Mesh handshake) : Le Master annonce via Mesh que son groupe WiFi est prêt.
+        // Le Slave peut alors initier sa connexion WiFi au Master en toute confiance.
+        this._log(`📡 [V3.6.4 Mesh] WIFI_GROUP_READY reçu de ${peerId} (masterIp=${data.masterIp})`);
+        MeshRequestEvents.emit({ type: 'WIFI_GROUP_READY', peerId, masterIp: data.masterIp });
+      } else if (data.type === 'slave_connected_confirmed') {
+        // V3.6.4 (Mesh handshake) : Le Slave confirme via Mesh qu'il est connecté au WiFi du Master.
+        // Le Master peut alors commencer à envoyer des données en toute sécurité.
+        this._log(`✅ [V3.6.4 Mesh] SLAVE_CONNECTED_CONFIRMED reçu de ${peerId}`);
+        MeshRequestEvents.emit({ type: 'SLAVE_CONNECTED_CONFIRMED', peerId });
+      } else if (data.type === 'slave_ip') {
+        // V3.20 (BUG-047 fix) : Le Slave envoie son IP locale (assignée par le DHCP du GO)
+        // via Mesh BLE au Master. Le Master la stocke et l'utilise pour sendFileTo
+        // (au lieu de sendFile qui s'envoie à lui-même = self-loop).
+        this._log(`📡 [V3.20 Mesh] SLAVE_IP reçu de ${peerId} : ${data.ip}:${data.port}`);
+        MeshRequestEvents.emit({ type: 'SLAVE_IP', peerId, ip: data.ip, port: data.port });
+      } else if (data.type === 'mesh_propagation_batch') {
+        // V3.27 (BUG-063 fix) : Batch de hashes reçu via Mesh BLE (max 50 items)
+        // Au lieu de 233 messages individuels, un seul message JSON avec le tableau de hashes.
+        this._log(`📡 [V3.27 Mesh] Batch propagation reçu de ${peerId}: ${data.count} items`);
+        MeshContentUpdateEvents.emit({ type: 'MESH_PROPAGATION_BATCH', peerId, hashes: data.hashes, count: data.count });
+      } else if (data.type === 'YABISSO_HELLO') {
+        // V3.36 (FIX Mediatek 0B): YABISSO_HELLO reçu via BLE Mesh au lieu de WiFi Direct.
+        // Sur Mediatek (Itel A50), le transfert WiFi Direct retourne toujours 0B.
+        // Le HELLO est maintenant envoyé via Mesh BLE (canal fiable).
+        this._log(`🤝 [V3.36 Mesh] YABISSO_HELLO reçu de ${peerId} (score=${data.myScore})`);
+        MeshRequestEvents.emit({ type: 'YABISSO_HELLO_VIA_MESH', peerId, payload: data });
       }
     } catch (e) { }
   }
 
+  // V3.6.4 (Mesh handshake) : Envoie un message JSON à un peer via le canal Mesh BLE.
+  // Utilisé pour le handshake WIFI_GROUP_READY / SLAVE_CONNECTED_CONFIRMED.
+  async sendMeshMessage(peerId, message) {
+    try {
+      const payload = JSON.stringify(message);
+      await sendText(peerId, payload);
+      this._log(`📤 [V3.6.4 Mesh] Message envoyé à ${peerId}: ${message.type}`);
+      return true;
+    } catch (e) {
+      this._log(`⚠️ [V3.6.4 Mesh] Échec envoi message à ${peerId}: ${e.message}`);
+      return false;
+    }
+  }
+
+
   async _handleGlobalManifestReceived(peerId, remoteManifest) {
     if (!remoteManifest) return;
     this._log(`📥 Manifeste reçu de ${peerId}. Analyse des deltas...`);
-    
+
     try {
       const delta = await GlobalManifestService.calculateGlobalDelta(remoteManifest);
       const lobaCount = delta.loba?.length || 0;
       const productCount = delta.products?.length || 0;
-      
+
+      // V3.6.3 (BUG-060 fix) : HOOK DU DELTA VERS P2PAutoSync
+      // On passe TOUJOURS le delta à P2PAutoSync (même si 0 items) pour qu'il
+      // puisse synchroniser son flag _hasPendingDelta. Sans ce hook, le cycle
+      // 3s évalue shouldSend sans savoir qu'il y a un delta à pousser.
+      try {
+        const { P2PAutoSync } = require('./P2PAutoSync');
+        P2PAutoSync.onMeshManifestDeltaCalculated(delta);
+      } catch (e) {
+        this._log(`⚠️ [V3.6.3] Échec hook delta: ${e.message}`);
+      }
+
       if (lobaCount > 0 || productCount > 0) {
         this._log(`✨ Delta détecté: ${lobaCount} vidéos, ${productCount} produits. Activation WiFi Direct...`);
-        
+
         // On importe dynamiquement pour éviter les circular dependencies
         const { P2PAutoSync } = require('./P2PAutoSync');
         P2PAutoSync.triggerSync(null, true); // force=true pour ignorer le cooldown

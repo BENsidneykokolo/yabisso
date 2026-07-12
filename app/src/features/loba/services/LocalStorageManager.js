@@ -67,17 +67,16 @@ export const LocalStorageManager = {
     try {
       await this.ensureDirs();
 
-      // Vérification de taille
       const fileInfo = await FileSystem.getInfoAsync(tempUri);
+      console.log(`[LocalStorageManager] 📤 saveMedia: tempUri=${tempUri?.substring(0,60)}, exists=${fileInfo.exists}, size=${fileInfo.size}, hashOrPath=${hashOrPath?.substring(0,20)}, ext=${ext}`);
+
       if (fileInfo.exists && fileInfo.size > MAX_SINGLE_FILE_BYTES) {
         console.warn(`[LocalStorageManager] Fichier trop volumineux: ${(fileInfo.size / 1024 / 1024).toFixed(1)} MB (max ${MAX_SINGLE_FILE_BYTES / 1024 / 1024} MB)`);
         return null;
       }
 
-      // Gestion des sous-dossiers (si hashOrPath contient des '/')
       let finalDest;
       if (hashOrPath.includes('/')) {
-        // C'est un chemin relatif complet
         const fullPath = `${FileSystem.documentDirectory}${hashOrPath}.${ext}`;
         const dirPath = fullPath.substring(0, fullPath.lastIndexOf('/'));
         
@@ -87,11 +86,9 @@ export const LocalStorageManager = {
         }
         finalDest = fullPath;
       } else {
-        // C've est juste un hash (comportement par défaut)
         finalDest = `${LOBA_CACHE_DIR}${hashOrPath}.${ext}`;
       }
 
-      // Déduplication: vérifier si le fichier existe déjà
       const existingInfo = await FileSystem.getInfoAsync(finalDest);
       if (existingInfo.exists) {
         console.log(`[LocalStorageManager] Fichier déjà en cache: ${hashOrPath}`);
@@ -103,10 +100,11 @@ export const LocalStorageManager = {
         to: finalDest
       });
 
-      console.log(`[LocalStorageManager] Média sauvegardé dans ${finalDest} (${(fileInfo.size / 1024).toFixed(1)} KB)`);
+      const movedInfo = await FileSystem.getInfoAsync(finalDest);
+      console.log(`[LocalStorageManager] ✅ Média sauvegardé: ${finalDest?.substring(0,60)} (exists=${movedInfo.exists}, size=${movedInfo.size})`);
       return { path: finalDest, size: fileInfo.size };
     } catch (e) {
-      console.error('[LocalStorageManager] Erreur sauvegarde:', e);
+      console.error('[LocalStorageManager] ❌ Erreur sauvegarde:', e.message, 'tempUri=', tempUri);
       return null;
     }
   },

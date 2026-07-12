@@ -1,24 +1,19 @@
-# Ignorer les dossiers de build natifs
+node_modules/
+.expo/
+dist/
 android/
 ios/
-
-# Ignorer les dépendances
-node_modules/
-
-# Ignorer les dossiers de cache
-.expo/
-.next/
-dist/
 build/
-
-# Ignorer les fichiers médias lourds (loba_media, etc)
 *.mp4
 *.zip
 *.apk
 *.tar.gz
-app/src/assets/videos/*
-
-# Ignorer les logs et dossiers temporaires
+*.backup
+*.bak
 *.log
 .DS_Store
 .env.local
+.vscode/
+.idea/
+__tests__/
+mesfichiers/

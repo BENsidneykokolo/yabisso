@@ -12,28 +12,6 @@ import QrSignupScreen from './src/features/auth/screens/QrSignupScreen';
 import PinSignupScreen from './src/features/auth/screens/PinSignupScreen';
 import LoginScreen from './src/features/auth/screens/LoginScreen';
 import BleSignupScreen from './src/features/bluetooth/screens/BleSignupScreen';
-import BleKioskScreen from './src/features/bluetooth/screens/BleKioskScreen';
-import KioskValidationScreen from './src/features/kiosk/screens/KioskValidationScreen';
-import ProductValidationKioskScreen from './src/features/kiosk/screens/ProductValidationKioskScreen';
-import KioskAdminLoginScreen from './src/features/kiosk/screens/KioskAdminLoginScreen';
-import KioskAdminDashboardScreen from './src/features/kiosk/screens/KioskAdminDashboardScreen';
-import KioskDashboardScreen from './src/features/kiosk/screens/KioskDashboardScreen';
-import KioskRechargeScreen from './src/features/kiosk/screens/KioskRechargeScreen';
-import KioskPointsScreen from './src/features/kiosk/screens/KioskPointsScreen';
-import KioskAssistanceScreen from './src/features/kiosk/screens/KioskAssistanceScreen';
-import KioskUsersScreen from './src/features/kiosk/screens/KioskUsersScreen';
-import KioskStatsScreen from './src/features/kiosk/screens/KioskStatsScreen';
-import KioskQRScreen from './src/features/kiosk/screens/KioskQRScreen';
-import SuperAdminLoginScreen from './src/features/admin/screens/SuperAdminLoginScreen';
-import SuperAdminDashboardScreen from './src/features/admin/screens/SuperAdminDashboardScreen';
-import SuperAdminUsersScreen from './src/features/admin/screens/SuperAdminUsersScreen';
-import SuperAdminServicesScreen from './src/features/admin/screens/SuperAdminServicesScreen';
-import SuperAdminContentModerationScreen from './src/features/admin/screens/SuperAdminContentModerationScreen';
-import SuperAdminAnalyticsScreen from './src/features/admin/screens/SuperAdminAnalyticsScreen';
-import SuperAdminSettingsScreen from './src/features/admin/screens/SuperAdminSettingsScreen';
-import SuperAdminKiosksScreen from './src/features/admin/screens/SuperAdminKiosksScreen';
-import SuperAdminNotificationsScreen from './src/features/admin/screens/SuperAdminNotificationsScreen';
-import SuperAdminAIScreen from './src/features/admin/screens/SuperAdminAIScreen';
 import ChatHomeScreen from './src/features/chat/screens/ChatHomeScreen';
 import ChatConversationScreen from './src/features/chat/screens/ChatConversationScreen';
 import PharmacyHomeScreen from './src/features/pharmacy/screens/PharmacyHomeScreen';
@@ -356,8 +334,6 @@ export default function App() {
         onOfflineSms={() => navigate('signup_sms')}
         onOfflineQr={() => navigate('signup_qr')}
         onOfflineBle={() => navigate('signup_ble')}
-        onKioskMode={() => navigate('kiosk_validation')}
-        onKioskProductMode={() => navigate('kiosk_product_validation')}
       />
     );
   }
@@ -399,177 +375,6 @@ export default function App() {
       <BleSignupScreen
         navigation={{ navigate, goBack }}
         route={{ params: screenParams }}
-      />
-    );
-  }
-  if (screen === 'kiosk_ble') {
-    content = (
-      <BleKioskScreen
-        navigation={{ navigate, goBack }}
-      />
-    );
-  }
-  if (screen === 'kiosk_validation') {
-    content = (
-      <KioskValidationScreen
-        navigation={{ navigate, goBack }}
-        route={{ params: screenParams }}
-      />
-    );
-  }
-  if (screen === 'kiosk_product_validation') {
-    content = (
-      <ProductValidationKioskScreen
-        navigation={{ navigate, goBack }}
-      />
-    );
-  }
-  if (screen === 'kiosk_admin_login') {
-    content = (
-      <KioskAdminLoginScreen
-        navigation={{ navigate, goBack, replace: (s) => setScreen(s) }}
-      />
-    );
-  }
-  if (screen === 'kiosk_admin_dashboard') {
-    content = (
-      <KioskAdminDashboardScreen
-        navigation={{ navigate, goBack }}
-      />
-    );
-  }
-  if (screen === 'kiosk_dashboard') {
-    content = (
-      <KioskDashboardScreen
-        navigation={{ navigate, goBack, replace: (s) => setScreen(s) }}
-      />
-    );
-  }
-  if (screen === 'kiosk_recharge') {
-    content = (
-      <KioskRechargeScreen
-        navigation={{ navigate, goBack }}
-      />
-    );
-  }
-  if (screen === 'kiosk_points') {
-    content = (
-      <KioskPointsScreen
-        navigation={{ navigate, goBack }}
-      />
-    );
-  }
-  if (screen === 'kiosk_assistance') {
-    content = (
-      <KioskAssistanceScreen
-        navigation={{ navigate, goBack }}
-      />
-    );
-  }
-  if (screen === 'kiosk_users') {
-    content = (
-      <KioskUsersScreen
-        navigation={{ navigate, goBack }}
-      />
-    );
-  }
-  if (screen === 'kiosk_stats') {
-    content = (
-      <KioskStatsScreen
-        navigation={{ navigate, goBack }}
-      />
-    );
-  }
-  if (screen === 'kiosk_qr') {
-    const qrParams = screenParams?.qrType || 'validation';
-    content = (
-      <KioskQRScreen
-        navigation={{ navigate, goBack }}
-        route={{ params: { type: qrParams } }}
-      />
-    );
-  }
-
-  // ============ SUPER ADMIN SCREENS ============
-  if (screen === 'super_admin_login') {
-    content = (
-      <SuperAdminLoginScreen
-        onBack={() => goBack()}
-        onLoginSuccess={() => navigate('super_admin_dashboard')}
-      />
-    );
-  }
-  if (screen === 'super_admin_dashboard') {
-    content = (
-      <SuperAdminDashboardScreen
-        onBack={() => goBack()}
-        onNavigate={(s, p) => navigate(s, p)}
-        onLogout={() => navigate('super_admin_login')}
-      />
-    );
-  }
-  if (screen === 'super_admin_users') {
-    content = (
-      <SuperAdminUsersScreen
-        onBack={() => goBack()}
-        onNavigate={(s, p) => navigate(s, p)}
-      />
-    );
-  }
-  if (screen === 'super_admin_services') {
-    content = (
-      <SuperAdminServicesScreen
-        onBack={() => goBack()}
-        onNavigate={(s, p) => navigate(s, p)}
-      />
-    );
-  }
-  if (screen === 'super_admin_content') {
-    content = (
-      <SuperAdminContentModerationScreen
-        onBack={() => goBack()}
-        onNavigate={(s, p) => navigate(s, p)}
-      />
-    );
-  }
-  if (screen === 'super_admin_analytics') {
-    content = (
-      <SuperAdminAnalyticsScreen
-        onBack={() => goBack()}
-        onNavigate={(s, p) => navigate(s, p)}
-      />
-    );
-  }
-  if (screen === 'super_admin_settings') {
-    content = (
-      <SuperAdminSettingsScreen
-        onBack={() => goBack()}
-        onNavigate={(s, p) => navigate(s, p)}
-      />
-    );
-  }
-  if (screen === 'super_admin_kiosks') {
-    content = (
-      <SuperAdminKiosksScreen
-        onBack={() => goBack()}
-        onNavigate={(s, p) => navigate(s, p)}
-        onOpenKioskAdmin={() => navigate('kiosk_admin_dashboard')}
-      />
-    );
-  }
-  if (screen === 'super_admin_notifications') {
-    content = (
-      <SuperAdminNotificationsScreen
-        onBack={() => goBack()}
-        onNavigate={(s, p) => navigate(s, p)}
-      />
-    );
-  }
-  if (screen === 'super_admin_ai') {
-    content = (
-      <SuperAdminAIScreen
-        onBack={() => goBack()}
-        onNavigate={(s, p) => navigate(s, p)}
       />
     );
   }
@@ -750,7 +555,6 @@ export default function App() {
         }}
         onOpenBlockedUser={() => navigate('blocked_user')}
         onNavigate={(screenName) => navigate(screenName)}
-        onOpenKioskAdmin={() => navigate('kiosk_admin_login')}
       />
     );
   }
@@ -842,7 +646,6 @@ export default function App() {
         onOpenNotifications={() => navigate('profile_notifications')}
         onOpenLogout={() => navigate('profile_logout')}
         onOpenEditProfile={() => navigate('profile_edit')}
-        onOpenKioskAdmin={() => navigate('kiosk_admin_login')}
       />
     );
   }

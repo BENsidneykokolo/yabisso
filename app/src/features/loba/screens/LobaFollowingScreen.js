@@ -20,10 +20,15 @@ import LobaBottomNav from '../components/LobaBottomNav';
 import { useMeshConnection } from '../../bluetooth/hooks/useMeshConnection';
 import withObservables from '@nozbe/with-observables';
 import { database } from '../../../lib/db';
+import { Q } from '@nozbe/watermelondb';
 
 const { width, height } = Dimensions.get('window');
 
-
+const toFileUri = (path) => {
+  if (!path || typeof path !== 'string') return path;
+  if (path.startsWith('http://') || path.startsWith('https://') || path.startsWith('file://')) return path;
+  return `file://${path}`;
+};
 
 const followedCreators = [
   { id: 1, name: 'Kofi Mensah', avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCpQKycPMLIcj6lEgT3yylEk1PYLRLRoGgntAftVcxpaZk_rZCjF9tJVB74QcDXaov6pXlQd0xJc3Hzn42A1xSh9sZDFM8PgyDRwaUsq2dn7Bf4d23hd1L-NEElMtyMOXIXKC3n95_TmtmOznJyFX7p_fI7-3ZxTpsj7scTO5mwqImoclkDwp9xyQN6RBUdjQBm_U_wSO1O_DvULR6bLmrYThfVtAvmsqTQJoZByFXdNIm-IThl8u4qx54KVUdJpCvlTLEejlGP', following: true },
@@ -53,7 +58,7 @@ function LobaFollowingScreen({ onBack, onNavigate, videos = [] }) {
       id: p.id,
       username: p.username,
       avatar: p.avatar,
-      video: p.videoUrl || p.imageUrl,
+      video: toFileUri(p.videoUrl || p.imageUrl),
       type: p.videoUrl ? 'video' : 'photo',
       caption: p.content,
       song: 'Original Sound - ' + p.username,
@@ -276,6 +281,13 @@ function LobaFollowingScreen({ onBack, onNavigate, videos = [] }) {
         </View>
       </View>
 
+      {feedVideos.length === 0 ? (
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#101922' }}>
+          <MaterialCommunityIcons name="image-off-outline" size={64} color="rgba(255,255,255,0.1)" />
+          <Text style={{ color: 'rgba(255,255,255,0.4)', marginTop: 16, fontSize: 16 }}>Aucune publication pour le moment</Text>
+          <Text style={{ color: 'rgba(255,255,255,0.2)', marginTop: 8, fontSize: 12 }}>Les nouveaux uploads apparaîtront ici</Text>
+        </View>
+      ) : (
       <FlatList
         data={feedVideos}
         renderItem={renderVideo}
@@ -288,6 +300,7 @@ function LobaFollowingScreen({ onBack, onNavigate, videos = [] }) {
           setCurrentVideoIndex(index);
         }}
       />
+      )}
       </View>
 
       <Modal
@@ -726,7 +739,11 @@ const ShareOption = ({ icon, color, label, onPress }) => (
 );
 
 const enhance = withObservables([], () => ({
-  videos: database.get('loba_posts').query().observe(),
+  videos: database.get('loba_posts').query(
+    Q.where('local_media_path', Q.notEq(null)),
+    Q.sortBy('created_at', Q.desc),
+    Q.take(50)
+  ).observe(),
 }));
 
 export default enhance(LobaFollowingScreen);
